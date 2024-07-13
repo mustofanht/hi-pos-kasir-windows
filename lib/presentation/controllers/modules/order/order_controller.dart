@@ -1,0 +1,158 @@
+import 'dart:async';
+
+import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/dummy/code_dummy.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+
+class OrderController extends GetxController {
+  OrderController();
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
+  DisplayUtil displayUtil = DisplayUtil();
+
+  var orderEntity = Rxn<ResponseOrderEntity>(null);
+
+  doPaymentQris({required OrderModel body}) async {
+    try {
+      // create Order and waiting the prosess of payment
+      doCreateOrder(body: body);
+
+      // Display the waiting payment alert
+      alert.waitingPayment(
+        title: 'Menunggu Pembayaran',
+        msg:
+            'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
+        onCheck: _handlePaymentCheck,
+        onCancle: () {
+          Get.back();
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Unexpected Error');
+    }
+  }
+
+  void _handlePaymentCheck() async {
+    try {
+      var isSuccess = await _checkPaymentStatus();
+      if (isSuccess) {
+        Get.back();
+        _showPaymentSuccessAlert();
+      } else {
+        alert.warning('Warning', 'Payment In Process');
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Payment Error');
+    }
+  }
+
+  void _showPaymentSuccessAlert() {
+    alert.paymentQrSuccess(
+      title: 'Success Pembayaran Telah Berhasil',
+      msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
+      onSendProofOfPayment: _handleSendProofOfPayment,
+      onPrint: () {
+        Get.back();
+        loading.popUpLoading();
+        Timer(Duration(seconds: 3), () {
+          Get.back();
+        });
+      },
+    );
+  }
+
+  void _handleSendProofOfPayment() {
+    Get.back();
+    alert.paymentSendProofOfPayment(
+      title: 'Pembayaran Berhasil',
+      onSendEmail: (val) {
+        logger.safeLog('EMAIL : ${val}');
+        Get.back();
+      },
+      onSendWa: (val) {
+        logger.safeLog('WA : ${val}');
+        Get.back();
+      },
+      onNewOrder: _handleNewOrder,
+    );
+  }
+
+  void _handleNewOrder() {
+    Get.back();
+    Timer(Duration(seconds: 3), () {
+      Get.dialog(
+        loading.simpleLoading(),
+        barrierDismissible: false,
+      );
+      Get.back();
+    });
+  }
+
+  doCreateOrder({required OrderModel body}) async {
+    var qrCodeBase64 = codeDummy.getQrCodeDummy();
+    try {
+      var result;
+      result = await _service.order.orderService
+          .createOrder(authToken: _authToken, body: body);
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Order Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Order Success');
+          logger.safeLog(r.data);
+          orderEntity.value = r.data;
+          // orderNo.value = r
+        },
+      );
+      displayUtil.updateSecondDisplay(
+        CustomerDisplay(
+          key: CustomerDisplayAction.PAYMENT,
+          value: {PaymentMethod.QRIS: qrCodeBase64},
+        ).toJson(),
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      logger.safeLog('Create Order Error 2');
+      alert.error('Error', 'Terjadi Kesalahan!');
+    }
+  }
+
+  Future<bool> _checkPaymentStatus() async {
+    // Simulate a payment status check
+    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    return true; // Change this logic based on your payment status check
+  }
+
+  doPaymentEdc({required OrderModel body}) {
+    try {
+      // create Order and waiting the prosess of payment
+      doCreateOrder(body: body);
+
+      // Display the waiting payment alert
+      alert.waitingPaymentEdc(
+        title: 'Menunggu Proses Transaksi',
+        msg: 'Silahkan mengisi reference',
+        onNext: (val) {
+          Get.back();
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Unexpected Error');
+    }
+  }
+}

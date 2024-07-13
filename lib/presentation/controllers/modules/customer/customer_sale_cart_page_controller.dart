@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
+
+class CustomerSaleCartPageController extends GetxController {
+  CustomerSaleCartPageController();
+
+  var totalOrder = RxDouble(0);
+  var reffNo = RxString('10108274389324');
+
+  final addonList = RxList<CartAddon>([]);
+  final ticketList = RxList<CartTicket>([]);
+  final voucherList = RxList<CartVoucher>([]);
+  late var orderList = Cart(
+    cartTicketList: ticketList,
+    cartVoucherList: voucherList,
+    addonList: addonList,
+  ).obs;
+
+  List<Widget> sliders = [];
+  List<String> images = [];
+
+  final showBarcode = RxBool(false);
+
+  @override
+  void onInit() {
+    // TODO: implement onInit
+    super.onInit();
+    loadImages();
+    doPrepared();
+  }
+
+  doPrepared() {
+    sliders = images
+        .map(
+          (e) => Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: layoutStyle.defaultMargin / 5,
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+              child: Container(
+                width: double.infinity,
+                child: Image.network(
+                  e,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ),
+          ),
+        )
+        .toList();
+    update();
+  }
+
+  updateDataCustomer(Object value) {
+    showBarcode.value = false;
+
+    try {
+      if (value is Map<Object?, Object?>) {
+        Map<String, dynamic> convertedValue =
+            common.convertToMapStringDynamic(value);
+
+        CustomerDisplay customerDisplay =
+            CustomerDisplay.fromJson(convertedValue);
+
+        if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
+          logger.safeLog('ADD CART');
+          doAddCart(customerDisplay.value!);
+        } else if (customerDisplay.key == CustomerDisplayAction.PAYMENT) {
+          logger.safeLog('PAYMENT QRIS');
+          showBarcode.value = true;
+        }
+      }
+    } catch (e) {
+      logger.safeLog('error : ${e}');
+    }
+    update();
+  }
+
+  doAddCart(Map<String, dynamic> val) {
+    ticketList.clear();
+    voucherList.clear();
+    addonList.clear();
+    CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
+
+    if (customerSaleCart.ticketList != null) {
+      ticketList.addAll(customerSaleCart.ticketList!);
+    }
+    if (customerSaleCart.voucherList != null) {
+      voucherList.addAll(customerSaleCart.voucherList!);
+    }
+    if (customerSaleCart.addonList != null) {
+      addonList.addAll(customerSaleCart.addonList!);
+    }
+    if (customerSaleCart.totalOrder != null) {
+      totalOrder.value = customerSaleCart.totalOrder!;
+    }
+  }
+
+  void loadImages() {
+    // localStorage.getSavedImages().then((List<File> val) {
+    //   images.addAll(val);
+    // });
+    for (int i = 0; i < 10; i++) {
+      images.add('https://picsum.photos/1000/1000');
+    }
+    update();
+  }
+}

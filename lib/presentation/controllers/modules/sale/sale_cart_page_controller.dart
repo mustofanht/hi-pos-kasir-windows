@@ -1,0 +1,225 @@
+import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
+
+class SaleCartPageController extends GetxController {
+  SaleCartPageController();
+  final SalePageController salePageController = Get.find<SalePageController>();
+  DisplayUtil displayUtil = DisplayUtil();
+
+  var totalOrderAmnt = RxDouble(0);
+  var totalOrderQty = RxInt(0);
+
+  final addonList = RxList<CartAddon>([]);
+  final ticketList = RxList<CartTicket>([]);
+  final voucherList = RxList<CartVoucher>([]);
+  late var orderList = Cart(
+    cartTicketList: ticketList,
+    cartVoucherList: voucherList,
+    addonList: addonList,
+  ).obs;
+
+  addTicket(TicketEntity ticket) {
+    ticketList.add(
+      CartTicket(
+        qtyOrder: 1,
+        ticket: ticket,
+        totalPrice: ticket.ticketPrice!,
+      ),
+    );
+    calculateTotalOrder();
+  }
+
+  addTicketCart(CartTicket ticket) {
+    ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
+    ticket.totalPrice =
+        (ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0);
+    calculateTotalOrder();
+  }
+
+  removeTicket(CartTicket ticket) {
+    ticket.qtyOrder = (ticket.qtyOrder ?? 0) - 1;
+    ticket.totalPrice =
+        (ticket.totalPrice ?? 0) - (ticket.ticket!.ticketPrice ?? 0);
+    if (ticket.qtyOrder == 0) {
+      removeListTicket(ticket);
+    }
+    calculateTotalOrder();
+  }
+
+  removeListTicket(CartTicket ticket) {
+    ticketList.remove(ticket);
+    calculateTotalOrder();
+  }
+
+  addAddon(AddonEntity val) {
+    addonList.add(
+      CartAddon(
+        qtyOrder: 1,
+        totalPrice: val.productPrice!,
+        addon: val,
+      ),
+    );
+    calculateTotalOrder();
+  }
+
+  addAddonCart(CartAddon val) {
+    val.qtyOrder = (val.qtyOrder ?? 0) + 1;
+    val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
+    calculateTotalOrder();
+  }
+
+  removeAddon(CartAddon val) {
+    val.qtyOrder = (val.qtyOrder ?? 0) - 1;
+    val.totalPrice = (val.totalPrice ?? 0) - (val.addon!.productPrice ?? 0);
+    if (val.qtyOrder == 0) {
+      removeListAddon(val);
+    }
+    calculateTotalOrder();
+  }
+
+  removeListAddon(CartAddon val) {
+    addonList.remove(val);
+    calculateTotalOrder();
+  }
+
+  addVoucher(VoucherEntity voucher) {
+    voucherList.add(
+      CartVoucher(
+        qtyOrder: 1,
+        totalPrice: voucher.voucherUnitValue!,
+        voucher: voucher,
+      ),
+    );
+    calculateTotalOrder();
+  }
+
+  removeListVoucher(CartVoucher voucher) {
+    voucherList.remove(voucher);
+    calculateTotalOrder();
+  }
+
+  void calculateTotalOrder() {
+    double totalAmntFinal = 0;
+    double ticketTotalAmnt = 0;
+    int ticketTotalQtyVal = 0;
+
+    if (ticketList.isNotEmpty) {
+      ticketTotalAmnt +=
+          ticketList.fold(0, (sum, val) => sum + val.totalPrice!);
+      ticketTotalQtyVal +=
+          ticketList.fold(0, (sum, val) => sum + val.qtyOrder!);
+    }
+    if (addonList.isNotEmpty) {
+      ticketTotalAmnt += addonList.fold(0, (sum, val) => sum + val.totalPrice!);
+      ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
+    }
+
+    if (voucherList.isNotEmpty) {
+      double discountAmount = 0;
+      for (var element in voucherList) {
+        if (element.voucher!.voucherUnitType == 'PERCENT') {
+          discountAmount +=
+              ticketTotalAmnt * (element.voucher!.voucherUnitValue ?? 0) / 100;
+        } else {
+          discountAmount += element.voucher!.voucherUnitValue ?? 0;
+        }
+        logger.safeLog('discount : ${discountAmount} ');
+      }
+
+      ticketTotalQtyVal +=
+          voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
+
+      totalAmntFinal = ticketTotalAmnt - discountAmount;
+    } else {
+      totalAmntFinal = ticketTotalAmnt;
+    }
+    totalOrderAmnt.value = totalAmntFinal > 0 ? totalAmntFinal : 0;
+    totalOrderQty.value = ticketTotalQtyVal;
+
+    salePageController.totalOrderQty(totalOrderQty.value);
+    salePageController.totalOrderAmnt(totalOrderAmnt.value);
+    salePageController.addonList(addonList);
+    salePageController.voucherList(voucherList);
+    salePageController.ticketList(ticketList);
+
+    update();
+
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.ADD_CART,
+        value: CustomerSaleCart(
+          ticketList: ticketList,
+          addonList: addonList,
+          voucherList: voucherList,
+          totalOrder: totalOrderAmnt.value,
+        ).toJson(),
+      ).toJson(),
+    );
+  }
+
+  onPayment() {
+    if (totalOrderAmnt.value == 0) {
+      alert.warning('warning', 'Order cannot empty');
+      return;
+    }
+
+    logger.safeLog('OPEN PAYMENT 1 : ${salePageController.openPayment.value}');
+    if (salePageController.openPayment.value) {
+      salePageController.doPayment();
+    } else {
+      salePageController.totalOrderQty(totalOrderQty.value);
+      salePageController.totalOrderAmnt(totalOrderAmnt.value);
+      salePageController.addonList(addonList);
+      salePageController.voucherList(voucherList);
+      salePageController.ticketList(ticketList);
+      salePageController.openPayment(true);
+    }
+    logger.safeLog('OPEN PAYMENT 2 : ${salePageController.openPayment.value}');
+  }
+
+  clearCartOrder() {
+    try {
+      ticketList.clear();
+      addonList.clear();
+      voucherList.clear();
+      calculateTotalOrder();
+      displayUtil.updateSecondDisplay(
+        CustomerDisplay(
+          key: CustomerDisplayAction.ADD_CART,
+          value: CustomerSaleCart(
+            ticketList: ticketList,
+            addonList: addonList,
+            voucherList: voucherList,
+            totalOrder: totalOrderAmnt.value,
+          ).toJson(),
+        ).toJson(),
+      );
+
+      // clear and back payment page
+      salePageController.totalOrderQty(totalOrderQty.value);
+      salePageController.totalOrderAmnt(totalOrderAmnt.value);
+      salePageController.addonList(addonList);
+      salePageController.voucherList(voucherList);
+      salePageController.ticketList(ticketList);
+      salePageController.openPayment(false);
+      salePageController.update();
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    Get.back();
+    update();
+  }
+}
