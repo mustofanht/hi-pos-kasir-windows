@@ -232,6 +232,7 @@ class SalePage extends GetView<SalePageController> {
                     border: InputBorder.none,
                   ),
                   keyboardType: TextInputType.phone,
+                  maxLength: 13,
                 ),
                 CustomDropdownButton<CustomIdNameEntity>(
                   height: layoutStyle.blockVertical * 6.5,
