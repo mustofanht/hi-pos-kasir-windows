@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
 
 class CustomerSaleCartPageController extends GetxController {
@@ -30,7 +31,9 @@ class CustomerSaleCartPageController extends GetxController {
   List<Widget> sliders = [];
   List<String> images = [];
 
-  final showBarcode = RxBool(false);
+  // final showBarcode = RxBool(false);
+  final qrCode = Rxn<String>(null);
+  final showPaymentSuccess = RxBool(false);
 
   @override
   void onInit() {
@@ -41,6 +44,9 @@ class CustomerSaleCartPageController extends GetxController {
   }
 
   doPrepared() {
+    qrCode.value = null;
+    showPaymentSuccess.value = false;
+
     sliders = images
         .map(
           (e) => Padding(
@@ -64,7 +70,8 @@ class CustomerSaleCartPageController extends GetxController {
   }
 
   updateDataCustomer(Object value) {
-    showBarcode.value = false;
+    qrCode.value = null;
+    showPaymentSuccess.value = false;
 
     try {
       if (value is Map<Object?, Object?>) {
@@ -74,18 +81,35 @@ class CustomerSaleCartPageController extends GetxController {
         CustomerDisplay customerDisplay =
             CustomerDisplay.fromJson(convertedValue);
 
-        if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
-          logger.safeLog('ADD CART');
-          doAddCart(customerDisplay.value!);
-        } else if (customerDisplay.key == CustomerDisplayAction.PAYMENT) {
-          logger.safeLog('PAYMENT QRIS');
-          showBarcode.value = true;
+        if (customerDisplay.value != null) {
+          if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
+            logger.safeLog('ADD CART');
+            doAddCart(customerDisplay.value!);
+          } else if (customerDisplay.key == CustomerDisplayAction.PAYMENT) {
+            logger.safeLog('PAYMENT QRIS');
+            doShowPaymentQris(customerDisplay.value!);
+            // showBarcode.value = true;
+          }
         }
       }
     } catch (e) {
       logger.safeLog('error : ${e}');
     }
     update();
+  }
+
+  doShowPaymentQris(Map<String, dynamic> val) {
+    try {
+      CustomerPayment customerPayment = CustomerPayment.fromJson(val);
+      logger.safeLog('customerPayment ${customerPayment.toJson()}');
+      if (customerPayment.isSuccess) {
+        showPaymentSuccess.value = true;
+      } else if (customerPayment.qrCode != null) {
+        qrCode.value = customerPayment.qrCode;
+      }
+    } catch (e) {
+      logger.safeLog(e);
+    }
   }
 
   doAddCart(Map<String, dynamic> val) {

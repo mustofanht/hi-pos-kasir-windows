@@ -8,6 +8,7 @@ class VoucherEntity {
   double? voucherUnitValue;
   int? voucherLimit;
   int? voucherUnit;
+  int? voucherLocId;
   DateTime? voucherStartDate;
   DateTime? voucherEndDate;
   String? voucherDesc;
@@ -21,6 +22,7 @@ class VoucherEntity {
     this.voucherUnitValue,
     this.voucherLimit,
     this.voucherUnit,
+    this.voucherLocId,
     this.voucherStartDate,
     this.voucherEndDate,
     this.voucherDesc,
@@ -38,6 +40,7 @@ class VoucherEntity {
         : null;
     voucherLimit = json['voucherLimit'];
     voucherUnit = json['voucherUnit'];
+    voucherLocId = json['voucherLocId'];
     voucherStartDate = json['voucherStartDate'] != null
         ? DateTime.parse(json['voucherStartDate'])
         : null;
@@ -58,6 +61,7 @@ class VoucherEntity {
       "voucherUnitValue": voucherUnitValue,
       "voucherLimit": voucherLimit,
       "voucherUnit": voucherUnit,
+      "voucherLocId": voucherLocId,
       "voucherStartDate": voucherStartDate,
       "voucherEndDate": voucherEndDate,
       "voucherDesc": voucherDesc,

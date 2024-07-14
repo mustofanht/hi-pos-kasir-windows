@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
@@ -51,7 +52,7 @@ class _CustomerPageState extends State<CustomerPage> {
       );
     }
 
-    Widget barcodeSection() {
+    Widget qrisSection() {
       return Expanded(
         child: Container(
           height: layoutStyle.screenHeight,
@@ -63,7 +64,7 @@ class _CustomerPageState extends State<CustomerPage> {
           child: Column(
             children: [
               Container(
-                height: layoutStyle.safeAreaVertical * 3,
+                height: layoutStyle.blockVertical * 6,
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -86,6 +87,7 @@ class _CustomerPageState extends State<CustomerPage> {
                       style: TextStyle(
                         fontSize: fontSize.title,
                         fontWeight: fontWeight.bold,
+                        color: colorStyle.black,
                       ),
                     )
                   ],
@@ -106,25 +108,76 @@ class _CustomerPageState extends State<CustomerPage> {
       );
     }
 
-    return Scaffold(
-      body: SecondaryDisplay(
-        callback: (dynamic argument) {
-          logger.safeLog('Data From main display : ${argument}');
-          customerSaleCartPageController.updateDataCustomer(argument);
-        },
-        child: Container(
-          width: layoutStyle.screenWidth,
-          height: layoutStyle.screenHeight,
-          color: colorStyle.lightGrey.withOpacity(0.70),
-          child: Row(
+    Widget paymentQrisSuccess() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            assetsConstant.icPaymentSuccess,
+            width: layoutStyle.blockHorizontal * 20,
+            height: layoutStyle.blockVertical * 20,
+          ),
+          Text(
+            'Thank You',
+            style: TextStyle(
+              fontWeight: fontWeight.bold,
+              fontSize: fontSize.header,
+            ),
+          ),
+          Text(
+            'Pembayaran QRIS Sukses',
+            style: TextStyle(
+              fontSize: fontSize.subtitle,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Obx(
+      () => Scaffold(
+        appBar: AppBar(
+          toolbarHeight: layoutStyle.blockVertical * 10,
+          backgroundColor: colorStyle.primary,
+          foregroundColor: colorStyle.white,
+          shadowColor: colorStyle.transparent,
+          elevation: layoutStyle.defaultMargin,
+          leadingWidth: 100,
+          title: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CustomerSaleCartPage(),
-              if (customerSaleCartPageController.showBarcode.value) ...[
-                barcodeSection(),
-              ] else ...[
-                addsSection(),
-              ],
+              Image.asset(
+                assetsConstant.imgLogo,
+                width: layoutStyle.blockHorizontal * 15,
+                height: layoutStyle.blockVertical * 15,
+              ),
             ],
+          ),
+        ),
+        body: SecondaryDisplay(
+          callback: (dynamic argument) {
+            logger.safeLog('Data From main display : ${argument}');
+            customerSaleCartPageController.updateDataCustomer(argument);
+          },
+          child: Container(
+            width: layoutStyle.screenWidth,
+            height: layoutStyle.screenHeight,
+            color: colorStyle.lightGrey.withOpacity(0.70),
+            child: customerSaleCartPageController.showPaymentSuccess.value
+                ? paymentQrisSuccess()
+                : Row(
+                    children: [
+                      const CustomerSaleCartPage(),
+                      if (customerSaleCartPageController.qrCode.value !=
+                          null) ...[
+                        qrisSection(),
+                      ] else ...[
+                        addsSection(),
+                      ],
+                    ],
+                  ),
           ),
         ),
       ),

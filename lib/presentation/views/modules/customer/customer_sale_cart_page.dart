@@ -20,13 +20,13 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
             'Reference No.',
             style: TextStyle(
               color: colorStyle.grey,
-              fontSize: fontSize.header,
+              fontSize: fontSize.title,
             ),
           ),
           Text(
             controller.reffNo.value,
             style: TextStyle(
-              fontSize: fontSize.header,
+              fontSize: fontSize.title,
               fontWeight: fontWeight.bold,
             ),
           ),
@@ -37,13 +37,13 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
             'Total',
             style: TextStyle(
               color: colorStyle.grey,
-              fontSize: fontSize.header,
+              fontSize: fontSize.title,
             ),
           ),
           Text(
             'IDR ${controller.totalOrder}',
             style: TextStyle(
-              fontSize: fontSize.subtitle * 2,
+              fontSize: fontSize.body * 2,
               fontWeight: fontWeight.bold,
             ),
           ),
@@ -269,42 +269,42 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
   }
 
   Widget notOrder() {
-    return Container(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/empty-box.png',
-              fit: BoxFit.fill,
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace? stackTrace) {
-                return const Text('Img Not Found');
-              },
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/images/empty-box.png',
+            // fit: BoxFit.contain,
+            width: layoutStyle.blockHorizontal * 30,
+            height: layoutStyle.blockVertical * 30,
+            errorBuilder: (BuildContext context, Object exception,
+                StackTrace? stackTrace) {
+              return const Text('Img Not Found');
+            },
+          ),
+          SizedBox(
+            height: layoutStyle.defaultMargin,
+          ),
+          Text(
+            'Belum Ada Pesanan',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: fontSize.title,
+              fontWeight: fontWeight.bold,
             ),
-            SizedBox(
-              height: layoutStyle.defaultMargin,
+          ),
+          SizedBox(
+            height: layoutStyle.defaultMargin,
+          ),
+          Text(
+            'Kamu belum melakukan pesanan',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: fontSize.subtitle,
             ),
-            Text(
-              'Belum Ada Pesanan',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize.title,
-                fontWeight: fontWeight.bold,
-              ),
-            ),
-            SizedBox(
-              height: layoutStyle.defaultMargin,
-            ),
-            Text(
-              'Kamu belum melakukan pesanan',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize.subtitle,
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
   }
@@ -324,7 +324,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
       builder: (controller) {
         return Container(
           width: layoutStyle.screenWidth / 3,
-          height: layoutStyle.screenHeight,
+          // height: layoutStyle.screenHeight,
           color: colorStyle.white,
           child: Column(
             children: [

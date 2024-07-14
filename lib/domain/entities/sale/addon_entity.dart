@@ -5,6 +5,7 @@ class AddonEntity {
   String? productName;
   String? productType;
   int? productUnit;
+  int? productLoc;
   double? productPrice;
   String? productDesc;
   String? productState;
@@ -12,16 +13,13 @@ class AddonEntity {
   String? productFlMember;
   String? productFlWebsite;
   String? productFlTicket;
-  String? productCreatedDate;
-  String? productCreatedBy;
-  String? productUpdatedDate;
-  String? productUpdatedBy;
 
   AddonEntity({
     this.productId,
     this.productName,
     this.productType,
     this.productUnit,
+    this.productLoc,
     this.productPrice,
     this.productDesc,
     this.productState,
@@ -29,10 +27,6 @@ class AddonEntity {
     this.productFlMember,
     this.productFlWebsite,
     this.productFlTicket,
-    this.productCreatedDate,
-    this.productCreatedBy,
-    this.productUpdatedDate,
-    this.productUpdatedBy,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -41,6 +35,7 @@ class AddonEntity {
       productName = json['productName'];
       productType = json['productType'];
       productUnit = json['productUnit'];
+      productLoc = json['productLoc'];
       productPrice = json['productPrice'] != null
           ? (json['productPrice'] as num).toDouble()
           : null;
@@ -50,10 +45,6 @@ class AddonEntity {
       productFlMember = json['productFlMember'];
       productFlWebsite = json['productFlWebsite'];
       productFlTicket = json['productFlTicket'];
-      productCreatedDate = json['productCreatedDate'];
-      productCreatedBy = json['productCreatedBy'];
-      productUpdatedDate = json['productUpdatedDate'];
-      productUpdatedBy = json['productUpdatedBy'];
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -65,6 +56,7 @@ class AddonEntity {
       "productName": productName,
       "productType": productType,
       "productUnit": productUnit,
+      "productLoc": productLoc,
       "productPrice": productPrice,
       "productDesc": productDesc,
       "productState": productState,
@@ -72,10 +64,6 @@ class AddonEntity {
       "productFlMember": productFlMember,
       "productFlWebsite": productFlWebsite,
       "productFlTicket": productFlTicket,
-      "productCreatedDate": productCreatedDate,
-      "productCreatedBy": productCreatedBy,
-      "productUpdatedDate": productUpdatedDate,
-      "productUpdatedBy": productUpdatedBy,
     };
   }
 }

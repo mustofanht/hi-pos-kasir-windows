@@ -179,36 +179,42 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),
-                          CustomButton(
-                            onPressed: () {
-                              controller.removeTicket(e);
-                            },
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
-                                ),
-                              ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
-                              ),
-                              elevation: MaterialStateProperty.all<double>(0),
-                            ),
-                            label: Image.asset(
-                              assetsConstant.icMinus,
-                              fit: BoxFit.contain,
-                            ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
-                          ),
+                          (e.qtyOrder ?? 0) > (e.ticket!.ticketMinimum ?? 0)
+                              ? CustomButton(
+                                  onPressed: () {
+                                    controller.removeTicket(e);
+                                  },
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    overlayColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      const EdgeInsets.all(0),
+                                    ),
+                                    elevation:
+                                        MaterialStateProperty.all<double>(0),
+                                  ),
+                                  label: Image.asset(
+                                    assetsConstant.icMinus,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 5,
+                                )
+                              : Container(),
                           CustomButton(
                             onPressed: () {
                               controller.addTicketCart(e);
@@ -530,7 +536,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
     );
   }
 
-  Widget footerCart() {
+  Widget footerCart(BuildContext context) {
     return Container(
         padding: EdgeInsets.all(layoutStyle.defaultMargin),
         child: Column(
@@ -608,6 +614,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                 ),
                 CustomButton(
                   onPressed: () {
+                    FocusScope.of(context).unfocus();
                     controller.onPayment();
                   },
                   style: ButtonStyle(
@@ -662,7 +669,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
             children: [
               headerCart(),
               contentCart(controller),
-              footerCart(),
+              footerCart(context),
             ],
           ),
         );

@@ -165,6 +165,7 @@ class LoginPage extends GetView<LoginPageController> {
               horizontal: layoutStyle.defaultMargin,
             ),
             onPressed: () {
+              FocusScope.of(context).unfocus();
               controller.isLoading.value ? null : controller.doLogin();
             },
             style: ButtonStyle(

@@ -4,6 +4,8 @@ class TicketEntity {
   int? ticketId;
   String? ticketName;
   int? ticketUnit;
+  int? ticketLocation;
+  int? ticketMinimum;
   String? ticketType;
   double? ticketPrice;
   String? ticketDesc;
@@ -16,6 +18,8 @@ class TicketEntity {
     this.ticketId,
     this.ticketName,
     this.ticketUnit,
+    this.ticketLocation,
+    this.ticketMinimum,
     this.ticketType,
     this.ticketPrice,
     this.ticketDesc,
@@ -30,6 +34,8 @@ class TicketEntity {
       ticketId = json['ticketId'];
       ticketName = json['ticketName'];
       ticketUnit = json['ticketUnit'];
+      ticketLocation = json['ticketLocation'];
+      ticketMinimum = json['ticketMinimum'];
       ticketType = json['ticketType'];
       ticketPrice = json['ticketPrice'] != null
           ? (json['ticketPrice'] as num).toDouble()
@@ -48,6 +54,8 @@ class TicketEntity {
     return {
       "ticketName": ticketName,
       "ticketUnit": ticketUnit,
+      "ticketLocation": ticketLocation,
+      "ticketMinimum": ticketMinimum,
       "ticketType": ticketType,
       "ticketPrice": ticketPrice,
       "ticketDesc": ticketDesc,

@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/dummy/code_dummy.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
@@ -23,8 +24,7 @@ class OrderController extends GetxController {
   doPaymentQris({required OrderModel body}) async {
     try {
       // create Order and waiting the prosess of payment
-      doCreateOrder(body: body);
-
+      doCreateOrderQr(body: body);
       // Display the waiting payment alert
       alert.waitingPayment(
         title: 'Menunggu Pembayaran',
@@ -47,6 +47,15 @@ class OrderController extends GetxController {
       if (isSuccess) {
         Get.back();
         _showPaymentSuccessAlert();
+        displayUtil.updateSecondDisplay(
+          CustomerDisplay(
+            key: CustomerDisplayAction.PAYMENT,
+            value: CustomerPayment(
+              type: PaymentMethod.QRIS,
+              isSuccess: true,
+            ).toJson(),
+          ).toJson(),
+        );
       } else {
         alert.warning('Warning', 'Payment In Process');
       }
@@ -64,9 +73,13 @@ class OrderController extends GetxController {
       onPrint: () {
         Get.back();
         loading.popUpLoading();
-        Timer(Duration(seconds: 3), () {
-          Get.back();
-        });
+        Timer(
+          Duration(seconds: 3),
+          () {
+            Get.back();
+          },
+        );
+        doRefreshCustomerDisplay();
       },
     );
   }
@@ -78,10 +91,12 @@ class OrderController extends GetxController {
       onSendEmail: (val) {
         logger.safeLog('EMAIL : ${val}');
         Get.back();
+        doRefreshCustomerDisplay();
       },
       onSendWa: (val) {
         logger.safeLog('WA : ${val}');
         Get.back();
+        doRefreshCustomerDisplay();
       },
       onNewOrder: _handleNewOrder,
     );
@@ -95,11 +110,11 @@ class OrderController extends GetxController {
         barrierDismissible: false,
       );
       Get.back();
+      doRefreshCustomerDisplay();
     });
   }
 
-  doCreateOrder({required OrderModel body}) async {
-    var qrCodeBase64 = codeDummy.getQrCodeDummy();
+  doCreateOrderQr({required OrderModel body}) async {
     try {
       var result;
       result = await _service.order.orderService
@@ -118,11 +133,59 @@ class OrderController extends GetxController {
           // orderNo.value = r
         },
       );
-      displayUtil.updateSecondDisplay(
-        CustomerDisplay(
-          key: CustomerDisplayAction.PAYMENT,
-          value: {PaymentMethod.QRIS: qrCodeBase64},
+
+      logger.safeLog('RESPONSE ORDER  : ${orderEntity.value!.toJson()}');
+      if (orderEntity.value != null) {
+        var qrCodeBase64 = codeDummy.getQrCodeDummy();
+
+        displayUtil.updateSecondDisplay(
+          CustomerDisplay(
+            key: CustomerDisplayAction.PAYMENT,
+            value: CustomerPayment(
+              type: PaymentMethod.QRIS,
+              qrCode: qrCodeBase64,
+              isSuccess: false,
+            ).toJson(),
+          ).toJson(),
+        );
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      logger.safeLog('Create Order Error 2');
+      alert.error('Error', 'Terjadi Kesalahan!');
+    }
+  }
+
+  doRefreshCustomerDisplay() {
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.PAYMENT,
+        value: CustomerPayment(
+          type: PaymentMethod.QRIS,
+          isSuccess: false,
         ).toJson(),
+      ).toJson(),
+    );
+  }
+
+  doCreateOrderEdc({required OrderModel body}) async {
+    try {
+      var result;
+      result = await _service.order.orderService
+          .createOrder(authToken: _authToken, body: body);
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Order Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Order Success');
+          logger.safeLog(r.data);
+          orderEntity.value = r.data;
+          // orderNo.value = r
+        },
       );
     } catch (e) {
       logger.safeLog(e);
@@ -140,7 +203,7 @@ class OrderController extends GetxController {
   doPaymentEdc({required OrderModel body}) {
     try {
       // create Order and waiting the prosess of payment
-      doCreateOrder(body: body);
+      doCreateOrderEdc(body: body);
 
       // Display the waiting payment alert
       alert.waitingPaymentEdc(
