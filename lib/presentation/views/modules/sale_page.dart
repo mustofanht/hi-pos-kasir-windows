@@ -13,38 +13,8 @@ import 'package:jaya_propertiy/presentation/views/modules/sale/sale_voucher_page
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class SalePage extends StatefulWidget {
+class SalePage extends GetView<SalePageController> {
   const SalePage({super.key});
-
-  @override
-  State<SalePage> createState() => _SalePageState();
-}
-
-class _SalePageState extends State<SalePage>
-    with SingleTickerProviderStateMixin {
-  TabController? tabController;
-  final SalePageController controller = Get.find();
-
-  @override
-  void initState() {
-    super.initState();
-    tabController = TabController(length: 3, vsync: this);
-    tabController!.addListener(_handleTabSelection);
-    controller.doPrepared();
-    logger.safeLog('SALE PAGE 1');
-  }
-
-  @override
-  void dispose() {
-    tabController?.dispose();
-    super.dispose();
-  }
-
-  void _handleTabSelection() {
-    if (!tabController!.indexIsChanging) {
-      controller.changeTabIndex(tabController!.index);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +32,7 @@ class _SalePageState extends State<SalePage>
                 padding: EdgeInsets.symmetric(
                     horizontal: layoutStyle.screenWidth / 6),
                 child: TabBar(
-                  controller: tabController,
+                  controller: controller.tabController,
                   indicator: BoxDecoration(
                       color: colorStyle.white,
                       border: Border(
@@ -83,7 +53,7 @@ class _SalePageState extends State<SalePage>
             ),
             Expanded(
               child: TabBarView(
-                controller: tabController,
+                controller: controller.tabController,
                 children: const [
                   SaleTicketPage(),
                   SaleVoucherPage(),
@@ -98,10 +68,12 @@ class _SalePageState extends State<SalePage>
 
     Widget paymentSection() {
       return Expanded(
-        child: Padding(
+        child: Container(
+          alignment: Alignment.topCenter,
           padding: EdgeInsets.symmetric(
-              vertical: layoutStyle.defaultMargin / 4,
-              horizontal: layoutStyle.defaultMargin),
+            vertical: layoutStyle.defaultMargin / 4,
+            horizontal: layoutStyle.defaultMargin,
+          ),
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
@@ -201,6 +173,9 @@ class _SalePageState extends State<SalePage>
                     hintStyle: textStyle.greyText,
                     border: InputBorder.none,
                   ),
+                  onChanged: (val) {
+                    logger.safeLog(val);
+                  },
                 ),
                 CustomTextBox(
                   height: layoutStyle.blockVertical * 6.5,
@@ -322,16 +297,23 @@ class _SalePageState extends State<SalePage>
       );
     }
 
-    return Obx(
-      () => Row(
-        children: [
-          if (!controller.openPayment.value) ...[
-            saleSection(),
-          ] else
-            paymentSection(),
-          const SaleCartPage()
-        ],
-      ),
+    return GetBuilder(
+      init: controller,
+      tag: 'SaleCartPage',
+      initState: (state) {},
+      builder: (controller) {
+        return Obx(
+          () => Row(
+            children: [
+              if (!controller.openPayment.value) ...[
+                saleSection(),
+              ] else
+                paymentSection(),
+              const SaleCartPage()
+            ],
+          ),
+        );
+      },
     );
   }
 }

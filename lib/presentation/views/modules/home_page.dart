@@ -11,7 +11,6 @@ class HomePage extends GetView<HomePageController> {
   @override
   Widget build(BuildContext context) {
     layoutStyle.init(context);
-    final key = GlobalKey<ScaffoldState>();
 
     return GetX(
       init: controller,
@@ -19,8 +18,8 @@ class HomePage extends GetView<HomePageController> {
       initState: (state) {},
       builder: (context) {
         return Scaffold(
-          resizeToAvoidBottomInset: true,
-          key: key,
+          resizeToAvoidBottomInset: false,
+          key: controller.scaffoldKey,
           appBar: AppBar(
             toolbarHeight: layoutStyle.blockVertical * 10,
             backgroundColor: colorStyle.primary,
@@ -31,23 +30,24 @@ class HomePage extends GetView<HomePageController> {
             leading: IconButton(
               icon: Icon(Icons.menu, size: fontSize.header * 2),
               onPressed: () {
-                // controller.toogleDrawer();
-                key.currentState?.openDrawer();
+                controller.toggleDrawer();
               },
             ),
             title: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hi, ${controller.user.value.userName}',
-                    style: TextStyle(fontSize: fontSize.title)),
                 Text(
-                  // '${dateTimeUtil.getFormattedDate(date: DateTime.now(), format: dateFormat.onlyDays)}, ${dateTimeUtil.getFormattedDate(
-                  //   date: DateTime.now(),
-                  //   format: dateFormat.dateWithoutTime,
-                  // )}',
+                  'Hi, ${controller.user.value.userName}',
+                  style: TextStyle(
+                    fontSize: fontSize.title,
+                  ),
+                ),
+                Text(
                   controller.timeString.value,
-                  style: TextStyle(fontSize: fontSize.small),
+                  style: TextStyle(
+                    fontSize: fontSize.small,
+                  ),
                 ),
               ],
             ),
@@ -74,10 +74,10 @@ class HomePage extends GetView<HomePageController> {
                 ),
                 Expanded(
                   flex: 1,
-                  child: FocusScope(
-                    child: Container(
-                      height: layoutStyle.screenHeight,
-                      color: colorStyle.background,
+                  child: Container(
+                    height: layoutStyle.screenHeight,
+                    color: colorStyle.background,
+                    child: FocusScope(
                       child: controller.selectedContent ?? Container(),
                     ),
                   ),

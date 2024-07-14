@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -16,13 +18,36 @@ import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart'
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
 
-class SalePageController extends GetxController {
+class SalePageController extends GetxController
+    with SingleGetTickerProviderMixin {
   SalePageController();
-  // final _service = MainService();
   DisplayUtil displayUtil = DisplayUtil();
-  // final _authToken = Get.arguments[argConstant.authToken];
 
-  final openPayment = RxBool(false);
+  TabController? tabController;
+
+  @override
+  void onInit() {
+    // TODO: implement onInit
+    super.onInit();
+    tabController = TabController(length: 3, vsync: this);
+    tabController!.addListener(_handleTabSelection);
+    doPrepared();
+    logger.safeLog('SALE PAGE INITIALIZE');
+  }
+
+  @override
+  void dispose() {
+    tabController?.dispose();
+    super.dispose();
+  }
+
+  void _handleTabSelection() {
+    if (!tabController!.indexIsChanging) {
+      changeTabIndex(tabController!.index);
+    }
+  }
+
+  final openPayment = false.obs;
 
   var tabIndex = 0.obs;
   void changeTabIndex(int index) {
@@ -35,9 +60,6 @@ class SalePageController extends GetxController {
   final referenceIdController = TextEditingController();
   final paymentType = <CustomIdNameEntity>[].obs;
   final selectedPaymentType = CustomIdNameEntity().obs;
-
-  // final showReffId = true.obs;
-
   final totalOrderQty = RxInt(0);
   final totalOrderAmnt = RxDouble(0);
   final addonList = RxList<CartAddon>([]);
@@ -48,8 +70,6 @@ class SalePageController extends GetxController {
 
   doSelectPaymentType(CustomIdNameEntity value) {
     selectedPaymentType.value = value;
-    // showReffId.value =
-    //     value.id != PaymentMethod.QRIS && value.id != PaymentMethod.EDC;
     update();
   }
 
@@ -150,103 +170,6 @@ class SalePageController extends GetxController {
       }
     }
   }
-
-  // doPaymentQris() async {
-  //   alert.waitingPayment(
-  //     title: 'Menunggu Pembayaran',
-  //     msg:
-  //         'Tagihan anda telah di buat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
-  //     onCheck: () {
-  //       // Get.back();
-  //       // cek payment
-  //       try {
-  //         var isSuccess = true;
-  //         if (isSuccess) {
-  //           Get.back();
-  //           alert.paymentQrSuccess(
-  //               title: 'Success Pembayaran Telah Berhasil',
-  //               msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
-  //               onSendProofOfPayment: () {
-  //                 Get.back();
-  //                 alert.paymentSendProofOfPayment(
-  //                   title: 'Pembayaran Berhasil',
-  //                   onSendEmail: () {
-  //                     Get.back();
-  //                   },
-  //                   onSendWa: () {
-  //                     Get.back();
-  //                   },
-  //                   onNewOrder: () {
-  //                     Get.back();
-  //                     Timer(
-  //                       Duration(seconds: 3),
-  //                       () {
-  //                         Get.dialog(
-  //                           loading.simpleLoading(),
-  //                           barrierDismissible: false,
-  //                         );
-  //                         Get.back();
-  //                       },
-  //                     );
-  //                   },
-  //                 );
-  //               },
-  //               onPrint: () {
-  //                 Get.back();
-  //               });
-  //         } else {
-  //           alert.warning('Warning', 'Payment In Process');
-  //         }
-  //       } catch (e) {
-  //         logger.safeLog(e);
-  //         alert.error('Error', 'Payment Error');
-  //       }
-  //     },
-  //     onCancle: () {
-  //       Get.back();
-  //     },
-  //   );
-
-  //   var qrCodeBase64 = codeDummy.getQrCodeDummy();
-  //   try {
-  //     var result;
-  //     result = await _service.order.orderService
-  //         .createOrder(authToken: _authToken, body: getBodyOrder());
-
-  //     result.fold(
-  //       (l) {
-  //         logger.safeLog(l);
-  //         logger.safeLog('Create Order Error 1');
-  //         alert.error('Error', 'Terjadi Kesalahan!');
-  //       },
-  //       (r) {
-  //         logger.safeLog('Create Order Success');
-  //         logger.safeLog(r.data);
-  //         orderEntity.value = r.data;
-  //         // orderNo.value = r
-  //       },
-  //     );
-  //     displayUtil.updateSecondDisplay(
-  //       CustomerDisplay(
-  //         key: CustomerDisplayAction.PAYMENT,
-  //         value: {PaymentMethod.QRIS: qrCodeBase64},
-  //       ).toJson(),
-  //     );
-  //   } catch (e) {
-  //     logger.safeLog(e);
-  //     logger.safeLog('Create Order Error 2');
-  //     alert.error('Error', 'Terjadi Kesalahan!');
-  //   }
-  // }
-
-  // doPaymentEdc() {
-  //   try {
-  //     // alert.
-  //   } catch (e) {
-  //     logger.safeLog('e');
-  //     alert.error('Error', 'Terjadi Kesalahan!');
-  //   }
-  // }
 
   OrderModel getBodyOrder() {
     List<OrderTicketModel> listTicket = [];

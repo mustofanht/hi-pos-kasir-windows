@@ -45,6 +45,8 @@ class HomePageController extends GetxController {
 
   final user = UserEntity().obs;
 
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void onInit() {
     // TODO: implement onInit
@@ -54,6 +56,14 @@ class HomePageController extends GetxController {
     Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
     getUser();
     update();
+  }
+
+  void toggleDrawer() {
+    if (scaffoldKey.currentState?.isDrawerOpen ?? false) {
+      scaffoldKey.currentState?.openEndDrawer();
+    } else {
+      scaffoldKey.currentState?.openDrawer();
+    }
   }
 
   void _getTime() {
