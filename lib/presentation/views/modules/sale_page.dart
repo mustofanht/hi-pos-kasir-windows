@@ -203,6 +203,7 @@ class SalePage extends GetView<SalePageController> {
                     hintStyle: textStyle.greyText,
                     border: InputBorder.none,
                   ),
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 CustomTextBox(
                   height: layoutStyle.blockVertical * 6.5,
@@ -230,6 +231,7 @@ class SalePage extends GetView<SalePageController> {
                     hintStyle: textStyle.greyText,
                     border: InputBorder.none,
                   ),
+                  keyboardType: TextInputType.phone,
                 ),
                 CustomDropdownButton<CustomIdNameEntity>(
                   height: layoutStyle.blockVertical * 6.5,
