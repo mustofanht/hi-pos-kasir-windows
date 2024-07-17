@@ -20,13 +20,16 @@ import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 part 'auth_service.dart';
 part 'sale_service.dart';
 part 'order_service.dart';
+part 'payment_service.dart';
 part 'sale/ticket_service.dart';
 part 'sale/voucher_service.dart';
 part 'sale/addon_service.dart';
 part 'order/order_ticket_service.dart';
+part 'payment/payment_order_service.dart';
 
 class MainService {
   final auth = AuthService();
   final sale = SaleService();
   final order = OrderService();
+  final payment = PaymentService();
 }

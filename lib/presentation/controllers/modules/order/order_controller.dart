@@ -8,16 +8,19 @@ import 'package:jaya_propertiy/data/dummy/code_dummy.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/models/payment/payment_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/payment/payment_controller.dart';
 
 class OrderController extends GetxController {
   OrderController();
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
+  final paymentController = Get.find<PaymentController>();
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
@@ -79,7 +82,7 @@ class OrderController extends GetxController {
             Get.back();
           },
         );
-        doRefreshCustomerDisplay();
+        doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
       },
     );
   }
@@ -91,12 +94,12 @@ class OrderController extends GetxController {
       onSendEmail: (val) {
         logger.safeLog('EMAIL : ${val}');
         Get.back();
-        doRefreshCustomerDisplay();
+        doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
       },
       onSendWa: (val) {
         logger.safeLog('WA : ${val}');
         Get.back();
-        doRefreshCustomerDisplay();
+        doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
       },
       onNewOrder: _handleNewOrder,
     );
@@ -110,7 +113,7 @@ class OrderController extends GetxController {
         barrierDismissible: false,
       );
       Get.back();
-      doRefreshCustomerDisplay();
+      doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
     });
   }
 
@@ -156,18 +159,6 @@ class OrderController extends GetxController {
     }
   }
 
-  doRefreshCustomerDisplay() {
-    displayUtil.updateSecondDisplay(
-      CustomerDisplay(
-        key: CustomerDisplayAction.PAYMENT,
-        value: CustomerPayment(
-          type: PaymentMethod.QRIS,
-          isSuccess: false,
-        ).toJson(),
-      ).toJson(),
-    );
-  }
-
   doCreateOrderEdc({required OrderModel body}) async {
     try {
       var result;
@@ -209,7 +200,18 @@ class OrderController extends GetxController {
       alert.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
         msg: 'Silahkan mengisi reference',
-        onNext: (val) {
+        onNext: (val) async {
+          PaymentModel paymentModel = PaymentModel(
+            pymntOrderno: 'ORDRNO0000001',
+            pymntCode: 'PYMNTCODE00001',
+            pymntReffno: 'REFFNO0001',
+            pymntStatus: 'N',
+            pymntDate: DateTime.now(),
+            pymntAmount: body.orderTotalAmt,
+            pymntReverseno: '',
+          );
+
+          await paymentController.doPayment(body: paymentModel);
           Get.back();
         },
       );
@@ -217,5 +219,17 @@ class OrderController extends GetxController {
       logger.safeLog(e);
       alert.error('Error', 'Unexpected Error');
     }
+  }
+
+  doRefreshCustomerDisplay({required String paymentMethod}) {
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.PAYMENT,
+        value: CustomerPayment(
+          type: paymentMethod,
+          isSuccess: false,
+        ).toJson(),
+      ).toJson(),
+    );
   }
 }
