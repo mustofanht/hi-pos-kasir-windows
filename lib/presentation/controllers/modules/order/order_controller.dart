@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/dummy/code_dummy.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
-import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class OrderController extends GetxController {
   OrderController();
@@ -19,12 +20,10 @@ class OrderController extends GetxController {
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
 
-  var orderEntity = Rxn<ResponseOrderEntity>(null);
-
-  doPaymentQris({required OrderModel body, Rx<String>? orderNo}) async {
+  doPaymentQris({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       // create Order and waiting the prosess of payment
-      doCreateOrderQr(body: body);
+      doCreateOrderQr(body: body, orderNo: orderNo);
       // Display the waiting payment alert
       alert.waitingPayment(
         title: 'Menunggu Pembayaran',
@@ -114,13 +113,12 @@ class OrderController extends GetxController {
     });
   }
 
-  doCreateOrderQr({required OrderModel body}) async {
+  doCreateOrderQr({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
-      var result;
-      result = await _service.order.orderService.createOrder(
+      var result = await _service.order.orderService.createOrder(
         authToken: _authToken,
         body: body,
-        reffNo: orderEntity.value?.orderNumber,
+        reffNo: orderNo?.value,
       );
 
       result.fold(
@@ -132,26 +130,22 @@ class OrderController extends GetxController {
         (r) {
           logger.safeLog('Create Order Success');
           logger.safeLog(r.data);
-          orderEntity.value = r.data;
-          // orderNo.value = r
+
+          var qrCodeBase64 = codeDummy.getQrCodeDummy();
+          displayUtil.updateSecondDisplay(
+            CustomerDisplay(
+              key: CustomerDisplayAction.PAYMENT,
+              value: CustomerPayment(
+                type: PaymentMethod.QRIS,
+                qrCode: qrCodeBase64,
+                isSuccess: false,
+              ).toJson(),
+            ).toJson(),
+          );
+
+          orderNo?.value = r.data?.orderNumber;
         },
       );
-
-      logger.safeLog('RESPONSE ORDER  : ${orderEntity.value!.toJson()}');
-      if (orderEntity.value != null) {
-        var qrCodeBase64 = codeDummy.getQrCodeDummy();
-
-        displayUtil.updateSecondDisplay(
-          CustomerDisplay(
-            key: CustomerDisplayAction.PAYMENT,
-            value: CustomerPayment(
-              type: PaymentMethod.QRIS,
-              qrCode: qrCodeBase64,
-              isSuccess: false,
-            ).toJson(),
-          ).toJson(),
-        );
-      }
     } catch (e) {
       logger.safeLog(e);
       logger.safeLog('Create Order Error 2');
@@ -175,5 +169,72 @@ class OrderController extends GetxController {
         ).toJson(),
       ).toJson(),
     );
+  }
+}
+
+
+class OrderPaymentController extends GetxController {
+OrderPaymentController();
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
+
+  doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) {
+    try {
+      // Display the waiting payment alert
+      alert.waitingPaymentEdc(
+        title: 'Menunggu Proses Transaksi',
+        msg: 'Silahkan mengisi reference',
+        onNext: (val) async {
+          // create Order and waiting the prosess of payment
+          logger.safeLog('val : $val');
+          if (val != '') {
+            body.orderReffno = val;
+            doCreateOrderPayment(body: body);
+
+            final saleController = Get.find<SaleCartPageController>();
+            saleController.clearCartOrder();
+            Get.back();
+
+            alert.success('Success', 'Payment Success');
+          } else {
+            alert.error(
+              'Error',
+              messagesConstant.requiredField('Nomor Refference'),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Unexpected Error');
+    }
+  }
+
+  doCreateOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
+    try {
+      var result;
+      result = await _service.order.orderService.createOrder(
+        authToken: _authToken,
+        body: body,
+        reffNo: orderNo?.value,
+      );
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Order Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Order Success');
+          logger.safeLog(r.data);
+          orderNo?.value = r.data?.orderNumber;
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      logger.safeLog('Create Order Error 2');
+      alert.error('Error', 'Terjadi Kesalahan!');
+    }
   }
 }

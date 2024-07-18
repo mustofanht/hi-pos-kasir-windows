@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -16,7 +17,6 @@ import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/payment/payment_edc_controller.dart';
 
 class SalePageController extends GetxController
     with SingleGetTickerProviderMixin {
@@ -66,9 +66,10 @@ class SalePageController extends GetxController
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
-  final isNewOrder = RxBool(false);
+  final orderNo = Rxn<String>(null);
 
   refreshForm() {
+    orderNo.value = null;
     orderNameController.text = '';
     emailController.text = '';
     noWaController.text = '';
@@ -79,7 +80,6 @@ class SalePageController extends GetxController
         name: ' --- Pilih Pembayaran --- ',
       ),
     );
-    isNewOrder.value = true;
   }
 
   doSelectPaymentType(CustomIdNameEntity value) {
@@ -153,31 +153,40 @@ class SalePageController extends GetxController
       isValid = false;
       alert.error('Warning', 'Pilih Pembayaran terlebih dahulu!');
     }
-    if (isValid && selectedPaymentType.value.id == PaymentMethod.TICKET ||
-        selectedPaymentType.value.id == PaymentMethod.TRAVELOKA) {
-      if (isValid && referenceIdController.text.isEmpty) {
-        isValid = false;
-        alert.error("Terjadi Kesalahan!",
-            messagesConstant.requiredField("Refference ID"));
-      }
-    }
     return isValid;
   }
 
   doPayment() {
     if (doVerifyRequest()) {
+      logger.safeLog('orderNo.value : ${orderNo.value}');
       final OrderController orderController = Get.put(OrderController());
-      final PaymentEdcController paymentEdcController = Get.put(PaymentEdcController());
+      final OrderPaymentController orderPayment = Get.put(OrderPaymentController());
       if (selectedPaymentType.value.id == PaymentMethod.QRIS) {
         orderController.doPaymentQris(
           body: getBodyOrder(),
+          orderNo: orderNo,
         );
-        // doPaymentQris();
       } else if (selectedPaymentType.value.id == PaymentMethod.EDC) {
-        paymentEdcController.doPaymentEdc(
-          body: getBodyOrder(),
+        OrderModel body = getBodyOrder();
+        body.orderPaidBy = PaymentMethod.EDC;
+        orderPayment.doOrderPayment(
+          body: body,
+          orderNo: orderNo,
         );
-        // doPaymentEdc();
+      } else if (selectedPaymentType.value.id == PaymentMethod.TRAVELOKA) {
+        OrderModel body = getBodyOrder();
+        body.orderPaidBy = PaymentMethod.TRAVELOKA;
+        orderPayment.doOrderPayment(
+          body: body,
+          orderNo: orderNo,
+        );
+      } else if (selectedPaymentType.value.id == PaymentMethod.TICKET) {
+        OrderModel body = getBodyOrder();
+        body.orderPaidBy = PaymentMethod.TICKET;
+        orderPayment.doOrderPayment(
+          body: body,
+          orderNo: orderNo,
+        );
       } else {
         alert.error('Error', 'Please please select payment method');
       }
