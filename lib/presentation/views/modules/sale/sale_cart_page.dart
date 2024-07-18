@@ -102,7 +102,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           ),
                         ),
                         child: Text(
-                          'Addon',
+                          'Item',
                           style: TextStyle(
                             fontSize: fontSize.subtitle,
                           ),

@@ -46,7 +46,7 @@ class SalePage extends GetView<SalePageController> {
                   tabs: const [
                     Tab(text: 'Ticket'),
                     Tab(text: 'Voucher'),
-                    Tab(text: 'Add On'),
+                    Tab(text: 'Item'),
                   ],
                 ),
               ),
