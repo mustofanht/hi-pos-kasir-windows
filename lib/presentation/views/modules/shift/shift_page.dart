@@ -447,7 +447,7 @@ class ShiftPage extends GetView<ShiftPageController> {
                   elevation: MaterialStateProperty.all<double>(
                       0), // Menghilangkan shadow dengan elevation 0
                 ),
-                label: const Text('Akhiri Shift & Mulai Settelment'),
+                label: const Text('Akhiri Shift & Mulai Settlement'),
                 width: layoutStyle.blockHorizontal * 20,
                 height: layoutStyle.blockVertical * 5,
               ),

@@ -21,7 +21,7 @@ class OrderController extends GetxController {
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
-  doPaymentQris({required OrderModel body}) async {
+  doPaymentQris({required OrderModel body, Rx<String>? orderNo}) async {
     try {
       // create Order and waiting the prosess of payment
       doCreateOrderQr(body: body);
@@ -117,8 +117,11 @@ class OrderController extends GetxController {
   doCreateOrderQr({required OrderModel body}) async {
     try {
       var result;
-      result = await _service.order.orderService
-          .createOrder(authToken: _authToken, body: body);
+      result = await _service.order.orderService.createOrder(
+        authToken: _authToken,
+        body: body,
+        reffNo: orderEntity.value?.orderNumber,
+      );
 
       result.fold(
         (l) {
@@ -172,7 +175,6 @@ class OrderController extends GetxController {
           // create Order and waiting the prosess of payment
           body.orderReffno = val;
           doCreateOrderEdc(body: body);
-
           Get.back();
         },
       );
@@ -185,8 +187,11 @@ class OrderController extends GetxController {
   doCreateOrderEdc({required OrderModel body}) async {
     try {
       var result;
-      result = await _service.order.orderService
-          .createOrder(authToken: _authToken, body: body);
+      result = await _service.order.orderService.createOrder(
+        authToken: _authToken,
+        body: body,
+        reffNo: orderEntity.value?.orderNumber,
+      );
 
       result.fold(
         (l) {

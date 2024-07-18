@@ -184,6 +184,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                                   onPressed: () {
                                     controller.removeTicket(e);
                                   },
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 10,
+                                  ),
                                   style: ButtonStyle(
                                     backgroundColor:
                                         MaterialStateProperty.all<Color>(
@@ -219,6 +222,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             onPressed: () {
                               controller.addTicketCart(e);
                             },
+                            margin: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 10,
+                            ),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
                                   colorStyle.transparent),
@@ -249,6 +255,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             onPressed: () {
                               controller.removeListTicket(e);
                             },
+                            margin: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 10,
+                            ),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
                                   colorStyle.transparent),

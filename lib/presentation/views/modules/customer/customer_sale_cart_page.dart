@@ -54,7 +54,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
 
   Widget contentCart(CustomerSaleCartPageController controller) {
     return Expanded(
-      child: (controller.ticketList.isEmpty && controller.voucherList.isEmpty)
+      child: (controller.ticketList.isEmpty && controller.voucherList.isEmpty && controller.addonList.isEmpty)
           ? notOrder()
           : SingleChildScrollView(
               scrollDirection: Axis.vertical,

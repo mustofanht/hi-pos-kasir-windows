@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -31,8 +30,6 @@ class SalePageController extends GetxController
     super.onInit();
     tabController = TabController(length: 3, vsync: this);
     tabController!.addListener(_handleTabSelection);
-    doPrepared();
-    logger.safeLog('SALE PAGE INITIALIZE');
   }
 
   @override
@@ -68,14 +65,28 @@ class SalePageController extends GetxController
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
+  final isNewOrder = RxBool(false);
+
+  refreshForm() {
+    orderNameController.text = '';
+    emailController.text = '';
+    noWaController.text = '';
+    doInitialValueDropdown();
+    doSelectPaymentType(
+      CustomIdNameEntity(
+        id: null,
+        name: ' --- Pilih Pembayaran --- ',
+      ),
+    );
+    isNewOrder.value = true;
+  }
+
   doSelectPaymentType(CustomIdNameEntity value) {
     selectedPaymentType.value = value;
     update();
   }
 
   doPrepared() {
-    // showReffId.value = true;
-    totalOrderAmnt.value = totalOrderAmnt.value;
     doInitialValueDropdown();
   }
 

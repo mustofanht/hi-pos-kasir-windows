@@ -4,8 +4,12 @@ class OrderTicketService {
   Future<Either<String, BaseResponse<ResponseOrderEntity>>> createOrder({
     required AuthToken authToken,
     required OrderModel body,
+    String? reffNo,
   }) async {
     var path = "trn_order/createOrder";
+    if (reffNo != null) {
+      path += '?orderNo=$reffNo';
+    }
 
     final uri = source.baseUri(path: path);
 

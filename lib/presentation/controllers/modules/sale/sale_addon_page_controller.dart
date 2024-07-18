@@ -51,7 +51,7 @@ class SaleAddonPageController extends GetxController {
 
       dataFilter.add(
         apiFilterUtil.addSearch(
-          'productUnit',
+          'productLoc',
           OPERATOR_CONSTANTS.EQUALS,
           sessionUtil.getUnitId(),
         )!,

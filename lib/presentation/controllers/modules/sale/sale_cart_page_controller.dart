@@ -34,7 +34,7 @@ class SaleCartPageController extends GetxController {
   addTicket(TicketEntity ticket) {
     ticketList.add(
       CartTicket(
-        qtyOrder: 1,
+        qtyOrder: ticket.ticketMinimum,
         ticket: ticket,
         totalPrice: ticket.ticketPrice!,
       ),
@@ -180,6 +180,7 @@ class SaleCartPageController extends GetxController {
     if (salePageController.openPayment.value) {
       salePageController.doPayment();
     } else {
+      salePageController.doPrepared();
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(totalOrderAmnt.value);
       salePageController.addonList(addonList);
@@ -215,6 +216,7 @@ class SaleCartPageController extends GetxController {
       salePageController.voucherList(voucherList);
       salePageController.ticketList(ticketList);
       salePageController.openPayment(false);
+      salePageController.refreshForm();
       salePageController.update();
     } catch (e) {
       logger.safeLog(e);

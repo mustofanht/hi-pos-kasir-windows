@@ -53,7 +53,7 @@ class SaleVoucherPageController extends GetxController {
 
       dataFilter.add(
         apiFilterUtil.addSearch(
-          'voucherUnit',
+          'voucherLocId',
           OPERATOR_CONSTANTS.EQUALS,
           sessionUtil.getUnitId(),
         )!,

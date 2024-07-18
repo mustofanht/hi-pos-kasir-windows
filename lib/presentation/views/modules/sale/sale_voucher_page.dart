@@ -20,84 +20,91 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
         return SizedBox(
           width: layoutStyle.screenWidth,
           height: layoutStyle.screenHeight,
-          child: controller.isLoading.value
-              ? loading.simpleLoading()
-              : GridView.count(
-                  controller: controller.scrollController,
-                  primary: false,
-                  padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  crossAxisCount: 4,
-                  childAspectRatio: (150 / 230),
-                  children: controller.voucherList
-                      .map(
-                        (e) => InkWell(
-                          onTap: () {
-                            controller.addVoucherToCart(voucher: e);
-                          },
-                          child: Container(
-                            height: 250,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: colorStyle.primary,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await controller.doPrepareList(page: 1);
+            },
+            child: controller.isLoading.value
+                ? loading.simpleLoading()
+                : GridView.count(
+                    controller: controller.scrollController,
+                    primary: false,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 4,
+                    childAspectRatio: (150 / 230),
+                    children: controller.voucherList
+                        .map(
+                          (e) => InkWell(
+                            onTap: () {
+                              controller.addVoucherToCart(voucher: e);
+                            },
+                            child: Container(
+                              height: 250,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: colorStyle.primary,
+                                ),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                                color: colorStyle.white, // Move the color here
                               ),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              color: colorStyle.white, // Move the color here
-                            ),
-                            padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Image.asset(
-                                  'assets/images/coupon.png',
-                                  // width: 150,
-                                  // height: 150,
-                                  fit: BoxFit.fill,
-                                  errorBuilder: (BuildContext context,
-                                      Object exception,
-                                      StackTrace? stackTrace) {
-                                    return const Text('Img Not Found');
-                                  },
-                                ),
-                                SizedBox(
-                                  height: layoutStyle.defaultMargin,
-                                ),
-                                Text(
-                                  e.voucherName!,
-                                  style: TextStyle(
-                                    fontSize: fontSize.body,
-                                    fontWeight: FontWeight.bold,
+                              padding:
+                                  EdgeInsets.all(layoutStyle.defaultMargin),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/coupon.png',
+                                    // width: 150,
+                                    // height: 150,
+                                    fit: BoxFit.fill,
+                                    errorBuilder: (BuildContext context,
+                                        Object exception,
+                                        StackTrace? stackTrace) {
+                                      return const Text('Img Not Found');
+                                    },
                                   ),
-                                ),
-                                SizedBox(
-                                  height: layoutStyle.defaultMargin,
-                                ),
-                                Text(
-                                  'Kode: ${e.voucherCode}',
-                                  style: TextStyle(
-                                    fontSize: fontSize.body,
-                                    // fontWeight: FontWeight.bold,
+                                  SizedBox(
+                                    height: layoutStyle.defaultMargin,
                                   ),
-                                ),
-                                SizedBox(
-                                  height: layoutStyle.defaultMargin,
-                                ),
-                                Text(
-                                  'Disc: ${e.voucherUnitType == 'PERCENT' ? ('${e.voucherUnitValue} %') : ('Rp${e.voucherUnitValue}')}',
-                                  style: TextStyle(
-                                    fontSize: fontSize.body,
-                                    // fontWeight: FontWeight.bold,
+                                  Text(
+                                    e.voucherName!,
+                                    style: TextStyle(
+                                      fontSize: fontSize.body,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  SizedBox(
+                                    height: layoutStyle.defaultMargin,
+                                  ),
+                                  Text(
+                                    'Kode: ${e.voucherCode}',
+                                    style: TextStyle(
+                                      fontSize: fontSize.body,
+                                      // fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: layoutStyle.defaultMargin,
+                                  ),
+                                  Text(
+                                    'Disc: ${e.voucherUnitType == 'PERCENT' ? ('${e.voucherUnitValue} %') : ('Rp${e.voucherUnitValue}')}',
+                                    style: TextStyle(
+                                      fontSize: fontSize.body,
+                                      // fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                      .toList(),
-                ),
+                        )
+                        .toList(),
+                  ),
+          ),
         );
       },
     );
