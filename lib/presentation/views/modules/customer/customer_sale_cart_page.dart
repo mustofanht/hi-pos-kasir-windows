@@ -41,7 +41,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
             ),
           ),
           Text(
-            'IDR ${controller.totalOrder}',
+            'Rp.${common.currencyFormat(controller.totalOrder.value)}',
             style: TextStyle(
               fontSize: fontSize.body * 2,
               fontWeight: fontWeight.bold,
@@ -54,7 +54,9 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
 
   Widget contentCart(CustomerSaleCartPageController controller) {
     return Expanded(
-      child: (controller.ticketList.isEmpty && controller.voucherList.isEmpty && controller.addonList.isEmpty)
+      child: (controller.ticketList.isEmpty &&
+              controller.voucherList.isEmpty &&
+              controller.addonList.isEmpty)
           ? notOrder()
           : SingleChildScrollView(
               scrollDirection: Axis.vertical,

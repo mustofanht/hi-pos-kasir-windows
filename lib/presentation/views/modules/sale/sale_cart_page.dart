@@ -331,6 +331,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             onPressed: () {
                               controller.removeAddon(e);
                             },
+                            margin: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 10,
+                            ),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
                                   colorStyle.transparent),
@@ -361,6 +364,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             onPressed: () {
                               controller.addAddonCart(e);
                             },
+                            margin: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 10,
+                            ),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
                                   colorStyle.transparent),
@@ -391,6 +397,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             onPressed: () {
                               controller.removeListAddon(e);
                             },
+                            margin: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 10,
+                            ),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
                                   colorStyle.transparent),
@@ -463,6 +472,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             width: layoutStyle.defaultMargin,
                           ),
                           CustomButton(
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 10,
+                            ),
                             onPressed: () {
                               controller.removeListVoucher(e);
                             },
