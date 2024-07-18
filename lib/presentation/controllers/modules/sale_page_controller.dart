@@ -214,6 +214,7 @@ class SalePageController extends GetxController
       orderName: orderNameController.text,
       orderPhoneNumber: noWaController.text,
       orderEmail: emailController.text,
+      orderReffno: null,
       orderTotalItem: totalOrderQty.value,
       orderTotalAmt: totalOrderAmnt.value,
       orderUnitId: sessionUtil.getUnitId()!,

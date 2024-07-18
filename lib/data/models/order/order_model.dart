@@ -6,6 +6,7 @@ class OrderModel {
   String orderName;
   String orderPhoneNumber;
   String orderEmail;
+  String? orderReffno;
   int orderTotalItem;
   double orderTotalAmt;
   int orderUnitId;
@@ -20,6 +21,7 @@ class OrderModel {
     required this.orderName,
     required this.orderPhoneNumber,
     required this.orderEmail,
+    this.orderReffno,
     required this.orderTotalItem,
     required this.orderTotalAmt,
     required this.orderUnitId,
@@ -36,6 +38,7 @@ class OrderModel {
       orderName: json['orderName'],
       orderPhoneNumber: json['orderPhoneNumber'],
       orderEmail: json['orderEmail'],
+      orderReffno: json['orderReffno'],
       orderTotalItem: json['orderTotalItem'],
       orderTotalAmt: json['orderTotalAmt'],
       orderUnitId: json['orderUnitId'],
@@ -57,6 +60,7 @@ class OrderModel {
       "orderName": orderName,
       "orderPhoneNumber": orderPhoneNumber,
       "orderEmail": orderEmail,
+      "orderReffno": orderReffno,
       "orderTotalItem": orderTotalItem,
       "orderTotalAmt": orderTotalAmt,
       "orderUnitId": orderUnitId,

@@ -7,7 +7,7 @@ import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_cart_page
 import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_voucher_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_ticket_page_binding.dart';
-import 'package:jaya_propertiy/presentation/bindings/modules/setting/setting_page.dart';
+import 'package:jaya_propertiy/presentation/bindings/modules/setting/setting_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/shift/shift_page_binding.dart';
 import 'package:jaya_propertiy/presentation/views/auth/login_page.dart';
 import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';

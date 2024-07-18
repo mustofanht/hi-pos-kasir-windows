@@ -8,19 +8,16 @@ import 'package:jaya_propertiy/data/dummy/code_dummy.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
-import 'package:jaya_propertiy/data/models/payment/payment_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/payment/payment_controller.dart';
 
 class OrderController extends GetxController {
   OrderController();
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
-  final paymentController = Get.find<PaymentController>();
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
@@ -159,6 +156,32 @@ class OrderController extends GetxController {
     }
   }
 
+  Future<bool> _checkPaymentStatus() async {
+    // Simulate a payment status check
+    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    return true; // Change this logic based on your payment status check
+  }
+
+  doPaymentEdc({required OrderModel body}) {
+    try {
+      // Display the waiting payment alert
+      alert.waitingPaymentEdc(
+        title: 'Menunggu Proses Transaksi',
+        msg: 'Silahkan mengisi reference',
+        onNext: (val) async {
+          // create Order and waiting the prosess of payment
+          body.orderReffno = val;
+          doCreateOrderEdc(body: body);
+
+          Get.back();
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Unexpected Error');
+    }
+  }
+
   doCreateOrderEdc({required OrderModel body}) async {
     try {
       var result;
@@ -182,42 +205,6 @@ class OrderController extends GetxController {
       logger.safeLog(e);
       logger.safeLog('Create Order Error 2');
       alert.error('Error', 'Terjadi Kesalahan!');
-    }
-  }
-
-  Future<bool> _checkPaymentStatus() async {
-    // Simulate a payment status check
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
-    return true; // Change this logic based on your payment status check
-  }
-
-  doPaymentEdc({required OrderModel body}) {
-    try {
-      // create Order and waiting the prosess of payment
-      doCreateOrderEdc(body: body);
-
-      // Display the waiting payment alert
-      alert.waitingPaymentEdc(
-        title: 'Menunggu Proses Transaksi',
-        msg: 'Silahkan mengisi reference',
-        onNext: (val) async {
-          PaymentModel paymentModel = PaymentModel(
-            pymntOrderno: 'ORDRNO0000001',
-            pymntCode: 'PYMNTCODE00001',
-            pymntReffno: 'REFFNO0001',
-            pymntStatus: 'N',
-            pymntDate: DateTime.now(),
-            pymntAmount: body.orderTotalAmt,
-            pymntReverseno: '',
-          );
-
-          await paymentController.doPayment(body: paymentModel);
-          Get.back();
-        },
-      );
-    } catch (e) {
-      logger.safeLog(e);
-      alert.error('Error', 'Unexpected Error');
     }
   }
 

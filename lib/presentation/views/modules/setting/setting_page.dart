@@ -20,37 +20,37 @@ class SettingPage extends GetView<SettingPageController> {
       },
       builder: (controller) {
         return Container(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: () async {
-                  await controller.pickImage();
-                },
-                child: Text('Pick Images'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (controller.images.isNotEmpty) {
-                    localStorage.saveImages(controller.images);
-                    // await controller.saveImages(controller.images);
-                  }
-                },
-                child: Text('Save Images'),
-              ),
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                  ),
-                  itemCount: controller.images.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Image.file(controller.images[index]);
-                  },
-                ),
-              ),
-            ],
-          ),
+          // child: Column(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: <Widget>[
+          //     ElevatedButton(
+          //       onPressed: () async {
+          //         await controller.pickImage();
+          //       },
+          //       child: Text('Pick Images'),
+          //     ),
+          //     ElevatedButton(
+          //       onPressed: () async {
+          //         if (controller.images.isNotEmpty) {
+          //           localStorage.saveImages(controller.images);
+          //           // await controller.saveImages(controller.images);
+          //         }
+          //       },
+          //       child: Text('Save Images'),
+          //     ),
+          //     Expanded(
+          //       child: GridView.builder(
+          //         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          //           crossAxisCount: 3,
+          //         ),
+          //         itemCount: controller.images.length,
+          //         itemBuilder: (BuildContext context, int index) {
+          //           return Image.file(controller.images[index]);
+          //         },
+          //       ),
+          //     ),
+          //   ],
+          // ),
         );
       },
     );
