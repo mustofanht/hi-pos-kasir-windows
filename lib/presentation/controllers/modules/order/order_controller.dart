@@ -165,54 +165,6 @@ class OrderController extends GetxController {
     return true; // Change this logic based on your payment status check
   }
 
-  doPaymentEdc({required OrderModel body}) {
-    try {
-      // Display the waiting payment alert
-      alert.waitingPaymentEdc(
-        title: 'Menunggu Proses Transaksi',
-        msg: 'Silahkan mengisi reference',
-        onNext: (val) async {
-          // create Order and waiting the prosess of payment
-          body.orderReffno = val;
-          doCreateOrderEdc(body: body);
-          Get.back();
-        },
-      );
-    } catch (e) {
-      logger.safeLog(e);
-      alert.error('Error', 'Unexpected Error');
-    }
-  }
-
-  doCreateOrderEdc({required OrderModel body}) async {
-    try {
-      var result;
-      result = await _service.order.orderService.createOrder(
-        authToken: _authToken,
-        body: body,
-        reffNo: orderEntity.value?.orderNumber,
-      );
-
-      result.fold(
-        (l) {
-          logger.safeLog(l);
-          logger.safeLog('Create Order Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
-        },
-        (r) {
-          logger.safeLog('Create Order Success');
-          logger.safeLog(r.data);
-          orderEntity.value = r.data;
-          // orderNo.value = r
-        },
-      );
-    } catch (e) {
-      logger.safeLog(e);
-      logger.safeLog('Create Order Error 2');
-      alert.error('Error', 'Terjadi Kesalahan!');
-    }
-  }
-
   doRefreshCustomerDisplay({required String paymentMethod}) {
     displayUtil.updateSecondDisplay(
       CustomerDisplay(

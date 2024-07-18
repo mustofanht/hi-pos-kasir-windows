@@ -16,6 +16,7 @@ import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/payment/payment_edc_controller.dart';
 
 class SalePageController extends GetxController
     with SingleGetTickerProviderMixin {
@@ -166,13 +167,14 @@ class SalePageController extends GetxController
   doPayment() {
     if (doVerifyRequest()) {
       final OrderController orderController = Get.put(OrderController());
+      final PaymentEdcController paymentEdcController = Get.put(PaymentEdcController());
       if (selectedPaymentType.value.id == PaymentMethod.QRIS) {
         orderController.doPaymentQris(
           body: getBodyOrder(),
         );
         // doPaymentQris();
       } else if (selectedPaymentType.value.id == PaymentMethod.EDC) {
-        orderController.doPaymentEdc(
+        paymentEdcController.doPaymentEdc(
           body: getBodyOrder(),
         );
         // doPaymentEdc();
