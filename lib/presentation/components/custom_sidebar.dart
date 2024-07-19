@@ -1,4 +1,3 @@
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/menu_item_model.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +31,6 @@ class _CustomSidebarState extends State<CustomSidebar> {
         children: widget.listMenu
             .map((e) => GestureDetector(
                   onTap: () {
-                    logger.safeLog('CLICK');
                     widget.onMenuSelected(e);
                   },
                   child: Container(
