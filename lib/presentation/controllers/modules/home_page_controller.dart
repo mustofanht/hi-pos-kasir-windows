@@ -13,6 +13,7 @@ import 'package:jaya_propertiy/data/models/menu_item_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/proofofpayment/bukti_pembayaran_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
@@ -91,14 +92,13 @@ class HomePageController extends GetxController {
     MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined),
     MenuItem(
         id: 2, name: 'Bukti\nPembayaran', icon: Icons.receipt_long_outlined),
-    MenuItem(id: 3, name: 'Cek\nTiket', icon: Icons.confirmation_num_outlined),
+    MenuItem(id: 3, name: 'Cek\nOrder', icon: Icons.confirmation_num_outlined),
     MenuItem(id: 4, name: 'Shift', icon: Icons.confirmation_num_outlined),
     MenuItem(id: 5, name: 'Pengaturan', icon: Icons.settings),
     MenuItem(id: 6, name: 'Logout', icon: Icons.logout),
   ];
 
   void onSelectedMenu(MenuItem menu) {
-    logger.safeLog('ID : ${menu.id}');
     if (menu.id == 6) {
       alert.dialogDelete(
         title: 'LOGOUT',
@@ -196,6 +196,7 @@ class HomePageController extends GetxController {
         return const BuktiPembayaranPage();
       case 3:
         Get.lazyPut(() => PrintTicketPageController());
+        Get.lazyPut(() => PrintTicketDetailPageController());
         return const PrintTicketPage();
       case 4:
         Get.lazyPut(() => ShiftPageController());

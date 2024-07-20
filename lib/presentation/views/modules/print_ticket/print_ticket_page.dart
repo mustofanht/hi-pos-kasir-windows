@@ -1,262 +1,273 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
+import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_detail_page.dart';
 
 class PrintTicketPage extends GetView<PrintTicketPageController> {
   const PrintTicketPage({super.key});
 
-  Widget badgeCard({
-    required String label,
-    required Color colorLabel,
-    required Color colorBox,
-  }) {
-    return Center(
-      child: Container(
-        padding: EdgeInsets.all(
-          layoutStyle.defaultMargin / 2,
-        ),
-        decoration: BoxDecoration(
-          color: colorBox,
-          borderRadius: BorderRadius.circular(
-            layoutStyle.defaultMargin / 2,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: colorLabel,
-            fontSize: fontSize.small,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    layoutStyle.init(context);
+
     Widget contentTableSection(PrintTicketPageController controller) {
-      return Container(
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            Container(
-              width: layoutStyle.screenWidth,
-              height: layoutStyle.screenHeight / 2,
-              margin: EdgeInsets.symmetric(
-                horizontal: layoutStyle.defaultMargin,
+      return Obx(
+        () => Expanded(
+          child: Container(
+            width: layoutStyle.screenWidth,
+            decoration: BoxDecoration(
+              border: Border.all(
+                width: 1,
+                color: colorStyle.black,
               ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  width: 1,
-                  color: colorStyle.black,
-                ),
-                borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                color: colorStyle.white,
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin,
-                      vertical: layoutStyle.defaultMargin,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                          ),
-                          child: Row(
-                            children: [
-                              const Text('Nama Pembeli:'),
-                              Text(
-                                'Arthur Morgan',
-                                style: TextStyle(
-                                  fontWeight: fontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                          ),
-                          child: Row(
-                            children: [
-                              const Text('Order ID:'),
-                              Text(
-                                '1000230123678',
-                                style: TextStyle(
-                                  fontWeight: fontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+              color: colorStyle.white,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: layoutStyle.defaultMargin,
+                    vertical: layoutStyle.defaultMargin,
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                      width: layoutStyle.screenWidth,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: DataTable(
-                          headingRowColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.grey.withOpacity(0.1),
-                          ),
-                          dataRowColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.white,
-                          ),
-                          border:
-                              TableBorder.all(color: colorStyle.transparent),
-                          columns: [
-                            DataColumn(
-                              label: Checkbox(
-                                value: false,
-                                onChanged: (value) =>
-                                    controller.selectAll(value),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('Nama Pembeli:'),
+                            Text(
+                              'Arthur Morgan',
+                              style: TextStyle(
+                                fontWeight: fontWeight.bold,
                               ),
-                            ),
-                            const DataColumn(
-                              label: Text('ID Order'),
-                            ),
-                            const DataColumn(
-                              label: Text('Nama'),
-                            ),
-                            const DataColumn(
-                              label: Text('Jenis Tiket'),
-                            ),
-                            const DataColumn(
-                              label: Text('Harga (Rp)'),
-                            ),
-                            const DataColumn(
-                              label: Text('Source Order'),
-                            ),
-                            const DataColumn(
-                              label: Text('Status Pembayaran'),
-                            ),
-                            const DataColumn(
-                              label: Text('Status'),
                             ),
                           ],
-                          rows: List<DataRow>.generate(
-                            100,
-                            (index) => DataRow(
-                              cells: [
-                                DataCell(
-                                  Checkbox(
-                                    value: false,
-                                    onChanged: (value) =>
-                                        controller.selectAll(value),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('Order ID:'),
+                            Text(
+                              '1000230123678',
+                              style: TextStyle(
+                                fontWeight: fontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      bottom: layoutStyle.defaultMargin,
+                      left: layoutStyle.defaultMargin,
+                      right: layoutStyle.defaultMargin,
+                    ),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        // await controller.doPrepareList(page: 1);
+                      },
+                      child: CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverPersistentHeader(
+                            pinned: true,
+                            delegate: DataTableDelegate(
+                              minHeight: 50.0,
+                              maxHeight: 50.0,
+                              child: Material(
+                                color: colorStyle.lightGrey,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  topRight: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
                                   ),
                                 ),
-                                DataCell(Text('data $index')),
-                                DataCell(Text('data $index')),
-                                DataCell(Text('data $index')),
-                                DataCell(Text('data $index')),
-                                DataCell(Text('data $index')),
-                                DataCell(
-                                  badgeCard(
-                                    label: 'Sukses',
-                                    colorLabel: colorStyle.white,
-                                    colorBox: colorStyle.yellow,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      fillColor: MaterialStatePropertyAll(
+                                          colorStyle.blue),
+                                      value: controller.selectAll.value,
+                                      onChanged: (value) =>
+                                          controller.toggleSelectAll(value),
+                                    ),
+                                    ...controller.listColumnHeader
+                                        .map(
+                                          (element) => Expanded(
+                                            child: Text(
+                                              element.columnName ?? '',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  color: colorStyle.black,
+                                                  fontWeight: fontWeight.bold),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ],
                                 ),
-                                DataCell(
-                                  badgeCard(
-                                    label: 'Sukses',
-                                    colorLabel: colorStyle.white,
-                                    colorBox: colorStyle.yellow,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    controller.doToDetail();
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                            color: colorStyle.lightGrey,
+                                            width: 1.0),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Checkbox(
+                                          fillColor: MaterialStatePropertyAll(
+                                              colorStyle.blue),
+                                          value: controller.selected[index],
+                                          onChanged: (value) => controller
+                                              .toggleSelect(index, value),
+                                        ),
+                                        ...controller.listColumnHeader.map(
+                                          (element) => Expanded(
+                                            child: Container(
+                                              alignment: element.alignment,
+                                              child: element.data ??
+                                                  const Text(''),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              childCount: 100,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
+      );
+    }
+
+    Widget ticketSection() {
+      return Column(
+        children: [
+          Text(
+            'Cetak Order',
+            style: TextStyle(
+              fontSize: fontSize.header,
+              fontWeight: fontWeight.bold,
+            ),
+          ),
+          SizedBox(height: layoutStyle.defaultMargin),
+          CustomTextBox(
+            height: layoutStyle.blockVertical * 6.5,
+            margin: EdgeInsets.symmetric(
+              // horizontal: layoutStyle.defaultMargin,
+              vertical: layoutStyle.defaultMargin / 4,
+            ),
+            obscureText: false,
+            border: Border.all(
+              color: colorStyle.grey,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(
+              layoutStyle.defaultMargin / 2,
+            ),
+            controller: controller.searchController,
+            decoration: InputDecoration(
+                hintText: 'Masukan nomor ID Order atau ID Ticket',
+                hintStyle: textStyle.greyText,
+                border: InputBorder.none,
+                suffixIcon: Icon(Icons.search)),
+          ),
+          SizedBox(height: layoutStyle.defaultMargin),
+          contentTableSection(controller),
+        ],
       );
     }
 
     return GetBuilder(
       init: controller,
       tag: 'PrintTicketPage',
-      initState: (state) {
-        controller;
-      },
+      initState: (state) {},
       builder: (controller) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.all(layoutStyle.defaultMargin),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Cetak Ticket',
-                style: TextStyle(
-                  fontSize: fontSize.header,
-                  fontWeight: fontWeight.bold,
-                ),
-              ),
-              SizedBox(height: layoutStyle.defaultMargin),
-              CustomTextBox(
-                height: layoutStyle.blockVertical * 6.5,
-                margin: EdgeInsets.symmetric(
-                  horizontal: layoutStyle.defaultMargin,
-                  vertical: layoutStyle.defaultMargin / 4,
-                ),
-                obscureText: false,
-                border: Border.all(
-                  color: colorStyle.grey,
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(
-                  layoutStyle.defaultMargin / 2,
-                ),
-                controller: null,
-                decoration: InputDecoration(
-                  hintText: 'Masukan nomor ID Order atau ID Ticket',
-                  hintStyle: textStyle.greyText,
-                  border: InputBorder.none,
-                ),
-              ),
-              SizedBox(height: layoutStyle.defaultMargin),
-              contentTableSection(controller),
-              SizedBox(height: layoutStyle.defaultMargin),
-              CustomButton(
-                onPressed: () {},
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(colorStyle.primary),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(colorStyle.white),
-                  overlayColor: MaterialStateProperty.all<Color>(
-                      colorStyle.white.withOpacity(0.1)),
-                  elevation: MaterialStateProperty.all<double>(0),
-                ),
-                label: const Text('Print Tiket'),
-                margin:
-                    EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
-                width: layoutStyle.screenWidth,
-                height: layoutStyle.blockVertical * 6,
-              ),
-            ],
-          ),
-        );
+        return controller.openDetail.value
+            ? const PrintTicketDetailPage()
+            : Column(
+                children: [
+                  Container(
+                    width: layoutStyle.screenWidth,
+                    color: colorStyle.lightGrey,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.screenWidth / 3,
+                      ),
+                      child: TabBar(
+                        controller: controller.tabController,
+                        indicator: BoxDecoration(
+                          color: colorStyle.white,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: colorStyle.primary,
+                              width: 1.0,
+                            ),
+                          ),
+                        ),
+                        labelColor: colorStyle.primary,
+                        unselectedLabelColor: colorStyle.black,
+                        tabs: const [
+                          Tab(text: 'Ticket'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(layoutStyle.defaultMargin * 1.5),
+                      child: TabBarView(
+                        controller: controller.tabController,
+                        children: [
+                          ticketSection(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
       },
     );
   }
