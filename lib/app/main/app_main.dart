@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/presentation/bindings/default/splash_page_binding
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';
 
 class AppMain extends StatefulWidget {
@@ -21,6 +22,9 @@ class _AppMainState extends State<AppMain> {
     //   DeviceOrientation.portraitUp,
     //   DeviceOrientation.portraitDown,
     // ]);
+    // final printController = Get.put(PrintController());
+    // printController.getBluetoots();
+    // printController.connect('86:67:7A:56:DC:4B');
     super.initState();
   }
 

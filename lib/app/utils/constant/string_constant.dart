@@ -65,6 +65,11 @@ class PaymentMethod {
   static String TICKET = 'TC'; // Ticket.Com
 }
 
+class PaymentStatus {
+  static String Pending = '01';
+  static String Success = '02';
+}
+
 AppStringConstant constant = new AppStringConstant();
 ArgumentsConstant argConstant = new ArgumentsConstant();
 AppRequestContentType contentType = new AppRequestContentType();

@@ -19,19 +19,23 @@ class OrderController extends GetxController {
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
 
+  final orderPaymentNo = Rxn<String>(null);
+
   doPaymentQris({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       // create Order and waiting the prosess of payment
-      doCreateOrderQr(body: body, orderNo: orderNo);
+      await doCreateOrderQr(body: body, orderNo: orderNo);
       // Display the waiting payment alert
+      if (orderPaymentNo.value == null) {
+        alert.error('Payment Error', 'Terjadi Kesalahan');
+        return;
+      }
       alert.waitingPayment(
         title: 'Menunggu Pembayaran',
         msg:
             'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
         onCheck: _handlePaymentCheck,
-        onCancle: () {
-          Get.back();
-        },
+        onCancle: () => Get.back(),
       );
     } catch (e) {
       logger.safeLog(e);
@@ -40,9 +44,30 @@ class OrderController extends GetxController {
   }
 
   Future<bool> _checkPaymentStatus() async {
-    // Simulate a payment status check
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
-    return true; // Change this logic based on your payment status check
+    try {
+      bool isSuccess = false;
+      var result = await _service.payment.paymentOrderSercvice.cekPaymnet(
+        authToken: _authToken,
+        orderNo: orderPaymentNo.value!,
+      );
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Cek Payment Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Order Success');
+          logger.safeLog(r.data?.toJson());
+          isSuccess = r.data?.status == PaymentStatus.Success;
+        },
+      );
+      return isSuccess;
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error("Cek Payment", 'Terjadi Kesalahan');
+      return false;
+    }
   }
 
   void _handlePaymentCheck() async {
@@ -74,19 +99,21 @@ class OrderController extends GetxController {
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
       onSendProofOfPayment: _handleSendProofOfPayment,
-      onPrint: () {
+      onPrint: _handleOnPrintOrder,
+    );
+  }
+
+  _handleOnPrintOrder() {
+    Get.back();
+    loading.popUpLoading();
+    Timer(
+      Duration(seconds: 3),
+      () {
         Get.back();
-        loading.popUpLoading();
-        Timer(
-          Duration(seconds: 3),
-          () {
-            Get.back();
-          },
-        );
-        doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-        clearOrder();
       },
     );
+    doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    clearOrder();
   }
 
   void _handleSendProofOfPayment() {
@@ -152,6 +179,7 @@ class OrderController extends GetxController {
           );
 
           orderNo?.value = r.data?.orderNumber;
+          orderPaymentNo.value = r.data?.orderPaymentNo;
         },
       );
     } catch (e) {

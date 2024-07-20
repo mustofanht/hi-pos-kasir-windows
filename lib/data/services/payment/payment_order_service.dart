@@ -1,19 +1,16 @@
 part of '../main_service.dart';
 
 class PaymentOrderSercvice {
-  Future<Either<String, BaseResponse<ResponsePaymentEntity>>> payment({
+  Future<Either<String, BaseResponse<ResponseCekPaymentEntity>>> cekPaymnet({
     required AuthToken authToken,
-    required PaymentModel body,
+    required String orderNo,
   }) async {
-    var path = "trn_order/createOrder";
+    var path = "trn_payment/$orderNo";
 
     final uri = source.baseUri(path: path);
 
-    logger.safeLog('BODY : ${json.encode(body.toJson())}');
-
-    final response = await http.post(
+    final response = await http.get(
       uri,
-      body: json.encode(body.toJson()),
       headers: common.generateHeader(
         sessionToken: authToken,
       ),
@@ -22,10 +19,10 @@ class PaymentOrderSercvice {
     logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
-      BaseResponse<ResponsePaymentEntity> result =
-          BaseResponse<ResponsePaymentEntity>.fromJson(
+      BaseResponse<ResponseCekPaymentEntity> result =
+          BaseResponse<ResponseCekPaymentEntity>.fromJson(
         json.decode(response.body),
-        (data) => ResponsePaymentEntity.fromJson(data),
+        (data) => ResponseCekPaymentEntity.fromJson(data),
       );
       logger.safeLog(result.data!.toJson());
       return Right(result);
