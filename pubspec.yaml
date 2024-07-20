@@ -31,6 +31,8 @@ dependencies:
   flutter_carousel_widget: ^2.2.0
   path_provider: ^2.1.2
   image_picker: ^1.0.7
+  print_bluetooth_thermal: ^1.1.0
+  # esc_pos_utils: ^1.1.0
 
 dev_dependencies:
   flutter_test:

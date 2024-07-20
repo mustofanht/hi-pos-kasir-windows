@@ -112,6 +112,18 @@ class CustomerSaleCartPageController extends GetxController {
     }
   }
 
+  Image getQrImg() {
+    return qrCode.value != null && qrCode.value!.contains('http')
+        ? Image.network(qrCode.value!, fit: BoxFit.fill, errorBuilder:
+            (BuildContext context, Object exception, StackTrace? stackTrace) {
+            return const Center(child: Text('Img Not Found'));
+          })
+        : Image.asset(qrCode.value!, fit: BoxFit.fill, errorBuilder:
+            (BuildContext context, Object exception, StackTrace? stackTrace) {
+            return const Center(child: Text('Img Not Found'));
+          });
+  }
+
   doAddCart(Map<String, dynamic> val) {
     ticketList.clear();
     voucherList.clear();

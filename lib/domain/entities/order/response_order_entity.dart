@@ -1,20 +1,24 @@
 class ResponseOrderEntity {
-  final String orderNumber;
-  final String orderName;
-  final int orderCustid;
-  final int orderTotalItem;
-  final double orderTotalAmt;
-  final String orderPaidBy;
-  final String orderStatus;
+  String? orderNumber;
+  String? orderName;
+  int? orderCustid;
+  int? orderTotalItem;
+  double? orderTotalAmt;
+  String? orderPaidBy;
+  String? orderStatus;
+  String? orderPaymentNo;
+  String? qrisUrl;
 
   ResponseOrderEntity({
-    required this.orderNumber,
-    required this.orderName,
-    required this.orderCustid,
-    required this.orderTotalItem,
-    required this.orderTotalAmt,
-    required this.orderPaidBy,
-    required this.orderStatus,
+    this.orderNumber,
+    this.orderName,
+    this.orderCustid,
+    this.orderTotalItem,
+    this.orderTotalAmt,
+    this.orderPaidBy,
+    this.orderStatus,
+    this.orderPaymentNo,
+    this.qrisUrl,
   });
 
   factory ResponseOrderEntity.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class ResponseOrderEntity {
       orderTotalAmt: json['orderTotalAmt'],
       orderPaidBy: json['orderPaidBy'],
       orderStatus: json['orderStatus'],
+      orderPaymentNo: json['orderPaymentNo'],
+      qrisUrl: json['qrisUrl'],
     );
   }
 
@@ -38,6 +44,8 @@ class ResponseOrderEntity {
       'orderTotalAmt': orderTotalAmt,
       'orderPaidBy': orderPaidBy,
       'orderStatus': orderStatus,
+      'orderPaymentNo': orderPaymentNo,
+      'qrisUrl': qrisUrl,
     };
   }
 }

@@ -5,7 +5,6 @@ import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
-import 'package:jaya_propertiy/data/dummy/code_dummy.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
@@ -38,6 +37,12 @@ class OrderController extends GetxController {
       logger.safeLog(e);
       alert.error('Error', 'Unexpected Error');
     }
+  }
+
+  Future<bool> _checkPaymentStatus() async {
+    // Simulate a payment status check
+    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    return true; // Change this logic based on your payment status check
   }
 
   void _handlePaymentCheck() async {
@@ -79,6 +84,7 @@ class OrderController extends GetxController {
           },
         );
         doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+        clearOrder();
       },
     );
   }
@@ -91,11 +97,13 @@ class OrderController extends GetxController {
         logger.safeLog('EMAIL : ${val}');
         Get.back();
         doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+        clearOrder();
       },
       onSendWa: (val) {
         logger.safeLog('WA : ${val}');
         Get.back();
         doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+        clearOrder();
       },
       onNewOrder: _handleNewOrder,
     );
@@ -110,6 +118,7 @@ class OrderController extends GetxController {
       );
       Get.back();
       doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+      clearOrder();
     });
   }
 
@@ -131,13 +140,12 @@ class OrderController extends GetxController {
           logger.safeLog('Create Order Success');
           logger.safeLog(r.data);
 
-          var qrCodeBase64 = codeDummy.getQrCodeDummy();
           displayUtil.updateSecondDisplay(
             CustomerDisplay(
               key: CustomerDisplayAction.PAYMENT,
               value: CustomerPayment(
                 type: PaymentMethod.QRIS,
-                qrCode: qrCodeBase64,
+                qrCode: r.data?.qrisUrl,
                 isSuccess: false,
               ).toJson(),
             ).toJson(),
@@ -153,12 +161,6 @@ class OrderController extends GetxController {
     }
   }
 
-  Future<bool> _checkPaymentStatus() async {
-    // Simulate a payment status check
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
-    return true; // Change this logic based on your payment status check
-  }
-
   doRefreshCustomerDisplay({required String paymentMethod}) {
     displayUtil.updateSecondDisplay(
       CustomerDisplay(
@@ -170,11 +172,15 @@ class OrderController extends GetxController {
       ).toJson(),
     );
   }
+
+  clearOrder() {
+    final saleController = Get.find<SaleCartPageController>();
+    saleController.clearCartOrder();
+  }
 }
 
-
 class OrderPaymentController extends GetxController {
-OrderPaymentController();
+  OrderPaymentController();
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 

@@ -96,10 +96,7 @@ class _CustomerPageState extends State<CustomerPage> {
               Expanded(
                 child: Container(
                   alignment: Alignment.center,
-                  child: Image.asset(
-                    assetsConstant.imgExampleBarcode,
-                    fit: BoxFit.fill,
-                  ),
+                  child: customerSaleCartPageController.getQrImg(),
                 ),
               ),
             ],
