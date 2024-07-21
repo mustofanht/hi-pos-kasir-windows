@@ -20,6 +20,8 @@ class AddOnService {
       ),
     );
 
+    logger.responseLog(uri, response);
+    
     if (response.statusCode == 200) {
       BaseResponse<List<AddonEntity>> result =
           BaseResponse<List<AddonEntity>>.fromJson(

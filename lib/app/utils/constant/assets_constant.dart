@@ -19,10 +19,12 @@ class AppAssetConstant {
   final String icPaymentSuccess =
       "${constant.pathIconsSvg}ic-payment-success.svg";
 
+  final String imgEmptyBox = "${constant.pathImages}empty-box.png";
   final String imgEdc = "${constant.pathImages}edc-img.png";
   final String imgUnderConstruction =
       "${constant.pathImages}under-construction.png";
   final String imgExampleBarcode = "${constant.pathImages}example-barcode.png";
+  final String imgExamplePrint = "${constant.pathImages}example-print.png";
 }
 
 AppAssetConstant assetsConstant = new AppAssetConstant();

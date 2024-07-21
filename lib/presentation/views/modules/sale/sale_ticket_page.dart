@@ -1,3 +1,4 @@
+import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
@@ -16,7 +17,7 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/empty-box.png',
+                assetsConstant.imgEmptyBox,
                 fit: BoxFit.fill,
                 errorBuilder: (BuildContext context, Object exception,
                     StackTrace? stackTrace) {

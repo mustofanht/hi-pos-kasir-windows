@@ -179,7 +179,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),
-                          (e.qtyOrder ?? 0) > (e.ticket!.ticketMinimum ?? 0)
+                          (e.qtyOrder ?? 0) > (e.ticket!.minimum ?? 0)
                               ? CustomButton(
                                   onPressed: () {
                                     controller.removeTicket(e);
@@ -523,7 +523,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/empty-box.png',
+              assetsConstant.imgEmptyBox,
               fit: BoxFit.fill,
               errorBuilder: (BuildContext context, Object exception,
                   StackTrace? stackTrace) {

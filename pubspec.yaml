@@ -33,7 +33,6 @@ dependencies:
   image_picker: ^1.0.7
   print_bluetooth_thermal: ^1.1.0
   esc_pos_utils_plus: ^2.0.2
-  # esc_pos_utils: ^1.1.0
 
 dev_dependencies:
   flutter_test:

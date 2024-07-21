@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -11,6 +12,8 @@ import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/payment_print_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class OrderController extends GetxController {
@@ -103,17 +106,42 @@ class OrderController extends GetxController {
     );
   }
 
-  _handleOnPrintOrder() {
-    Get.back();
-    loading.popUpLoading();
-    Timer(
-      Duration(seconds: 3),
-      () {
+  _handleOnPrintOrder() async {
+    var printController = Get.put(PrintController());
+    var paymentPrintController = Get.put(PaymentPrintController());
+    await printPaymentTiket(printController, paymentPrintController);
+    await doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    await clearOrder();
+  }
+
+  printPaymentTiket(
+    PrintController printController,
+    PaymentPrintController paymentPrintController,
+  ) async {
+    bool isConnectPrinter = await printController.isConnect();
+    if (isConnectPrinter) {
+      List<int> data = await paymentPrintController.dataPaymentTiketPrint(
+        PaperSize.mm80,
+      );
+      loading.popUpLoading();
+      bool isPrinted = await printController.printTicket(
+        data: data,
+      );
+      if (isPrinted) {
         Get.back();
-      },
-    );
-    doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-    clearOrder();
+        Get.back();
+      } else {
+        await printPaymentTiket(printController, paymentPrintController);
+      }
+    } else {
+      alert.selectPrint(
+        title: 'Select Printer',
+        msg: 'Silahkan Pilih printer',
+        onPrint: () async {
+          await printPaymentTiket(printController, paymentPrintController);
+        },
+      );
+    }
   }
 
   void _handleSendProofOfPayment() {

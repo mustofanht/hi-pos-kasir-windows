@@ -3,6 +3,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_sale_cart_page_controller.dart';
 
@@ -276,7 +277,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/empty-box.png',
+            assetsConstant.imgEmptyBox,
             // fit: BoxFit.contain,
             width: layoutStyle.blockHorizontal * 30,
             height: layoutStyle.blockVertical * 30,

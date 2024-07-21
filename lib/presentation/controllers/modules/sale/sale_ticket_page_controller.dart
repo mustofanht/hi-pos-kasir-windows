@@ -108,7 +108,7 @@ class SaleTicketPageController extends GetxController {
       if (existingTicket != null) {
         existingTicket.qtyOrder = (existingTicket.qtyOrder ?? 0) + 1;
         existingTicket.totalPrice =
-            (existingTicket.totalPrice ?? 0) + (ticket.ticketPrice ?? 0);
+            (existingTicket.totalPrice ?? 0) + (ticket.nominal ?? 0);
         saleCartPageController.calculateTotalOrder();
       } else {
         saleCartPageController.addTicket(ticket);

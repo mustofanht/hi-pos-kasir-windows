@@ -22,7 +22,7 @@ class TicketService {
       ),
     );
 
-    // logger.responseLog(uri, response);
+    logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<List<TicketEntity>> result =

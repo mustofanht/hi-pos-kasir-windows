@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -16,7 +17,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/empty-box.png',
+                assetsConstant.imgEmptyBox,
                 fit: BoxFit.fill,
                 errorBuilder: (BuildContext context, Object exception,
                     StackTrace? stackTrace) {
