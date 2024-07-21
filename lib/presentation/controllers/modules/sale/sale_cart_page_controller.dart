@@ -68,7 +68,7 @@ class SaleCartPageController extends GetxController {
     addonList.add(
       CartAddon(
         qtyOrder: 1,
-        totalPrice: val.productPrice!,
+        totalPrice: val.nominal!,
         addon: val,
       ),
     );
@@ -77,13 +77,13 @@ class SaleCartPageController extends GetxController {
 
   addAddonCart(CartAddon val) {
     val.qtyOrder = (val.qtyOrder ?? 0) + 1;
-    val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
+    val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.nominal ?? 0);
     calculateTotalOrder();
   }
 
   removeAddon(CartAddon val) {
     val.qtyOrder = (val.qtyOrder ?? 0) - 1;
-    val.totalPrice = (val.totalPrice ?? 0) - (val.addon!.productPrice ?? 0);
+    val.totalPrice = (val.totalPrice ?? 0) - (val.addon!.nominal ?? 0);
     if (val.qtyOrder == 0) {
       removeListAddon(val);
     }
@@ -99,7 +99,7 @@ class SaleCartPageController extends GetxController {
     voucherList.add(
       CartVoucher(
         qtyOrder: 1,
-        totalPrice: voucher.voucherUnitValue!,
+        totalPrice: voucher.unitValue!,
         voucher: voucher,
       ),
     );
@@ -130,11 +130,11 @@ class SaleCartPageController extends GetxController {
     if (voucherList.isNotEmpty) {
       double discountAmount = 0;
       for (var element in voucherList) {
-        if (element.voucher!.voucherUnitType == 'PERCENT') {
+        if (element.voucher!.unitType == 'PERCENT') {
           discountAmount +=
-              ticketTotalAmnt * (element.voucher!.voucherUnitValue ?? 0) / 100;
+              ticketTotalAmnt * (element.voucher!.unitValue ?? 0) / 100;
         } else {
-          discountAmount += element.voucher!.voucherUnitValue ?? 0;
+          discountAmount += element.voucher!.unitValue ?? 0;
         }
         logger.safeLog('discount : ${discountAmount} ');
       }

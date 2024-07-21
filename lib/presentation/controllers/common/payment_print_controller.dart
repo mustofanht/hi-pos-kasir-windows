@@ -1,10 +1,16 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/order/order_model.dart';
 
 class PaymentPrintController extends GetxController {
   PaymentPrintController();
 
-  Future<List<int>> dataPaymentTiketPrint(PaperSize paperSize) async {
+  Future<List<int>> dataPaymentTiketPrint(
+      {required PaperSize paperSize, required OrderModel body}) async {
     List<int> bytes = [];
     // Using default profile
     final profile = await CapabilityProfile.load();
@@ -26,7 +32,7 @@ class PaymentPrintController extends GetxController {
 
     // Print Store Information
     bytes += generator.text(
-      'No Reff. 24040717000001',
+      'No Reff. ${body.orderReffno ?? ''}',
       styles: const PosStyles(
         align: PosAlign.left,
         bold: true,
@@ -35,11 +41,13 @@ class PaymentPrintController extends GetxController {
     bytes += generator.row(
       [
         PosColumn(
-          text: '17/07/2024 09:10',
+          text: dateTimeUtil.now(
+            format: dateFormat.fullTimePrinted,
+          ),
           width: 6,
         ),
         PosColumn(
-          text: 'Arthur',
+          text: body.orderName,
           width: 6,
           styles: const PosStyles(
             align: PosAlign.right,
@@ -48,39 +56,122 @@ class PaymentPrintController extends GetxController {
       ],
     );
     bytes += generator.hr();
-    bytes += generator.text(
-      'PROMO RAMADHAN KAREEM',
-      styles: const PosStyles(
-        align: PosAlign.left,
-      ),
-    );
-    bytes += generator.row(
-      [
-        PosColumn(
-          text: 'Rp',
-          width: 2,
+
+    // List Ticket Order
+    for (var element in body.listTicket) {
+      bytes += generator.text(
+        element.ticket?.ticketName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
         ),
-        PosColumn(
-          text: '15,000',
-          width: 2,
-        ),
-        PosColumn(
-          text: '( 0% )',
-          width: 2,
-        ),
-        PosColumn(
-          text: 'x3',
-          width: 2,
-        ),
-        PosColumn(
-          text: '45,000',
-          width: 4,
-          styles: const PosStyles(
-            align: PosAlign.right,
+      );
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Rp',
+            width: 2,
           ),
-        )
-      ],
-    );
+          PosColumn(
+            text: element.ticket?.nominal != null
+                ? common.currencyFormat(element.ticket!.nominal!)
+                : '',
+            width: 2,
+          ),
+          PosColumn(
+            text: '( 0% )',
+            width: 2,
+          ),
+          PosColumn(
+            text: 'x ${element.totalTicket}',
+            width: 2,
+          ),
+          PosColumn(
+            text: common.currencyFormat(element.totalAmount),
+            width: 4,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          )
+        ],
+      );
+    }
+    // List item Order
+    for (var element in body.listProduct) {
+      bytes += generator.text(
+        element.addOn?.productName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Rp',
+            width: 2,
+          ),
+          PosColumn(
+            text: element.addOn?.nominal != null
+                ? common.currencyFormat(element.addOn!.nominal!)
+                : '',
+            width: 2,
+          ),
+          PosColumn(
+            text: '( 0% )',
+            width: 2,
+          ),
+          PosColumn(
+            text: 'x ${element.ordadTotalAddon}',
+            width: 2,
+          ),
+          PosColumn(
+            text: common.currencyFormat(element.ordadTotalAmount),
+            width: 4,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          )
+        ],
+      );
+    }
+    // List voucher Order
+    double totalVoucher = 0;
+    for (var element in body.listVoucher) {
+      bytes += generator.text(
+        element.voucher?.voucherName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Rp',
+            width: 2,
+          ),
+          PosColumn(
+            text: element.voucher?.unitValue != null
+                ? common.currencyFormat(element.voucher!.unitValue!)
+                : '',
+            width: 2,
+          ),
+          PosColumn(
+            text: '( 0% )',
+            width: 2,
+          ),
+          PosColumn(
+            text: 'x ${element.ordvcTotalVoucher}',
+            width: 2,
+          ),
+          PosColumn(
+            text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
+            width: 4,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          )
+        ],
+      );
+    }
     bytes += generator.hr();
     // Print Total
     bytes += generator.row(
@@ -94,7 +185,7 @@ class PaymentPrintController extends GetxController {
           width: 2,
         ),
         PosColumn(
-          text: '45,000',
+          text: common.currencyFormat(body.orderTotalAmt),
           width: 6,
           styles: const PosStyles(
             align: PosAlign.right,
@@ -102,14 +193,31 @@ class PaymentPrintController extends GetxController {
         ),
       ],
     );
+    if (totalVoucher > 0) {
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Voucher',
+            width: 6,
+          ),
+          PosColumn(
+            text: '- ${common.currencyFormat(totalVoucher)}',
+            width: 6,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          ),
+        ],
+      );
+    }
     bytes += generator.row(
       [
         PosColumn(
-          text: 'QRIS',
+          text: MapPaymentMethod[body.orderPaidBy] ?? '',
           width: 6,
         ),
         PosColumn(
-          text: '45,000',
+          text: common.currencyFormat(body.orderTotalAmt),
           width: 6,
           styles: const PosStyles(
             align: PosAlign.right,

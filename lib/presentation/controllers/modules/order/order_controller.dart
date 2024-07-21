@@ -27,7 +27,7 @@ class OrderController extends GetxController {
   doPaymentQris({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       // create Order and waiting the prosess of payment
-      await doCreateOrderQr(body: body, orderNo: orderNo);
+      await _doCreateOrderQr(body: body, orderNo: orderNo);
       // Display the waiting payment alert
       if (orderPaymentNo.value == null) {
         alert.error('Payment Error', 'Terjadi Kesalahan');
@@ -37,7 +37,7 @@ class OrderController extends GetxController {
         title: 'Menunggu Pembayaran',
         msg:
             'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
-        onCheck: _handlePaymentCheck,
+        onCheck: () => _handlePaymentCheck(body),
         onCancle: () => Get.back(),
       );
     } catch (e) {
@@ -73,12 +73,12 @@ class OrderController extends GetxController {
     }
   }
 
-  void _handlePaymentCheck() async {
+  void _handlePaymentCheck(OrderModel body) async {
     try {
       var isSuccess = await _checkPaymentStatus();
       if (isSuccess) {
         Get.back();
-        _showPaymentSuccessAlert();
+        _showPaymentSuccessAlert(body);
         displayUtil.updateSecondDisplay(
           CustomerDisplay(
             key: CustomerDisplayAction.PAYMENT,
@@ -97,48 +97,55 @@ class OrderController extends GetxController {
     }
   }
 
-  void _showPaymentSuccessAlert() {
+  void _showPaymentSuccessAlert(OrderModel body) {
     alert.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
       onSendProofOfPayment: _handleSendProofOfPayment,
-      onPrint: _handleOnPrintOrder,
+      onPrint: () => _handleOnPrintOrder(body),
     );
   }
 
-  _handleOnPrintOrder() async {
+  void _handleOnPrintOrder(OrderModel body) async {
     var printController = Get.put(PrintController());
     var paymentPrintController = Get.put(PaymentPrintController());
-    await printPaymentTiket(printController, paymentPrintController);
-    await doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-    await clearOrder();
+    await _printPaymentTiket(body, printController, paymentPrintController);
+    await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    await _clearOrder();
   }
 
-  printPaymentTiket(
+  _printPaymentTiket(
+    OrderModel body,
     PrintController printController,
     PaymentPrintController paymentPrintController,
   ) async {
     bool isConnectPrinter = await printController.isConnect();
     if (isConnectPrinter) {
       List<int> data = await paymentPrintController.dataPaymentTiketPrint(
-        PaperSize.mm80,
+        paperSize: PaperSize.mm80,
+        body: body,
       );
       loading.popUpLoading();
       bool isPrinted = await printController.printTicket(
         data: data,
       );
+      logger.safeLog('isPrinted : $isPrinted');
       if (isPrinted) {
         Get.back();
         Get.back();
       } else {
-        await printPaymentTiket(printController, paymentPrintController);
+        await _printPaymentTiket(body, printController, paymentPrintController);
       }
     } else {
       alert.selectPrint(
         title: 'Select Printer',
         msg: 'Silahkan Pilih printer',
         onPrint: () async {
-          await printPaymentTiket(printController, paymentPrintController);
+          await _printPaymentTiket(
+            body,
+            printController,
+            paymentPrintController,
+          );
         },
       );
     }
@@ -151,14 +158,14 @@ class OrderController extends GetxController {
       onSendEmail: (val) {
         logger.safeLog('EMAIL : ${val}');
         Get.back();
-        doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-        clearOrder();
+        _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+        _clearOrder();
       },
       onSendWa: (val) {
         logger.safeLog('WA : ${val}');
         Get.back();
-        doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-        clearOrder();
+        _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+        _clearOrder();
       },
       onNewOrder: _handleNewOrder,
     );
@@ -172,12 +179,12 @@ class OrderController extends GetxController {
         barrierDismissible: false,
       );
       Get.back();
-      doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-      clearOrder();
+      _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+      _clearOrder();
     });
   }
 
-  doCreateOrderQr({required OrderModel body, Rxn<String>? orderNo}) async {
+  _doCreateOrderQr({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       var result = await _service.order.orderService.createOrder(
         authToken: _authToken,
@@ -208,6 +215,7 @@ class OrderController extends GetxController {
 
           orderNo?.value = r.data?.orderNumber;
           orderPaymentNo.value = r.data?.orderPaymentNo;
+          body.orderReffno = r.data?.orderPaymentNo;
         },
       );
     } catch (e) {
@@ -217,7 +225,7 @@ class OrderController extends GetxController {
     }
   }
 
-  doRefreshCustomerDisplay({required String paymentMethod}) {
+  _doRefreshCustomerDisplay({required String paymentMethod}) {
     displayUtil.updateSecondDisplay(
       CustomerDisplay(
         key: CustomerDisplayAction.PAYMENT,
@@ -229,7 +237,7 @@ class OrderController extends GetxController {
     );
   }
 
-  clearOrder() {
+  _clearOrder() {
     final saleController = Get.find<SaleCartPageController>();
     saleController.clearCartOrder();
   }

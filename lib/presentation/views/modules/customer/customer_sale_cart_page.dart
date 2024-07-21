@@ -199,7 +199,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                     Container(
                       alignment: Alignment.topRight,
                       child: Text(
-                        'Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
                         style: TextStyle(
                           fontSize: fontSize.title,
                         ),

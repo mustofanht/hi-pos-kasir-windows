@@ -65,6 +65,13 @@ class PaymentMethod {
   static String TICKET = 'TC'; // Ticket.Com
 }
 
+final Map<String, String> MapPaymentMethod = {
+  PaymentMethod.QRIS: 'QRIS',
+  PaymentMethod.EDC: 'ED',
+  PaymentMethod.TRAVELOKA: 'TR',
+  PaymentMethod.TICKET: 'TC',
+};
+
 class PaymentStatus {
   static String Pending = '01';
   static String Success = '02';

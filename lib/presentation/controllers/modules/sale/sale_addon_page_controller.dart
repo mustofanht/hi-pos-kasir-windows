@@ -107,7 +107,7 @@ class SaleAddonPageController extends GetxController {
 
       if (exists != null) {
         exists.qtyOrder = (exists.qtyOrder ?? 0) + 1;
-        exists.totalPrice = (exists.totalPrice ?? 0) + (val.productPrice ?? 0);
+        exists.totalPrice = (exists.totalPrice ?? 0) + (val.nominal ?? 0);
         saleCartPageController.calculateTotalOrder();
       } else {
         saleCartPageController.addAddon(val);

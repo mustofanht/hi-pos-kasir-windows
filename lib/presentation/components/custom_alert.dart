@@ -1027,6 +1027,8 @@ class CustomAlert {
         .map((element) =>
             CustomIdNameEntity(id: element.macAdress, name: element.name))
         .toList());
+    printController.selectedPrinter.value = listPrinter.first;
+    printController.update();
 
     Get.dialog(
       AlertDialog(
@@ -1090,7 +1092,7 @@ class CustomAlert {
                               ),
                             )
                             .toList(),
-                        value: null,
+                        value: printController.selectedPrinter.value,
                         // label: Text(
                         //   'Pilih Printer',
                         //   style: textStyle.greyText.copyWith(
@@ -1105,11 +1107,13 @@ class CustomAlert {
                           vertical: layoutStyle.defaultMargin / 4,
                           horizontal: layoutStyle.defaultMargin,
                         ),
-                        onChanged: (val) {
-                          if (val?.id != null) {
-                            printController.connect(val!.id!);
-                            onPrint();
-                          }else{
+                        onChanged: (val) async {
+                          printController.selectedPrinter.value = val;
+                          printController.update();
+                          if (val != null) {
+                            await printController.connect(val.id!);
+                            await onPrint();
+                          } else {
                             alert.error('Print', 'Please selected printer');
                           }
                         },
@@ -1118,82 +1122,6 @@ class CustomAlert {
                   ),
                 ),
               ),
-              // Container(
-              //   width: layoutStyle.screenWidth,
-              //   padding: EdgeInsets.symmetric(
-              //     vertical: layoutStyle.defaultMargin / 5,
-              //     horizontal: layoutStyle.defaultMargin,
-              //   ),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     children: [
-              //       Expanded(
-              //         child: CustomButton(
-              //           margin: EdgeInsets.symmetric(
-              //             vertical: layoutStyle.defaultMargin / 2,
-              //             horizontal: layoutStyle.defaultMargin,
-              //           ),
-              //           onPressed: () {
-              //             Get.back();
-              //           },
-              //           style: ButtonStyle(
-              //             backgroundColor: MaterialStateProperty.resolveWith(
-              //               (states) => colorStyle.red,
-              //             ),
-              //             overlayColor: MaterialStateProperty.resolveWith(
-              //               (states) => colorStyle.black.withOpacity(0.1),
-              //             ),
-              //             shape: MaterialStateProperty.resolveWith(
-              //               (states) => RoundedRectangleBorder(
-              //                 borderRadius: BorderRadius.circular(
-              //                   layoutStyle.defaultMargin / 2,
-              //                 ),
-              //               ),
-              //             ),
-              //             elevation: const MaterialStatePropertyAll(0),
-              //           ),
-              //           label: Text(
-              //             'Batal',
-              //             style: textStyle.whiteText,
-              //           ),
-              //           height: layoutStyle.blockVertical * 6.5,
-              //         ),
-              //       ),
-              //       Expanded(
-              //         child: CustomButton(
-              //           margin: EdgeInsets.symmetric(
-              //             vertical: layoutStyle.defaultMargin / 2,
-              //             horizontal: layoutStyle.defaultMargin,
-              //           ),
-              //           onPressed: () {
-              //             Get.back();
-              //           },
-              //           style: ButtonStyle(
-              //             backgroundColor: MaterialStateProperty.resolveWith(
-              //               (states) => colorStyle.primary,
-              //             ),
-              //             overlayColor: MaterialStateProperty.resolveWith(
-              //               (states) => colorStyle.black.withOpacity(0.1),
-              //             ),
-              //             shape: MaterialStateProperty.resolveWith(
-              //               (states) => RoundedRectangleBorder(
-              //                 borderRadius: BorderRadius.circular(
-              //                   layoutStyle.defaultMargin / 2,
-              //                 ),
-              //               ),
-              //             ),
-              //             elevation: const MaterialStatePropertyAll(0),
-              //           ),
-              //           label: Text(
-              //             'Lanjutkan',
-              //             style: textStyle.whiteText,
-              //           ),
-              //           height: layoutStyle.blockVertical * 6.5,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ),

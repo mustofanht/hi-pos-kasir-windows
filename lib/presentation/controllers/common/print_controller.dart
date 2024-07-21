@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
 class PrintController extends GetxController {
@@ -13,6 +14,7 @@ class PrintController extends GetxController {
   final _msj = "".obs;
   final _info = "".obs;
   final listBluetooth = <BluetoothInfo>[].obs;
+  final selectedPrinter = Rxn<CustomIdNameEntity>(null);
 
   @override
   void onInit() {

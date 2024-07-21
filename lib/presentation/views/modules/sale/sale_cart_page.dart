@@ -464,9 +464,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text(
-                            e.voucher!.voucherUnitType == 'PERCENT'
-                                ? ('${e.voucher!.voucherUnitValue} %')
-                                : ('Rp${e.voucher!.voucherUnitValue}'),
+                            e.voucher!.unitType == 'PERCENT'
+                                ? ('${e.voucher!.unitValue} %')
+                                : ('Rp${e.voucher!.unitValue}'),
                           ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,

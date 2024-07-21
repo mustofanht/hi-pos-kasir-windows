@@ -201,6 +201,7 @@ class SalePageController extends GetxController
       listTicket.addAll(
         ticketList.map(
           (element) => OrderTicketModel(
+            ticket: element.ticket,
             ordtcTicketId: element.ticket?.ticketId,
             totalTicket: element.qtyOrder!,
             totalAmount: element.totalPrice!,
@@ -212,6 +213,7 @@ class SalePageController extends GetxController
       listProduct.addAll(
         addonList.map(
           (element) => OrderAddonModel(
+            addOn: element.addon,
             ordadAddonId: element.addon?.productId,
             ordadTotalAddon: element.qtyOrder!,
             ordadTotalAmount: element.totalPrice!,
@@ -223,6 +225,7 @@ class SalePageController extends GetxController
       listVoucher.addAll(
         voucherList.map(
           (element) => OrderVoucherModel(
+            voucher: element.voucher,
             ordvcVoucherId: element.voucher?.voucherId,
             ordvcTotalVoucher: element.qtyOrder!,
             ordvcTotalAmount: element.totalPrice!,

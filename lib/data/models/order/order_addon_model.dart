@@ -1,9 +1,13 @@
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+
 class OrderAddonModel {
+  AddonEntity? addOn;
   int? ordadAddonId;
   int ordadTotalAddon;
   double ordadTotalAmount;
 
   OrderAddonModel({
+    this.addOn,
     this.ordadAddonId,
     required this.ordadTotalAddon,
     required this.ordadTotalAmount,

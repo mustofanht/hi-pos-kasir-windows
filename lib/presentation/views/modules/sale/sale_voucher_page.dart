@@ -137,7 +137,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                                         height: layoutStyle.defaultMargin,
                                       ),
                                       Text(
-                                        'Disc: ${e.voucherUnitType == 'PERCENT' ? ('${e.voucherUnitValue} %') : ('Rp${e.voucherUnitValue}')}',
+                                        'Disc: ${e.unitType == 'PERCENT' ? ('${e.unitValue} %') : ('Rp${e.unitValue}')}',
                                         style: TextStyle(
                                           fontSize: fontSize.body,
                                           // fontWeight: FontWeight.bold,

@@ -1,9 +1,13 @@
+import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
+
 class OrderTicketModel {
+  TicketEntity? ticket;
   int? ordtcTicketId;
   int totalTicket;
   double totalAmount;
 
   OrderTicketModel({
+    this.ticket,
     this.ordtcTicketId,
     required this.totalTicket,
     required this.totalAmount,

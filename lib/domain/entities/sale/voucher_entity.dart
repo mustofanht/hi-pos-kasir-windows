@@ -4,88 +4,82 @@ class VoucherEntity {
   int? voucherId;
   String? voucherName;
   String? voucherCode;
-  String? voucherUnitType;
-  double? voucherUnitValue;
+  String? unitType;
+  double? unitValue;
   int? voucherLimit;
-  int? voucherUnit;
-  int? voucherLocId;
-  DateTime? voucherStartDate;
-  DateTime? voucherEndDate;
-  String? voucherDesc;
+  int? idLocation;
+  String? nameLocation;
   String? voucherState;
+  DateTime? startDate;
+  DateTime? endDate;
 
   VoucherEntity({
     this.voucherId,
     this.voucherName,
     this.voucherCode,
-    this.voucherUnitType,
-    this.voucherUnitValue,
+    this.unitType,
+    this.unitValue,
     this.voucherLimit,
-    this.voucherUnit,
-    this.voucherLocId,
-    this.voucherStartDate,
-    this.voucherEndDate,
-    this.voucherDesc,
+    this.idLocation,
+    this.nameLocation,
     this.voucherState,
+    this.startDate,
+    this.endDate,
   });
 
   VoucherEntity.fromJson(Map<String?, dynamic> json) {
     voucherId = json['voucherId'];
     voucherName = json['voucherName'];
     voucherCode = json['voucherCode'];
-    voucherUnitType = json['voucherUnitType'];
-    // voucherUnitValue = json['voucherUnitValue'];
-    voucherUnitValue = json['voucherUnitValue'] != null
-        ? (json['voucherUnitValue'] as num).toDouble()
+    unitType = json['unitType'];
+    unitValue = json['unitValue'] != null
+        ? (json['unitValue'] as num).toDouble()
         : null;
     voucherLimit = json['voucherLimit'];
-    voucherUnit = json['voucherUnit'];
-    voucherLocId = json['voucherLocId'];
-    voucherStartDate = json['voucherStartDate'] != null
-        ? DateTime.parse(json['voucherStartDate'])
-        : null;
-    voucherEndDate = json['voucherEndDate'] != null
-        ? DateTime.parse(json['voucherEndDate'])
-        : null;
-    // voucherStartDate = json['voucherStartDate'];
-    // voucherEndDate = json['voucherEndDate'];
-    voucherDesc = json['voucherDesc'];
+    idLocation = json['idLocation'];
+    nameLocation = json['nameLocation'];
     voucherState = json['voucherState'];
+    startDate = json['startDate'] != null
+        ? DateTime.parse(json['startDate'])
+        : null;
+    endDate = json['endDate'] != null
+        ? DateTime.parse(json['endDate'])
+        : null;
   }
+  
   Map<String?, dynamic> toJson() {
     return {
-      "voucherId": voucherId,
-      "voucherName": voucherName,
-      "voucherCode": voucherCode,
-      "voucherUnitType": voucherUnitType,
-      "voucherUnitValue": voucherUnitValue,
-      "voucherLimit": voucherLimit,
-      "voucherUnit": voucherUnit,
-      "voucherLocId": voucherLocId,
-      "voucherStartDate": voucherStartDate,
-      "voucherEndDate": voucherEndDate,
-      "voucherDesc": voucherDesc,
-      "voucherState": voucherState,
+      'voucherId': voucherId,
+      'voucherName': voucherName,
+      'voucherCode': voucherCode,
+      'unitType': unitType,
+      'unitValue': unitValue,
+      'voucherLimit': voucherLimit,
+      'idLocation': idLocation,
+      'nameLocation': nameLocation,
+      'voucherState': voucherState,
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
     };
   }
 
   Map<String?, dynamic> toJson2() {
     return {
-      "voucherId": voucherId,
-      "voucherName": voucherName,
-      "voucherCode": voucherCode,
-      "voucherUnitType": voucherUnitType,
-      "voucherUnitValue": voucherUnitValue,
-      "voucherLimit": voucherLimit,
-      "voucherUnit": voucherUnit,
-      "voucherStartDate": voucherStartDate != null
-          ? dateTimeUtil.dateFormat(voucherStartDate!, 'yyyy-MM-dd')
+      'voucherId': voucherId,
+      'voucherName': voucherName,
+      'voucherCode': voucherCode,
+      'unitType': unitType,
+      'unitValue': unitValue,
+      'voucherLimit': voucherLimit,
+      'idLocation': idLocation,
+      'nameLocation': nameLocation,
+      'voucherState': voucherState,
+      "startDate": startDate != null
+          ? dateTimeUtil.dateFormat(startDate!, 'yyyy-MM-dd')
           : null,
-      "voucherEndDate": voucherEndDate != null
-          ? dateTimeUtil.dateFormat(voucherEndDate!, 'yyyy-MM-dd')
+      "endDate": endDate != null
+          ? dateTimeUtil.dateFormat(endDate!, 'yyyy-MM-dd')
           : null,
-      "voucherDesc": voucherDesc,
-      "voucherState": voucherState,
     };
   }
 }
