@@ -22,6 +22,7 @@ part 'auth_service.dart';
 part 'sale_service.dart';
 part 'order_service.dart';
 part 'payment_service.dart';
+part 'message_service.dart';
 part 'sale/ticket_service.dart';
 part 'sale/voucher_service.dart';
 part 'sale/addon_service.dart';
@@ -33,4 +34,5 @@ class MainService {
   final sale = SaleService();
   final order = OrderService();
   final payment = PaymentService();
+  final message = MessageService();
 }

@@ -766,6 +766,7 @@ class CustomAlert {
                                 hintStyle: textStyle.greyText,
                                 border: InputBorder.none,
                               ),
+                              keyboardType: TextInputType.phone,
                             ),
                             GestureDetector(
                               onTap: () {

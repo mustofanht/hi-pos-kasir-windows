@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:either_dart/either.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
@@ -101,7 +102,7 @@ class OrderController extends GetxController {
     alert.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
-      onSendProofOfPayment: _handleSendProofOfPayment,
+      onSendProofOfPayment: () => _handleSendProofOfPayment(body),
       onPrint: () => _handleOnPrintOrder(body),
     );
   }
@@ -151,21 +152,33 @@ class OrderController extends GetxController {
     }
   }
 
-  void _handleSendProofOfPayment() {
+  void _handleSendProofOfPayment(OrderModel body) {
     Get.back();
     alert.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
       onSendEmail: (val) {
-        logger.safeLog('EMAIL : ${val}');
-        Get.back();
-        _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-        _clearOrder();
+        logger.safeLog('Email : ${val}');
+        var result = _service.message.sendWa(
+          authToken: _authToken,
+          phoneNumber: int.parse(val),
+          message: 'Thanks For Order ${body.toJson()}',
+        );
+        result.fold(
+          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+          (right) => alert.success('Success', 'Send Wa Sucess'),
+        );
       },
       onSendWa: (val) {
         logger.safeLog('WA : ${val}');
-        Get.back();
-        _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-        _clearOrder();
+        var result = _service.message.sendWa(
+          authToken: _authToken,
+          phoneNumber: int.parse(val),
+          message: 'Thanks For Order ${body.toJson()}',
+        );
+        result.fold(
+          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+          (right) => alert.success('Success', 'Send Wa Sucess'),
+        );
       },
       onNewOrder: _handleNewOrder,
     );
