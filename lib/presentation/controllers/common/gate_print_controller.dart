@@ -56,12 +56,13 @@ class GatePrintController extends GetxController {
       ),
     );
 
+    bytes += generator.emptyLines(1);
 // QRCODE
     bytes += generator.qrcode(
       qrCode,
       align: PosAlign.center,
     );
-
+    bytes += generator.emptyLines(1);
     bytes += generator.text(
       'Berlaku $expiredAt',
       styles: const PosStyles(
@@ -69,6 +70,7 @@ class GatePrintController extends GetxController {
         bold: true,
       ),
     );
+    bytes += generator.emptyLines(3);
 
     return bytes;
   }

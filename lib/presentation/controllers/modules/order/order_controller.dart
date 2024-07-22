@@ -139,6 +139,7 @@ class OrderController extends GetxController {
       bool isPrinted = await printController.printTicket(
         data: data,
       );
+      // bool isPrinted = await _printQrGate(body, printController);
       logger.safeLog('isPrinted : $isPrinted');
       if (isPrinted) {
         Get.back();
@@ -169,18 +170,21 @@ class OrderController extends GetxController {
     var gatePrintController = Get.put(GatePrintController());
     List<int> data = [];
     int count = 1;
+    int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
     for (var element in body.listTicket) {
-      List<int> dataPrint = await gatePrintController.dataGatePrint(
-        paperSize: PaperSize.mm80,
-        reffNo: body.orderReffno!,
-        pakOf: count,
-        pakTotal: body.listTicket.length,
-        qrCode: 'example-code-gate',
-        expiredAt: dateTimeUtil.now(format: dateFormat.dateWithoutTime),
-        ticketModel: element,
-      );
-      data.addAll(dataPrint);
-      count++;
+      for (var i = 0; i < element.totalTicket; i++) {
+        List<int> dataPrint = await gatePrintController.dataGatePrint(
+          paperSize: PaperSize.mm80,
+          reffNo: body.orderReffno!,
+          pakOf: count,
+          pakTotal: totalPak,
+          qrCode: '12345',
+          expiredAt: dateTimeUtil.now(format: dateFormat.dateWithoutTime),
+          ticketModel: element,
+        );
+        data.addAll(dataPrint);
+        count++;
+      }
     }
 
     return printController.printTicket(
