@@ -28,6 +28,7 @@ class OrderController extends GetxController {
   doPaymentQris({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       // create Order and waiting the prosess of payment
+      loading.popUpLoading();
       await _doCreateOrderQr(body: body, orderNo: orderNo);
       // Display the waiting payment alert
       if (orderPaymentNo.value == null) {

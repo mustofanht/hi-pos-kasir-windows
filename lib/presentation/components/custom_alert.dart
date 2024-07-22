@@ -650,153 +650,156 @@ class CustomAlert {
                 Expanded(
                   child: Container(
                     padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: layoutStyle.defaultMargin),
-                          child: SvgPicture.asset(
-                            assetsConstant.icPaymentSuccess,
-                            alignment: Alignment.topCenter,
-                            width: layoutStyle.blockHorizontal * 15,
-                            height: layoutStyle.blockVertical * 15,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin),
+                            child: SvgPicture.asset(
+                              assetsConstant.icPaymentSuccess,
+                              alignment: Alignment.topCenter,
+                              width: layoutStyle.blockHorizontal * 15,
+                              height: layoutStyle.blockVertical * 15,
+                            ),
                           ),
-                        ),
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: fontSize.header,
-                            fontWeight: fontWeight.bold,
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: fontSize.header,
+                              fontWeight: fontWeight.bold,
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: layoutStyle.defaultMargin / 5,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            CustomTextBox(
-                              width: layoutStyle.blockHorizontal * 25,
-                              height: layoutStyle.blockVertical * 6.5,
-                              margin: EdgeInsets.symmetric(
-                                // horizontal: layoutStyle.defaultMargin,
-                                vertical: layoutStyle.defaultMargin / 4,
-                              ),
-                              obscureText: false,
-                              border: Border.all(
-                                color: colorStyle.grey,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(
-                                  layoutStyle.defaultMargin / 2,
-                                ),
-                                topLeft: Radius.circular(
-                                  layoutStyle.defaultMargin / 2,
-                                ),
-                              ),
-                              controller: emailController,
-                              decoration: InputDecoration(
-                                hintText: 'Email Receipt',
-                                hintStyle: textStyle.greyText,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                onSendEmail(emailController.text);
-                              },
-                              child: Container(
-                                width: layoutStyle.blockHorizontal * 5,
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CustomTextBox(
+                                width: layoutStyle.blockHorizontal * 25,
                                 height: layoutStyle.blockVertical * 6.5,
-                                decoration: BoxDecoration(
-                                  color: colorStyle.primary,
-                                  borderRadius: BorderRadius.only(
-                                    bottomRight: Radius.circular(
-                                      layoutStyle.defaultMargin / 2,
+                                margin: EdgeInsets.symmetric(
+                                  // horizontal: layoutStyle.defaultMargin,
+                                  vertical: layoutStyle.defaultMargin / 4,
+                                ),
+                                obscureText: false,
+                                border: Border.all(
+                                  color: colorStyle.grey,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  topLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                  hintText: 'Email Receipt',
+                                  hintStyle: textStyle.greyText,
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  onSendEmail(emailController.text);
+                                },
+                                child: Container(
+                                  width: layoutStyle.blockHorizontal * 5,
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  decoration: BoxDecoration(
+                                    color: colorStyle.primary,
+                                    borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(
+                                        layoutStyle.defaultMargin / 2,
+                                      ),
+                                      topRight: Radius.circular(
+                                        layoutStyle.defaultMargin / 2,
+                                      ),
                                     ),
-                                    topRight: Radius.circular(
-                                      layoutStyle.defaultMargin / 2,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Kirim',
+                                      style: textStyle.whiteText,
                                     ),
                                   ),
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    'Kirim',
-                                    style: textStyle.whiteText,
-                                  ),
-                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: layoutStyle.defaultMargin / 5,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            CustomTextBox(
-                              width: layoutStyle.blockHorizontal * 25,
-                              height: layoutStyle.blockVertical * 6.5,
-                              margin: EdgeInsets.symmetric(
-                                // horizontal: layoutStyle.defaultMargin,
-                                vertical: layoutStyle.defaultMargin / 4,
-                              ),
-                              obscureText: false,
-                              border: Border.all(
-                                color: colorStyle.grey,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(
-                                  layoutStyle.defaultMargin / 2,
-                                ),
-                                topLeft: Radius.circular(
-                                  layoutStyle.defaultMargin / 2,
-                                ),
-                              ),
-                              controller: waController,
-                              decoration: InputDecoration(
-                                hintText: 'Nomor Whatsapp',
-                                hintStyle: textStyle.greyText,
-                                border: InputBorder.none,
-                              ),
-                              keyboardType: TextInputType.phone,
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                onSendEmail(waController.text);
-                              },
-                              child: Container(
-                                width: layoutStyle.blockHorizontal * 5,
+                            ],
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CustomTextBox(
+                                width: layoutStyle.blockHorizontal * 25,
                                 height: layoutStyle.blockVertical * 6.5,
-                                decoration: BoxDecoration(
-                                  color: colorStyle.primary,
-                                  borderRadius: BorderRadius.only(
-                                    bottomRight: Radius.circular(
-                                      layoutStyle.defaultMargin / 2,
-                                    ),
-                                    topRight: Radius.circular(
-                                      layoutStyle.defaultMargin / 2,
-                                    ),
+                                margin: EdgeInsets.symmetric(
+                                  // horizontal: layoutStyle.defaultMargin,
+                                  vertical: layoutStyle.defaultMargin / 4,
+                                ),
+                                obscureText: false,
+                                border: Border.all(
+                                  color: colorStyle.grey,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  topLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
                                   ),
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    'Kirim',
-                                    style: textStyle.whiteText,
+                                controller: waController,
+                                decoration: InputDecoration(
+                                  hintText: 'Nomor Whatsapp',
+                                  hintStyle: textStyle.greyText,
+                                  border: InputBorder.none,
+                                ),
+                                keyboardType: TextInputType.phone,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  onSendEmail(waController.text);
+                                },
+                                child: Container(
+                                  width: layoutStyle.blockHorizontal * 5,
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  decoration: BoxDecoration(
+                                    color: colorStyle.primary,
+                                    borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(
+                                        layoutStyle.defaultMargin / 2,
+                                      ),
+                                      topRight: Radius.circular(
+                                        layoutStyle.defaultMargin / 2,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Kirim',
+                                      style: textStyle.whiteText,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
