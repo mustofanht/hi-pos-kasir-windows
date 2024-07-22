@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:either_dart/either.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
@@ -13,6 +15,7 @@ import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/gate_print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/common/payment_print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
@@ -157,6 +160,32 @@ class OrderController extends GetxController {
         },
       );
     }
+  }
+
+  Future<bool> _printQrGate(
+    OrderModel body,
+    PrintController printController,
+  ) async {
+    var gatePrintController = Get.put(GatePrintController());
+    List<int> data = [];
+    int count = 1;
+    for (var element in body.listTicket) {
+      List<int> dataPrint = await gatePrintController.dataGatePrint(
+        paperSize: PaperSize.mm80,
+        reffNo: body.orderReffno!,
+        pakOf: count,
+        pakTotal: body.listTicket.length,
+        qrCode: 'example-code-gate',
+        expiredAt: dateTimeUtil.now(format: dateFormat.dateWithoutTime),
+        ticketModel: element,
+      );
+      data.addAll(dataPrint);
+      count++;
+    }
+
+    return printController.printTicket(
+      data: data,
+    );
   }
 
   _handleSendProofOfPayment(OrderModel body) {
