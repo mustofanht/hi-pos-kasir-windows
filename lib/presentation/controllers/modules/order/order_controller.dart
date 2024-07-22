@@ -110,10 +110,15 @@ class OrderController extends GetxController {
 
   _handleOnPrintOrder(OrderModel body) async {
     var printController = Get.put(PrintController());
-    var paymentPrintController = Get.put(PaymentPrintController());
-    await _printPaymentTiket(body, printController, paymentPrintController);
-    await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-    await _clearOrder();
+    bool bluetoothEnabled = await printController.bluetoothIsEnabled();
+    if (bluetoothEnabled) {
+      var paymentPrintController = Get.put(PaymentPrintController());
+      await _printPaymentTiket(body, printController, paymentPrintController);
+      await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+      await _clearOrder();
+    } else {
+      alert.error('Error', 'bluetooth is off, please turn it on first');
+    }
   }
 
   _printPaymentTiket(
@@ -140,6 +145,7 @@ class OrderController extends GetxController {
       }
     } else {
       alert.selectPrint(
+        printController: printController,
         title: 'Select Printer',
         msg: 'Silahkan Pilih printer',
         onPrint: () async {
@@ -187,14 +193,14 @@ class OrderController extends GetxController {
 
   _handleNewOrder() {
     Get.back();
-    Timer(Duration(seconds: 3), () {
+    Timer(Duration(seconds: 3), () async {
       Get.dialog(
         loading.simpleLoading(),
         barrierDismissible: false,
       );
       Get.back();
-      _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-      _clearOrder();
+      await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+      await _clearOrder();
     });
   }
 

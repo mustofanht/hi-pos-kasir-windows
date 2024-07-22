@@ -1018,11 +1018,11 @@ class CustomAlert {
   }
 
   selectPrint({
+    required PrintController printController,
     required String title,
     required String msg,
     required Function() onPrint,
   }) async {
-    var printController = Get.put(PrintController());
     await printController.getBluetoots();
     final listPrinter = [
       CustomIdNameEntity(id: null, name: '--- Select Printer ---')
@@ -1115,8 +1115,13 @@ class CustomAlert {
                           printController.selectedPrinter.value = val;
                           printController.update();
                           if (val != null) {
-                            await printController.connect(val.id!);
-                            await onPrint();
+                            bool result =
+                                await printController.connect(val.id!);
+                            if (result) {
+                              await onPrint();
+                            }else{
+                              alert.error('Connect Failed', 'Please Check bluetooth and printer is Active and pairing');
+                            }
                           } else {
                             alert.error('Print', 'Please selected printer');
                           }

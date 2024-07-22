@@ -9,8 +9,10 @@ import 'package:jaya_propertiy/data/models/order/order_model.dart';
 class PaymentPrintController extends GetxController {
   PaymentPrintController();
 
-  Future<List<int>> dataPaymentTiketPrint(
-      {required PaperSize paperSize, required OrderModel body}) async {
+  Future<List<int>> dataPaymentTiketPrint({
+    required PaperSize paperSize,
+    required OrderModel body,
+  }) async {
     List<int> bytes = [];
     // Using default profile
     final profile = await CapabilityProfile.load();

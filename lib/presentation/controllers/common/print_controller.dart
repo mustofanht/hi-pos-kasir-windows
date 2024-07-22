@@ -63,6 +63,8 @@ class PrintController extends GetxController {
     update();
   }
 
+
+
   Future<void> getBluetoots() async {
     _progress.value = true;
     _msjprogress.value = "Wait";
@@ -86,11 +88,15 @@ class PrintController extends GetxController {
     update();
   }
 
+  Future<bool> bluetoothIsEnabled() {
+    return PrintBluetoothThermal.bluetoothEnabled;
+  }
+
   Future<bool> isConnect() {
     return PrintBluetoothThermal.connectionStatus;
   }
 
-  Future<void> connect(String mac) async {
+  Future<bool> connect(String mac) async {
     _progress.value = true;
     _msjprogress.value = "Printer Connecting...";
     connected.value = false;
@@ -102,6 +108,7 @@ class PrintController extends GetxController {
     if (result) connected.value = true;
     _progress.value = false;
     update();
+    return result;
   }
 
   Future<void> disconnect() async {
