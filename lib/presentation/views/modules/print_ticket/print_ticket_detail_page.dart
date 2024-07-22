@@ -462,17 +462,52 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
           padding: EdgeInsets.all(layoutStyle.defaultMargin),
           child: Column(
             children: [
-              Container(
-                padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                alignment: Alignment.center,
-                child: Text(
-                  'Order Detail',
-                  style: TextStyle(
-                    color: colorStyle.black,
-                    fontSize: fontSize.header,
-                    fontWeight: fontWeight.bold,
+              Row(
+                children: [
+                  SizedBox(
+                    width: layoutStyle.blockHorizontal * 4,
+                    height: layoutStyle.blockVertical * 5,
+                    child: CustomButton(
+                      onPressed: () {
+                        controller.parentController.openDetail.value = false;
+                      },
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(colorStyle.white),
+                        foregroundColor: MaterialStateProperty.all<Color>(
+                            colorStyle.primary),
+                        overlayColor: MaterialStateProperty.all<Color>(
+                            colorStyle.primary.withOpacity(0.1)),
+                        side: MaterialStateProperty.all<BorderSide>(
+                            BorderSide(color: colorStyle.primary, width: 1)),
+                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 5,
+                                horizontal: layoutStyle.defaultMargin / 5)),
+                        elevation: MaterialStateProperty.all<double>(0),
+                        alignment: Alignment.center,
+                      ),
+                      label: const Icon(
+                        Icons.arrow_back,
+                      ),
+                      height: double.infinity,
+                    ),
                   ),
-                ),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Order Detail',
+                        style: TextStyle(
+                          color: colorStyle.black,
+                          fontSize: fontSize.header,
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Expanded(
                 child: Row(

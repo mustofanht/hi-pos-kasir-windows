@@ -1,9 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_table_data.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
   PrintTicketDetailPageController();
+  final parentController = Get.put(PrintTicketPageController());
 
   final listColumnHeader = <CustomTableData>[].obs;
   var selected = List<bool>.generate(100, (index) => false).obs;
