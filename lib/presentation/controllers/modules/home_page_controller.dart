@@ -182,6 +182,10 @@ class HomePageController extends GetxController {
   }
 
   Widget? get selectedContent {
+    Get.delete<PrintTicketPageController>();
+    Get.delete<PrintTicketDetailPageController>();
+    Get.delete<ShiftPageController>();
+    Get.delete<SettingPageController>();
     switch (selectedMenu.value) {
       case 1:
         Get.lazyPut(() => SalePageController());

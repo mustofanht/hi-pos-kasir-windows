@@ -75,7 +75,7 @@ class OrderController extends GetxController {
     }
   }
 
-  void _handlePaymentCheck(OrderModel body) async {
+  _handlePaymentCheck(OrderModel body) async {
     try {
       var isSuccess = await _checkPaymentStatus();
       if (isSuccess) {
@@ -99,7 +99,7 @@ class OrderController extends GetxController {
     }
   }
 
-  void _showPaymentSuccessAlert(OrderModel body) {
+  _showPaymentSuccessAlert(OrderModel body) {
     alert.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
@@ -108,7 +108,7 @@ class OrderController extends GetxController {
     );
   }
 
-  void _handleOnPrintOrder(OrderModel body) async {
+  _handleOnPrintOrder(OrderModel body) async {
     var printController = Get.put(PrintController());
     var paymentPrintController = Get.put(PaymentPrintController());
     await _printPaymentTiket(body, printController, paymentPrintController);
@@ -153,7 +153,7 @@ class OrderController extends GetxController {
     }
   }
 
-  void _handleSendProofOfPayment(OrderModel body) {
+  _handleSendProofOfPayment(OrderModel body) {
     Get.back();
     alert.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
@@ -185,7 +185,7 @@ class OrderController extends GetxController {
     );
   }
 
-  void _handleNewOrder() {
+  _handleNewOrder() {
     Get.back();
     Timer(Duration(seconds: 3), () {
       Get.dialog(

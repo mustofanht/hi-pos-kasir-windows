@@ -17,8 +17,7 @@ class PrintTicketPageController extends GetxController
   TabController? tabController;
 
   @override
-  void onInit() {
-    // TODO: implement onInit
+  onInit() {
     tabController = TabController(length: 1, vsync: this);
     tabController?.addListener(_handleTabSelection);
     setListHeaderColumn();
@@ -85,6 +84,7 @@ class PrintTicketPageController extends GetxController
   // }
 
   setListHeaderColumn() {
+    listColumnHeader.clear();
     listColumnHeader.add(
       CustomTableData(
         id: 'orderId',
@@ -113,7 +113,7 @@ class PrintTicketPageController extends GetxController
       CustomTableData(
         id: 'orderJml',
         columnName: 'Jml Tiket',
-        data:  const Text('1'),
+        data: const Text('1'),
         alignment: Alignment.center,
       ),
     );
@@ -185,7 +185,7 @@ class PrintTicketPageController extends GetxController
   }
 
   doToDetail() {
-    openDetail.value = !openDetail.value;
+    openDetail.value = true;
     update();
   }
 }

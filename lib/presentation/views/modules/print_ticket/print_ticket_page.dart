@@ -220,57 +220,60 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
       );
     }
 
-    return GetBuilder(
+    Widget contentSection(PrintTicketPageController controller) {
+      return Column(
+        children: [
+          Container(
+            width: layoutStyle.screenWidth,
+            color: colorStyle.lightGrey,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: layoutStyle.screenWidth / 3,
+              ),
+              child: TabBar(
+                controller: controller.tabController,
+                indicator: BoxDecoration(
+                  color: colorStyle.white,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: colorStyle.primary,
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+                labelColor: colorStyle.primary,
+                unselectedLabelColor: colorStyle.black,
+                tabs: const [
+                  Tab(text: 'Ticket'),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(
+                layoutStyle.defaultMargin * 1.5,
+              ),
+              child: TabBarView(
+                controller: controller.tabController,
+                children: [
+                  ticketSection(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return GetBuilder<PrintTicketPageController>(
       init: controller,
       tag: 'PrintTicketPage',
       initState: (state) {},
       builder: (controller) {
-        return Obx(
-          () => controller.openDetail.value
-              ? const PrintTicketDetailPage()
-              : Column(
-                  children: [
-                    Container(
-                      width: layoutStyle.screenWidth,
-                      color: colorStyle.lightGrey,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.screenWidth / 3,
-                        ),
-                        child: TabBar(
-                          controller: controller.tabController,
-                          indicator: BoxDecoration(
-                            color: colorStyle.white,
-                            border: Border(
-                              bottom: BorderSide(
-                                color: colorStyle.primary,
-                                width: 1.0,
-                              ),
-                            ),
-                          ),
-                          labelColor: colorStyle.primary,
-                          unselectedLabelColor: colorStyle.black,
-                          tabs: const [
-                            Tab(text: 'Ticket'),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding:
-                            EdgeInsets.all(layoutStyle.defaultMargin * 1.5),
-                        child: TabBarView(
-                          controller: controller.tabController,
-                          children: [
-                            ticketSection(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-        );
+        return controller.openDetail.value
+            ? const PrintTicketDetailPage()
+            : contentSection(controller);
       },
     );
   }

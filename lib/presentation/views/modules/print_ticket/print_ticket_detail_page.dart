@@ -469,7 +469,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     height: layoutStyle.blockVertical * 5,
                     child: CustomButton(
                       onPressed: () {
-                        controller.parentController.openDetail.value = false;
+                        controller.doBack();
                       },
                       style: ButtonStyle(
                         backgroundColor:

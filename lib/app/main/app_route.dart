@@ -1,6 +1,7 @@
 import 'package:jaya_propertiy/presentation/bindings/auth/login_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/default/splash_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/home_page_binding.dart';
+import 'package:jaya_propertiy/presentation/bindings/modules/print_ticket/print_ticket_detail_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/print_ticket/print_ticket_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/proofofpayment/bukti_pembayaran_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_cart_page_binding.dart';
@@ -12,6 +13,7 @@ import 'package:jaya_propertiy/presentation/bindings/modules/shift/shift_page_bi
 import 'package:jaya_propertiy/presentation/views/auth/login_page.dart';
 import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/home_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_detail_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/proofofpayment/bukti_pembayaran_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_cart_page.dart';
@@ -102,6 +104,14 @@ class AppRoute {
       transition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 1000),
     ),
+    GetPage(
+      name: RouteName.printTicketDetailPage,
+      page: () => const PrintTicketDetailPage(),
+      binding: PrintTicketDetailPageBinding(),
+      curve: Curves.easeInOut,
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 1000),
+    ),
     //Proof Of Payment
     GetPage(
       name: RouteName.buktiPembayaranPage,
@@ -162,6 +172,7 @@ abstract class RouteName {
 
   // Print Ticket
   static const printTicketPage = '/print-ticket-page';
+  static const printTicketDetailPage = '/print-ticket-detail-page';
 
   // shift
   static const shiftPage = '/shift-page';

@@ -5,7 +5,6 @@ import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/pri
 
 class PrintTicketDetailPageController extends GetxController {
   PrintTicketDetailPageController();
-  final parentController = Get.put(PrintTicketPageController());
 
   final listColumnHeader = <CustomTableData>[].obs;
   var selected = List<bool>.generate(100, (index) => false).obs;
@@ -23,10 +22,6 @@ class PrintTicketDetailPageController extends GetxController {
     super.onClose();
   }
 
-  var tabIndex = 0.obs;
-  void changeTabIndex(int index) {
-    tabIndex.value = index;
-  }
 
   void toggleSelectAll(bool? value) {
     selectAll.value = value ?? false;
@@ -84,5 +79,11 @@ class PrintTicketDetailPageController extends GetxController {
       ),
     );
     update();
+  }
+
+  doBack() {
+    final parentController = Get.find<PrintTicketPageController>();
+    parentController.openDetail.value = false;
+    parentController.update();
   }
 }
