@@ -54,7 +54,7 @@ extension CalendarFormatExt on CalendarFormat {
 }
 
 class UnitType {
-  static String PERCENT = 'PERCENT';
+  static String PERCENT = 'PERCENTAGE';
   static String PRICE = 'PRICE';
 }
 
