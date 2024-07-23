@@ -4,19 +4,19 @@ class AddonEntity {
   int? productId;
   String? productName;
   String? productType;
-  double? nominal;
-  int? idLocation;
-  String? nameLocation;
-  String? state;
+  double? productPrice;
+  int? productLoc;
+  String? productLocName;
+  String? productState;
 
   AddonEntity({
     this.productId,
     this.productName,
     this.productType,
-    this.nominal,
-    this.idLocation,
-    this.nameLocation,
-    this.state,
+    this.productPrice,
+    this.productLoc,
+    this.productLocName,
+    this.productState,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -24,11 +24,11 @@ class AddonEntity {
       productId = json['productId'];
       productName = json['productName'];
       productType = json['productType'];
-      nominal =
-          json['nominal'] != null ? (json['nominal'] as num).toDouble() : null;
-      idLocation = json['idLocation'];
-      nameLocation = json['nameLocation'];
-      state = json['state'];
+      productPrice =
+          json['productPrice'] != null ? (json['productPrice'] as num).toDouble() : null;
+      productLoc = json['productLoc'];
+      productLocName = json['productLocName'];
+      productState = json['productState'];
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -39,10 +39,10 @@ class AddonEntity {
       'productId': productId,
       'productName': productName,
       'productType': productType,
-      'nominal': nominal,
-      'idLocation': idLocation,
-      'nameLocation': nameLocation,
-      'state': state,
+      'productPrice': productPrice,
+      'productLoc': productLoc,
+      'productLocName': productLocName,
+      'productState': productState,
     };
   }
 }

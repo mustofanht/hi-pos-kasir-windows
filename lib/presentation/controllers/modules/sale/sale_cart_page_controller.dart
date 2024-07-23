@@ -68,7 +68,7 @@ class SaleCartPageController extends GetxController {
     addonList.add(
       CartAddon(
         qtyOrder: 1,
-        totalPrice: val.nominal!,
+        totalPrice: val.productPrice!,
         addon: val,
       ),
     );
@@ -77,13 +77,13 @@ class SaleCartPageController extends GetxController {
 
   addAddonCart(CartAddon val) {
     val.qtyOrder = (val.qtyOrder ?? 0) + 1;
-    val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.nominal ?? 0);
+    val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
     calculateTotalOrder();
   }
 
   removeAddon(CartAddon val) {
     val.qtyOrder = (val.qtyOrder ?? 0) - 1;
-    val.totalPrice = (val.totalPrice ?? 0) - (val.addon!.nominal ?? 0);
+    val.totalPrice = (val.totalPrice ?? 0) - (val.addon!.productPrice ?? 0);
     if (val.qtyOrder == 0) {
       removeListAddon(val);
     }

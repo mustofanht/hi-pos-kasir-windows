@@ -122,6 +122,8 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                                             fontSize: fontSize.title,
                                             // fontWeight: FontWeight.bold,
                                           ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                       ],
                                     ),
