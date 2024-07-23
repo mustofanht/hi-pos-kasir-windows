@@ -34,9 +34,9 @@ class SaleCartPageController extends GetxController {
   addTicket(TicketEntity ticket) {
     ticketList.add(
       CartTicket(
-        qtyOrder: ticket.minimum,
+        qtyOrder: ticket.ticketMinimum,
         ticket: ticket,
-        totalPrice: ticket.nominal!,
+        totalPrice: ticket.ticketPrice!,
       ),
     );
     calculateTotalOrder();
@@ -45,14 +45,14 @@ class SaleCartPageController extends GetxController {
   addTicketCart(CartTicket ticket) {
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
     ticket.totalPrice =
-        (ticket.totalPrice ?? 0) + (ticket.ticket!.nominal ?? 0);
+        (ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0);
     calculateTotalOrder();
   }
 
   removeTicket(CartTicket ticket) {
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) - 1;
     ticket.totalPrice =
-        (ticket.totalPrice ?? 0) - (ticket.ticket!.nominal ?? 0);
+        (ticket.totalPrice ?? 0) - (ticket.ticket!.ticketPrice ?? 0);
     if (ticket.qtyOrder == 0) {
       removeListTicket(ticket);
     }

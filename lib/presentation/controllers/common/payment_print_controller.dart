@@ -74,8 +74,8 @@ class PaymentPrintController extends GetxController {
             width: 2,
           ),
           PosColumn(
-            text: element.ticket?.nominal != null
-                ? common.currencyFormat(element.ticket!.nominal!)
+            text: element.ticket?.ticketPrice != null
+                ? common.currencyFormat(element.ticket!.ticketPrice!)
                 : '',
             width: 2,
           ),

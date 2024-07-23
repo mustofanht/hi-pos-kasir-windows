@@ -179,7 +179,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),
-                          (e.qtyOrder ?? 0) > (e.ticket!.minimum ?? 0)
+                          (e.qtyOrder ?? 0) > (e.ticket!.ticketMinimum ?? 0)
                               ? CustomButton(
                                   onPressed: () {
                                     controller.removeTicket(e);

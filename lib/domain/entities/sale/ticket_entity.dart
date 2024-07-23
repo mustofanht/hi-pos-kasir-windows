@@ -5,22 +5,22 @@ class TicketEntity {
   int? ticketId;
   String? ticketName;
   String? ticketType;
-  int? idLocation;
-  String? nameLocation;
-  double? nominal;
-  String? state;
-  int? minimum;
+  int? ticketLocation;
+  String? ticketLocationName;
+  double? ticketPrice;
+  String? ticketState;
+  int? ticketMinimum;
   List<TicketDaysEntity>? ticketDays;
 
   TicketEntity({
     this.ticketId,
     this.ticketName,
     this.ticketType,
-    this.idLocation,
-    this.nameLocation,
-    this.nominal,
-    this.state,
-    this.minimum,
+    this.ticketLocation,
+    this.ticketLocationName,
+    this.ticketPrice,
+    this.ticketState,
+    this.ticketMinimum,
     this.ticketDays,
   });
 
@@ -29,12 +29,12 @@ class TicketEntity {
       ticketId = json['ticketId'];
       ticketName = json['ticketName'];
       ticketType = json['ticketType'];
-      idLocation = json['idLocation'];
-      nameLocation = json['nameLocation'];
-      nominal =
-          json['nominal'] != null ? (json['nominal'] as num).toDouble() : null;
-      state = json['state'];
-      minimum = json['minimum'];
+      ticketLocation = json['ticketLocation'];
+      ticketLocationName = json['ticketLocationName'];
+      ticketPrice =
+          json['ticketPrice'] != null ? (json['ticketPrice'] as num).toDouble() : null;
+      ticketState = json['ticketState'];
+      ticketMinimum = json['ticketMinimum'];
       ticketDays = json['ticketDays'] != null
           ? (json['ticketDays'] as List)
               .map((item) => TicketDaysEntity.fromJson(item))
@@ -49,11 +49,11 @@ class TicketEntity {
       "ticketId": ticketId,
       "ticketName": ticketName,
       "ticketType": ticketType,
-      "idLocation": idLocation,
-      "nameLocation": nameLocation,
-      "nominal": nominal,
-      "state": state,
-      "minimum": minimum,
+      "ticketLocation": ticketLocation,
+      "ticketLocationName": ticketLocationName,
+      "ticketPrice": ticketPrice,
+      "ticketState": ticketState,
+      "ticketMinimum": ticketMinimum,
       "ticketDays": ticketDays != null
           ? ticketDays!.map((item) => item.toJson()).toList()
           : null,
