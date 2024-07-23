@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
@@ -464,9 +465,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text(
-                            e.voucher!.unitType == 'PERCENT'
-                                ? ('${e.voucher!.unitValue} %')
-                                : ('Rp${e.voucher!.unitValue}'),
+                            e.voucher!.voucherUnitType == UnitType.PERCENT
+                                ? ('${e.voucher!.voucherUnitValue} %')
+                                : ('Rp${e.voucher!.voucherUnitValue}'),
                           ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,

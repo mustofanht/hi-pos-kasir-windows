@@ -4,46 +4,46 @@ class VoucherEntity {
   int? voucherId;
   String? voucherName;
   String? voucherCode;
-  String? unitType;
-  double? unitValue;
+  String? voucherUnitType;
+  double? voucherUnitValue;
   int? voucherLimit;
-  int? idLocation;
-  String? nameLocation;
+  int? voucherLocId;
+  String? voucherLocName;
   String? voucherState;
-  DateTime? startDate;
-  DateTime? endDate;
+  DateTime? voucherStartDate;
+  DateTime? voucherEndDate;
 
   VoucherEntity({
     this.voucherId,
     this.voucherName,
     this.voucherCode,
-    this.unitType,
-    this.unitValue,
+    this.voucherUnitType,
+    this.voucherUnitValue,
     this.voucherLimit,
-    this.idLocation,
-    this.nameLocation,
+    this.voucherLocId,
+    this.voucherLocName,
     this.voucherState,
-    this.startDate,
-    this.endDate,
+    this.voucherStartDate,
+    this.voucherEndDate,
   });
 
   VoucherEntity.fromJson(Map<String?, dynamic> json) {
     voucherId = json['voucherId'];
     voucherName = json['voucherName'];
     voucherCode = json['voucherCode'];
-    unitType = json['unitType'];
-    unitValue = json['unitValue'] != null
-        ? (json['unitValue'] as num).toDouble()
+    voucherUnitType = json['voucherUnitType'];
+    voucherUnitValue = json['voucherUnitValue'] != null
+        ? (json['voucherUnitValue'] as num).toDouble()
         : null;
     voucherLimit = json['voucherLimit'];
-    idLocation = json['idLocation'];
-    nameLocation = json['nameLocation'];
+    voucherLocId = json['voucherLocId'];
+    voucherLocName = json['voucherLocName'];
     voucherState = json['voucherState'];
-    startDate = json['startDate'] != null
-        ? DateTime.parse(json['startDate'])
+    voucherStartDate = json['voucherStartDate'] != null
+        ? DateTime.parse(json['voucherStartDate'])
         : null;
-    endDate = json['endDate'] != null
-        ? DateTime.parse(json['endDate'])
+    voucherEndDate = json['voucherEndDate'] != null
+        ? DateTime.parse(json['voucherEndDate'])
         : null;
   }
   
@@ -52,14 +52,14 @@ class VoucherEntity {
       'voucherId': voucherId,
       'voucherName': voucherName,
       'voucherCode': voucherCode,
-      'unitType': unitType,
-      'unitValue': unitValue,
+      'voucherUnitType': voucherUnitType,
+      'voucherUnitValue': voucherUnitValue,
       'voucherLimit': voucherLimit,
-      'idLocation': idLocation,
-      'nameLocation': nameLocation,
+      'voucherLocId': voucherLocId,
+      'voucherLocName': voucherLocName,
       'voucherState': voucherState,
-      'startDate': startDate?.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
+      'voucherStartDate': voucherStartDate?.toIso8601String(),
+      'voucherEndDate': voucherEndDate?.toIso8601String(),
     };
   }
 
@@ -68,17 +68,17 @@ class VoucherEntity {
       'voucherId': voucherId,
       'voucherName': voucherName,
       'voucherCode': voucherCode,
-      'unitType': unitType,
-      'unitValue': unitValue,
+      'voucherUnitType': voucherUnitType,
+      'voucherUnitValue': voucherUnitValue,
       'voucherLimit': voucherLimit,
-      'idLocation': idLocation,
-      'nameLocation': nameLocation,
+      'voucherLocId': voucherLocId,
+      'voucherLocName': voucherLocName,
       'voucherState': voucherState,
-      "startDate": startDate != null
-          ? dateTimeUtil.dateFormat(startDate!, 'yyyy-MM-dd')
+      "voucherStartDate": voucherStartDate != null
+          ? dateTimeUtil.dateFormat(voucherStartDate!, 'yyyy-MM-dd')
           : null,
-      "endDate": endDate != null
-          ? dateTimeUtil.dateFormat(endDate!, 'yyyy-MM-dd')
+      "voucherEndDate": voucherEndDate != null
+          ? dateTimeUtil.dateFormat(voucherEndDate!, 'yyyy-MM-dd')
           : null,
     };
   }

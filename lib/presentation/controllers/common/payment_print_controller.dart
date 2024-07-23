@@ -151,8 +151,8 @@ class PaymentPrintController extends GetxController {
             width: 2,
           ),
           PosColumn(
-            text: element.voucher?.unitValue != null
-                ? common.currencyFormat(element.voucher!.unitValue!)
+            text: element.voucher?.voucherUnitValue != null
+                ? common.currencyFormat(element.voucher!.voucherUnitValue!)
                 : '',
             width: 2,
           ),

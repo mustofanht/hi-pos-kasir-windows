@@ -99,7 +99,7 @@ class SaleCartPageController extends GetxController {
     voucherList.add(
       CartVoucher(
         qtyOrder: 1,
-        totalPrice: voucher.unitValue!,
+        totalPrice: voucher.voucherUnitValue!,
         voucher: voucher,
       ),
     );
@@ -130,11 +130,11 @@ class SaleCartPageController extends GetxController {
     if (voucherList.isNotEmpty) {
       double discountAmount = 0;
       for (var element in voucherList) {
-        if (element.voucher!.unitType == 'PERCENT') {
+        if (element.voucher!.voucherUnitType == UnitType.PERCENT) {
           discountAmount +=
-              ticketTotalAmnt * (element.voucher!.unitValue ?? 0) / 100;
+              ticketTotalAmnt * (element.voucher!.voucherUnitValue ?? 0) / 100;
         } else {
-          discountAmount += element.voucher!.unitValue ?? 0;
+          discountAmount += element.voucher!.voucherUnitValue ?? 0;
         }
         logger.safeLog('discount : ${discountAmount} ');
       }

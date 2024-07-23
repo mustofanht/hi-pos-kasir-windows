@@ -53,6 +53,11 @@ extension CalendarFormatExt on CalendarFormat {
   }
 }
 
+class UnitType {
+  static String PERCENT = 'PERCENT';
+  static String PRICE = 'PRICE';
+}
+
 class CustomerDisplayAction {
   static String ADD_CART = 'add-cart';
   static String PAYMENT = 'payment';
