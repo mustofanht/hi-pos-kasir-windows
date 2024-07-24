@@ -114,12 +114,21 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                                     ...controller.listColumnHeader
                                         .map(
                                           (element) => Expanded(
-                                            child: Text(
-                                              element.columnName ?? '',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                  color: colorStyle.black,
-                                                  fontWeight: fontWeight.bold),
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                    layoutStyle.defaultMargin /
+                                                        2,
+                                              ),
+                                              child: Text(
+                                                element.columnName ?? '',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    color: colorStyle.black,
+                                                    fontWeight:
+                                                        fontWeight.bold),
+                                              ),
                                             ),
                                           ),
                                         )
@@ -132,42 +141,58 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                           SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    controller.doToDetail();
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border(
-                                        bottom: BorderSide(
-                                            color: colorStyle.lightGrey,
-                                            width: 1.0),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Checkbox(
-                                          fillColor: MaterialStatePropertyAll(
-                                              colorStyle.blue),
-                                          value: controller.selected[index],
-                                          onChanged: (value) => controller
-                                              .toggleSelect(index, value),
-                                        ),
-                                        ...controller.listColumnHeader.map(
-                                          (element) => Expanded(
-                                            child: Container(
-                                              alignment: element.alignment,
-                                              child: element.data ??
-                                                  const Text(''),
+                                return controller.dataList.length > 0
+                                    ? GestureDetector(
+                                        onTap: () {
+                                          controller.doToDetail();
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: colorStyle.lightGrey,
+                                                width: 1.0,
+                                              ),
                                             ),
                                           ),
+                                          child: Row(
+                                            children: [
+                                              Checkbox(
+                                                fillColor:
+                                                    MaterialStatePropertyAll(
+                                                        colorStyle.blue),
+                                                value:
+                                                    controller.selected[index],
+                                                onChanged: (value) => controller
+                                                    .toggleSelect(index, value),
+                                              ),
+                                              ...controller.listColumnHeader
+                                                  .map(
+                                                (element) => Expanded(
+                                                  child: Container(
+                                                      alignment:
+                                                          element.alignment,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                        horizontal: layoutStyle
+                                                                .defaultMargin /
+                                                            2,
+                                                      ),
+                                                      child: Text(
+                                                        controller.dataList[
+                                                                        index]
+                                                                    .toJson()[
+                                                                element.id].toString(),
+                                                      )),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                );
+                                      )
+                                    : Container();
                               },
-                              childCount: 100,
+                              childCount: controller.dataList.length,
                             ),
                           ),
                         ],
@@ -209,10 +234,11 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ),
             controller: controller.searchController,
             decoration: InputDecoration(
-                hintText: 'Masukan nomor ID Order atau ID Ticket',
-                hintStyle: textStyle.greyText,
-                border: InputBorder.none,
-                suffixIcon: Icon(Icons.search)),
+              hintText: 'Masukan nomor ID Order atau ID Ticket',
+              hintStyle: textStyle.greyText,
+              border: InputBorder.none,
+              suffixIcon: Icon(Icons.search),
+            ),
           ),
           SizedBox(height: layoutStyle.defaultMargin),
           contentTableSection(controller),

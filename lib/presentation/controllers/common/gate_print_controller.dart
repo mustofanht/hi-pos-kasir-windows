@@ -70,7 +70,8 @@ class GatePrintController extends GetxController {
         bold: true,
       ),
     );
-    bytes += generator.emptyLines(3);
+    bytes += generator.emptyLines(1);
+    bytes += generator.cut();
 
     return bytes;
   }

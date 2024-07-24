@@ -330,7 +330,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                                       (element) => Expanded(
                                         child: Container(
                                           alignment: element.alignment,
-                                          child: element.data ?? const Text(''),
+                                          child: const Text('Value'),
                                         ),
                                       ),
                                     ),

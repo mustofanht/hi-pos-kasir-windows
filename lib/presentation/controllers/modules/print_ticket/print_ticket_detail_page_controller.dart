@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/domain/entities/common/custom_table_data.dart';
+import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
@@ -42,7 +42,6 @@ class PrintTicketDetailPageController extends GetxController {
       CustomTableData(
         id: 'ticket',
         columnName: 'Tiket',
-        data: const Text('Perorangan'),
         alignment: Alignment.centerLeft,
       ),
     );
@@ -50,7 +49,6 @@ class PrintTicketDetailPageController extends GetxController {
       CustomTableData(
         id: 'qty',
         columnName: 'Quantity',
-        data: const Text('10'),
         alignment: Alignment.center,
       ),
     );
@@ -58,7 +56,6 @@ class PrintTicketDetailPageController extends GetxController {
       CustomTableData(
         id: 'itemPrice',
         columnName: 'Item Price',
-        data: const Text('Rp. 25,000'),
         alignment: Alignment.centerRight,
       ),
     );
@@ -66,7 +63,6 @@ class PrintTicketDetailPageController extends GetxController {
       CustomTableData(
         id: 'Discount',
         columnName: 'Discount',
-        data: const Text('0'),
         alignment: Alignment.centerRight,
       ),
     );
@@ -74,7 +70,6 @@ class PrintTicketDetailPageController extends GetxController {
       CustomTableData(
         id: 'total',
         columnName: 'Total',
-        data: const Text('Rp.25,000'),
         alignment: Alignment.centerRight,
       ),
     );

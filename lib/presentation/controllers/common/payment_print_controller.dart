@@ -263,6 +263,7 @@ class PaymentPrintController extends GetxController {
         align: PosAlign.center,
       ),
     );
+    bytes += generator.emptyLines(1);
     bytes += generator.cut();
 
     return bytes;

@@ -112,11 +112,13 @@ class OrderController extends GetxController {
   }
 
   _handleOnPrintOrder(OrderModel body) async {
+    var paymentPrintController = Get.put(PaymentPrintController());
+    var gatePrintController = Get.put(GatePrintController());
     var printController = Get.put(PrintController());
     bool bluetoothEnabled = await printController.bluetoothIsEnabled();
     if (bluetoothEnabled) {
-      var paymentPrintController = Get.put(PaymentPrintController());
-      await _printPaymentTiket(body, printController, paymentPrintController);
+      await _printPaymentTiket(
+          body, printController, paymentPrintController, gatePrintController);
       await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
       await _clearOrder();
     } else {
@@ -128,6 +130,7 @@ class OrderController extends GetxController {
     OrderModel body,
     PrintController printController,
     PaymentPrintController paymentPrintController,
+    GatePrintController gatePrintController,
   ) async {
     bool isConnectPrinter = await printController.isConnect();
     if (isConnectPrinter) {
@@ -135,17 +138,35 @@ class OrderController extends GetxController {
         paperSize: PaperSize.mm80,
         body: body,
       );
+      int count = 1;
+      int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
+      for (var element in body.listTicket) {
+        for (var i = 0; i < element.totalTicket; i++) {
+          List<int> dataPrint = await gatePrintController.dataGatePrint(
+            paperSize: PaperSize.mm80,
+            reffNo: body.orderReffno!,
+            pakOf: count,
+            pakTotal: totalPak,
+            qrCode: '12345',
+            expiredAt: dateTimeUtil.now(format: dateFormat.dateWithoutTime),
+            ticketModel: element,
+          );
+          data.addAll(dataPrint);
+          count++;
+        }
+      }
+
       loading.popUpLoading();
       bool isPrinted = await printController.printTicket(
         data: data,
       );
-      // bool isPrinted = await _printQrGate(body, printController);
       logger.safeLog('isPrinted : $isPrinted');
       if (isPrinted) {
         Get.back();
         Get.back();
       } else {
-        await _printPaymentTiket(body, printController, paymentPrintController);
+        await _printPaymentTiket(
+            body, printController, paymentPrintController, gatePrintController);
       }
     } else {
       alert.selectPrint(
@@ -157,39 +178,11 @@ class OrderController extends GetxController {
             body,
             printController,
             paymentPrintController,
+            gatePrintController,
           );
         },
       );
     }
-  }
-
-  Future<bool> _printQrGate(
-    OrderModel body,
-    PrintController printController,
-  ) async {
-    var gatePrintController = Get.put(GatePrintController());
-    List<int> data = [];
-    int count = 1;
-    int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
-    for (var element in body.listTicket) {
-      for (var i = 0; i < element.totalTicket; i++) {
-        List<int> dataPrint = await gatePrintController.dataGatePrint(
-          paperSize: PaperSize.mm80,
-          reffNo: body.orderReffno!,
-          pakOf: count,
-          pakTotal: totalPak,
-          qrCode: '12345',
-          expiredAt: dateTimeUtil.now(format: dateFormat.dateWithoutTime),
-          ticketModel: element,
-        );
-        data.addAll(dataPrint);
-        count++;
-      }
-    }
-
-    return printController.printTicket(
-      data: data,
-    );
   }
 
   _handleSendProofOfPayment(OrderModel body) {

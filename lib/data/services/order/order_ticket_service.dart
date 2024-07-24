@@ -37,4 +37,54 @@ class OrderTicketService {
       return Left(common.getMetadataMessages(response.body));
     }
   }
+
+  Future<Either<String, BaseResponse<List<TrnOrderEntity>>>> getAllOrder({
+    required AuthToken authToken,
+    List<FilterQuery>? dataFilter,
+    Map<String, dynamic>? paramsFilter,
+    String? reffNo,
+  }) async {
+    var path = "trn_order";
+
+    apiFilterUtil.buildQuery(
+      data: dataFilter,
+      params: paramsFilter,
+    );
+
+    logger.safeLog('paramsFilter : ${paramsFilter}');
+
+    final uri = source
+        .baseUri(
+          path: path,
+        )
+        .replace(
+          queryParameters: paramsFilter,
+        );
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      var bodyData = json.decode(response.body);
+      BaseResponse<List<TrnOrderEntity>> result =
+          BaseResponse<List<TrnOrderEntity>>.fromJson(
+        bodyData,
+        (data) => common.fromJsonList(
+          data,
+          (item) => TrnOrderEntity.fromJson(
+            item,
+          ),
+        ),
+      );
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
 }

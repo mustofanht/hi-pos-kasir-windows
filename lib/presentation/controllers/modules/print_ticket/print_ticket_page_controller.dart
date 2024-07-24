@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/domain/entities/common/custom_table_data.dart';
-import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
+import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/common/filter_model.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
+import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
+import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 
 class PrintTicketPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
   PrintTicketPageController();
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
 
   var selected = List<bool>.generate(100, (index) => false).obs;
   var selectAll = false.obs;
@@ -16,17 +24,25 @@ class PrintTicketPageController extends GetxController
 
   TabController? tabController;
 
+  final scrollController = ScrollController();
+  final pagination = Pagination().obs;
+
+  final dataList = <TrnOrderEntity>[].obs;
+  final isLoadMore = false.obs;
+  final isLoading = false.obs;
+  final visibleLoadMore = false.obs;
+
   @override
   onInit() {
-    tabController = TabController(length: 1, vsync: this);
+    super.onInit();
+    tabController = TabController(length: 1, vsync: this, initialIndex: 0);
     tabController?.addListener(_handleTabSelection);
     setListHeaderColumn();
-    super.onInit();
+    doPrepareList(page: 0);
   }
 
   @override
   void onClose() {
-    // TODO: implement onClose
     tabController?.dispose();
     super.onClose();
   }
@@ -38,11 +54,11 @@ class PrintTicketPageController extends GetxController
   }
 
   var tabIndex = 0.obs;
-  void changeTabIndex(int index) {
+  changeTabIndex(int index) {
     tabIndex.value = index;
   }
 
-  void toggleSelectAll(bool? value) {
+  toggleSelectAll(bool? value) {
     selectAll.value = value ?? false;
     for (int i = 0; i < selected.length; i++) {
       selected[i] = selectAll.value;
@@ -50,46 +66,18 @@ class PrintTicketPageController extends GetxController
     update();
   }
 
-  void toggleSelect(int index, bool? value) {
+  toggleSelect(int index, bool? value) {
     selected[index] = value ?? false;
     selectAll.value = selected.every((element) => element);
     update();
   }
 
-  // Widget badgeCard({
-  //   required String label,
-  //   required Color colorLabel,
-  //   required Color colorBox,
-  // }) {
-  //   return Center(
-  //     child: Container(
-  //       padding: EdgeInsets.all(
-  //         layoutStyle.defaultMargin / 2,
-  //       ),
-  //       decoration: BoxDecoration(
-  //         color: colorBox,
-  //         borderRadius: BorderRadius.circular(
-  //           layoutStyle.defaultMargin / 2,
-  //         ),
-  //       ),
-  //       child: Text(
-  //         label,
-  //         style: TextStyle(
-  //           color: colorLabel,
-  //           fontSize: fontSize.small,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   setListHeaderColumn() {
     listColumnHeader.clear();
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderId',
+        id: 'orderNumber',
         columnName: 'ID Order',
-        data: const Text('ORD0001'),
         alignment: Alignment.centerLeft,
       ),
     );
@@ -97,31 +85,28 @@ class PrintTicketPageController extends GetxController
       CustomTableData(
         id: 'orderName',
         columnName: 'Nama',
-        data: const Text('Arthur'),
         alignment: Alignment.centerLeft,
       ),
     );
+    // listColumnHeader.add(
+    //   CustomTableData(
+    //     id: 'orderTicket',
+    //     columnName: 'Ticket',
+    //     data: const Text('Personal'),
+    //     alignment: Alignment.centerLeft,
+    //   ),
+    // );
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderTicket',
-        columnName: 'Ticket',
-        data: const Text('Personal'),
-        alignment: Alignment.centerLeft,
-      ),
-    );
-    listColumnHeader.add(
-      CustomTableData(
-        id: 'orderJml',
+        id: 'orderTotalItem',
         columnName: 'Jml Tiket',
-        data: const Text('1'),
         alignment: Alignment.center,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderAmnt',
+        id: 'orderTotalAmt',
         columnName: 'Harga(Rp)',
-        data: const Text('Rp.25,000'),
         alignment: Alignment.centerRight,
       ),
     );
@@ -129,59 +114,100 @@ class PrintTicketPageController extends GetxController
       CustomTableData(
         id: 'orderSource',
         columnName: 'Order Source',
-        data: const Text('Onsite'),
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.center,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
         id: 'orderStatus',
         columnName: 'Status Pembayaran',
-        data: CustomBadge(
-          label: 'Sukses',
-          colorLabel: colorStyle.black,
-          colorBox: colorStyle.green,
-        ),
         alignment: Alignment.center,
       ),
     );
-    listColumnHeader.add(
-      CustomTableData(
-        id: 'tiketStatus',
-        columnName: 'Status Tiket',
-        data: CustomBadge(
-          label: 'Active',
-          colorLabel: colorStyle.black,
-          colorBox: colorStyle.green,
-        ),
-        alignment: Alignment.centerLeft,
-      ),
-    );
-    listColumnHeader.add(
-      CustomTableData(
-        id: 'printStatus',
-        columnName: 'Status Cetak',
-        data: CustomBadge(
-          label: 'Cetak',
-          colorLabel: colorStyle.black,
-          colorBox: colorStyle.green,
-        ),
-        alignment: Alignment.centerLeft,
-      ),
-    );
-    listColumnHeader.add(
-      CustomTableData(
-        id: 'scanStatus',
-        columnName: 'Status Scan',
-        data: const Text('1/1'),
-        alignment: Alignment.center,
-      ),
-    );
+    // listColumnHeader.add(
+    //   CustomTableData(
+    //     id: 'tiketStatus',
+    //     columnName: 'Status Tiket',
+    //     data: CustomBadge(
+    //       label: 'Active',
+    //       colorLabel: colorStyle.black,
+    //       colorBox: colorStyle.green,
+    //     ),
+    //     alignment: Alignment.centerLeft,
+    //   ),
+    // );
+    // listColumnHeader.add(
+    //   CustomTableData(
+    //     id: 'printStatus',
+    //     columnName: 'Status Cetak',
+    //     data: CustomBadge(
+    //       label: 'Cetak',
+    //       colorLabel: colorStyle.black,
+    //       colorBox: colorStyle.green,
+    //     ),
+    //     alignment: Alignment.centerLeft,
+    //   ),
+    // );
+    // listColumnHeader.add(
+    //   CustomTableData(
+    //     id: 'scanStatus',
+    //     columnName: 'Status Scan',
+    //     data: const Text('1/1'),
+    //     alignment: Alignment.center,
+    //   ),
+    // );
     update();
   }
 
-  doPrepareList() {
+  doPrepareList({required int page}) async {
     //
+    if (page > 0) {
+      isLoadMore.value = true;
+    } else {
+      isLoading.value = true;
+    }
+
+    try {
+      var result;
+      List<FilterQuery> dataFilter = [];
+      Map<String, dynamic> param = {
+        'page': page.toString(),
+        'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+      };
+
+      if (searchController.text != '') {
+        dataFilter.add(
+          apiFilterUtil.addSearch(
+            'orderNumber',
+            OPERATOR_CONSTANTS.LIKE,
+            searchController.text,
+          )!,
+        );
+      }
+
+      result = await _service.order.orderService.getAllOrder(
+          authToken: _authToken, dataFilter: dataFilter, paramsFilter: param);
+      result.fold((l) {
+        logger.safeLog(l);
+        isLoading.value = false;
+        isLoadMore.value = false;
+      }, (r) {
+        if (page == 0) {
+          dataList.value = r.data!;
+        } else {
+          dataList.addAll(r.data!);
+        }
+        pagination.value = r.pagination!;
+        isLoading.value = false;
+        isLoadMore.value = false;
+        visibleLoadMore.value = false;
+      });
+    } catch (e) {
+      logger.safeLog(e);
+      isLoading.value = false;
+      isLoadMore.value = false;
+    }
+    update();
   }
 
   doToDetail() {
