@@ -161,6 +161,11 @@ class PrintTicketPageController extends GetxController
 
   doPrepareList({required int page}) async {
     //
+    if (tabController == null) {
+      tabController = TabController(length: 1, vsync: this, initialIndex: 0);
+      tabController?.addListener(_handleTabSelection);
+    }
+
     if (page > 0) {
       isLoadMore.value = true;
     } else {
@@ -175,11 +180,12 @@ class PrintTicketPageController extends GetxController
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
       };
 
+      logger.safeLog('searchController.text : ${searchController.text}');
       if (searchController.text != '') {
         dataFilter.add(
           apiFilterUtil.addSearch(
             'orderNumber',
-            OPERATOR_CONSTANTS.LIKE,
+            OPERATOR_CONSTANTS.EQUALS,
             searchController.text,
           )!,
         );

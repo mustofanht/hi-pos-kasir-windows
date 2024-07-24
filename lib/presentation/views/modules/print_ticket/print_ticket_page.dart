@@ -3,6 +3,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_detail_page.dart';
@@ -24,62 +25,24 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                 width: 1,
                 color: colorStyle.black,
               ),
-              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+              borderRadius: BorderRadius.all(
+                Radius.circular(
+                  layoutStyle.defaultMargin / 5,
+                ),
+              ),
               color: colorStyle.white,
             ),
             child: Column(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.defaultMargin,
-                    vertical: layoutStyle.defaultMargin,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.defaultMargin,
-                        ),
-                        child: Row(
-                          children: [
-                            const Text('Nama Pembeli:'),
-                            Text(
-                              'Arthur Morgan',
-                              style: TextStyle(
-                                fontWeight: fontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.defaultMargin,
-                        ),
-                        child: Row(
-                          children: [
-                            const Text('Order ID:'),
-                            Text(
-                              '1000230123678',
-                              style: TextStyle(
-                                fontWeight: fontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 Expanded(
                   flex: 1,
                   child: Padding(
-                    padding: EdgeInsets.only(
-                      bottom: layoutStyle.defaultMargin,
-                      left: layoutStyle.defaultMargin,
-                      right: layoutStyle.defaultMargin,
-                    ),
+                    padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                    // padding: EdgeInsets.only(
+                    //   bottom: layoutStyle.defaultMargin,
+                    //   left: layoutStyle.defaultMargin,
+                    //   right: layoutStyle.defaultMargin,
+                    // ),
                     child: RefreshIndicator(
                       onRefresh: () async {
                         // await controller.doPrepareList(page: 1);
@@ -96,21 +59,21 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                                 color: colorStyle.lightGrey,
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(
-                                    layoutStyle.defaultMargin / 2,
+                                    layoutStyle.defaultMargin / 5,
                                   ),
                                   topRight: Radius.circular(
-                                    layoutStyle.defaultMargin / 2,
+                                    layoutStyle.defaultMargin / 5,
                                   ),
                                 ),
                                 child: Row(
                                   children: [
-                                    Checkbox(
-                                      fillColor: MaterialStatePropertyAll(
-                                          colorStyle.blue),
-                                      value: controller.selectAll.value,
-                                      onChanged: (value) =>
-                                          controller.toggleSelectAll(value),
-                                    ),
+                                    // Checkbox(
+                                    //   fillColor: MaterialStatePropertyAll(
+                                    //       colorStyle.blue),
+                                    //   value: controller.selectAll.value,
+                                    //   onChanged: (value) =>
+                                    //       controller.toggleSelectAll(value),
+                                    // ),
                                     ...controller.listColumnHeader
                                         .map(
                                           (element) => Expanded(
@@ -120,6 +83,9 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                                                 horizontal:
                                                     layoutStyle.defaultMargin /
                                                         2,
+                                                vertical:
+                                                    layoutStyle.defaultMargin /
+                                                        4,
                                               ),
                                               child: Text(
                                                 element.columnName ?? '',
@@ -141,56 +107,62 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                           SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index) {
-                                return controller.dataList.length > 0
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          controller.doToDetail();
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: colorStyle.lightGrey,
-                                                width: 1.0,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Checkbox(
-                                                fillColor:
-                                                    MaterialStatePropertyAll(
-                                                        colorStyle.blue),
-                                                value:
-                                                    controller.selected[index],
-                                                onChanged: (value) => controller
-                                                    .toggleSelect(index, value),
-                                              ),
-                                              ...controller.listColumnHeader
-                                                  .map(
-                                                (element) => Expanded(
-                                                  child: Container(
-                                                      alignment:
-                                                          element.alignment,
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                        horizontal: layoutStyle
-                                                                .defaultMargin /
-                                                            2,
-                                                      ),
-                                                      child: Text(
-                                                        controller.dataList[
-                                                                        index]
-                                                                    .toJson()[
-                                                                element.id].toString(),
-                                                      )),
+                                return controller.isLoading.value
+                                    ? loading.simpleLoading()
+                                    : controller.dataList.isNotEmpty
+                                        ? GestureDetector(
+                                            onTap: () {
+                                              controller.doToDetail();
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: colorStyle.lightGrey,
+                                                    width: 1.0,
+                                                  ),
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    : Container();
+                                              child: Row(
+                                                children: [
+                                                  // Checkbox(
+                                                  //   fillColor:
+                                                  //       MaterialStatePropertyAll(
+                                                  //           colorStyle.blue),
+                                                  //   value:
+                                                  //       controller.selected[index],
+                                                  //   onChanged: (value) => controller
+                                                  //       .toggleSelect(index, value),
+                                                  // ),
+                                                  ...controller.listColumnHeader
+                                                      .map(
+                                                    (element) => Expanded(
+                                                      child: Container(
+                                                          alignment:
+                                                              element.alignment,
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                            horizontal: layoutStyle
+                                                                    .defaultMargin /
+                                                                2,
+                                                            vertical: layoutStyle
+                                                                    .defaultMargin /
+                                                                4,
+                                                          ),
+                                                          child: Text(
+                                                            controller
+                                                                .dataList[index]
+                                                                .toJson()[
+                                                                    element.id]
+                                                                .toString(),
+                                                          )),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        : Container();
                               },
                               childCount: controller.dataList.length,
                             ),
@@ -237,7 +209,14 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
               hintText: 'Masukan nomor ID Order atau ID Ticket',
               hintStyle: textStyle.greyText,
               border: InputBorder.none,
-              suffixIcon: Icon(Icons.search),
+              suffixIcon: IconButton(
+                onPressed: () {
+                  controller.doPrepareList(page: 0);
+                },
+                icon: const Icon(
+                  Icons.search,
+                ),
+              ),
             ),
           ),
           SizedBox(height: layoutStyle.defaultMargin),
