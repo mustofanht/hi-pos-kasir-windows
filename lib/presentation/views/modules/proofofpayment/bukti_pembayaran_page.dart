@@ -14,7 +14,8 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
   @override
   Widget build(BuildContext context) {
     layoutStyle.init(context);
-    Widget rightSection() {
+
+    Widget rightSection(ProofOfPaymentModel model) {
       return Expanded(
         child: Container(
           width: layoutStyle.screenWidth,
@@ -46,7 +47,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '#E34512342345',
+                          '#${model.transactionId}',
                           style: TextStyle(
                             fontWeight: fontWeight.bold,
                             fontSize: fontSize.subtitle,
@@ -489,100 +490,109 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
       );
     }
 
-    Widget cardSection(
-        {required ProofOfPaymentModel model, required bool selectedCard}) {
-      return Container(
-        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
-        color: selectedCard ? colorStyle.lightGrey : colorStyle.white,
-        width: layoutStyle.screenWidth,
-        height: layoutStyle.blockVertical * 20,
-        child: Column(
-          children: [
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 10,
-              ),
-              margin: EdgeInsets.only(bottom: layoutStyle.defaultMargin / 2),
-              child: Container(
-                padding: EdgeInsets.all(layoutStyle.defaultMargin / 3),
-                decoration: BoxDecoration(
-                  color: colorStyle.lime,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(10),
+    Widget cardSection({
+      required ProofOfPaymentModel model,
+      required bool selectedCard,
+    }) {
+      return GestureDetector(
+        onTap: () {
+          controller.selectedProofOfPayment.value = model;
+          controller.update();
+        },
+        child: Container(
+          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+          color: selectedCard ? colorStyle.lightGrey : colorStyle.white,
+          width: layoutStyle.screenWidth,
+          height: layoutStyle.blockVertical * 20,
+          child: Column(
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 10,
+                ),
+                margin: EdgeInsets.only(bottom: layoutStyle.defaultMargin / 2),
+                child: Container(
+                  padding: EdgeInsets.all(layoutStyle.defaultMargin / 3),
+                  decoration: BoxDecoration(
+                    color: colorStyle.lime,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'Sukses',
+                    style: TextStyle(
+                      color: colorStyle.black,
+                      fontSize: fontSize.small,
+                    ),
                   ),
                 ),
-                child: Text(
-                  'Sukses',
-                  style: TextStyle(
-                    color: colorStyle.black,
-                    fontSize: fontSize.small,
-                  ),
-                ),
               ),
-            ),
-            Expanded(
-              child: Container(
-                alignment: Alignment.topCenter,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.all(layoutStyle.defaultMargin / 5),
-                        decoration: BoxDecoration(
-                          color: colorStyle.white,
-                          border: Border.all(
-                            color: colorStyle.grey,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(
-                              7,
+              Expanded(
+                child: Container(
+                  alignment: Alignment.topCenter,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding:
+                              EdgeInsets.all(layoutStyle.defaultMargin / 5),
+                          decoration: BoxDecoration(
+                            color: colorStyle.white,
+                            border: Border.all(
+                              color: colorStyle.grey,
+                              width: 1.0,
                             ),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(
+                                7,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Image.asset(
+                                assetsConstant.imgEdc,
+                                fit: BoxFit.fill,
+                              ),
+                              Text('EDC')
+                            ],
                           ),
                         ),
-                        child: Row(
+                      ),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Image.asset(
-                              assetsConstant.imgEdc,
-                              fit: BoxFit.fill,
+                            Text('#21348923'),
+                            SizedBox(
+                              height: layoutStyle.defaultMargin,
                             ),
-                            Text('EDC')
+                            Text('Name'),
                           ],
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text('#21348923'),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin,
-                          ),
-                          Text('Name'),
-                        ],
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('14:67'),
+                            SizedBox(
+                              height: layoutStyle.defaultMargin,
+                            ),
+                            Text('Rp.250,000'),
+                          ],
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text('14:67'),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin,
-                          ),
-                          Text('Rp.250,000'),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -590,6 +600,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
     Widget leftSection() {
       return Container(
         width: layoutStyle.safeBlockHorizontal * 30,
+        height: layoutStyle.screenHeight,
         decoration: BoxDecoration(
           border: Border.all(
             width: 1,
@@ -604,22 +615,9 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             children: controller.dummyData
                 .map((e) => cardSection(
                     model: e,
-                    selectedCard: e.id == controller.selectedProofOfPayment.id))
+                    selectedCard:
+                        e.id == controller.selectedProofOfPayment.value.id))
                 .toList(),
-            // children: [
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: true),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            //   cardSection(selectedCard: false),
-            // ],
           ),
         ),
       );
@@ -635,7 +633,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
               SizedBox(
                 width: layoutStyle.defaultMargin,
               ),
-              rightSection(),
+              rightSection(controller.selectedProofOfPayment.value),
             ],
           ),
         ),

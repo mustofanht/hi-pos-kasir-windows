@@ -4,7 +4,7 @@ import 'package:jaya_propertiy/data/models/proofofpayment/proof_of_payment_model
 class BuktiPembayaranPageController extends GetxController {
   BuktiPembayaranPageController();
 
-  final selectedProofOfPayment = ProofOfPaymentModel();
+  final selectedProofOfPayment = ProofOfPaymentModel().obs;
 
   List<ProofOfPaymentModel> dummyData = [
     ProofOfPaymentModel(
@@ -27,6 +27,42 @@ class BuktiPembayaranPageController extends GetxController {
     ),
     ProofOfPaymentModel(
       id: "3",
+      transactionId: "TRX003",
+      paymentMethod: "Cash",
+      paymentDate: "2022-03-01",
+      amount: "300000",
+      status: "Failed",
+      paymentType: "Online",
+    ),
+    ProofOfPaymentModel(
+      id: "4",
+      transactionId: "TRX003",
+      paymentMethod: "Cash",
+      paymentDate: "2022-03-01",
+      amount: "300000",
+      status: "Failed",
+      paymentType: "Online",
+    ),
+    ProofOfPaymentModel(
+      id: "5",
+      transactionId: "TRX003",
+      paymentMethod: "Cash",
+      paymentDate: "2022-03-01",
+      amount: "300000",
+      status: "Failed",
+      paymentType: "Online",
+    ),
+    ProofOfPaymentModel(
+      id: "6",
+      transactionId: "TRX003",
+      paymentMethod: "Cash",
+      paymentDate: "2022-03-01",
+      amount: "300000",
+      status: "Failed",
+      paymentType: "Online",
+    ),
+    ProofOfPaymentModel(
+      id: "7",
       transactionId: "TRX003",
       paymentMethod: "Cash",
       paymentDate: "2022-03-01",
