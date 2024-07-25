@@ -6,8 +6,8 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class SaleCartPage extends GetView<SaleCartPageController> {
@@ -604,7 +604,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
               children: [
                 CustomButton(
                   onPressed: () {
-                    alert.dialogDelete(
+                    dialog.dialogDelete(
                       title: 'Warning',
                       msg:
                           'Apakah anda yakin akan membatalkan proses order di atas?',

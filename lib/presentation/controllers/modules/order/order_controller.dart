@@ -1,12 +1,9 @@
 import 'dart:async';
 
 import 'package:either_dart/either.dart';
-import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
@@ -14,6 +11,7 @@ import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart'
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/common/gate_print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/common/payment_print_controller.dart';
@@ -38,7 +36,7 @@ class OrderController extends GetxController {
         alert.error('Payment Error', 'Terjadi Kesalahan');
         return;
       }
-      alert.waitingPayment(
+      dialog.waitingPayment(
         title: 'Menunggu Pembayaran',
         msg:
             'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
@@ -103,91 +101,17 @@ class OrderController extends GetxController {
   }
 
   _showPaymentSuccessAlert(OrderModel body) {
-    alert.paymentQrSuccess(
+    dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
       onSendProofOfPayment: () => _handleSendProofOfPayment(body),
-      onPrint: () => _handleOnPrintOrder(body),
+      onPrint: () => orderUtil.handleOnPrintOrder(body),
     );
-  }
-
-  _handleOnPrintOrder(OrderModel body) async {
-    var paymentPrintController = Get.put(PaymentPrintController());
-    var gatePrintController = Get.put(GatePrintController());
-    var printController = Get.put(PrintController());
-    bool bluetoothEnabled = await printController.bluetoothIsEnabled();
-    if (bluetoothEnabled) {
-      await _printPaymentTiket(
-          body, printController, paymentPrintController, gatePrintController);
-      await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-      await _clearOrder();
-    } else {
-      alert.error('Error', 'bluetooth is off, please turn it on first');
-    }
-  }
-
-  _printPaymentTiket(
-    OrderModel body,
-    PrintController printController,
-    PaymentPrintController paymentPrintController,
-    GatePrintController gatePrintController,
-  ) async {
-    bool isConnectPrinter = await printController.isConnect();
-    if (isConnectPrinter) {
-      List<int> data = await paymentPrintController.dataPaymentTiketPrint(
-        paperSize: PaperSize.mm80,
-        body: body,
-      );
-      int count = 1;
-      int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
-      for (var element in body.listTicket) {
-        for (var i = 0; i < element.totalTicket; i++) {
-          List<int> dataPrint = await gatePrintController.dataGatePrint(
-            paperSize: PaperSize.mm80,
-            reffNo: body.orderReffno!,
-            pakOf: count,
-            pakTotal: totalPak,
-            qrCode: '12345',
-            expiredAt: dateTimeUtil.now(format: dateFormat.dateWithoutTime),
-            ticketModel: element,
-          );
-          data.addAll(dataPrint);
-          count++;
-        }
-      }
-
-      loading.popUpLoading();
-      bool isPrinted = await printController.printTicket(
-        data: data,
-      );
-      logger.safeLog('isPrinted : $isPrinted');
-      if (isPrinted) {
-        Get.back();
-        Get.back();
-      } else {
-        await _printPaymentTiket(
-            body, printController, paymentPrintController, gatePrintController);
-      }
-    } else {
-      alert.selectPrint(
-        printController: printController,
-        title: 'Select Printer',
-        msg: 'Silahkan Pilih printer',
-        onPrint: () async {
-          await _printPaymentTiket(
-            body,
-            printController,
-            paymentPrintController,
-            gatePrintController,
-          );
-        },
-      );
-    }
   }
 
   _handleSendProofOfPayment(OrderModel body) {
     Get.back();
-    alert.paymentSendProofOfPayment(
+    dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
       onSendEmail: (val) {
         logger.safeLog('Email : ${val}');
@@ -225,8 +149,9 @@ class OrderController extends GetxController {
         barrierDismissible: false,
       );
       Get.back();
-      await _doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-      await _clearOrder();
+      await orderUtil.doRefreshCustomerDisplay(
+          paymentMethod: PaymentMethod.QRIS);
+      await orderUtil.clearOrder();
     });
   }
 
@@ -270,23 +195,6 @@ class OrderController extends GetxController {
       alert.error('Error', 'Terjadi Kesalahan!');
     }
   }
-
-  _doRefreshCustomerDisplay({required String paymentMethod}) {
-    displayUtil.updateSecondDisplay(
-      CustomerDisplay(
-        key: CustomerDisplayAction.PAYMENT,
-        value: CustomerPayment(
-          type: paymentMethod,
-          isSuccess: false,
-        ).toJson(),
-      ).toJson(),
-    );
-  }
-
-  _clearOrder() {
-    final saleController = Get.find<SaleCartPageController>();
-    saleController.clearCartOrder();
-  }
 }
 
 class OrderPaymentController extends GetxController {
@@ -297,7 +205,7 @@ class OrderPaymentController extends GetxController {
   doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) {
     try {
       // Display the waiting payment alert
-      alert.waitingPaymentEdc(
+      dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
         msg: 'Silahkan mengisi reference',
         onNext: (val) async {
@@ -306,12 +214,9 @@ class OrderPaymentController extends GetxController {
           if (val != '') {
             body.orderReffno = val;
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
-            await _createTicketNo(orderNo!.value!);
-
-            final saleController = Get.find<SaleCartPageController>();
-            saleController.clearCartOrder();
+            await createTicketNo(orderNo!.value!);
             Get.back();
-
+            await orderUtil.handleOnPrintOrder(body);
             alert.success('Success', 'Payment Success');
           } else {
             alert.error(
@@ -327,7 +232,8 @@ class OrderPaymentController extends GetxController {
     }
   }
 
-  _doCreateOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
+  _doCreateOrderPayment(
+      {required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       var result;
       result = await _service.order.orderService.createOrder(
@@ -355,8 +261,9 @@ class OrderPaymentController extends GetxController {
     }
   }
 
-  _createTicketNo(String orderNo) async {
+  Future<List<String>> createTicketNo(String orderNo) async {
     try {
+      List<String> dataList = [];
       var result = await _service.order.orderService.createTicketNo(
         authToken: _authToken,
         reffNo: orderNo,
@@ -371,11 +278,59 @@ class OrderPaymentController extends GetxController {
         (r) {
           logger.safeLog('Create Ticket No Success');
           logger.safeLog(r.data);
+          dataList = r.data!;
         },
       );
+      return dataList;
     } catch (e) {
       logger.safeLog('Create Ticket No Error 2');
       logger.safeLog(e.toString());
+      return [];
     }
   }
 }
+
+class OrderUtil {
+  DisplayUtil displayUtil = DisplayUtil();
+
+  handleOnPrintOrder(OrderModel body) async {
+    loading.popUpLoading();
+    var printController = Get.put(PrintController());
+    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
+    Get.back();
+    if (bluetoothIsEnabled) {
+      var paymentPrintController = Get.put(PaymentPrintController());
+      var gatePrintController = Get.put(GatePrintController());
+      await printController.printPaymentTiket(
+        body,
+        paymentPrintController,
+        gatePrintController,
+      );
+      await doRefreshCustomerDisplay(
+        paymentMethod: PaymentMethod.QRIS,
+      );
+      await clearOrder();
+    } else {
+      alert.error('Error', 'bluetooth is off, please turn it on first');
+    }
+  }
+
+  doRefreshCustomerDisplay({required String paymentMethod}) {
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.PAYMENT,
+        value: CustomerPayment(
+          type: paymentMethod,
+          isSuccess: false,
+        ).toJson(),
+      ).toJson(),
+    );
+  }
+
+  clearOrder() {
+    final saleController = Get.find<SaleCartPageController>();
+    saleController.clearCartOrder();
+  }
+}
+
+OrderUtil orderUtil = OrderUtil();

@@ -13,6 +13,7 @@ import 'package:jaya_propertiy/data/models/menu_item_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/proofofpayment/bukti_pembayaran_page_controller.dart';
@@ -100,7 +101,7 @@ class HomePageController extends GetxController {
 
   void onSelectedMenu(MenuItem menu) {
     if (menu.id == 6) {
-      alert.dialogDelete(
+      dialog.dialogDelete(
         title: 'LOGOUT',
         msg: 'Apakah anda yakin akan logout?',
         onYes: () {

@@ -1,4 +1,3 @@
-import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/controllers/default/splash_page_controller.dart';
 import 'package:flutter/material.dart';

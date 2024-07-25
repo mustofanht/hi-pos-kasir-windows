@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
@@ -27,16 +25,16 @@ class ApiFilterUtil {
         if (filter == null) continue;
         var comma = i > 0 ? "," : "";
         if (OPERATOR_CONSTANTS.LIKE == filter.operator) {
-          queryString += '${comma}${filter.field}=%${filter.value}%';
+          queryString += '$comma${filter.field}=%${filter.value}%';
         } else {
           if (filter.value is List) {
             if (filter.value.length == 0) continue;
             var value = Uri.encodeComponent(
                 '[${buildQuery(data: filter.group, params: null)}]');
-            queryString += '${comma}${filter.field}${filter.operator}${value}';
+            queryString += '$comma${filter.field}${filter.operator}$value';
           } else {
             queryString +=
-                '${comma}${filter.field}${filter.operator}${filter.value}';
+                '$comma${filter.field}${filter.operator}${filter.value}';
           }
         }
 

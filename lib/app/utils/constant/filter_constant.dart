@@ -18,34 +18,24 @@ extension GeneralFilterExt on GeneralFilter {
     switch (this) {
       case GeneralFilter.none:
         return constant.none;
-        break;
       case GeneralFilter.number:
         return "Number";
-        break;
       case GeneralFilter.description:
         return "Description";
-        break;
       case GeneralFilter.state:
         return "State";
-        break;
       case GeneralFilter.title:
         return "Title";
-        break;
       case GeneralFilter.createdDate:
         return "Created Date";
-        break;
       case GeneralFilter.assetTag:
         return "Asset Tag";
-        break;
       case GeneralFilter.displayName:
         return "display name";
-        break;
       case GeneralFilter.content:
         return "Content";
-        break;
       case GeneralFilter.screenName:
         return "Screen Name";
-        break;
       default:
         return constant.none;
     }
@@ -62,10 +52,8 @@ extension SortTypeExt on SortType {
     switch (this) {
       case SortType.asc:
         return "ASC";
-        break;
       case SortType.desc:
         return "DESC";
-        break;
       default:
         return "ASC";
     }

@@ -154,20 +154,18 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
         ) ??
         const TimeOfDay(hour: 0, minute: 0);
 
-    if (newTime != null) {
-      setState(() {
-        _time = newTime;
-        date = DateTime(
-          newDate.year,
-          newDate.month,
-          newDate.day,
-          newTime.hour,
-          newTime.minute,
-        );
-      });
-      widget.onDateChanged!(date);
+    setState(() {
+      _time = newTime;
+      date = DateTime(
+        newDate.year,
+        newDate.month,
+        newDate.day,
+        newTime.hour,
+        newTime.minute,
+      );
+    });
+    widget.onDateChanged!(date);
     }
-  }
 
   @override
   Widget build(BuildContext context) {
