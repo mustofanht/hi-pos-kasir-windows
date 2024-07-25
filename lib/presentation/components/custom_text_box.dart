@@ -20,6 +20,7 @@ class CustomTextBox extends StatefulWidget {
   final List<BoxShadow>? boxShadow;
   final BorderRadiusGeometry borderRadius;
   final Function(String)? onChanged;
+  final Function(String)? onSubmit;
   final int? maxLength;
 
   const CustomTextBox({
@@ -41,6 +42,7 @@ class CustomTextBox extends StatefulWidget {
     this.boxShadow,
     this.borderRadius = BorderRadius.zero,
     this.onChanged,
+    this.onSubmit,
     this.maxLength,
   }) : super(key: key);
 
@@ -101,6 +103,7 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
+                    onSubmitted: widget.onSubmit,
                     onChanged: widget.onChanged,
                   ),
                 ),

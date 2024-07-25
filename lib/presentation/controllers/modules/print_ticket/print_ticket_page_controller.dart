@@ -4,6 +4,7 @@ import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
@@ -22,7 +23,7 @@ class PrintTicketPageController extends GetxController
   final listColumnHeader = <CustomTableData>[].obs;
   final openDetail = false.obs;
 
-  TabController? tabController;
+  // TabController? tabController;
 
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
@@ -32,26 +33,26 @@ class PrintTicketPageController extends GetxController
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
 
-  @override
-  onInit() {
-    super.onInit();
-    tabController = TabController(length: 1, vsync: this, initialIndex: 0);
-    tabController?.addListener(_handleTabSelection);
-    setListHeaderColumn();
-    doPrepareList(page: 0);
-  }
+  // @override
+  // onInit() {
+  //   super.onInit();
+    // tabController = TabController(length: 1, vsync: this, initialIndex: 0);
+    // tabController?.addListener(_handleTabSelection);
+  //   setListHeaderColumn();
+  //   doPrepareList(page: 0);
+  // }
 
-  @override
-  void onClose() {
-    tabController?.dispose();
-    super.onClose();
-  }
+  // @override
+  // void onClose() {
+    // tabController?.dispose();
+  //   super.onClose();
+  // }
 
-  void _handleTabSelection() {
-    if (!tabController!.indexIsChanging) {
-      changeTabIndex(tabController!.index);
-    }
-  }
+  // void _handleTabSelection() {
+  //   if (!tabController!.indexIsChanging) {
+  //     changeTabIndex(tabController!.index);
+  //   }
+  // }
 
   var tabIndex = 0.obs;
   changeTabIndex(int index) {
@@ -78,6 +79,7 @@ class PrintTicketPageController extends GetxController
       CustomTableData(
         id: 'orderNumber',
         columnName: 'ID Order',
+        width: layoutStyle.blockHorizontal * 20,
         alignment: Alignment.centerLeft,
       ),
     );
@@ -159,12 +161,18 @@ class PrintTicketPageController extends GetxController
     update();
   }
 
-  doPrepareList({required int page}) async {
+  doSearch(String search){
+    dataList.clear();
+    doPrepareList(page: 0, search: search);
+    update();
+  }
+
+  doPrepareList({required int page, String? search}) async {
     //
-    if (tabController == null) {
-      tabController = TabController(length: 1, vsync: this, initialIndex: 0);
-      tabController?.addListener(_handleTabSelection);
-    }
+    // if (tabController == null) {
+    //   tabController = TabController(length: 1, vsync: this, initialIndex: 0);
+    //   tabController?.addListener(_handleTabSelection);
+    // }
 
     if (page > 0) {
       isLoadMore.value = true;
@@ -180,13 +188,12 @@ class PrintTicketPageController extends GetxController
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
       };
 
-      logger.safeLog('searchController.text : ${searchController.text}');
-      if (searchController.text != '') {
+      if (search != '' && search != null) {
         dataFilter.add(
           apiFilterUtil.addSearch(
             'orderNumber',
             OPERATOR_CONSTANTS.EQUALS,
-            searchController.text,
+            search,
           )!,
         );
       }
