@@ -6,6 +6,7 @@ class OrderTicketService {
     required OrderModel body,
     String? reffNo,
   }) async {
+    logger.safeLog('reffNo : $reffNo');
     var path = "trn_order/createOrder";
     if (reffNo != null) {
       path += '?orderNo=$reffNo';
@@ -32,6 +33,38 @@ class OrderTicketService {
         (data) => ResponseOrderEntity.fromJson(data),
       );
       logger.safeLog(result.data!.toJson());
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
+  Future<Either<String, BaseResponse<List<String>>>> createTicketNo({
+    required AuthToken authToken,
+    String? reffNo,
+  }) async {
+    var path = "trn_order/createTicketNo";
+    if (reffNo != null) {
+      path += '?orderNo=$reffNo';
+    }
+
+    final uri = source.baseUri(path: path);
+
+    final response = await http.post(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<List<String>> result = BaseResponse<List<String>>.fromJson(
+        json.decode(response.body),
+        (data) => data,
+      );
+      logger.safeLog(result.data!);
       return Right(result);
     } else {
       return Left(common.getMetadataMessages(response.body));

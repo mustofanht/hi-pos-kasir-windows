@@ -305,7 +305,8 @@ class OrderPaymentController extends GetxController {
           logger.safeLog('val : $val');
           if (val != '') {
             body.orderReffno = val;
-            doCreateOrderPayment(body: body);
+            await _doCreateOrderPayment(body: body, orderNo: orderNo);
+            await _createTicketNo(orderNo!.value!);
 
             final saleController = Get.find<SaleCartPageController>();
             saleController.clearCartOrder();
@@ -326,7 +327,7 @@ class OrderPaymentController extends GetxController {
     }
   }
 
-  doCreateOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
+  _doCreateOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       var result;
       result = await _service.order.orderService.createOrder(
@@ -351,6 +352,30 @@ class OrderPaymentController extends GetxController {
       logger.safeLog(e);
       logger.safeLog('Create Order Error 2');
       alert.error('Error', 'Terjadi Kesalahan!');
+    }
+  }
+
+  _createTicketNo(String orderNo) async {
+    try {
+      var result = await _service.order.orderService.createTicketNo(
+        authToken: _authToken,
+        reffNo: orderNo,
+      );
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Ticket No Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Ticket No Success');
+          logger.safeLog(r.data);
+        },
+      );
+    } catch (e) {
+      logger.safeLog('Create Ticket No Error 2');
+      logger.safeLog(e.toString());
     }
   }
 }
