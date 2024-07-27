@@ -120,4 +120,36 @@ class OrderTicketService {
       return Left(common.getMetadataMessages(response.body));
     }
   }
+
+  Future<Either<String, BaseResponse<TrnDetailOrderEntity>>> getDetailOrder(
+      {required AuthToken authToken, required String? orderNo}) async {
+    var path = "trn_order/orderInquiry";
+
+    if (orderNo != null) {
+      path += '?numberParam=$orderNo';
+    }
+
+    final uri = source.baseUri(
+      path: path,
+    );
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      var bodyData = json.decode(response.body);
+      BaseResponse<TrnDetailOrderEntity> result =
+          BaseResponse<TrnDetailOrderEntity>.fromJson(
+              bodyData, (data) => TrnDetailOrderEntity.fromJson(data));
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
 }

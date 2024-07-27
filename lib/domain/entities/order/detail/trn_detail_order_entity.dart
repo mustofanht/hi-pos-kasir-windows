@@ -1,0 +1,83 @@
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_customer.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_payment.dart';
+
+class TrnDetailOrderEntity {
+  String? orderNumber;
+  String? orderName;
+  DateTime? orderDate;
+  int? orderTotalItem;
+  double? orderDiskon;
+  double? orderTotalAmt;
+  String? orderPaidBy;
+  String? orderSource;
+  String? orderStatus;
+  dynamic voucher;
+  String? ppn;
+  TrnDetailOrderCustomer? customerDetail;
+  List<TrnDetailOrder>? detailOrderModels;
+  TrnDetailOrderPayment? paymentDetail;
+
+  TrnDetailOrderEntity({
+    this.orderNumber,
+    this.orderName,
+    this.orderDate,
+    this.orderTotalItem,
+    this.orderDiskon,
+    this.orderTotalAmt,
+    this.orderPaidBy,
+    this.orderSource,
+    this.orderStatus,
+    this.voucher,
+    this.ppn,
+    this.customerDetail,
+    this.detailOrderModels,
+    this.paymentDetail,
+  });
+
+  factory TrnDetailOrderEntity.fromJson(Map<String, dynamic> json) {
+    return TrnDetailOrderEntity(
+      orderNumber: json['orderNumber'],
+      orderName: json['orderName'],
+      orderDate: json['orderDate'] != null ? DateTime.parse(json['orderDate']) : null,
+      orderTotalItem: json['orderTotalItem'],
+      orderDiskon: json['orderDiskon'] != null ? (json['orderDiskon'] as num).toDouble() : null,
+      orderTotalAmt: json['orderTotalAmt'] != null ? (json['orderTotalAmt'] as num).toDouble() : null,
+      orderPaidBy: json['orderPaidBy'],
+      orderSource: json['orderSource'],
+      orderStatus: json['orderStatus'],
+      voucher: json['voucher'],
+      ppn: json['ppn'],
+      customerDetail: json['customerDetail'] != null
+          ? TrnDetailOrderCustomer.fromJson(json['customerDetail'])
+          : null,
+      detailOrderModels: json['detailOrderModels'] != null
+          ? (json['detailOrderModels'] as List)
+              .map((i) => TrnDetailOrder.fromJson(i))
+              .toList()
+          : null,
+      paymentDetail: json['paymentDetail'] != null
+          ? TrnDetailOrderPayment.fromJson(json['paymentDetail'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'orderNumber': orderNumber,
+      'orderName': orderName,
+      'orderDate': orderDate?.toIso8601String(),
+      'orderTotalItem': orderTotalItem,
+      'orderDiskon': orderDiskon,
+      'orderTotalAmt': orderTotalAmt,
+      'orderPaidBy': orderPaidBy,
+      'orderSource': orderSource,
+      'orderStatus': orderStatus,
+      'voucher': voucher,
+      'ppn': ppn,
+    'customerDetail': customerDetail?.toJson(),
+    'detailOrderModels': detailOrderModels?.map((e) => e.toJson()).toList(),
+    'paymentDetail': paymentDetail?.toJson(),
+    };
+  }
+}

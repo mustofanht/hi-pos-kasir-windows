@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
@@ -28,7 +31,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
     );
   }
 
-  Widget leftSection() {
+  Widget leftSection(TrnDetailOrderEntity model) {
     return Container(
       height: layoutStyle.screenHeight,
       width: layoutStyle.screenWidth / 3,
@@ -50,7 +53,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Order ID',
                     value: Text(
-                      'ORD0001',
+                      model.orderNumber ?? '',
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -59,7 +62,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Nama',
                     value: Text(
-                      'Arthur',
+                      model.orderName ?? '',
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -77,7 +80,12 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Order Date',
                     value: Text(
-                      '17 Jul 2024 : 09:10',
+                      model.orderDate == null
+                          ? ''
+                          : dateTimeUtil.getFormattedDate(
+                              date: model.orderDate!,
+                              format: dateFormat.withoutSecond,
+                            ),
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -86,7 +94,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Source Order',
                     value: Text(
-                      'Onsite',
+                      model.orderSource ?? '',
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -107,21 +115,23 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Jumlah Tiket',
                     value: Text(
-                      '1',
+                      model.orderTotalItem == null
+                          ? ''
+                          : model.orderTotalItem.toString(),
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
                     ),
                   ),
-                  leftColum(
-                    column: 'Jenis Tiket',
-                    value: Text(
-                      'Perorang',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  // leftColum(
+                  //   column: 'Jenis Tiket',
+                  //   value: Text(
+                  //     'Perorang',
+                  //     style: TextStyle(
+                  //       fontWeight: fontWeight.bold,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -134,16 +144,16 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Status Pembayaran',
                     value: CustomBadge(
-                      label: 'On Process',
+                      label: model.orderStatus ?? '',
                       colorLabel: colorStyle.black,
                       colorBox: colorStyle.creamy,
                       margin: EdgeInsets.zero,
                     ),
                   ),
                   leftColum(
-                    column: 'Jenis Tiket',
+                    column: 'Status Cetak',
                     value: CustomBadge(
-                      label: 'Belum Cetak',
+                      label: 'Not Yet',
                       colorLabel: colorStyle.white,
                       colorBox: colorStyle.black,
                       margin: EdgeInsets.zero,
@@ -164,7 +174,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Diskon',
                     value: Text(
-                      'Rp 0',
+                      (model.orderDiskon ?? '').toString(),
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -173,7 +183,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Voucher',
                     value: Text(
-                      'Rp 0',
+                      (model.voucher ?? '').toString(),
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -191,7 +201,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Biaya Admin',
                     value: Text(
-                      'Rp 0',
+                      'Not Yet',
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -200,7 +210,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Biaya Ppn',
                     value: Text(
-                      'Rp 20,000',
+                      (model.ppn ?? '').toString(),
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -218,7 +228,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Total',
                     value: Text(
-                      'Rp 25,000',
+                      'Rp.${model.orderTotalAmt ?? 0}',
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -227,7 +237,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   leftColum(
                     column: 'Total Tagihan',
                     value: Text(
-                      'Rp 45,000',
+                      'Not Yet',
                       style: TextStyle(
                         fontWeight: fontWeight.bold,
                       ),
@@ -288,17 +298,51 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                                     onChanged: (value) =>
                                         controller.toggleSelectAll(value),
                                   ),
-                                  ...controller.listColumnHeader
+                                  ...controller.detailListColumnHeader
                                       .map(
-                                        (element) => Expanded(
-                                          child: Text(
-                                            element.columnName ?? '',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                color: colorStyle.black,
-                                                fontWeight: fontWeight.bold),
-                                          ),
-                                        ),
+                                        (element) => element.width != null
+                                            ? Container(
+                                                width: element.width,
+                                                alignment: Alignment.center,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: layoutStyle
+                                                          .defaultMargin /
+                                                      2,
+                                                  vertical: layoutStyle
+                                                          .defaultMargin /
+                                                      4,
+                                                ),
+                                                child: Text(
+                                                  element.columnName ?? '',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      color: colorStyle.black,
+                                                      fontWeight:
+                                                          fontWeight.bold),
+                                                ),
+                                              )
+                                            : Expanded(
+                                                child: Container(
+                                                  width: 500,
+                                                  alignment: Alignment.center,
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: layoutStyle
+                                                            .defaultMargin /
+                                                        2,
+                                                    vertical: layoutStyle
+                                                            .defaultMargin /
+                                                        4,
+                                                  ),
+                                                  child: Text(
+                                                    element.columnName ?? '',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: colorStyle.black,
+                                                        fontWeight:
+                                                            fontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
                                       )
                                       .toList(),
                                 ],
@@ -309,36 +353,55 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (BuildContext context, int index) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                        color: colorStyle.lightGrey,
-                                        width: 1.0),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Checkbox(
-                                      fillColor: MaterialStatePropertyAll(
-                                          colorStyle.blue),
-                                      value: controller.selected[index],
-                                      onChanged: (value) =>
-                                          controller.toggleSelect(index, value),
-                                    ),
-                                    ...controller.listColumnHeader.map(
-                                      (element) => Expanded(
-                                        child: Container(
-                                          alignment: element.alignment,
-                                          child: const Text('Value'),
+                              return controller
+                                      .model.value.detailOrderModels!.isEmpty
+                                  ? Container()
+                                  : Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: colorStyle.lightGrey,
+                                            width: 1.0,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                                      child: Row(
+                                        children: [
+                                          Checkbox(
+                                            fillColor: MaterialStatePropertyAll(
+                                                colorStyle.blue),
+                                            value: controller.selected[index],
+                                            onChanged: (value) => controller
+                                                .toggleSelect(index, value),
+                                          ),
+                                          ...controller.detailListColumnHeader
+                                              .map(
+                                            (element) => Expanded(
+                                              child: Container(
+                                                alignment: element.alignment,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: layoutStyle
+                                                          .defaultMargin /
+                                                      2,
+                                                  vertical: layoutStyle
+                                                          .defaultMargin /
+                                                      4,
+                                                ),
+                                                child: Text(
+                                                  controller.model.value
+                                                      .detailOrderModels![index]
+                                                      .toJson()[element.id]
+                                                      .toString(),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
                             },
-                            childCount: 100,
+                            childCount: controller
+                                .model.value.detailOrderModels!.length,
                           ),
                         ),
                       ],
@@ -454,7 +517,10 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
     return GetBuilder(
       init: controller,
       tag: 'PrintTicketDetailPage',
-      initState: (state) {},
+      initState: (state) {
+        controller.setListHeaderColumn();
+        controller.doPrepared();
+      },
       builder: (controller) {
         return Container(
           width: layoutStyle.screenWidth,
@@ -512,7 +578,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
               Expanded(
                 child: Row(
                   children: [
-                    leftSection(),
+                    leftSection(controller.model.value),
                     SizedBox(
                       width: layoutStyle.defaultMargin,
                     ),

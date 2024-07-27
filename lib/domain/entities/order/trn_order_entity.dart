@@ -1,3 +1,4 @@
+import 'package:jaya_propertiy/domain/entities/order/trn_order_customer_detail.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_payment_detail.dart';
 
 class TrnOrderEntity {
@@ -5,12 +6,14 @@ class TrnOrderEntity {
   String? orderName;
   DateTime? orderDate;
   int? orderTotalItem;
+  double? orderDiskon;
   double? orderTotalAmt;
   String? orderPaidBy;
   String? orderSource;
   String? orderStatus;
   dynamic voucher;
   dynamic ppn;
+  TrnOrderCustomerDetail? customerDetail;
   dynamic detailOrderModels;
   TrnOrderPaymentDetail? paymentDetail;
 
@@ -19,12 +22,14 @@ class TrnOrderEntity {
     this.orderName,
     this.orderDate,
     this.orderTotalItem,
+    this.orderDiskon,
     this.orderTotalAmt,
     this.orderPaidBy,
     this.orderSource,
     this.orderStatus,
     this.voucher,
     this.ppn,
+    this.customerDetail,
     this.detailOrderModels,
     this.paymentDetail,
   });
@@ -36,12 +41,14 @@ class TrnOrderEntity {
       orderDate:
           json['orderDate'] != null ? DateTime.parse(json['orderDate']) : null,
       orderTotalItem: json['orderTotalItem'],
+      orderDiskon: json['orderDiskon'] != null ?  (json['orderDiskon'] as num).toDouble() : null,
       orderTotalAmt: json['orderTotalAmt'] != null ?  (json['orderTotalAmt'] as num).toDouble() : null,
       orderPaidBy: json['orderPaidBy'],
       orderSource: json['orderSource'],
       orderStatus: json['orderStatus'],
       voucher: json['voucher'],
       ppn: json['ppn'],
+      customerDetail: TrnOrderCustomerDetail.fromJson(json['customerDetail']),
       detailOrderModels: json['detailOrderModels'],
       paymentDetail: TrnOrderPaymentDetail.fromJson(json['paymentDetail']),
     );
@@ -53,12 +60,14 @@ class TrnOrderEntity {
       'orderName': orderName,
       'orderDate': orderDate?.toIso8601String(),
       'orderTotalItem': orderTotalItem,
+      'orderDiskon': orderDiskon,
       'orderTotalAmt': orderTotalAmt,
       'orderPaidBy': orderPaidBy,
       'orderSource': orderSource,
       'orderStatus': orderStatus,
       'voucher': voucher,
       'ppn': ppn,
+      'customerDetail': customerDetail?.toJson(),
       'detailOrderModels': detailOrderModels,
       'paymentDetail': paymentDetail?.toJson(),
     };

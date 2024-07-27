@@ -17,13 +17,12 @@ class PrintTicketPageController extends GetxController
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
-  var selected = List<bool>.generate(100, (index) => false).obs;
-  var selectAll = false.obs;
+  // var selected = List<bool>.generate(100, (index) => false).obs;
+  // var selectAll = false.obs;
   final searchController = TextEditingController();
   final listColumnHeader = <CustomTableData>[].obs;
   final openDetail = false.obs;
-
-  // TabController? tabController;
+  final selectedData = TrnOrderEntity().obs;
 
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
@@ -33,45 +32,19 @@ class PrintTicketPageController extends GetxController
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
 
-  // @override
-  // onInit() {
-  //   super.onInit();
-    // tabController = TabController(length: 1, vsync: this, initialIndex: 0);
-    // tabController?.addListener(_handleTabSelection);
-  //   setListHeaderColumn();
-  //   doPrepareList(page: 0);
-  // }
-
-  // @override
-  // void onClose() {
-    // tabController?.dispose();
-  //   super.onClose();
-  // }
-
-  // void _handleTabSelection() {
-  //   if (!tabController!.indexIsChanging) {
-  //     changeTabIndex(tabController!.index);
+  // toggleSelectAll(bool? value) {
+  //   selectAll.value = value ?? false;
+  //   for (int i = 0; i < selected.length; i++) {
+  //     selected[i] = selectAll.value;
   //   }
+  //   update();
   // }
 
-  var tabIndex = 0.obs;
-  changeTabIndex(int index) {
-    tabIndex.value = index;
-  }
-
-  toggleSelectAll(bool? value) {
-    selectAll.value = value ?? false;
-    for (int i = 0; i < selected.length; i++) {
-      selected[i] = selectAll.value;
-    }
-    update();
-  }
-
-  toggleSelect(int index, bool? value) {
-    selected[index] = value ?? false;
-    selectAll.value = selected.every((element) => element);
-    update();
-  }
+  // toggleSelect(int index, bool? value) {
+  //   selected[index] = value ?? false;
+  //   selectAll.value = selected.every((element) => element);
+  //   update();
+  // }
 
   setListHeaderColumn() {
     listColumnHeader.clear();
@@ -161,19 +134,13 @@ class PrintTicketPageController extends GetxController
     update();
   }
 
-  doSearch(String search){
+  doSearch(String search) {
     dataList.clear();
     doPrepareList(page: 0, search: search);
     update();
   }
 
   doPrepareList({required int page, String? search}) async {
-    //
-    // if (tabController == null) {
-    //   tabController = TabController(length: 1, vsync: this, initialIndex: 0);
-    //   tabController?.addListener(_handleTabSelection);
-    // }
-
     if (page > 0) {
       isLoadMore.value = true;
     } else {
@@ -223,7 +190,8 @@ class PrintTicketPageController extends GetxController
     update();
   }
 
-  doToDetail() {
+  doToDetail(TrnOrderEntity? val) {
+    selectedData.value = val!;
     openDetail.value = true;
     update();
   }

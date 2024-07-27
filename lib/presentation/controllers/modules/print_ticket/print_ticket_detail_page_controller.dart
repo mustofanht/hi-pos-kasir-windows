@@ -1,27 +1,55 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
   PrintTicketDetailPageController();
 
-  final listColumnHeader = <CustomTableData>[].obs;
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
+
+  final parentController = Get.find<PrintTicketPageController>();
+
+  final detailListColumnHeader = <CustomTableData>[].obs;
   var selected = List<bool>.generate(100, (index) => false).obs;
   var selectAll = false.obs;
+  final isLoading = false.obs;
 
-  @override
-  void onInit() {
-    // TODO: implement onInit
-    setListHeaderColumn();
-    super.onInit();
+  final parentModel = TrnOrderEntity().obs;
+
+  final model = TrnDetailOrderEntity().obs;
+
+  doPrepared() async {
+    parentModel.value = parentController.selectedData.value;
+    await getDetail();
+    update();
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  getDetail() async {
+    // try {
+      var result;
+      isLoading.value = true;
+      result = await _service.order.orderService.getDetailOrder(
+          authToken: _authToken, orderNo: parentModel.value.orderNumber);
+      result.fold((l) {
+        logger.safeLog(l);
+        isLoading.value = false;
+      }, (r) {
+        model.value = r.data;
+        isLoading.value = false;
+      });
+    // } catch (e) {
+    //   logger.safeLog(e);
+    //   isLoading.value = false;
+    // }
+    update();
   }
-
 
   void toggleSelectAll(bool? value) {
     selectAll.value = value ?? false;
@@ -38,35 +66,35 @@ class PrintTicketDetailPageController extends GetxController {
   }
 
   setListHeaderColumn() {
-    listColumnHeader.add(
+    detailListColumnHeader.add(
       CustomTableData(
-        id: 'ticket',
+        id: 'productName',
         columnName: 'Tiket',
         alignment: Alignment.centerLeft,
       ),
     );
-    listColumnHeader.add(
+    detailListColumnHeader.add(
       CustomTableData(
-        id: 'qty',
+        id: 'quantity',
         columnName: 'Quantity',
         alignment: Alignment.center,
       ),
     );
-    listColumnHeader.add(
+    detailListColumnHeader.add(
       CustomTableData(
-        id: 'itemPrice',
+        id: 'price',
         columnName: 'Item Price',
         alignment: Alignment.centerRight,
       ),
     );
-    listColumnHeader.add(
+    detailListColumnHeader.add(
       CustomTableData(
         id: 'Discount',
         columnName: 'Discount',
         alignment: Alignment.centerRight,
       ),
     );
-    listColumnHeader.add(
+    detailListColumnHeader.add(
       CustomTableData(
         id: 'total',
         columnName: 'Total',
@@ -79,6 +107,7 @@ class PrintTicketDetailPageController extends GetxController {
   doBack() {
     final parentController = Get.find<PrintTicketPageController>();
     parentController.openDetail.value = false;
+    parentModel.value = TrnOrderEntity();
     parentController.update();
   }
 }

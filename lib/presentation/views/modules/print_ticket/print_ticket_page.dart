@@ -135,7 +135,9 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                                     : controller.dataList.isNotEmpty
                                         ? GestureDetector(
                                             onTap: () {
-                                              controller.doToDetail();
+                                              controller.doToDetail(
+                                                controller.dataList[index],
+                                              );
                                             },
                                             child: Container(
                                               decoration: BoxDecoration(
@@ -305,7 +307,9 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ? const PrintTicketDetailPage()
             : Container(
                 padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                child: Obx(() => ticketSection(),),
+                child: Obx(
+                  () => ticketSection(),
+                ),
               );
         // : contentSection(controller);
       },
