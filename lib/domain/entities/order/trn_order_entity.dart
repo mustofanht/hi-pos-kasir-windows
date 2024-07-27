@@ -8,6 +8,7 @@ class TrnOrderEntity {
   int? orderTotalItem;
   double? orderDiskon;
   double? orderTotalAmt;
+  double? orderTotalTgh;
   String? orderPaidBy;
   String? orderSource;
   String? orderStatus;
@@ -24,6 +25,7 @@ class TrnOrderEntity {
     this.orderTotalItem,
     this.orderDiskon,
     this.orderTotalAmt,
+    this.orderTotalTgh,
     this.orderPaidBy,
     this.orderSource,
     this.orderStatus,
@@ -43,6 +45,7 @@ class TrnOrderEntity {
       orderTotalItem: json['orderTotalItem'],
       orderDiskon: json['orderDiskon'] != null ?  (json['orderDiskon'] as num).toDouble() : null,
       orderTotalAmt: json['orderTotalAmt'] != null ?  (json['orderTotalAmt'] as num).toDouble() : null,
+      orderTotalTgh: json['orderTotalTgh'] != null ?  (json['orderTotalTgh'] as num).toDouble() : null,
       orderPaidBy: json['orderPaidBy'],
       orderSource: json['orderSource'],
       orderStatus: json['orderStatus'],
@@ -62,6 +65,7 @@ class TrnOrderEntity {
       'orderTotalItem': orderTotalItem,
       'orderDiskon': orderDiskon,
       'orderTotalAmt': orderTotalAmt,
+      'orderTotalTgh': orderTotalTgh,
       'orderPaidBy': orderPaidBy,
       'orderSource': orderSource,
       'orderStatus': orderStatus,

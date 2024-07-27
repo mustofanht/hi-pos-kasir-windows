@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 class DateFormatConstant {
   final DateFormat onlyDays = DateFormat("EEEE", constant.locale);
   final DateFormat onlyDate = DateFormat("dd-MMM-yyyy", constant.locale);
+  final DateFormat onlyTime = DateFormat("HH:mm:ss", constant.locale);
   final DateFormat dateTime =
       DateFormat("dd MMM yyyy HH:mm:ss", constant.locale);
   final DateFormat dateWithoutTime = DateFormat("dd MMM yyyy", constant.locale);
@@ -13,6 +14,8 @@ class DateFormatConstant {
       DateFormat("dd-MMM-yyyy HH:mm", constant.locale);
   final DateFormat fullTimePrinted =
       DateFormat("dd/MM/yyyy HH:mm", constant.locale);
+  final DateFormat hourMinutes =
+      DateFormat("HH:mm", constant.locale);
 }
 
 DateFormatConstant dateFormat = new DateFormatConstant();

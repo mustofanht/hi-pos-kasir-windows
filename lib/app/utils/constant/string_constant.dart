@@ -72,9 +72,9 @@ class PaymentMethod {
 
 final Map<String, String> MapPaymentMethod = {
   PaymentMethod.QRIS: 'QRIS',
-  PaymentMethod.EDC: 'ED',
-  PaymentMethod.TRAVELOKA: 'TR',
-  PaymentMethod.TICKET: 'TC',
+  PaymentMethod.EDC: 'EDC',
+  PaymentMethod.TRAVELOKA: 'TRAVELOKA',
+  PaymentMethod.TICKET: 'TICKET',
 };
 
 class PaymentStatus {

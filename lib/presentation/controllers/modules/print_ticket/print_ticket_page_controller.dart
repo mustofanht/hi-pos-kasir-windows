@@ -17,8 +17,6 @@ class PrintTicketPageController extends GetxController
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
-  // var selected = List<bool>.generate(100, (index) => false).obs;
-  // var selectAll = false.obs;
   final searchController = TextEditingController();
   final listColumnHeader = <CustomTableData>[].obs;
   final openDetail = false.obs;
@@ -31,20 +29,6 @@ class PrintTicketPageController extends GetxController
   final isLoadMore = false.obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
-
-  // toggleSelectAll(bool? value) {
-  //   selectAll.value = value ?? false;
-  //   for (int i = 0; i < selected.length; i++) {
-  //     selected[i] = selectAll.value;
-  //   }
-  //   update();
-  // }
-
-  // toggleSelect(int index, bool? value) {
-  //   selected[index] = value ?? false;
-  //   selectAll.value = selected.every((element) => element);
-  //   update();
-  // }
 
   setListHeaderColumn() {
     listColumnHeader.clear();
@@ -131,12 +115,12 @@ class PrintTicketPageController extends GetxController
     //     alignment: Alignment.center,
     //   ),
     // );
-    update();
   }
 
-  doSearch(String search) {
+  doSearch(String search) async {
+    setListHeaderColumn();
     dataList.clear();
-    doPrepareList(page: 0, search: search);
+    await doPrepareList(page: 0, search: search);
     update();
   }
 
@@ -159,7 +143,7 @@ class PrintTicketPageController extends GetxController
         dataFilter.add(
           apiFilterUtil.addSearch(
             'orderNumber',
-            OPERATOR_CONSTANTS.EQUALS,
+            OPERATOR_CONSTANTS.LIKE,
             search,
           )!,
         );
@@ -175,7 +159,7 @@ class PrintTicketPageController extends GetxController
         if (page == 0) {
           dataList.value = r.data!;
         } else {
-          dataList.addAll(r.data!);
+          dataList.assignAll(r.data!);
         }
         pagination.value = r.pagination!;
         isLoading.value = false;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -16,19 +15,119 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
   Widget build(BuildContext context) {
     layoutStyle.init(context);
 
+    Widget headerSection(PrintTicketPageController controller) {
+      return Obx(() {
+        return controller.isLoading.value
+            ? Container(
+                alignment: Alignment.center,
+                width: layoutStyle.screenWidth,
+                height: layoutStyle.screenHeight,
+                child: loading.simpleLoading(),
+              )
+            : Row(
+                children: controller.listColumnHeader.map((element) {
+                  return element.width != null
+                      ? Container(
+                          width: element.width,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin / 2,
+                            vertical: layoutStyle.defaultMargin / 4,
+                          ),
+                          child: Text(
+                            element.columnName ?? '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: colorStyle.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      : Expanded(
+                          child: Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 2,
+                              vertical: layoutStyle.defaultMargin / 4,
+                            ),
+                            child: Text(
+                              element.columnName ?? '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: colorStyle.black,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        );
+                }).toList(),
+              );
+      });
+    }
+
+    Widget dataListSection(PrintTicketPageController controller) {
+      return Obx(() {
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index) {
+              if (controller.isLoading.value) {
+                return loading.simpleLoading();
+              } else if (controller.dataList.isNotEmpty) {
+                return GestureDetector(
+                  onTap: () {
+                    controller.doToDetail(controller.dataList[index]);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: colorStyle.lightGrey,
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: controller.listColumnHeader.map((element) {
+                        String val = controller.dataList[index]
+                            .toJson()[element.id]
+                            .toString();
+                        if (element.id == 'orderStatus') {
+                          val = controller.dataList[index].paymentDetail == 'P'
+                              ? 'Paid'
+                              : 'Not Paid/Waiting';
+                        }
+                        return Expanded(
+                          child: Container(
+                            alignment: element.alignment,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 2,
+                              vertical: layoutStyle.defaultMargin / 4,
+                            ),
+                            child: Text(
+                              val,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            },
+            childCount: controller.dataList.length,
+          ),
+        );
+      });
+    }
+
     Widget contentTableSection(PrintTicketPageController controller) {
       return Expanded(
         child: Container(
           width: layoutStyle.screenWidth,
           decoration: BoxDecoration(
-            border: Border.all(
-              width: 1,
-              color: colorStyle.black,
-            ),
+            border: Border.all(width: 1, color: colorStyle.black),
             borderRadius: BorderRadius.all(
-              Radius.circular(
-                layoutStyle.defaultMargin / 5,
-              ),
+              Radius.circular(layoutStyle.defaultMargin / 5),
             ),
             color: colorStyle.white,
           ),
@@ -38,14 +137,9 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                 flex: 1,
                 child: Padding(
                   padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                  // padding: EdgeInsets.only(
-                  //   bottom: layoutStyle.defaultMargin,
-                  //   left: layoutStyle.defaultMargin,
-                  //   right: layoutStyle.defaultMargin,
-                  // ),
                   child: RefreshIndicator(
                     onRefresh: () async {
-                      // await controller.doPrepareList(page: 1);
+                      await controller.doPrepareList(page: 0);
                     },
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -65,134 +159,11 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                                   layoutStyle.defaultMargin / 5,
                                 ),
                               ),
-                              child: Row(
-                                children: [
-                                  // Checkbox(
-                                  //   fillColor: MaterialStatePropertyAll(
-                                  //       colorStyle.blue),
-                                  //   value: controller.selectAll.value,
-                                  //   onChanged: (value) =>
-                                  //       controller.toggleSelectAll(value),
-                                  // ),
-                                  ...controller.listColumnHeader
-                                      .map(
-                                        (element) => element.width != null
-                                            ? Container(
-                                                width: element.width,
-                                                alignment: Alignment.center,
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: layoutStyle
-                                                          .defaultMargin /
-                                                      2,
-                                                  vertical: layoutStyle
-                                                          .defaultMargin /
-                                                      4,
-                                                ),
-                                                child: Text(
-                                                  element.columnName ?? '',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      color: colorStyle.black,
-                                                      fontWeight:
-                                                          fontWeight.bold),
-                                                ),
-                                              )
-                                            : Expanded(
-                                                child: Container(
-                                                  width: 500,
-                                                  alignment: Alignment.center,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: layoutStyle
-                                                            .defaultMargin /
-                                                        2,
-                                                    vertical: layoutStyle
-                                                            .defaultMargin /
-                                                        4,
-                                                  ),
-                                                  child: Text(
-                                                    element.columnName ?? '',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        color: colorStyle.black,
-                                                        fontWeight:
-                                                            fontWeight.bold),
-                                                  ),
-                                                ),
-                                              ),
-                                      )
-                                      .toList(),
-                                ],
-                              ),
+                              child: headerSection(controller),
                             ),
                           ),
                         ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (BuildContext context, int index) {
-                              return Obx(
-                                () => controller.isLoading.value
-                                    ? loading.simpleLoading()
-                                    : controller.dataList.isNotEmpty
-                                        ? GestureDetector(
-                                            onTap: () {
-                                              controller.doToDetail(
-                                                controller.dataList[index],
-                                              );
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                border: Border(
-                                                  bottom: BorderSide(
-                                                    color: colorStyle.lightGrey,
-                                                    width: 1.0,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  // Checkbox(
-                                                  //   fillColor:
-                                                  //       MaterialStatePropertyAll(
-                                                  //           colorStyle.blue),
-                                                  //   value:
-                                                  //       controller.selected[index],
-                                                  //   onChanged: (value) => controller
-                                                  //       .toggleSelect(index, value),
-                                                  // ),
-                                                  ...controller.listColumnHeader
-                                                      .map(
-                                                    (element) => Expanded(
-                                                      child: Container(
-                                                          alignment:
-                                                              element.alignment,
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                            horizontal: layoutStyle
-                                                                    .defaultMargin /
-                                                                2,
-                                                            vertical: layoutStyle
-                                                                    .defaultMargin /
-                                                                4,
-                                                          ),
-                                                          child: Text(
-                                                            controller
-                                                                .dataList[index]
-                                                                .toJson()[
-                                                                    element.id]
-                                                                .toString(),
-                                                          )),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                        : Container(),
-                              );
-                            },
-                            childCount: controller.dataList.length,
-                          ),
-                        ),
+                        dataListSection(controller),
                       ],
                     ),
                   ),
@@ -231,7 +202,6 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ),
             controller: controller.searchController,
             onSubmit: (val) async {
-              logger.safeLog('SEARCH : $val');
               await controller.doSearch(val);
             },
             decoration: InputDecoration(
@@ -307,10 +277,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ? const PrintTicketDetailPage()
             : Container(
                 padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                child: Obx(
-                  () => ticketSection(),
-                ),
-              );
+                child: ticketSection());
         // : contentSection(controller);
       },
     );
