@@ -34,7 +34,7 @@ class _AppMainState extends State<AppMain> {
       home: const SplashPage(),
       initialBinding: SplashPageBinding(),
       theme: theme.light(),
-      darkTheme: theme.dark(),
+      // darkTheme: theme.dark(),
       translations: AppTranslation(),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
