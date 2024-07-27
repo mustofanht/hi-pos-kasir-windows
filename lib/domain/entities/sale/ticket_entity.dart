@@ -10,7 +10,7 @@ class TicketEntity {
   double? ticketPrice;
   String? ticketState;
   int? ticketMinimum;
-  List<TicketDaysEntity>? ticketDays;
+  TicketDaysEntity? ticketDays;
 
   TicketEntity({
     this.ticketId,
@@ -36,9 +36,7 @@ class TicketEntity {
       ticketState = json['ticketState'];
       ticketMinimum = json['ticketMinimum'];
       ticketDays = json['ticketDays'] != null
-          ? (json['ticketDays'] as List)
-              .map((item) => TicketDaysEntity.fromJson(item))
-              .toList()
+          ? TicketDaysEntity.fromJson(json['ticketDays'])
           : null;
     } catch (e) {
       logger.safeLog('error $e');
@@ -54,9 +52,7 @@ class TicketEntity {
       "ticketPrice": ticketPrice,
       "ticketState": ticketState,
       "ticketMinimum": ticketMinimum,
-      "ticketDays": ticketDays != null
-          ? ticketDays!.map((item) => item.toJson()).toList()
-          : null,
+      "ticketDays": ticketDays?.toJson(),
     };
   }
 }
