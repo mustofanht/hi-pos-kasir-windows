@@ -26,28 +26,27 @@ class PrintTicketDetailPageController extends GetxController {
   final model = TrnDetailOrderEntity().obs;
 
   doPrepared() async {
+    isLoading.value = true;
+    await setListHeaderColumn();
     parentModel.value = parentController.selectedData.value;
     await getDetail();
+    isLoading.value = false;
     update();
   }
 
   getDetail() async {
-    // try {
+    try {
       var result;
-      isLoading.value = true;
       result = await _service.order.orderService.getDetailOrder(
           authToken: _authToken, orderNo: parentModel.value.orderNumber);
       result.fold((l) {
         logger.safeLog(l);
-        isLoading.value = false;
       }, (r) {
         model.value = r.data;
-        isLoading.value = false;
       });
-    // } catch (e) {
-    //   logger.safeLog(e);
-    //   isLoading.value = false;
-    // }
+    } catch (e) {
+      logger.safeLog(e);
+    }
     update();
   }
 
@@ -66,6 +65,7 @@ class PrintTicketDetailPageController extends GetxController {
   }
 
   setListHeaderColumn() {
+    detailListColumnHeader.clear();
     detailListColumnHeader.add(
       CustomTableData(
         id: 'productName',
@@ -87,13 +87,13 @@ class PrintTicketDetailPageController extends GetxController {
         alignment: Alignment.centerRight,
       ),
     );
-    detailListColumnHeader.add(
-      CustomTableData(
-        id: 'Discount',
-        columnName: 'Discount',
-        alignment: Alignment.centerRight,
-      ),
-    );
+    // detailListColumnHeader.add(
+    //   CustomTableData(
+    //     id: 'Discount',
+    //     columnName: 'Discount',
+    //     alignment: Alignment.centerRight,
+    //   ),
+    // );
     detailListColumnHeader.add(
       CustomTableData(
         id: 'total',

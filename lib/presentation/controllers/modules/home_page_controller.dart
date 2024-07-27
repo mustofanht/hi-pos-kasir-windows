@@ -51,9 +51,6 @@ class HomePageController extends GetxController {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late Timer _sessTimer;
-  late Timer _notifInboxTimer;
-
   @override
   void onInit() {
     // TODO: implement onInit
@@ -85,8 +82,6 @@ class HomePageController extends GetxController {
 
   @override
   void onClose() {
-    _sessTimer.cancel();
-    _notifInboxTimer.cancel();
     notificationUtil.didReceiveLocalNotificationStream.close();
     notificationUtil.selectNotificationStream.close();
     super.onClose();

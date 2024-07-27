@@ -7,323 +7,287 @@ import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 
 class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
   const PrintTicketDetailPage({super.key});
 
-  Widget leftColum({required String column, required Widget value}) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(layoutStyle.defaultMargin / 5),
-            child: Text(column),
-          ),
-          Padding(
-            padding: EdgeInsets.all(layoutStyle.defaultMargin / 5),
-            child: value,
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  Widget build(BuildContext context) {
+    layoutStyle.init(context);
 
-  Widget leftSection(TrnDetailOrderEntity model) {
-    return Container(
-      height: layoutStyle.screenHeight,
-      width: layoutStyle.screenWidth / 3,
-      padding: EdgeInsets.all(layoutStyle.defaultMargin),
-      decoration: BoxDecoration(
-        color: colorStyle.white,
-        borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
+    Widget leftColum({required String column, required Widget value}) {
+      return Expanded(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Order ID',
-                    value: Text(
-                      model.orderNumber ?? '',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  leftColum(
-                    column: 'Nama',
-                    value: Text(
-                      model.orderName ?? '',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              padding: EdgeInsets.all(layoutStyle.defaultMargin / 5),
+              child: Text(column),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Order Date',
-                    value: Text(
-                      model.orderDate == null
-                          ? ''
-                          : dateTimeUtil.getFormattedDate(
-                              date: model.orderDate!,
-                              format: dateFormat.withoutSecond,
-                            ),
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  leftColum(
-                    column: 'Source Order',
-                    value: Text(
-                      model.orderSource ?? '',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: layoutStyle.defaultMargin / 2,
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Jumlah Tiket',
-                    value: Text(
-                      model.orderTotalItem == null
-                          ? ''
-                          : model.orderTotalItem.toString(),
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  // leftColum(
-                  //   column: 'Jenis Tiket',
-                  //   value: Text(
-                  //     'Perorang',
-                  //     style: TextStyle(
-                  //       fontWeight: fontWeight.bold,
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Status Pembayaran',
-                    value: CustomBadge(
-                      label: model.orderStatus ?? '',
-                      colorLabel: colorStyle.black,
-                      colorBox: colorStyle.creamy,
-                      margin: EdgeInsets.zero,
-                    ),
-                  ),
-                  leftColum(
-                    column: 'Status Cetak',
-                    value: CustomBadge(
-                      label: 'Not Yet',
-                      colorLabel: colorStyle.white,
-                      colorBox: colorStyle.black,
-                      margin: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: layoutStyle.defaultMargin / 2,
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Diskon',
-                    value: Text(
-                      (model.orderDiskon ?? '').toString(),
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  leftColum(
-                    column: 'Voucher',
-                    value: Text(
-                      (model.voucher ?? '').toString(),
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Biaya Admin',
-                    value: Text(
-                      'Not Yet',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  leftColum(
-                    column: 'Biaya Ppn',
-                    value: Text(
-                      (model.ppn ?? '').toString(),
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 5,
-              ),
-              child: Row(
-                children: [
-                  leftColum(
-                    column: 'Total',
-                    value: Text(
-                      'Rp.${model.orderTotalAmt ?? 0}',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  leftColum(
-                    column: 'Total Tagihan',
-                    value: Text(
-                      'Not Yet',
-                      style: TextStyle(
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              padding: EdgeInsets.all(layoutStyle.defaultMargin / 5),
+              child: value,
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget rightSection() {
-    return Expanded(
-      child: Container(
+    Widget leftSection(TrnDetailOrderEntity model) {
+      return Container(
         height: layoutStyle.screenHeight,
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorStyle.white,
-                  borderRadius:
-                      BorderRadius.circular(layoutStyle.defaultMargin / 2),
+        width: layoutStyle.screenWidth / 3,
+        padding: EdgeInsets.all(layoutStyle.defaultMargin),
+        decoration: BoxDecoration(
+          color: colorStyle.white,
+          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
                 ),
-                child: Padding(
-                  padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      // await controller.doPrepareList(page: 1);
-                    },
-                    child: CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverPersistentHeader(
-                          pinned: true,
-                          delegate: DataTableDelegate(
-                            minHeight: 50.0,
-                            maxHeight: 50.0,
-                            child: Material(
-                              color: colorStyle.lightGrey,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(
-                                  layoutStyle.defaultMargin / 2,
-                                ),
-                                topRight: Radius.circular(
-                                  layoutStyle.defaultMargin / 2,
-                                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Order ID',
+                      value: Text(
+                        model.orderNumber ?? '',
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    leftColum(
+                      column: 'Nama',
+                      value: Text(
+                        model.orderName ?? '',
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Order Date',
+                      value: Text(
+                        model.orderDate == null
+                            ? ''
+                            : dateTimeUtil.getFormattedDate(
+                                date: model.orderDate!,
+                                format: dateFormat.withoutSecond,
                               ),
-                              child: Row(
-                                children: [
-                                  Checkbox(
-                                    fillColor: MaterialStatePropertyAll(
-                                        colorStyle.blue),
-                                    value: controller.selectAll.value,
-                                    onChanged: (value) =>
-                                        controller.toggleSelectAll(value),
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    leftColum(
+                      column: 'Source Order',
+                      value: Text(
+                        model.orderSource ?? '',
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: layoutStyle.defaultMargin / 2,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Jumlah Tiket',
+                      value: Text(
+                        model.orderTotalItem == null
+                            ? ''
+                            : model.orderTotalItem.toString(),
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    // leftColum(
+                    //   column: 'Jenis Tiket',
+                    //   value: Text(
+                    //     'Perorang',
+                    //     style: TextStyle(
+                    //       fontWeight: fontWeight.bold,
+                    //     ),
+                    //   ),
+                    // ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Status Pembayaran',
+                      value: CustomBadge(
+                        label: model.paymentDetail?.pymntStatus == 'P'
+                            ? 'Paid'
+                            : 'Not Paid/Waiting',
+                        colorLabel: colorStyle.white,
+                        colorBox: model.paymentDetail?.pymntStatus == 'P'
+                            ? colorStyle.green
+                            : colorStyle.creamy,
+                        margin: EdgeInsets.zero,
+                      ),
+                    ),
+                    leftColum(
+                      column: 'Status Cetak',
+                      value: CustomBadge(
+                        label:
+                            model.orderStatus == 'C' ? 'Cetak' : 'Belum Cetak',
+                        colorLabel: colorStyle.white,
+                        colorBox: model.orderStatus == 'C'
+                            ? colorStyle.green
+                            : colorStyle.yellow,
+                        margin: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: layoutStyle.defaultMargin / 2,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Diskon',
+                      value: Text(
+                        (model.orderDiskon ?? '').toString(),
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    leftColum(
+                      column: 'Biaya Ppn',
+                      value: Text(
+                        (model.ppn ?? '').toString(),
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Total',
+                      value: Text(
+                        'Rp.${model.orderTotalAmt ?? 0}',
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    leftColum(
+                      column: 'Total Tagihan',
+                      value: Text(
+                        'Rp.${(model.orderTotalAmt ?? 0) + (model.orderDiskon ?? 0)}',
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget rightSection() {
+      return Expanded(
+        child: Container(
+          height: layoutStyle.screenHeight,
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorStyle.white,
+                    borderRadius:
+                        BorderRadius.circular(layoutStyle.defaultMargin / 2),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        // await controller.doPrepareList(page: 1);
+                      },
+                      child: CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverPersistentHeader(
+                            pinned: true,
+                            delegate: DataTableDelegate(
+                              minHeight: 50.0,
+                              maxHeight: 50.0,
+                              child: Material(
+                                color: colorStyle.lightGrey,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
                                   ),
-                                  ...controller.detailListColumnHeader
-                                      .map(
-                                        (element) => element.width != null
-                                            ? Container(
-                                                width: element.width,
-                                                alignment: Alignment.center,
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: layoutStyle
-                                                          .defaultMargin /
-                                                      2,
-                                                  vertical: layoutStyle
-                                                          .defaultMargin /
-                                                      4,
-                                                ),
-                                                child: Text(
-                                                  element.columnName ?? '',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      color: colorStyle.black,
-                                                      fontWeight:
-                                                          fontWeight.bold),
-                                                ),
-                                              )
-                                            : Expanded(
-                                                child: Container(
-                                                  width: 500,
+                                  topRight: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      fillColor: MaterialStatePropertyAll(
+                                          colorStyle.blue),
+                                      value: controller.selectAll.value,
+                                      onChanged: (value) =>
+                                          controller.toggleSelectAll(value),
+                                    ),
+                                    ...controller.detailListColumnHeader
+                                        .map(
+                                          (element) => element.width != null
+                                              ? Container(
+                                                  width: element.width,
                                                   alignment: Alignment.center,
                                                   padding: EdgeInsets.symmetric(
                                                     horizontal: layoutStyle
@@ -341,254 +305,284 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                                                         fontWeight:
                                                             fontWeight.bold),
                                                   ),
+                                                )
+                                              : Expanded(
+                                                  child: Container(
+                                                    width: 500,
+                                                    alignment: Alignment.center,
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                      horizontal: layoutStyle
+                                                              .defaultMargin /
+                                                          2,
+                                                      vertical: layoutStyle
+                                                              .defaultMargin /
+                                                          4,
+                                                    ),
+                                                    child: Text(
+                                                      element.columnName ?? '',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          color:
+                                                              colorStyle.black,
+                                                          fontWeight:
+                                                              fontWeight.bold),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                      )
-                                      .toList(),
-                                ],
+                                        )
+                                        .toList(),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (BuildContext context, int index) {
-                              return controller
-                                      .model.value.detailOrderModels!.isEmpty
-                                  ? Container()
-                                  : Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: colorStyle.lightGrey,
-                                            width: 1.0,
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index) {
+                                return controller
+                                        .model.value.detailOrderModels!.isEmpty
+                                    ? Container()
+                                    : Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: colorStyle.lightGrey,
+                                              width: 1.0,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            fillColor: MaterialStatePropertyAll(
-                                                colorStyle.blue),
-                                            value: controller.selected[index],
-                                            onChanged: (value) => controller
-                                                .toggleSelect(index, value),
-                                          ),
-                                          ...controller.detailListColumnHeader
-                                              .map(
-                                            (element) => Expanded(
-                                              child: Container(
-                                                alignment: element.alignment,
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: layoutStyle
-                                                          .defaultMargin /
-                                                      2,
-                                                  vertical: layoutStyle
-                                                          .defaultMargin /
-                                                      4,
-                                                ),
-                                                child: Text(
-                                                  controller.model.value
-                                                      .detailOrderModels![index]
-                                                      .toJson()[element.id]
-                                                      .toString(),
+                                        child: Row(
+                                          children: [
+                                            Checkbox(
+                                              fillColor:
+                                                  MaterialStatePropertyAll(
+                                                      colorStyle.blue),
+                                              value: controller.selected[index],
+                                              onChanged: (value) => controller
+                                                  .toggleSelect(index, value),
+                                            ),
+                                            ...controller.detailListColumnHeader
+                                                .map(
+                                              (element) => Expanded(
+                                                child: Container(
+                                                  alignment: element.alignment,
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: layoutStyle
+                                                            .defaultMargin /
+                                                        2,
+                                                    vertical: layoutStyle
+                                                            .defaultMargin /
+                                                        4,
+                                                  ),
+                                                  child: Text(
+                                                    controller
+                                                        .model
+                                                        .value
+                                                        .detailOrderModels![
+                                                            index]
+                                                        .toJson()[element.id]
+                                                        .toString(),
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                            },
-                            childCount: controller
-                                .model.value.detailOrderModels!.length,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(vertical: layoutStyle.defaultMargin / 2),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CustomButton(
-                      margin: EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 2,
-                        // horizontal: layoutStyle.defaultMargin,
-                      ),
-                      onPressed: () {},
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith(
-                          (states) => colorStyle.white,
-                        ),
-                        overlayColor: MaterialStateProperty.resolveWith(
-                          (states) => colorStyle.black.withOpacity(0.1),
-                        ),
-                        shape: MaterialStateProperty.resolveWith(
-                          (states) => RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              layoutStyle.defaultMargin / 2,
+                                          ],
+                                        ),
+                                      );
+                              },
+                              childCount: controller
+                                  .model.value.detailOrderModels!.length,
                             ),
                           ),
-                        ),
-                        elevation: const MaterialStatePropertyAll(0),
+                        ],
                       ),
-                      label: Text(
-                        'Print Tiket',
-                        style: textStyle.blackText,
-                      ),
-                      height: layoutStyle.blockVertical * 6.5,
                     ),
                   ),
-                  SizedBox(
-                    width: layoutStyle.defaultMargin / 2,
-                  ),
-                  Expanded(
-                    child: CustomButton(
-                      margin: EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 2,
-                        // horizontal: layoutStyle.defaultMargin,
-                      ),
-                      onPressed: () {},
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith(
-                          (states) => colorStyle.white,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 2),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          // horizontal: layoutStyle.defaultMargin,
                         ),
-                        overlayColor: MaterialStateProperty.resolveWith(
-                          (states) => colorStyle.black.withOpacity(0.1),
-                        ),
-                        shape: MaterialStateProperty.resolveWith(
-                          (states) => RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              layoutStyle.defaultMargin / 2,
+                        onPressed: () {},
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.white,
+                          ),
+                          overlayColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.resolveWith(
+                            (states) => RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin / 2,
+                              ),
                             ),
                           ),
+                          elevation: const MaterialStatePropertyAll(0),
                         ),
-                        elevation: const MaterialStatePropertyAll(0),
+                        label: Text(
+                          'Kirim Email',
+                          style: textStyle.blackText,
+                        ),
+                        height: layoutStyle.blockVertical * 6.5,
                       ),
-                      label: Text(
-                        'Print Tiket',
-                        style: textStyle.blackText,
+                    ),
+                    SizedBox(
+                      width: layoutStyle.defaultMargin / 2,
+                    ),
+                    Expanded(
+                      child: CustomButton(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          // horizontal: layoutStyle.defaultMargin,
+                        ),
+                        onPressed: () {},
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.white,
+                          ),
+                          overlayColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.resolveWith(
+                            (states) => RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin / 2,
+                              ),
+                            ),
+                          ),
+                          elevation: const MaterialStatePropertyAll(0),
+                        ),
+                        label: Text(
+                          'Print Tiket',
+                          style: textStyle.blackText,
+                        ),
+                        height: layoutStyle.blockVertical * 6.5,
                       ),
-                      height: layoutStyle.blockVertical * 6.5,
+                    ),
+                  ],
+                ),
+              ),
+              CustomButton(
+                onPressed: () {},
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                    (states) => colorStyle.grey,
+                  ),
+                  overlayColor: MaterialStateProperty.resolveWith(
+                    (states) => colorStyle.black.withOpacity(0.1),
+                  ),
+                  shape: MaterialStateProperty.resolveWith(
+                    (states) => RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            CustomButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith(
-                  (states) => colorStyle.grey,
                 ),
-                overlayColor: MaterialStateProperty.resolveWith(
-                  (states) => colorStyle.black.withOpacity(0.1),
+                label: Text(
+                  'Print Tiket',
+                  style: textStyle.whiteText,
                 ),
-                shape: MaterialStateProperty.resolveWith(
-                  (states) => RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      layoutStyle.defaultMargin / 2,
-                    ),
-                  ),
-                ),
+                height: layoutStyle.blockVertical * 6.5,
               ),
-              label: Text(
-                'Print Tiket',
-                style: textStyle.whiteText,
-              ),
-              height: layoutStyle.blockVertical * 6.5,
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    layoutStyle.init(context);
     // TODO: implement build
     return GetBuilder(
       init: controller,
       tag: 'PrintTicketDetailPage',
       initState: (state) {
-        controller.setListHeaderColumn();
         controller.doPrepared();
       },
       builder: (controller) {
-        return Container(
-          width: layoutStyle.screenWidth,
-          height: layoutStyle.screenHeight,
-          padding: EdgeInsets.all(layoutStyle.defaultMargin),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: layoutStyle.blockHorizontal * 4,
-                    height: layoutStyle.blockVertical * 5,
-                    child: CustomButton(
-                      onPressed: () {
-                        controller.doBack();
-                      },
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(colorStyle.white),
-                        foregroundColor: MaterialStateProperty.all<Color>(
-                            colorStyle.primary),
-                        overlayColor: MaterialStateProperty.all<Color>(
-                            colorStyle.primary.withOpacity(0.1)),
-                        side: MaterialStateProperty.all<BorderSide>(
-                            BorderSide(color: colorStyle.primary, width: 1)),
-                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                            EdgeInsets.symmetric(
-                                vertical: layoutStyle.defaultMargin / 5,
-                                horizontal: layoutStyle.defaultMargin / 5)),
-                        elevation: MaterialStateProperty.all<double>(0),
-                        alignment: Alignment.center,
-                      ),
-                      label: const Icon(
-                        Icons.arrow_back,
-                      ),
-                      height: double.infinity,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Order Detail',
-                        style: TextStyle(
-                          color: colorStyle.black,
-                          fontSize: fontSize.header,
-                          fontWeight: fontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Row(
+        return controller.isLoading.value
+            ? loading.simpleLoading()
+            : Container(
+                width: layoutStyle.screenWidth,
+                height: layoutStyle.screenHeight,
+                padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                child: Column(
                   children: [
-                    leftSection(controller.model.value),
-                    SizedBox(
-                      width: layoutStyle.defaultMargin,
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: layoutStyle.blockHorizontal * 4,
+                          height: layoutStyle.blockVertical * 5,
+                          child: CustomButton(
+                            onPressed: () {
+                              controller.doBack();
+                            },
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.white),
+                              foregroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.primary),
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.primary.withOpacity(0.1)),
+                              side: MaterialStateProperty.all<BorderSide>(
+                                  BorderSide(
+                                      color: colorStyle.primary, width: 1)),
+                              padding:
+                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                      EdgeInsets.symmetric(
+                                          vertical:
+                                              layoutStyle.defaultMargin / 5,
+                                          horizontal:
+                                              layoutStyle.defaultMargin / 5)),
+                              elevation: MaterialStateProperty.all<double>(0),
+                              alignment: Alignment.center,
+                            ),
+                            label: const Icon(
+                              Icons.arrow_back,
+                            ),
+                            height: double.infinity,
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Order Detail',
+                              style: TextStyle(
+                                color: colorStyle.black,
+                                fontSize: fontSize.header,
+                                fontWeight: fontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    rightSection(),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          leftSection(controller.model.value),
+                          SizedBox(
+                            width: layoutStyle.defaultMargin,
+                          ),
+                          rightSection(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        );
+              );
       },
     );
   }
