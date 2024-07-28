@@ -16,6 +16,8 @@ class DateFormatConstant {
       DateFormat("dd/MM/yyyy HH:mm", constant.locale);
   final DateFormat hourMinutes =
       DateFormat("HH:mm", constant.locale);
+  final DateFormat yyyyMMdd =
+      DateFormat("yyyy-MM-dd", constant.locale);
 }
 
 DateFormatConstant dateFormat = new DateFormatConstant();

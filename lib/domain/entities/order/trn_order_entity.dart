@@ -41,7 +41,7 @@ class TrnOrderEntity {
       orderNumber: json['orderNumber'],
       orderName: json['orderName'],
       orderDate:
-          json['orderDate'] != null ? DateTime.parse(json['orderDate']) : null,
+          json['orderDate'] != null ? DateTime.parse(json['orderDate']).toLocal() : null,
       orderTotalItem: json['orderTotalItem'],
       orderDiskon: json['orderDiskon'] != null ?  (json['orderDiskon'] as num).toDouble() : null,
       orderTotalAmt: json['orderTotalAmt'] != null ?  (json['orderTotalAmt'] as num).toDouble() : null,

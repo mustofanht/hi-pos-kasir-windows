@@ -144,7 +144,7 @@ class CustomDialog {
     ).then((value) => value ?? false);
   }
 
-  Future<bool> dialogCustomerLeftRight({
+  dialogCustomerLeftRight({
     String? imgIcon,
     required String title,
     required String msg,
@@ -157,7 +157,7 @@ class CustomDialog {
       AlertDialog(
         contentPadding: EdgeInsets.zero,
         content: Container(
-          width: layoutStyle.screenWidth,
+          width: layoutStyle.screenWidth / 2,
           height: layoutStyle.blockVertical * 30,
           decoration: BoxDecoration(
             color: colorStyle.white,
@@ -168,7 +168,7 @@ class CustomDialog {
           child: Column(
             children: [
               Expanded(
-                child: Container(
+                child: Padding(
                   padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -177,26 +177,32 @@ class CustomDialog {
                       Image.asset(
                         imgIcon ?? assetsConstant.icInformationDialog,
                         alignment: Alignment.topCenter,
-                        width: layoutStyle.safeBlockHorizontal * 14,
-                        height: layoutStyle.safeBlockHorizontal * 14,
+                        width: layoutStyle.blockHorizontal * 8,
+                        height: layoutStyle.blockVertical * 8,
                       ),
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: fontSize.title,
-                          fontWeight: fontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(
-                        height: layoutStyle.defaultMargin / 5,
-                      ),
-                      Flexible(
-                        child: Text(
-                          msg,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: fontSize.body,
-                          ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: fontSize.title,
+                                fontWeight: fontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                              height: layoutStyle.defaultMargin / 5,
+                            ),
+                            Text(
+                              msg,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontSize.body,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -277,7 +283,7 @@ class CustomDialog {
         ),
       ),
       barrierDismissible: false,
-    ).then((value) => value);
+    );
   }
 
   dialogDelete({

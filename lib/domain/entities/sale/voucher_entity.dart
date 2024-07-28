@@ -40,13 +40,13 @@ class VoucherEntity {
     voucherLocName = json['voucherLocName'];
     voucherState = json['voucherState'];
     voucherStartDate = json['voucherStartDate'] != null
-        ? DateTime.parse(json['voucherStartDate'])
+        ? DateTime.parse(json['voucherStartDate']).toLocal()
         : null;
     voucherEndDate = json['voucherEndDate'] != null
-        ? DateTime.parse(json['voucherEndDate'])
+        ? DateTime.parse(json['voucherEndDate']).toLocal()
         : null;
   }
-  
+
   Map<String?, dynamic> toJson() {
     return {
       'voucherId': voucherId,

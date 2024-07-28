@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dynamic_dot.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/shift/shift_page_controller.dart';
 
 class ShiftPage extends GetView<ShiftPageController> {
@@ -93,7 +98,10 @@ class ShiftPage extends GetView<ShiftPageController> {
       );
     }
 
-    Widget leftSection() {
+    Widget leftSection({
+      required ShiftEntity shiftCurrent,
+      required List<ShiftEntity>? listShiftEnded,
+    }) {
       return Expanded(
         child: Container(
           height: layoutStyle.screenHeight,
@@ -122,93 +130,99 @@ class ShiftPage extends GetView<ShiftPageController> {
                   ),
                 ),
               ),
-              cardShift(
-                date: '17 Jul 2024',
-                time: 'Sedang Berlangsung',
-                selected: true,
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(layoutStyle.defaultMargin / 2),
-                  bottomRight: Radius.circular(layoutStyle.defaultMargin / 2),
-                ),
-              ),
+              controller.isLoadingShiftCurrent.value
+                  ? loading.simpleLoading()
+                  : GestureDetector(
+                      onTap: () {
+                        controller.doSelectedShift(shiftCurrent);
+                      },
+                      child: cardShift(
+                        date: dateTimeUtil.getFormattedDate(
+                          date: dateTimeUtil.convertToDateTime(
+                            shiftCurrent.shftDate!,
+                          ),
+                          format: dateFormat.dateWithoutTime,
+                        ),
+                        time: 'Sedang Berlangsung',
+                        selected: shiftCurrent.shftDate ==
+                            controller.selectedShift.value.shftDate,
+                        borderRadius: BorderRadius.only(
+                          topRight:
+                              Radius.circular(layoutStyle.defaultMargin / 2),
+                          bottomRight:
+                              Radius.circular(layoutStyle.defaultMargin / 2),
+                        ),
+                      ),
+                    ),
               Expanded(
                 child: Container(
                   margin: EdgeInsets.only(top: layoutStyle.defaultMargin),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: layoutStyle.defaultMargin / 2,
+                    child: controller.isLoadingShiftEnded.value
+                        ? loading.simpleLoading()
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: layoutStyle.defaultMargin / 2,
+                                ),
+                                child: Text(
+                                  'History',
+                                  style: TextStyle(
+                                    color: colorStyle.black,
+                                    fontSize: fontSize.body,
+                                  ),
+                                ),
+                              ),
+                              if (listShiftEnded != null &&
+                                  listShiftEnded.isNotEmpty)
+                                ...listShiftEnded
+                                    .map(
+                                      (element) => GestureDetector(
+                                        onTap: () {
+                                          controller.doSelectedShift(element);
+                                        },
+                                        child: cardShift(
+                                          date: dateTimeUtil.getFormattedDate(
+                                            date:
+                                                dateTimeUtil.convertToDateTime(
+                                              element.shftDate!,
+                                            ),
+                                            format: dateFormat.dateWithoutTime,
+                                          ),
+                                          time: 'not set yet - not set yet',
+                                          selected: element.shftDate ==
+                                              controller
+                                                  .selectedShift.value.shftDate,
+                                          borderRadius: BorderRadius.zero,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              // cardShift(
+                              //   date: '17 Jul 2024',
+                              //   time: '10:00 - 15:00',
+                              //   selected: false,
+                              //   borderRadius: BorderRadius.only(
+                              //     topLeft: Radius.circular(
+                              //       layoutStyle.defaultMargin / 2,
+                              //     ),
+                              //     topRight: Radius.circular(
+                              //       layoutStyle.defaultMargin / 2,
+                              //     ),
+                              //   ),
+                              // ),
+                              // cardShift(
+                              //   date: '17 Jul 2024',
+                              //   time: '10:00 - 15:00',
+                              //   selected: false,
+                              //   borderRadius: BorderRadius.zero,
+                              // ),
+                            ],
                           ),
-                          child: Text(
-                            'History',
-                            style: TextStyle(
-                              color: colorStyle.black,
-                              fontSize: fontSize.body,
-                            ),
-                          ),
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(
-                              layoutStyle.defaultMargin / 2,
-                            ),
-                            topRight: Radius.circular(
-                              layoutStyle.defaultMargin / 2,
-                            ),
-                          ),
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        cardShift(
-                          date: '17 Jul 2024',
-                          time: '10:00 - 15:00',
-                          selected: false,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),
@@ -263,195 +277,239 @@ class ShiftPage extends GetView<ShiftPageController> {
       );
     }
 
-    Widget rightSection() {
-      return Expanded(
-        child: Container(
-          height: layoutStyle.screenHeight,
-          padding: EdgeInsets.all(layoutStyle.defaultMargin),
-          decoration: BoxDecoration(
-            color: colorStyle.white,
-          ),
-          child: Column(
-            children: [
-              Text(
-                'Rincian Shift',
-                style: TextStyle(
-                  color: colorStyle.black,
-                  fontSize: fontSize.header,
-                  fontWeight: fontWeight.bold,
-                ),
-              ),
-              DynamicDotLine(
-                dotCount: layoutStyle.defaultMargin.toInt() * 2,
-                direction: Axis.horizontal,
-                dotColor: colorStyle.black.withOpacity(0.20),
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin,
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    children: [
-                      columnShift(
-                        key: 'Name',
-                        value: 'Arthur Morgan',
-                        head: false,
+    Widget rightSection({ShiftDetailEntity? detail}) {
+      return Obx(
+        () => Expanded(
+          child: Container(
+            height: layoutStyle.screenHeight,
+            padding: EdgeInsets.all(layoutStyle.defaultMargin),
+            decoration: BoxDecoration(
+              color: colorStyle.white,
+            ),
+            child: controller.isLoadingShiftDetail.value
+                ? loading.simpleLoading()
+                : detail == null || detail.shftDate == null
+                    ? Container()
+                    : Column(
+                        children: [
+                          Text(
+                            'Rincian Shift',
+                            style: TextStyle(
+                              color: colorStyle.black,
+                              fontSize: fontSize.header,
+                              fontWeight: fontWeight.bold,
+                            ),
+                          ),
+                          DynamicDotLine(
+                            dotCount: layoutStyle.defaultMargin.toInt() * 2,
+                            direction: Axis.horizontal,
+                            dotColor: colorStyle.black.withOpacity(0.20),
+                            padding: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin,
+                            ),
+                          ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: [
+                                  columnShift(
+                                    key: 'Name',
+                                    value: detail.userFullName ?? '',
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Shift Mulai',
+                                    // value: 'Senin, 17 Juli 2024 | 09:00',
+                                    value: controller.formatShiftDate(
+                                      dateTimeUtil.convertToDateTime(
+                                        detail.shftDate!,
+                                      ),
+                                    ),
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Lokasi',
+                                    value: detail.lokasiName,
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Shift Berakhir',
+                                    value: detail.shftEnd != null
+                                        ? controller.formatShiftDate(
+                                            detail.shftEnd!,
+                                          )
+                                        : 'Shift sedang berlangsung',
+                                    colorValue: colorStyle.primary,
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Tiket',
+                                    value: (detail.tiketCount ?? 0).toString(),
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Item',
+                                    value: (detail.itemCount ?? 0).toString(),
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: '',
+                                    head: true,
+                                  ),
+                                  columnShift(
+                                    key: 'QRIS',
+                                    value: (detail.qrisSum ?? 0).toString(),
+                                    head: false,
+                                    // paddingKey: EdgeInsets.only(
+                                    //   left: layoutStyle.defaultMargin,
+                                    // ),
+                                  ),
+                                  columnShift(
+                                    key: 'EDC',
+                                    value: (detail.edcSum ?? 0).toString(),
+                                    head: false,
+                                    // paddingKey: EdgeInsets.only(
+                                    //   left: layoutStyle.defaultMargin,
+                                    // ),
+                                  ),
+                                  columnShift(
+                                    key: 'TRAVELOKA',
+                                    value:
+                                        (detail.travelokaSum ?? 0).toString(),
+                                    head: false,
+                                    // paddingKey: EdgeInsets.only(
+                                    //   left: layoutStyle.defaultMargin,
+                                    // ),
+                                  ),
+                                  columnShift(
+                                    key: 'TICKET.COM',
+                                    value: (detail.ticketdotcomSum ?? 0)
+                                        .toString(),
+                                    head: false,
+                                    // paddingKey: EdgeInsets.only(
+                                    //   left: layoutStyle.defaultMargin,
+                                    // ),
+                                  ),
+                                  // columnShift(
+                                  //   key: 'E-Wallet',
+                                  //   head: true,
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Gopay',
+                                  //   value: 'IDR 1.200.000',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'OVO',
+                                  //   value: 'IDR 1.000.000',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Dana',
+                                  //   value: 'IDR 100.000',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Link Aja',
+                                  //   value: 'IDR 0',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Shopee Pay',
+                                  //   value: 'IDR 0',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Kredivo',
+                                  //   value: 'IDR 0',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Akulaku',
+                                  //   value: 'IDR 0',
+                                  //   head: false,
+                                  //   paddingKey: EdgeInsets.only(
+                                  //     left: layoutStyle.defaultMargin,
+                                  //   ),
+                                  // ),
+                                  // columnShift(
+                                  //   key: 'Total',
+                                  //   value: 'IDR 4.600.000',
+                                  //   head: true,
+                                  // ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          DynamicDotLine(
+                            dotCount: layoutStyle.defaultMargin.toInt() * 2,
+                            direction: Axis.horizontal,
+                            dotColor: colorStyle.black.withOpacity(0.20),
+                            padding: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin,
+                            ),
+                          ),
+                          detail.shftEnd == null
+                              ? CustomButton(
+                                  onPressed: () {
+                                    controller.doShiftEnded(detail);
+                                  },
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.primary),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.white),
+                                    overlayColor:
+                                        MaterialStateProperty.all<Color>(
+                                      colorStyle.white.withOpacity(0.1),
+                                    ),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.primary,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      EdgeInsets.symmetric(
+                                        vertical: layoutStyle.defaultMargin / 2,
+                                        horizontal:
+                                            layoutStyle.defaultMargin / 2,
+                                      ),
+                                    ),
+                                    elevation: MaterialStateProperty.all<
+                                            double>(
+                                        0), // Menghilangkan shadow dengan elevation 0
+                                  ),
+                                  label: const Text(
+                                      'Akhiri Shift & Mulai Settlement'),
+                                  width: layoutStyle.blockHorizontal * 20,
+                                  height: layoutStyle.blockVertical * 5,
+                                )
+                              : Container(),
+                        ],
                       ),
-                      columnShift(
-                        key: 'Shift Mulai',
-                        value: 'Senin, 17 Juli 2024 | 09:00',
-                        head: false,
-                      ),
-                      columnShift(
-                        key: 'Lokasi',
-                        value: 'Jakarta',
-                        head: false,
-                      ),
-                      columnShift(
-                        key: 'Shift Berakhir',
-                        value: 'Shift sedang berlangsung',
-                        colorValue: colorStyle.primary,
-                        head: false,
-                      ),
-                      columnShift(
-                        key: 'Tiket',
-                        value: '124',
-                        head: false,
-                      ),
-                      columnShift(
-                        key: 'Item',
-                        value: '5',
-                        head: false,
-                      ),
-                      columnShift(
-                        key: 'Card',
-                        head: true,
-                      ),
-                      columnShift(
-                        key: 'Debit/Card',
-                        value: 'IDR 2.300.000',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Voided',
-                        value: 'IDR 0',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'E-Wallet',
-                        head: true,
-                      ),
-                      columnShift(
-                        key: 'Gopay',
-                        value: 'IDR 1.200.000',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'OVO',
-                        value: 'IDR 1.000.000',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Dana',
-                        value: 'IDR 100.000',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Link Aja',
-                        value: 'IDR 0',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Shopee Pay',
-                        value: 'IDR 0',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Kredivo',
-                        value: 'IDR 0',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Akulaku',
-                        value: 'IDR 0',
-                        head: false,
-                        paddingKey: EdgeInsets.only(
-                          left: layoutStyle.defaultMargin,
-                        ),
-                      ),
-                      columnShift(
-                        key: 'Total',
-                        value: 'IDR 4.600.000',
-                        head: true,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              DynamicDotLine(
-                dotCount: layoutStyle.defaultMargin.toInt() * 2,
-                direction: Axis.horizontal,
-                dotColor: colorStyle.black.withOpacity(0.20),
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin,
-                ),
-              ),
-              CustomButton(
-                onPressed: () {},
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(colorStyle.primary),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(colorStyle.white),
-                  overlayColor: MaterialStateProperty.all<Color>(
-                    colorStyle.white.withOpacity(0.1),
-                  ),
-                  side: MaterialStateProperty.all<BorderSide>(
-                    BorderSide(
-                      color: colorStyle.primary,
-                      width: 1,
-                    ),
-                  ),
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    EdgeInsets.symmetric(
-                      vertical: layoutStyle.defaultMargin / 2,
-                      horizontal: layoutStyle.defaultMargin / 2,
-                    ),
-                  ),
-                  elevation: MaterialStateProperty.all<double>(
-                      0), // Menghilangkan shadow dengan elevation 0
-                ),
-                label: const Text('Akhiri Shift & Mulai Settlement'),
-                width: layoutStyle.blockHorizontal * 20,
-                height: layoutStyle.blockVertical * 5,
-              ),
-            ],
           ),
         ),
       );
@@ -460,16 +518,21 @@ class ShiftPage extends GetView<ShiftPageController> {
     return GetBuilder(
       init: controller,
       tag: 'ShiftPage',
-      initState: (state) {
-        controller;
+      initState: (state) async {
+        await controller.doPrepared();
       },
       builder: (controller) {
         return Container(
           height: layoutStyle.screenHeight,
           child: Row(
             children: [
-              leftSection(),
-              rightSection(),
+              leftSection(
+                shiftCurrent: controller.shiftCurrent.value,
+                listShiftEnded: controller.dataListShiftEnded,
+              ),
+              rightSection(
+                detail: controller.shiftDetail.value,
+              ),
             ],
           ),
         );

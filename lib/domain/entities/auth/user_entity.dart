@@ -37,16 +37,16 @@ class UserEntity {
     userId = json['userId'];
     userName = json['userName'];
     userStartDate = json['userStartDate'] != null
-        ? DateTime.parse(json['userStartDate'])
+        ? DateTime.parse(json['userStartDate']).toLocal()
         : null;
     userEndDate = json['userEndDate'] != null
-        ? DateTime.parse(json['userEndDate'])
+        ? DateTime.parse(json['userEndDate']).toLocal()
         : null;
     // userStartDate = json['userStartDate'];
     // userEndDate = json['userEndDate'];
     userDescription = json['userDescription'];
     userLastLogon = json['userLastLogon'] != null
-        ? DateTime.parse(json['userLastLogon'])
+        ? DateTime.parse(json['userLastLogon']).toLocal()
         : null;
     // userLastLogon = json['userLastLogon'];
     userLastPassword = json['userLastPassword'];
@@ -57,7 +57,7 @@ class UserEntity {
     userPhone = json['userPhone'];
     userEmail = json['userEmail'];
     userLastLogout = json['userLastLogout'] != null
-        ? DateTime.parse(json['userLastLogout'])
+        ? DateTime.parse(json['userLastLogout']).toLocal()
         : null;
     // userLastLogout = json['userLastLogout'];
   }

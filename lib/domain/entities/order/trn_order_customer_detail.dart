@@ -26,10 +26,10 @@ class TrnOrderCustomerDetail{
       custPhone: json['custPhone'],
       custEmail: json['custEmail'],
       custUpdatedDate: json['custUpdatedDate'] != null
-          ? DateTime.parse(json['custUpdatedDate'])
+          ? DateTime.parse(json['custUpdatedDate']).toLocal()
           : null,
       custCreatedDate: json['custCreatedDate'] != null
-          ? DateTime.parse(json['custCreatedDate'])
+          ? DateTime.parse(json['custCreatedDate']).toLocal()
           : null,
       custCreatedBy: json['custCreatedBy'],
       custUpdatedBy: json['custUpdatedBy'],

@@ -177,6 +177,17 @@ class DateTimeUtil {
 
     return res;
   }
+
+  DateTime convertToDateTime(String date) {
+    if (date.length != 8) {
+      throw FormatException("Format tanggal tidak valid");
+    }
+    int day = int.parse(date.substring(0, 2));
+    int month = int.parse(date.substring(2, 4));
+    int year = int.parse(date.substring(4, 8));
+    DateTime dateTime = DateTime(year, month, day);
+    return dateTime;
+  }
 }
 
 DateTimeUtil dateTimeUtil = new DateTimeUtil();

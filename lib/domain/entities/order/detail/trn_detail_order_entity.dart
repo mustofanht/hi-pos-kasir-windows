@@ -41,11 +41,19 @@ class TrnDetailOrderEntity {
     return TrnDetailOrderEntity(
       orderNumber: json['orderNumber'],
       orderName: json['orderName'],
-      orderDate: json['orderDate'] != null ? DateTime.parse(json['orderDate']) : null,
+      orderDate: json['orderDate'] != null
+          ? DateTime.parse(json['orderDate']).toLocal()
+          : null,
       orderTotalItem: json['orderTotalItem'],
-      orderDiskon: json['orderDiskon'] != null ? (json['orderDiskon'] as num).toDouble() : null,
-      orderTotalAmt: json['orderTotalAmt'] != null ? (json['orderTotalAmt'] as num).toDouble() : null,
-      orderTotalTgh: json['orderTotalTgh'] != null ? (json['orderTotalTgh'] as num).toDouble() : null,
+      orderDiskon: json['orderDiskon'] != null
+          ? (json['orderDiskon'] as num).toDouble()
+          : null,
+      orderTotalAmt: json['orderTotalAmt'] != null
+          ? (json['orderTotalAmt'] as num).toDouble()
+          : null,
+      orderTotalTgh: json['orderTotalTgh'] != null
+          ? (json['orderTotalTgh'] as num).toDouble()
+          : null,
       orderPaidBy: json['orderPaidBy'],
       orderSource: json['orderSource'],
       orderStatus: json['orderStatus'],
@@ -79,9 +87,9 @@ class TrnDetailOrderEntity {
       'orderStatus': orderStatus,
       'voucher': voucher,
       'ppn': ppn,
-    'customerDetail': customerDetail?.toJson(),
-    'detailOrderModels': detailOrderModels?.map((e) => e.toJson()).toList(),
-    'paymentDetail': paymentDetail?.toJson(),
+      'customerDetail': customerDetail?.toJson(),
+      'detailOrderModels': detailOrderModels?.map((e) => e.toJson()).toList(),
+      'paymentDetail': paymentDetail?.toJson(),
     };
   }
 }

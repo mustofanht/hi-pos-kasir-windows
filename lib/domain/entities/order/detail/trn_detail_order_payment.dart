@@ -1,4 +1,4 @@
-class TrnDetailOrderPayment{
+class TrnDetailOrderPayment {
   String? pymntNo;
   String? pymntOrderno;
   String? pymntCode;
@@ -36,12 +36,22 @@ class TrnDetailOrderPayment{
       pymntCode: json['pymntCode'],
       pymntReffno: json['pymntReffno'],
       pymntStatus: json['pymntStatus'],
-      pymntDate: json['pymntDate'] != null ? DateTime.parse(json['pymntDate']) : null,
-      pymntAmount: json['pymntAmount'] != null ? (json['pymntAmount'] as num).toDouble() : null,
-      pymntAdminFee: json['pymntAdminFee'] != null ? (json['pymntAdminFee'] as num).toDouble() : null,
+      pymntDate: json['pymntDate'] != null
+          ? DateTime.parse(json['pymntDate']).toLocal()
+          : null,
+      pymntAmount: json['pymntAmount'] != null
+          ? (json['pymntAmount'] as num).toDouble()
+          : null,
+      pymntAdminFee: json['pymntAdminFee'] != null
+          ? (json['pymntAdminFee'] as num).toDouble()
+          : null,
       pymntReverseno: json['pymntReverseno'],
-      pymntUpdatedDate: json['pymntUpdatedDate'] != null ? DateTime.parse(json['pymntUpdatedDate']) : null,
-      pymntCreatedDate: json['pymntCreatedDate'] != null ? DateTime.parse(json['pymntCreatedDate']) : null,
+      pymntUpdatedDate: json['pymntUpdatedDate'] != null
+          ? DateTime.parse(json['pymntUpdatedDate']).toLocal()
+          : null,
+      pymntCreatedDate: json['pymntCreatedDate'] != null
+          ? DateTime.parse(json['pymntCreatedDate']).toLocal()
+          : null,
       pymntCreatedBy: json['pymntCreatedBy'],
       pymntUpdatedBy: json['pymntUpdatedBy'],
     );

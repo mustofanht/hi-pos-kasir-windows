@@ -89,3 +89,8 @@ class OPERATOR_CONSTANTS {
 class PAGINATIONS_CONSTANT {
   static int LIMIT_PAGE = 12;
 }
+
+class SORTING_CONSTANT {
+  static String ASC = 'asc';
+  static String DESC = 'desc';
+}

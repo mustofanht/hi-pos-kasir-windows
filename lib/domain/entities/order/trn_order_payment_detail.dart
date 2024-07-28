@@ -36,20 +36,21 @@ class TrnOrderPaymentDetail {
       pymntCode: json['pymntCode'],
       pymntReffno: json['pymntReffno'],
       pymntStatus: json['pymntStatus'],
-      pymntDate:
-          json['pymntDate'] != null ? DateTime.parse(json['pymntDate']) : null,
+      pymntDate: json['pymntDate'] != null
+          ? DateTime.parse(json['pymntDate']).toLocal()
+          : null,
       pymntAmount: json['pymntAmount'] != null
-          ?  (json['pymntAmount'] as num).toDouble()
+          ? (json['pymntAmount'] as num).toDouble()
           : null,
       pymntAdminFee: json['pymntAdminFee'] != null
           ? (json['pymntAdminFee'] as num).toDouble()
           : null,
       pymntReverseno: json['pymntReverseno'],
       pymntUpdatedDate: json['pymntUpdatedDate'] != null
-          ? DateTime.parse(json['pymntUpdatedDate'])
+          ? DateTime.parse(json['pymntUpdatedDate']).toLocal()
           : null,
       pymntCreatedDate: json['pymntCreatedDate'] != null
-          ? DateTime.parse(json['pymntCreatedDate'])
+          ? DateTime.parse(json['pymntCreatedDate']).toLocal()
           : null,
       pymntCreatedBy: json['pymntCreatedBy'],
       pymntUpdatedBy: json['pymntUpdatedBy'],
