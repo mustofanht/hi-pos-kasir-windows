@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart'
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -31,6 +32,7 @@ class OrderController extends GetxController {
       // create Order and waiting the prosess of payment
       loading.popUpLoading();
       await _doCreateOrderQr(body: body, orderNo: orderNo);
+      Get.back();
       // Display the waiting payment alert
       if (orderPaymentNo.value == null) {
         alert.error('Payment Error', 'Terjadi Kesalahan');
@@ -41,7 +43,9 @@ class OrderController extends GetxController {
         msg:
             'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
         onCheck: () => _handlePaymentCheck(body),
-        onCancle: () => Get.back(),
+        onCancle: () {
+          Get.back();
+        },
       );
     } catch (e) {
       logger.safeLog(e);
@@ -81,7 +85,8 @@ class OrderController extends GetxController {
       var isSuccess = await _checkPaymentStatus();
       if (isSuccess) {
         Get.back();
-        _showPaymentSuccessAlert(body);
+        orderUtil.showPaymentSuccessAlert(body);
+        // _showPaymentSuccessAlert(body);
         displayUtil.updateSecondDisplay(
           CustomerDisplay(
             key: CustomerDisplayAction.PAYMENT,
@@ -100,67 +105,12 @@ class OrderController extends GetxController {
     }
   }
 
-  _showPaymentSuccessAlert(OrderModel body) {
-    dialog.paymentQrSuccess(
-      title: 'Success Pembayaran Telah Berhasil',
-      msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
-      onSendProofOfPayment: () => _handleSendProofOfPayment(body),
-      onPrint: () => orderUtil.handleOnPrintOrder(body),
-    );
-  }
-
-  _handleSendProofOfPayment(OrderModel body) {
-    Get.back();
-    dialog.paymentSendProofOfPayment(
-      title: 'Pembayaran Berhasil',
-      onSendEmail: (val) {
-        logger.safeLog('Email : ${val}');
-        var result = _service.message.sendWa(
-          authToken: _authToken,
-          phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.toJson()}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
-      },
-      onSendWa: (val) {
-        logger.safeLog('WA : ${val}');
-        var result = _service.message.sendWa(
-          authToken: _authToken,
-          phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.toJson()}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
-      },
-      onNewOrder: _handleNewOrder,
-    );
-  }
-
-  _handleNewOrder() {
-    Get.back();
-    Timer(Duration(seconds: 3), () async {
-      Get.dialog(
-        loading.simpleLoading(),
-        barrierDismissible: false,
-      );
-      Get.back();
-      await orderUtil.doRefreshCustomerDisplay(
-          paymentMethod: PaymentMethod.QRIS);
-      await orderUtil.clearOrder();
-    });
-  }
-
   _doCreateOrderQr({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       var result = await _service.order.orderService.createOrder(
         authToken: _authToken,
         body: body,
-        reffNo: orderNo?.value,
+        // reffNo: orderNo?.value,
       );
 
       result.fold(
@@ -216,7 +166,8 @@ class OrderPaymentController extends GetxController {
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
             await createTicketNo(orderNo!.value!);
             Get.back();
-            await orderUtil.handleOnPrintOrder(body);
+            // await orderUtil.handleOnPrintOrder(body);
+            orderUtil.showPaymentSuccessAlert(body);
             alert.success('Success', 'Payment Success');
           } else {
             alert.error(
@@ -261,9 +212,10 @@ class OrderPaymentController extends GetxController {
     }
   }
 
-  Future<List<String>> createTicketNo(String orderNo) async {
+  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
+      String orderNo) async {
     try {
-      List<String> dataList = [];
+      List<ResponseCreateTicketNoEntity> dataList = [];
       var result = await _service.order.orderService.createTicketNo(
         authToken: _authToken,
         reffNo: orderNo,
@@ -291,13 +243,62 @@ class OrderPaymentController extends GetxController {
 }
 
 class OrderUtil {
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
 
-  handleOnPrintOrder(OrderModel body) async {
+  showPaymentSuccessAlert(OrderModel body) {
+    dialog.paymentQrSuccess(
+      title: 'Success Pembayaran Telah Berhasil',
+      msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
+      onSendProofOfPayment: () => _handleSendProofOfPayment(body),
+      onPrint: () => _handleOnPrintOrder(body),
+    );
+  }
+
+  _handleSendProofOfPayment(OrderModel body) {
+    Get.back();
+    dialog.paymentSendProofOfPayment(
+      title: 'Pembayaran Berhasil',
+      onSendEmail: (val) {
+        logger.safeLog('Email : ${val}');
+        var result = _service.message.sendWa(
+          authToken: _authToken,
+          phoneNumber: int.parse(val),
+          message: 'Thanks For Order ${body.toJson()}',
+        );
+        result.fold(
+          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+          (right) => alert.success('Success', 'Send Wa Sucess'),
+        );
+      },
+      onSendWa: (val) {
+        logger.safeLog('WA : ${val}');
+        var result = _service.message.sendWa(
+          authToken: _authToken,
+          phoneNumber: int.parse(val),
+          message: 'Thanks For Order ${body.toJson()}',
+        );
+        result.fold(
+          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+          (right) => alert.success('Success', 'Send Wa Sucess'),
+        );
+      },
+      onNewOrder: _handleNewOrder,
+    );
+  }
+
+  _handleNewOrder() async {
+    Get.back();
     loading.popUpLoading();
+    await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    await orderUtil.clearOrder();
+    Get.back();
+  }
+
+  _handleOnPrintOrder(OrderModel body) async {
     var printController = Get.put(PrintController());
     bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    Get.back();
     if (bluetoothIsEnabled) {
       var paymentPrintController = Get.put(PaymentPrintController());
       var gatePrintController = Get.put(GatePrintController());
@@ -311,6 +312,7 @@ class OrderUtil {
       );
       await clearOrder();
     } else {
+      Get.back();
       alert.error('Error', 'bluetooth is off, please turn it on first');
     }
   }

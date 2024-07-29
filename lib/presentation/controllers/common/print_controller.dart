@@ -71,8 +71,19 @@ class PrintController extends GetxController {
   //   update();
   // }
 
-  Future<bool> bluetoothIsEnabled() {
-    return PrintBluetoothThermal.bluetoothEnabled;
+  Future<bool> bluetoothIsEnabled() async {
+    try {
+      bool permisionBluethoot =
+          await PrintBluetoothThermal.isPermissionBluetoothGranted;
+      if (permisionBluethoot) {
+        return PrintBluetoothThermal.bluetoothEnabled;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      logger.safeLog(e.toString());
+      return Future.value(false);
+    }
   }
 
   Future<void> getBluetoots() async {

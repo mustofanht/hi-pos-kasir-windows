@@ -39,7 +39,8 @@ class OrderTicketService {
     }
   }
 
-  Future<Either<String, BaseResponse<List<String>>>> createTicketNo({
+  Future<Either<String, BaseResponse<List<ResponseCreateTicketNoEntity>>>>
+      createTicketNo({
     required AuthToken authToken,
     String? reffNo,
   }) async {
@@ -60,9 +61,15 @@ class OrderTicketService {
     logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
-      BaseResponse<List<String>> result = BaseResponse<List<String>>.fromJson(
+      BaseResponse<List<ResponseCreateTicketNoEntity>> result =
+          BaseResponse<List<ResponseCreateTicketNoEntity>>.fromJson(
         json.decode(response.body),
-        (data) => data,
+        (data) => common.fromJsonList(
+          data,
+          (item) => ResponseCreateTicketNoEntity.fromJson(
+            item,
+          ),
+        ),
       );
       logger.safeLog(result.data!);
       return Right(result);

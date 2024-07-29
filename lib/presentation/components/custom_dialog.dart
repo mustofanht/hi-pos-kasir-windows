@@ -934,7 +934,7 @@ class CustomDialog {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  onSendEmail(emailController.text);
+                                  onSendWa(emailController.text);
                                 },
                                 child: Container(
                                   width: layoutStyle.blockHorizontal * 5,

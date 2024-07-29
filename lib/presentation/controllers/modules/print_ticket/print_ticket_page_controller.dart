@@ -58,7 +58,7 @@ class PrintTicketPageController extends GetxController
     listColumnHeader.add(
       CustomTableData(
         id: 'orderTotalItem',
-        columnName: 'Jml Tiket',
+        columnName: 'Jml Order',
         alignment: Alignment.center,
       ),
     );
