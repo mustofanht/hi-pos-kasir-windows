@@ -312,7 +312,6 @@ class OrderUtil {
       );
       await clearOrder();
     } else {
-      Get.back();
       alert.error('Error', 'bluetooth is off, please turn it on first');
     }
   }
