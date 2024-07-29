@@ -170,7 +170,8 @@ class ShiftPageController extends GetxController {
       },
       onRight: () async {
         await _shiftEnded(val);
-        doPrepared();
+        await doPrepared();
+        Get.back();
       },
     );
   }
