@@ -557,9 +557,12 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                               ),
                               Text(
                                 MapPaymentMethod[model.orderPaidBy] ?? '',
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
                                 style: TextStyle(
                                   fontWeight: fontWeight.bold,
-                                  fontSize: fontSize.subtitle,
+                                  fontSize: fontSize.small,
                                 ),
                               )
                             ],
