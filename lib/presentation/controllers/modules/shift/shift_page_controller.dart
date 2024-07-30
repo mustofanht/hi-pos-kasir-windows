@@ -163,6 +163,10 @@ class ShiftPageController extends GetxController {
   }
 
   doShiftEnded(ShiftDetailEntity? val) async {
+    if (val == null) {
+      return;
+    }
+
     dialog.dialogCustomerLeftRight(
       title: 'Shift Ended',
       msg: 'Are you sure?',
@@ -179,14 +183,14 @@ class ShiftPageController extends GetxController {
     );
   }
 
-  _shiftEnded(ShiftDetailEntity? val) async {
+  _shiftEnded(ShiftDetailEntity val) async {
     isLoadingShiftDetail.value = true;
     try {
       var result;
 
       result = await _service.shift.shiftEnded(
         authToken: _authToken,
-        shiftDate: dateTimeUtil.convertToDateTime(val!.shftDate!).toIso8601String(),
+        shiftDate: DateTime.now().toLocal().toIso8601String(),
         userId: val.userFullName!,
       );
       result.fold((l) {
