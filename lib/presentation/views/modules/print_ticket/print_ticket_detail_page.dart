@@ -464,7 +464,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                           elevation: const MaterialStatePropertyAll(0),
                         ),
                         label: Text(
-                          'Print Tiket',
+                          'Aktivasi Status Tiket',
                           style: textStyle.blackText,
                         ),
                         height: layoutStyle.blockVertical * 6.5,

@@ -47,14 +47,6 @@ class PrintTicketPageController extends GetxController
         alignment: Alignment.centerLeft,
       ),
     );
-    // listColumnHeader.add(
-    //   CustomTableData(
-    //     id: 'orderTicket',
-    //     columnName: 'Ticket',
-    //     data: const Text('Personal'),
-    //     alignment: Alignment.centerLeft,
-    //   ),
-    // );
     listColumnHeader.add(
       CustomTableData(
         id: 'orderTotalItem',
@@ -83,38 +75,6 @@ class PrintTicketPageController extends GetxController
         alignment: Alignment.center,
       ),
     );
-    // listColumnHeader.add(
-    //   CustomTableData(
-    //     id: 'tiketStatus',
-    //     columnName: 'Status Tiket',
-    //     data: CustomBadge(
-    //       label: 'Active',
-    //       colorLabel: colorStyle.black,
-    //       colorBox: colorStyle.green,
-    //     ),
-    //     alignment: Alignment.centerLeft,
-    //   ),
-    // );
-    // listColumnHeader.add(
-    //   CustomTableData(
-    //     id: 'printStatus',
-    //     columnName: 'Status Cetak',
-    //     data: CustomBadge(
-    //       label: 'Cetak',
-    //       colorLabel: colorStyle.black,
-    //       colorBox: colorStyle.green,
-    //     ),
-    //     alignment: Alignment.centerLeft,
-    //   ),
-    // );
-    // listColumnHeader.add(
-    //   CustomTableData(
-    //     id: 'scanStatus',
-    //     columnName: 'Status Scan',
-    //     data: const Text('1/1'),
-    //     alignment: Alignment.center,
-    //   ),
-    // );
   }
 
   doSearch(String search) async {

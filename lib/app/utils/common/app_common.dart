@@ -182,6 +182,10 @@ class AppCommon {
       Map<Object?, Object?> original) {
     return original.map((key, value) => MapEntry(key.toString(), value));
   }
+
+  bool isNumeric(String str) {
+    return double.tryParse(str) != null;
+  }
 }
 
 AppCommon common = new AppCommon();

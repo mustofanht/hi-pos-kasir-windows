@@ -341,7 +341,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                         CrossAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'Harga Total: Rp.${model.orderTotalAmt ?? 0}',
+                                        'Harga Total: Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
                                         style: TextStyle(
                                           fontWeight: fontWeight.bold,
                                           fontSize: fontSize.subtitle,
@@ -604,7 +604,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                     height: layoutStyle.defaultMargin,
                                   ),
                                   Text(
-                                    'Rp.${model.orderTotalAmt ?? 0}',
+                                    'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
                                     style: TextStyle(
                                       color: colorStyle.primary,
                                     ),

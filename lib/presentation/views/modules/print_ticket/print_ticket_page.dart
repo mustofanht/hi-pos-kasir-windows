@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -53,8 +54,9 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                               element.columnName ?? '',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  color: colorStyle.black,
-                                  fontWeight: FontWeight.bold),
+                                color: colorStyle.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         );
@@ -94,18 +96,36 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                               ? 'Paid'
                               : 'Not Paid/Waiting';
                         }
-                        return Expanded(
-                          child: Container(
-                            alignment: element.alignment,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 2,
-                              vertical: layoutStyle.defaultMargin / 4,
-                            ),
-                            child: Text(
-                              val,
-                            ),
-                          ),
-                        );
+
+                        if (common.isNumeric(val)) {
+                          val = common.currencyFormat(double.parse(val));
+                          // Lakukan sesuatu jika val adalah angka
+                        }
+                        return element.width != null
+                            ? Container(
+                                width: element.width,
+                                height: layoutStyle.blockVertical * 5,
+                                alignment: element.alignment,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: layoutStyle.defaultMargin / 2,
+                                  vertical: layoutStyle.defaultMargin / 4,
+                                ),
+                                child: Text(
+                                  val,
+                                ),
+                              )
+                            : Expanded(
+                                child: Container(
+                                  alignment: element.alignment,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 2,
+                                    vertical: layoutStyle.defaultMargin / 4,
+                                  ),
+                                  child: Text(
+                                    val,
+                                  ),
+                                ),
+                              );
                       }).toList(),
                     ),
                   ),
