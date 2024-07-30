@@ -262,7 +262,7 @@ class OrderUtil {
       title: 'Pembayaran Berhasil',
       onSendEmail: (val) {
         logger.safeLog('Email : ${val}');
-        var result = _service.message.sendWa(
+        var result = _service.message.sendEmail(
           authToken: _authToken,
           phoneNumber: int.parse(val),
           message: 'Thanks For Order ${body.toJson()}',

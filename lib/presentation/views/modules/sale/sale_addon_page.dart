@@ -51,7 +51,7 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
       tag: 'SaleTicketPage',
       initState: (state) {
         controller.scrollController.addListener(controller.scrollHandler);
-        controller.doPrepareList(page: 1);
+        controller.doPrepareList(page: 0);
       },
       builder: (controller) {
         return SizedBox(
@@ -59,7 +59,7 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
           height: layoutStyle.screenHeight,
           child: RefreshIndicator(
             onRefresh: () async {
-              await controller.doPrepareList(page: 1);
+              await controller.doPrepareList(page: 0);
             },
             child: controller.isLoading.value
                 ? loading.simpleLoading()

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -195,7 +196,9 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     leftColum(
                       column: 'Biaya Ppn',
                       value: Text(
-                        (model.ppn ?? '').toString(),
+                        common.currencyFormat(
+                          double.parse(model.ppn ?? '0'),
+                        ),
                         style: TextStyle(
                           fontWeight: fontWeight.bold,
                         ),
@@ -213,7 +216,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     leftColum(
                       column: 'Total',
                       value: Text(
-                        'Rp.${model.orderTotalAmt ?? 0}',
+                        'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
                         style: TextStyle(
                           fontWeight: fontWeight.bold,
                         ),
@@ -222,7 +225,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     leftColum(
                       column: 'Total Tagihan',
                       value: Text(
-                        'Rp.${(model.orderTotalAmt ?? 0) + (model.orderDiskon ?? 0)}',
+                        'Rp.${common.currencyFormat((model.orderTotalAmt ?? 0) + (model.orderDiskon ?? 0))}',
                         style: TextStyle(
                           fontWeight: fontWeight.bold,
                         ),
@@ -235,6 +238,143 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
           ),
         ),
       );
+    }
+
+    Widget headerSection() {
+      return Obx(() {
+        return controller.isLoading.value
+            ? Container(
+                alignment: Alignment.center,
+                width: layoutStyle.screenWidth,
+                height: layoutStyle.screenHeight,
+                child: loading.simpleLoading(),
+              )
+            : Row(
+                children: [
+                  Checkbox(
+                    fillColor: MaterialStatePropertyAll(colorStyle.blue),
+                    value: controller.selectAll.value,
+                    onChanged: (value) => controller.toggleSelectAll(value),
+                  ),
+                  ...controller.detailListColumnHeader.map((element) {
+                    return element.width != null
+                        ? Container(
+                            width: element.width,
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 2,
+                              vertical: layoutStyle.defaultMargin / 4,
+                            ),
+                            child: Text(
+                              element.columnName ?? '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: colorStyle.black,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        : Expanded(
+                            child: Container(
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: layoutStyle.defaultMargin / 2,
+                                vertical: layoutStyle.defaultMargin / 4,
+                              ),
+                              child: Text(
+                                element.columnName ?? '',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: colorStyle.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                  }).toList(),
+                ],
+              );
+      });
+    }
+
+    Widget dataListSection() {
+      return Obx(() {
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index) {
+              if (controller.isLoading.value) {
+                return loading.simpleLoading();
+              } else if (controller.model.value.detailOrderModels!.isNotEmpty) {
+                return GestureDetector(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: colorStyle.lightGrey,
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          fillColor: MaterialStatePropertyAll(colorStyle.blue),
+                          value: controller.selected.contains(
+                            controller.model.value.detailOrderModels![index],
+                          ),
+                          onChanged: (value) => controller.toggleSelect(
+                            controller.model.value.detailOrderModels![index],
+                            value,
+                          ),
+                        ),
+                        ...controller.detailListColumnHeader.map((element) {
+                          String val = controller
+                              .model.value.detailOrderModels![index]
+                              .toJson()[element.id]
+                              .toString();
+
+                          if (common.isNumeric(val)) {
+                            val = common.currencyFormat(double.parse(val));
+                          }
+
+                          return element.width != null
+                              ? Container(
+                                  width: element.width,
+                                  height: layoutStyle.blockVertical * 5,
+                                  alignment: element.alignment,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 2,
+                                    vertical: layoutStyle.defaultMargin / 4,
+                                  ),
+                                  child: Text(
+                                    val,
+                                  ),
+                                )
+                              : Expanded(
+                                  child: Container(
+                                    alignment: element.alignment,
+                                    height: layoutStyle.blockVertical * 5,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin / 2,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    child: Text(
+                                      val,
+                                    ),
+                                  ),
+                                );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            },
+            childCount: controller.model.value.detailOrderModels!.length,
+          ),
+        );
+      });
     }
 
     Widget rightSection() {
@@ -268,134 +408,17 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                                 color: colorStyle.lightGrey,
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(
-                                    layoutStyle.defaultMargin / 2,
+                                    layoutStyle.defaultMargin / 5,
                                   ),
                                   topRight: Radius.circular(
-                                    layoutStyle.defaultMargin / 2,
+                                    layoutStyle.defaultMargin / 5,
                                   ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Checkbox(
-                                      fillColor: MaterialStatePropertyAll(
-                                          colorStyle.blue),
-                                      value: controller.selectAll.value,
-                                      onChanged: (value) =>
-                                          controller.toggleSelectAll(value),
-                                    ),
-                                    ...controller.detailListColumnHeader
-                                        .map(
-                                          (element) => element.width != null
-                                              ? Container(
-                                                  width: element.width,
-                                                  alignment: Alignment.center,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: layoutStyle
-                                                            .defaultMargin /
-                                                        2,
-                                                    vertical: layoutStyle
-                                                            .defaultMargin /
-                                                        4,
-                                                  ),
-                                                  child: Text(
-                                                    element.columnName ?? '',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        color: colorStyle.black,
-                                                        fontWeight:
-                                                            fontWeight.bold),
-                                                  ),
-                                                )
-                                              : Expanded(
-                                                  child: Container(
-                                                    width: 500,
-                                                    alignment: Alignment.center,
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                      horizontal: layoutStyle
-                                                              .defaultMargin /
-                                                          2,
-                                                      vertical: layoutStyle
-                                                              .defaultMargin /
-                                                          4,
-                                                    ),
-                                                    child: Text(
-                                                      element.columnName ?? '',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          color:
-                                                              colorStyle.black,
-                                                          fontWeight:
-                                                              fontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ),
-                                        )
-                                        .toList(),
-                                  ],
-                                ),
+                                child: headerSection(),
                               ),
                             ),
                           ),
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (BuildContext context, int index) {
-                                return controller
-                                        .model.value.detailOrderModels!.isEmpty
-                                    ? Container()
-                                    : Container(
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            bottom: BorderSide(
-                                              color: colorStyle.lightGrey,
-                                              width: 1.0,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Checkbox(
-                                              fillColor:
-                                                  MaterialStatePropertyAll(
-                                                      colorStyle.blue),
-                                              value: controller.selected[index],
-                                              onChanged: (value) => controller
-                                                  .toggleSelect(index, value),
-                                            ),
-                                            ...controller.detailListColumnHeader
-                                                .map(
-                                              (element) => Expanded(
-                                                child: Container(
-                                                  alignment: element.alignment,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: layoutStyle
-                                                            .defaultMargin /
-                                                        2,
-                                                    vertical: layoutStyle
-                                                            .defaultMargin /
-                                                        4,
-                                                  ),
-                                                  child: Text(
-                                                    controller
-                                                        .model
-                                                        .value
-                                                        .detailOrderModels![
-                                                            index]
-                                                        .toJson()[element.id]
-                                                        .toString(),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                              },
-                              childCount: controller
-                                  .model.value.detailOrderModels!.length,
-                            ),
-                          ),
+                          dataListSection(),
                         ],
                       ),
                     ),
@@ -413,7 +436,9 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                           vertical: layoutStyle.defaultMargin / 2,
                           // horizontal: layoutStyle.defaultMargin,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          controller.doSendEmail();
+                        },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.resolveWith(
                             (states) => colorStyle.white,
@@ -446,7 +471,9 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                           vertical: layoutStyle.defaultMargin / 2,
                           // horizontal: layoutStyle.defaultMargin,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          controller.doActiveTicket();
+                        },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.resolveWith(
                             (states) => colorStyle.white,
@@ -474,7 +501,9 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                 ),
               ),
               CustomButton(
-                onPressed: () {},
+                onPressed: () {
+                  controller.doPrintTicket();
+                },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
                     (states) => colorStyle.grey,

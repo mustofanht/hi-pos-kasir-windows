@@ -99,8 +99,8 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
 
                         if (common.isNumeric(val)) {
                           val = common.currencyFormat(double.parse(val));
-                          // Lakukan sesuatu jika val adalah angka
                         }
+                        
                         return element.width != null
                             ? Container(
                                 width: element.width,

@@ -47,22 +47,25 @@ class ShiftPageController extends GetxController {
     isLoadingShiftDetail.value = true;
 
     try {
-      var result;
-
-      result = await _service.shift.detail(
-        authToken: _authToken,
-        shiftDate: dateTimeUtil.getFormattedDate(
-            date: dateTimeUtil.convertToDateTime(val!.shftDate!),
-            format: dateFormat.yyyyMMdd),
-        userId: val.userFullName!,
-      );
-      result.fold((l) {
-        logger.safeLog(l);
-        isLoadingShiftDetail.value = false;
-      }, (r) {
-        shiftDetail.value = r.data!;
-        isLoadingShiftDetail.value = false;
-      });
+      if (val != null) {
+        var result;
+        result = await _service.shift.detail(
+          authToken: _authToken,
+          shiftDate: dateTimeUtil.getFormattedDate(
+              date: dateTimeUtil.convertToDateTime(val.shftDate!),
+              format: dateFormat.yyyyMMdd),
+          userId: val.userFullName!,
+        );
+        result.fold((l) {
+          logger.safeLog(l);
+          isLoadingShiftDetail.value = false;
+        }, (r) {
+          if (r.data! != null) {
+            shiftDetail.value = r.data!;
+          }
+          isLoadingShiftDetail.value = false;
+        });
+      }
     } catch (e) {
       logger.safeLog(e);
       isLoadingShiftDetail.value = false;
@@ -181,11 +184,9 @@ class ShiftPageController extends GetxController {
     try {
       var result;
 
-      result = await _service.shift.detail(
+      result = await _service.shift.shiftEnded(
         authToken: _authToken,
-        shiftDate: dateTimeUtil.getFormattedDate(
-            date: dateTimeUtil.convertToDateTime(val!.shftDate!),
-            format: dateFormat.yyyyMMdd),
+        shiftDate: dateTimeUtil.convertToDateTime(val!.shftDate!).toIso8601String(),
         userId: val.userFullName!,
       );
       result.fold((l) {

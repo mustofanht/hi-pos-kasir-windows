@@ -853,6 +853,7 @@ class CustomDialog {
     required Function(String val) onSendEmail,
     required Function(String val) onSendWa,
     required Function onNewOrder,
+    String? labelButton,
   }) {
     final emailController = TextEditingController();
     final waController = TextEditingController();
@@ -1059,7 +1060,7 @@ class CustomDialog {
                     elevation: const MaterialStatePropertyAll(0),
                   ),
                   label: Text(
-                    'Order Baru',
+                    labelButton ?? 'Order Baru',
                     style: textStyle.blackText,
                   ),
                   width: layoutStyle.blockHorizontal * 30,

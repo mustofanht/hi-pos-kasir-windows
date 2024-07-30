@@ -34,6 +34,7 @@ class SaleTicketPageController extends GetxController {
   }
 
   Future<void> doPrepareList({required int page}) async {
+    logger.safeLog('page : $page');
     if (page > 0) {
       isLoadMore.value = true;
     } else {
@@ -41,6 +42,7 @@ class SaleTicketPageController extends GetxController {
     }
 
     try {
+      ticketList.clear();
       var result;
       List<FilterQuery> dataFilter = [];
       Map<String, dynamic> param = {
@@ -83,6 +85,7 @@ class SaleTicketPageController extends GetxController {
       isLoading.value = false;
       isLoadMore.value = false;
     }
+    logger.safeLog('ticketList : ${ticketList.length}');
     update();
   }
 

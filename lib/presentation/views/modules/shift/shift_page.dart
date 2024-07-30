@@ -132,28 +132,30 @@ class ShiftPage extends GetView<ShiftPageController> {
               ),
               controller.isLoadingShiftCurrent.value
                   ? loading.simpleLoading()
-                  : GestureDetector(
-                      onTap: () {
-                        controller.doSelectedShift(shiftCurrent);
-                      },
-                      child: cardShift(
-                        date: dateTimeUtil.getFormattedDate(
-                          date: dateTimeUtil.convertToDateTime(
-                            shiftCurrent.shftDate!,
+                  : shiftCurrent.shftDate == null
+                      ? Container()
+                      : GestureDetector(
+                          onTap: () {
+                            controller.doSelectedShift(shiftCurrent);
+                          },
+                          child: cardShift(
+                            date: dateTimeUtil.getFormattedDate(
+                              date: dateTimeUtil.convertToDateTime(
+                                shiftCurrent.shftDate!,
+                              ),
+                              format: dateFormat.dateWithoutTime,
+                            ),
+                            time: 'Sedang Berlangsung',
+                            selected: shiftCurrent.shftDate ==
+                                controller.selectedShift.value.shftDate,
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(
+                                  layoutStyle.defaultMargin / 2),
+                              bottomRight: Radius.circular(
+                                  layoutStyle.defaultMargin / 2),
+                            ),
                           ),
-                          format: dateFormat.dateWithoutTime,
                         ),
-                        time: 'Sedang Berlangsung',
-                        selected: shiftCurrent.shftDate ==
-                            controller.selectedShift.value.shftDate,
-                        borderRadius: BorderRadius.only(
-                          topRight:
-                              Radius.circular(layoutStyle.defaultMargin / 2),
-                          bottomRight:
-                              Radius.circular(layoutStyle.defaultMargin / 2),
-                        ),
-                      ),
-                    ),
               Expanded(
                 child: Container(
                   margin: EdgeInsets.only(top: layoutStyle.defaultMargin),

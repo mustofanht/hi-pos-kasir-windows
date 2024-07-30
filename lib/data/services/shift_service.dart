@@ -89,12 +89,16 @@ class ShiftService {
       path: path,
     );
 
+    var bodyRequest = json.encode({
+      'shftDate': shiftDate,
+      'shftUserid': userId,
+    });
+
+    logger.safeLog('bodyRequest : $bodyRequest');
+
     final response = await http.post(
       uri,
-      body: json.encode({
-        'shftDate': shiftDate,
-        'shftUserid': userId,
-      }),
+      body: bodyRequest,
       headers: common.generateHeader(
         sessionToken: authToken,
       ),
@@ -113,5 +117,4 @@ class ShiftService {
       return Left(common.getMetadataMessages(response.body));
     }
   }
-
 }
