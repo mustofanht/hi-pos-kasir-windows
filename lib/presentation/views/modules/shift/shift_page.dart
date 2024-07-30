@@ -195,7 +195,14 @@ class ShiftPage extends GetView<ShiftPageController> {
                                             ),
                                             format: dateFormat.dateWithoutTime,
                                           ),
-                                          time: 'not set yet - not set yet',
+                                          time:
+                                              '${dateTimeUtil.getFormattedDate(
+                                            date: element.shftStart!,
+                                            format: dateFormat.hourMinutes,
+                                          )} - ${dateTimeUtil.getFormattedDate(
+                                            date: element.shftEnd!,
+                                            format: dateFormat.hourMinutes,
+                                          )}',
                                           selected: element.shftDate ==
                                               controller
                                                   .selectedShift.value.shftDate,
