@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/common/notification_utils.dart';
+// import 'package:jaya_propertiy/app/utils/common/notification_utils.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/data/models/common/received_notification.dart';
+// import 'package:jaya_propertiy/data/models/common/received_notification.dart';
 // import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/menu_item_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -56,22 +56,22 @@ class HomePageController extends GetxController {
     // TODO: implement onInit
     super.onInit();
 
-    // For initial Notification
-    notificationUtil.initializeNotification();
-    notificationUtil.requestPermissions();
-    //
+    // // For initial Notification
+    // notificationUtil.initializeNotification();
+    // notificationUtil.requestPermissions();
+    // //
     
-    notificationUtil.selectNotificationStream.stream
-        .listen((String? payload) async {
-      logger.safeLog('Payload : $payload');
-      // if (payload == inboxPayload) {
-      //   doClickWFIcon();
-      // }
-    });
-    notificationUtil.didReceiveLocalNotificationStream.stream
-        .listen((ReceivedNotification receivedNotification) async {
-      logger.safeLog('Payload : ${receivedNotification.toJson()}');
-    });
+    // notificationUtil.selectNotificationStream.stream
+    //     .listen((String? payload) async {
+    //   logger.safeLog('Payload : $payload');
+    //   // if (payload == inboxPayload) {
+    //   //   doClickWFIcon();
+    //   // }
+    // });
+    // notificationUtil.didReceiveLocalNotificationStream.stream
+    //     .listen((ReceivedNotification receivedNotification) async {
+    //   logger.safeLog('Payload : ${receivedNotification.toJson()}');
+    // });
 
     username.value = sessionUtil.getUserName();
     timeString.value = _formatDateTime(DateTime.now());
@@ -80,12 +80,12 @@ class HomePageController extends GetxController {
     update();
   }
 
-  @override
-  void onClose() {
-    notificationUtil.didReceiveLocalNotificationStream.close();
-    notificationUtil.selectNotificationStream.close();
-    super.onClose();
-  }
+  // @override
+  // void onClose() {
+  //   notificationUtil.didReceiveLocalNotificationStream.close();
+  //   notificationUtil.selectNotificationStream.close();
+  //   super.onClose();
+  // }
 
   void toggleDrawer() {
     if (scaffoldKey.currentState?.isDrawerOpen ?? false) {
