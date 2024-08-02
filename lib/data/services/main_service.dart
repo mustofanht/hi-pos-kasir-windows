@@ -17,6 +17,7 @@ import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_e
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/payment/response_cek_payment_entity.dart';
+import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
@@ -29,6 +30,7 @@ part 'order_service.dart';
 part 'payment_service.dart';
 part 'message_service.dart';
 part 'shift_service.dart';
+part 'promo_service.dart';
 part 'sale/ticket_service.dart';
 part 'sale/voucher_service.dart';
 part 'sale/addon_service.dart';
@@ -42,4 +44,5 @@ class MainService {
   final payment = PaymentService();
   final message = MessageService();
   final shift = ShiftService();
+  final promo = PromoService();
 }

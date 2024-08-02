@@ -61,6 +61,19 @@ class AppSessionUtil {
     return unitId;
   }
 
+  int? getLocationId() {
+    int? unitId = null;
+    try {
+      Map<String, dynamic> data = _store.read(constant.authentication);
+      AuthToken authToken = AuthToken.fromJson(data);
+
+      unitId = JwtDecoder.decode(authToken.token ?? "")['user']['locId'];
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    return unitId;
+  }
+
   int? getRoleId() {
     int? roleId = null;
     try {
