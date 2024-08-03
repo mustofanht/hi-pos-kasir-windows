@@ -5,6 +5,8 @@ import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 
 class LocalStorage {
+  static String promoDir = 'PROMO';
+
   Future<List<String>> saveImages(List<File> imageFiles) async {
     final directory = await getApplicationDocumentsDirectory();
     List<String> filePaths = [];
@@ -51,16 +53,18 @@ class LocalStorage {
         entity.path.endsWith('.gif');
   }
 
+  String getFileNameFromUrl(String url) {
+    Uri uri = Uri.parse(url);
+    return uri.pathSegments.last;
+  }
+
   Future<Directory> _getAppDirectory() async {
     final directory = await getApplicationDocumentsDirectory();
     return directory;
   }
 
-  Future<void> downloadAndSaveImagePromo(
-    String imageName,
-    String imageUrl,
-  ) async {
-    logger.safeLog('URL : $imageUrl');
+  Future<void> downloadAndSaveImagePromo(String imageUrl) async {
+    print('URL : $imageUrl');
     final response = await http.get(
       Uri.parse(imageUrl),
       headers: {
@@ -68,12 +72,23 @@ class LocalStorage {
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
     );
-    logger.safeLog('RESPONSE : ${response.statusCode}');
-    logger.safeLog('RESPONSE : ${response.toString()}');
     if (response.statusCode == 200) {
       final imageBytes = response.bodyBytes;
       final directory = await _getAppDirectory();
-      final imagePath = path.join(directory.path, imageName);
+      final finalDir = path.join(directory.path, promoDir);
+
+      final dir = Directory(finalDir);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      final imagePath = path.join(
+        finalDir,
+        getFileNameFromUrl(imageUrl),
+      );
+      logger.safeLog('finalDir : $finalDir');
+      logger.safeLog('DIR : $directory');
+      logger.safeLog('PATH : $imagePath');
       final file = File(imagePath);
 
       if (await file.exists()) {
@@ -84,6 +99,24 @@ class LocalStorage {
     } else {
       throw Exception('Failed to download image');
     }
+  }
+
+  Future<List<File>> getImagesPromoLocal() async {
+    final directory = await _getAppDirectory();
+    final finalDir = path.join(directory.path, promoDir);
+    final imageDirectory = Directory(finalDir);
+    List<File> imageFiles = [];
+    if (await imageDirectory.exists()) {
+      List<FileSystemEntity> entities = await imageDirectory.list().toList();
+      logger.safeLog('TOTAL IMG : ${entities.length}');
+
+      for (FileSystemEntity entity in entities) {
+        if (entity is File && looksLikeImage(entity)) {
+          imageFiles.add(entity);
+        }
+      }
+    }
+    return imageFiles;
   }
 }
 

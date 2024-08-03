@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
@@ -29,7 +32,7 @@ class CustomerSaleCartPageController extends GetxController {
   ).obs;
 
   List<Widget> sliders = [];
-  List<String> images = [];
+  List<File> images = [];
 
   // final showBarcode = RxBool(false);
   final qrCode = Rxn<String>(null);
@@ -39,13 +42,16 @@ class CustomerSaleCartPageController extends GetxController {
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    loadImages();
     doPrepared();
   }
 
-  doPrepared() {
+  doPrepared() async {
     qrCode.value = null;
     showPaymentSuccess.value = false;
+
+    await loadImages();
+
+    logger.safeLog('IMAGE PROMO : ${images.length}');
 
     sliders = images
         .map(
@@ -57,7 +63,7 @@ class CustomerSaleCartPageController extends GetxController {
               borderRadius: const BorderRadius.all(Radius.circular(4.0)),
               child: Container(
                 width: double.infinity,
-                child: Image.network(
+                child: Image.file(
                   e,
                   fit: BoxFit.fill,
                 ),
@@ -144,13 +150,16 @@ class CustomerSaleCartPageController extends GetxController {
     }
   }
 
-  void loadImages() {
+  Future<void> loadImages() async {
     // localStorage.getSavedImages().then((List<File> val) {
     //   images.addAll(val);
     // });
-    for (int i = 0; i < 10; i++) {
-      images.add('https://picsum.photos/1000/1000');
-    }
+    // for (int i = 0; i < 10; i++) {
+    //   images.add('https://picsum.photos/1000/1000');
+    // }
+    var listImage = await localStorage.getImagesPromoLocal();
+    images.clear();
+    images.addAll(listImage);
     update();
   }
 }
