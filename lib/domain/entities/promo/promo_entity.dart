@@ -1,29 +1,30 @@
 class PromoEntity {
-  int prmId;
-  int prmLocId;
-  String prmPathImg;
-  String prmDescription;
-  String prmFlActive;
-  String prmCreatedBy;
-  DateTime prmCreatedDate;
-  String prmUpdatedBy;
-  DateTime prmUpdatedDate;
-  String locCode;
-  String locName;
+  int? prmId;
+  int? prmLocId;
+  String? prmPathImg;
+  String? prmDescription;
+  String? prmFlActive;
+  String? prmCreatedBy;
+  DateTime? prmCreatedDate;
+  String? prmUpdatedBy;
+  DateTime? prmUpdatedDate;
+  String? locCode;
+  String? locName;
 
   PromoEntity({
-    required this.prmId,
-    required this.prmLocId,
-    required this.prmPathImg,
-    required this.prmDescription,
-    required this.prmFlActive,
-    required this.prmCreatedBy,
-    required this.prmCreatedDate,
-    required this.prmUpdatedBy,
-    required this.prmUpdatedDate,
-    required this.locCode,
-    required this.locName,
+    this.prmId,
+    this.prmLocId,
+    this.prmPathImg,
+    this.prmDescription,
+    this.prmFlActive,
+    this.prmCreatedBy,
+    this.prmCreatedDate,
+    this.prmUpdatedBy,
+    this.prmUpdatedDate,
+    this.locCode,
+    this.locName,
   });
+
 
   factory PromoEntity.fromJson(Map<String, dynamic> json) {
     return PromoEntity(
@@ -33,11 +34,12 @@ class PromoEntity {
       prmDescription: json['prmDescription'],
       prmFlActive: json['prmFlActive'],
       prmCreatedBy: json['prmCreatedBy'],
-      prmCreatedDate: DateTime.parse(json['prmCreatedDate']),
+      prmCreatedDate: json['prmCreatedDate'] != null ? DateTime.parse(json['prmCreatedDate']).toLocal() : null,
       prmUpdatedBy: json['prmUpdatedBy'],
-      prmUpdatedDate: DateTime.parse(json['prmUpdatedDate']),
+      prmUpdatedDate: json['prmUpdatedDate'] != null ? DateTime.parse(json['prmUpdatedDate']).toLocal() : null,
       locCode: json['locCode'],
       locName: json['locName'],
     );
   }
+
 }

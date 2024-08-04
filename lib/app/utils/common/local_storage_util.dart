@@ -108,8 +108,6 @@ class LocalStorage {
     List<File> imageFiles = [];
     if (await imageDirectory.exists()) {
       List<FileSystemEntity> entities = await imageDirectory.list().toList();
-      logger.safeLog('TOTAL IMG : ${entities.length}');
-
       for (FileSystemEntity entity in entities) {
         if (entity is File && looksLikeImage(entity)) {
           imageFiles.add(entity);

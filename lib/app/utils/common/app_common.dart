@@ -3,10 +3,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:intl/intl.dart';
+import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 
 class AppCommon {
   String randomString(int length) {
@@ -185,6 +189,31 @@ class AppCommon {
 
   bool isNumeric(String str) {
     return double.tryParse(str) != null;
+  }
+
+  getImagePromo(AuthToken authToken) async {
+    final _service = MainService();
+    try {
+      var locId = sessionUtil.getLocationId();
+      List<PromoEntity> listData = [];
+      var result = await _service.promo.getPromoByLoc(
+        authToken: authToken,
+        locId: locId!,
+      );
+      result.fold((l) {
+        logger.safeLog(l);
+      }, (r) {
+        listData = r.data!;
+        if (listData.isNotEmpty) {
+          for (var element in listData) {
+            var imageUrl = element.prmPathImg!;
+            localStorage.downloadAndSaveImagePromo(imageUrl);
+          }
+        }
+      });
+    } catch (e) {
+      logger.safeLog(e);
+    }
   }
 }
 

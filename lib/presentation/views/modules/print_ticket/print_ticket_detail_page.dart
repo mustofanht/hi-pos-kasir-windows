@@ -153,7 +153,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                         label: model.paymentDetail?.pymntStatus == 'P'
                             ? 'Paid'
                             : 'Not Paid/Waiting',
-                        colorLabel: colorStyle.white,
+                        colorLabel: model.paymentDetail?.pymntStatus == 'P' ? colorStyle.white : colorStyle.black,
                         colorBox: model.paymentDetail?.pymntStatus == 'P'
                             ? colorStyle.green
                             : colorStyle.creamy,

@@ -66,6 +66,8 @@ class CustomerSaleCartPageController extends GetxController {
                 child: Image.file(
                   e,
                   fit: BoxFit.fill,
+                  // width: layoutStyle.screenWidth,
+                  // height: layoutStyle.screenHeight,
                 ),
               ),
             ),

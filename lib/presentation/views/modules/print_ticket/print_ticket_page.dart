@@ -92,7 +92,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                             .toJson()[element.id]
                             .toString();
                         if (element.id == 'orderStatus') {
-                          val = controller.dataList[index].paymentDetail == 'P'
+                          val = controller.dataList[index].paymentDetail?.pymntStatus == 'P'
                               ? 'Paid'
                               : 'Not Paid/Waiting';
                         }
