@@ -325,7 +325,9 @@ class SettingPage extends GetView<SettingPageController> {
                         vertical: layoutStyle.defaultMargin / 2,
                         horizontal: layoutStyle.defaultMargin,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        controller.doRefreshCustomerPage();
+                      },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.resolveWith(
                           (states) => colorStyle.blue,

@@ -65,3 +65,5 @@ class DisplayUtil {
     await transferData(val);
   }
 }
+
+DisplayUtil displayUtil = DisplayUtil();

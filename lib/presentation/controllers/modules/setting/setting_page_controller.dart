@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -36,6 +37,7 @@ class SettingPageController extends GetxController
 
   @override
   void onInit() {
+    doInitializePrinter();
     doPrepared();
     super.onInit();
     tabController = TabController(length: 4, vsync: this);
@@ -87,12 +89,16 @@ class SettingPageController extends GetxController
   }
 
   doInitializePrinter() async {
+    var noneSelectedPrint = CustomIdNameEntity(
+      id: null,
+      name: '--- Select Printer ---',
+    );
+    listPrinter.clear();
+    listPrinter.add(noneSelectedPrint);
+    printController.selectedPrinter.value = noneSelectedPrint;
     bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
     if (bluetoothIsEnabled) {
       await printController.getBluetoots();
-      listPrinter.clear();
-      listPrinter
-          .add(CustomIdNameEntity(id: null, name: '--- Select Printer ---'));
       listPrinter.addAll(printController.listBluetooth
           .map((element) =>
               CustomIdNameEntity(id: element.macAdress, name: element.name))
@@ -100,7 +106,11 @@ class SettingPageController extends GetxController
       printController.selectedPrinter.value = listPrinter.first;
       printController.update();
     } else {
-      alert.error('Error', 'bluetooth is off, please turn it on first');
+      // alert.error('Error', 'bluetooth is off, please turn it on first');
     }
+  }
+
+  doRefreshCustomerPage() {
+    displayUtil.displayCustomer(null);
   }
 }
