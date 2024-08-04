@@ -123,7 +123,7 @@ class BuktiPembayaranPageController extends GetxController {
         var result = _service.message.sendEmail(
           authToken: _authToken,
           phoneNumber: int.parse(val),
-          message: messageUtil.buildBodyMessage([]),
+          message: messageUtil.buildBodyMessageDetailOrder([]),
         );
         result.fold(
           (left) => alert.error('Error', 'Send Wa Internal Server Error'),
@@ -135,7 +135,7 @@ class BuktiPembayaranPageController extends GetxController {
         var result = _service.message.sendWa(
           authToken: _authToken,
           phoneNumber: int.parse(val),
-          message: messageUtil.buildBodyMessage([]),
+          message: messageUtil.buildBodyMessageDetailOrder([]),
         );
         result.fold(
           (left) => alert.error('Error', 'Send Wa Internal Server Error'),

@@ -2,7 +2,7 @@ import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dar
 
 class MessageUtil {
   
-  String buildBodyMessage(List<TrnDetailOrder> listData) {
+  String buildBodyMessageDetailOrder(List<TrnDetailOrder> listData) {
     String bodyMsg = '';
     bodyMsg += 'Your Ticket';
     for (var element in listData) {
