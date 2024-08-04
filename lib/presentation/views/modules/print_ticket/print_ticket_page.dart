@@ -92,7 +92,9 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                             .toJson()[element.id]
                             .toString();
                         if (element.id == 'orderStatus') {
-                          val = controller.dataList[index].paymentDetail?.pymntStatus == 'P'
+                          val = controller.dataList[index].paymentDetail
+                                      ?.pymntStatus ==
+                                  'P'
                               ? 'Paid'
                               : 'Not Paid/Waiting';
                         }
@@ -100,7 +102,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                         if (common.isNumeric(val)) {
                           val = common.currencyFormat(double.parse(val));
                         }
-                        
+
                         return element.width != null
                             ? Container(
                                 width: element.width,
@@ -221,16 +223,24 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
               layoutStyle.defaultMargin / 2,
             ),
             controller: controller.searchController,
-            onSubmit: (val) async {
-              await controller.doSearch(val);
-            },
+            // onSubmit: (val) async {
+            //   await controller.doSearch(val);
+            // },
             decoration: InputDecoration(
               hintText: 'Masukan nomor ID Order atau ID Ticket',
               hintStyle: textStyle.greyText,
               border: InputBorder.none,
-              suffixIcon: const Icon(
-                Icons.search,
+              suffixIcon: IconButton(
+                onPressed: () async {
+                  await controller.doSearch(controller.searchController.text);
+                },
+                icon: const Icon(
+                  Icons.search,
+                ),
               ),
+              // suffixIcon: const Icon(
+              //   Icons.search,
+              // ),
             ),
           ),
           SizedBox(height: layoutStyle.defaultMargin),

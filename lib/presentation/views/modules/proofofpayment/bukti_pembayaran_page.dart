@@ -785,9 +785,18 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                   hintText: 'Masukan nomor ID Order atau ID Ticket',
                   hintStyle: textStyle.greyText,
                   border: InputBorder.none,
-                  suffixIcon: const Icon(
-                    Icons.search,
+                  suffixIcon: IconButton(
+                    onPressed: () async {
+                      await controller
+                          .doSearch(controller.searchController.text);
+                    },
+                    icon: const Icon(
+                      Icons.search,
+                    ),
                   ),
+                  // suffixIcon: const Icon(
+                  //   Icons.search,
+                  // ),
                 ),
                 onSubmit: (val) {
                   controller.doSearch(val);
