@@ -260,6 +260,8 @@ class OrderUtil {
     Get.back();
     dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
+      orderEmailValue: body.orderEmail,
+      orderNoWaValue: body.orderPhoneNumber,
       onSendEmail: (val) {
         logger.safeLog('Email : ${val}');
         var result = _service.message.sendEmail(

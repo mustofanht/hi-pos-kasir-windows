@@ -850,6 +850,8 @@ class CustomDialog {
 
   paymentSendProofOfPayment({
     required String title,
+    String? orderEmailValue,
+    String? orderNoWaValue,
     required Function(String val) onSendEmail,
     required Function(String val) onSendWa,
     required Function onNewOrder,
@@ -857,6 +859,12 @@ class CustomDialog {
   }) {
     final emailController = TextEditingController();
     final waController = TextEditingController();
+    if (orderEmailValue != null) {
+      emailController.text = orderEmailValue;
+    }
+    if (orderNoWaValue != null) {
+      waController.text = orderNoWaValue;
+    }
     Get.dialog(
       AlertDialog(
         contentPadding: EdgeInsets.zero,
