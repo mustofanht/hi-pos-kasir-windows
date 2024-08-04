@@ -78,7 +78,9 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   CustomButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      controller.doPrintTicket();
+                                    },
                                     style: ButtonStyle(
                                       backgroundColor:
                                           MaterialStateProperty.all<Color>(
@@ -108,7 +110,9 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                     width: layoutStyle.defaultMargin,
                                   ),
                                   CustomButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      controller.doSendMessage();
+                                    },
                                     style: ButtonStyle(
                                       backgroundColor:
                                           MaterialStateProperty.all<Color>(

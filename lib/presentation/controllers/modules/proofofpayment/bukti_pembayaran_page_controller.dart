@@ -1,7 +1,9 @@
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/message_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
@@ -9,6 +11,9 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 
 class BuktiPembayaranPageController extends GetxController {
   BuktiPembayaranPageController();
@@ -23,7 +28,7 @@ class BuktiPembayaranPageController extends GetxController {
   final isLoading = false.obs;
   final isLoadingDetail = false.obs;
   final visibleLoadMore = false.obs;
-  
+
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
 
@@ -107,5 +112,56 @@ class BuktiPembayaranPageController extends GetxController {
     }
     isLoadingDetail.value = false;
     update();
+  }
+
+  doSendMessage() {
+    dialog.paymentSendProofOfPayment(
+      title: 'Send Email WA',
+      labelButton: 'Close',
+      onSendEmail: (val) {
+        logger.safeLog('Email : ${val}');
+        var result = _service.message.sendEmail(
+          authToken: _authToken,
+          phoneNumber: int.parse(val),
+          message: messageUtil.buildBodyMessage([]),
+        );
+        result.fold(
+          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+          (right) => alert.success('Success', 'Send Wa Sucess'),
+        );
+      },
+      onSendWa: (val) {
+        logger.safeLog('WA : ${val}');
+        var result = _service.message.sendWa(
+          authToken: _authToken,
+          phoneNumber: int.parse(val),
+          message: messageUtil.buildBodyMessage([]),
+        );
+        result.fold(
+          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+          (right) => alert.success('Success', 'Send Wa Sucess'),
+        );
+      },
+      onNewOrder: () {
+        Get.back();
+      },
+    );
+  }
+
+  doPrintTicket() async {
+    var printController = Get.put(PrintController());
+    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
+    if (bluetoothIsEnabled) {
+      // var paymentPrintController = Get.put(PaymentPrintController());
+      // var gatePrintController = Get.put(GatePrintController());
+      // await printController.printPaymentTiket(
+      //   body,
+      //   paymentPrintController,
+      //   gatePrintController,
+      // );;
+      alert.warning('Warning', 'Action on under construction');
+    } else {
+      alert.error('Error', 'bluetooth is off, please turn it on first');
+    }
   }
 }
