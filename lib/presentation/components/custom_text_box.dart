@@ -22,6 +22,7 @@ class CustomTextBox extends StatefulWidget {
   final Function(String)? onChanged;
   final Function(String)? onSubmit;
   final int? maxLength;
+  final bool? isDisabled;
 
   const CustomTextBox({
     Key? key,
@@ -44,6 +45,7 @@ class CustomTextBox extends StatefulWidget {
     this.onChanged,
     this.onSubmit,
     this.maxLength,
+    this.isDisabled = false,
   }) : super(key: key);
 
   @override
@@ -78,7 +80,9 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                   horizontal: layoutStyle.defaultMargin / 2,
                 ),
             decoration: BoxDecoration(
-              color: widget.backgroundColor ?? colorStyle.white,
+              color: widget.isDisabled != null && widget.isDisabled!
+                  ? colorStyle.grey.withOpacity(0.10)
+                  : widget.backgroundColor ?? colorStyle.white,
               borderRadius: widget.borderRadius,
               border: widget.border,
               boxShadow: widget.boxShadow,
@@ -103,8 +107,12 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
-                    onSubmitted: widget.onSubmit,
-                    onChanged: widget.onChanged,
+                    enabled:
+                        widget.isDisabled != null ? !widget.isDisabled! : true,
+                    onSubmitted:
+                        widget.isDisabled != null ? null : widget.onSubmit,
+                    onChanged:
+                        widget.isDisabled != null ? null : widget.onChanged,
                   ),
                 ),
               ],
