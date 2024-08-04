@@ -305,13 +305,13 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                                                 fontWeight.bold,
                                                           ),
                                                         ),
-                                                        Text(
-                                                          'Not Set Yet',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                fontSize.body,
-                                                          ),
-                                                        ),
+                                                        // Text(
+                                                        //   'Not Set Yet',
+                                                        //   style: TextStyle(
+                                                        //     fontSize:
+                                                        //         fontSize.body,
+                                                        //   ),
+                                                        // ),
                                                       ],
                                                     ),
                                                     Text(
@@ -416,6 +416,72 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                               ),
                                               child: Text(
                                                 'Not Set Yet',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.body,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(
+                                            layoutStyle.defaultMargin / 2),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  'Biaya Admin:',
+                                                  style: TextStyle(
+                                                    fontSize: fontSize.body,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                    layoutStyle.defaultMargin /
+                                                        2,
+                                              ),
+                                              child: Text(
+                                                'Rp.${common.currencyFormat(model.paymentDetail?.pymntAdminFee ?? 0)}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.body,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(
+                                            layoutStyle.defaultMargin / 2),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  'Biaya Ppn:',
+                                                  style: TextStyle(
+                                                    fontSize: fontSize.body,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                    layoutStyle.defaultMargin /
+                                                        2,
+                                              ),
+                                              child: Text(
+                                                'Rp.${common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn}',
                                                 style: TextStyle(
                                                   fontSize: fontSize.body,
                                                 ),

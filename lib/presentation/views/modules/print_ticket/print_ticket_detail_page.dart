@@ -153,7 +153,9 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                         label: model.paymentDetail?.pymntStatus == 'P'
                             ? 'Paid'
                             : 'Not Paid/Waiting',
-                        colorLabel: model.paymentDetail?.pymntStatus == 'P' ? colorStyle.white : colorStyle.black,
+                        colorLabel: model.paymentDetail?.pymntStatus == 'P'
+                            ? colorStyle.white
+                            : colorStyle.black,
                         colorBox: model.paymentDetail?.pymntStatus == 'P'
                             ? colorStyle.green
                             : colorStyle.creamy,
@@ -187,7 +189,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     leftColum(
                       column: 'Diskon',
                       value: Text(
-                        (model.orderDiskon ?? '').toString(),
+                        'Rp.${common.currencyFormat(model.orderDiskon ?? 0)}',
                         style: TextStyle(
                           fontWeight: fontWeight.bold,
                         ),
@@ -196,9 +198,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     leftColum(
                       column: 'Biaya Ppn',
                       value: Text(
-                        common.currencyFormat(
-                          double.parse(model.ppn ?? '0'),
-                        ),
+                        'Rp.${common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn}',
                         style: TextStyle(
                           fontWeight: fontWeight.bold,
                         ),

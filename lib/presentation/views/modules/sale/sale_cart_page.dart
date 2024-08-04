@@ -176,7 +176,8 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text(
-                              'Rp.${e.totalPrice != null ? common.currencyFormat(e.totalPrice!) : ''}'),
+                            'Rp.${e.ticket?.ticketPrice != null ? common.currencyFormat(e.ticket!.ticketPrice!) : ''}',
+                          ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),
@@ -324,7 +325,8 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text(
-                              'Rp.${e.totalPrice != null ? common.currencyFormat(e.totalPrice!) : ''}'),
+                            'Rp.${e.addon?.productPrice != null ? common.currencyFormat(e.addon!.productPrice!) : ''}',
+                          ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),

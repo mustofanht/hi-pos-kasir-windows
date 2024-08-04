@@ -14,7 +14,7 @@ class TrnDetailOrderEntity {
   String? orderSource;
   String? orderStatus;
   dynamic voucher;
-  String? ppn;
+  dynamic ppn;
   TrnDetailOrderCustomer? customerDetail;
   List<TrnDetailOrder>? detailOrderModels;
   TrnDetailOrderPayment? paymentDetail;
