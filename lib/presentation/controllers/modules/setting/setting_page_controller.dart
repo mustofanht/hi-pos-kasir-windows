@@ -7,10 +7,14 @@ import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
+import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 
 class SettingPageController extends GetxController
     with SingleGetTickerProviderMixin {
   SettingPageController();
+  var printController = Get.find<PrintController>();
 
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
@@ -27,6 +31,8 @@ class SettingPageController extends GetxController
   final emailController = TextEditingController();
 
   final model = UserEntity().obs;
+
+  final listPrinter = <CustomIdNameEntity>[].obs;
 
   @override
   void onInit() {
@@ -78,5 +84,23 @@ class SettingPageController extends GetxController
       isLoading.value = false;
     }
     update();
+  }
+
+  doInitializePrinter() async {
+    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
+    if (bluetoothIsEnabled) {
+      await printController.getBluetoots();
+      listPrinter.clear();
+      listPrinter
+          .add(CustomIdNameEntity(id: null, name: '--- Select Printer ---'));
+      listPrinter.addAll(printController.listBluetooth
+          .map((element) =>
+              CustomIdNameEntity(id: element.macAdress, name: element.name))
+          .toList());
+      printController.selectedPrinter.value = listPrinter.first;
+      printController.update();
+    } else {
+      alert.error('Error', 'bluetooth is off, please turn it on first');
+    }
   }
 }

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_button.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/setting/setting_page_controller.dart';
 
@@ -290,9 +293,88 @@ class SettingPage extends GetView<SettingPageController> {
                   ],
                 ),
               ),
+              SizedBox(
+                width: layoutStyle.defaultMargin,
+              ),
               Expanded(
                 child: Column(
-                  children: [],
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Others Information',
+                      style: textStyle.blackText.copyWith(
+                        fontSize: fontSize.header,
+                      ),
+                    ),
+                    Container(
+                      width: layoutStyle.screenWidth,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: colorStyle.grey,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: layoutStyle.defaultMargin,
+                    ),
+                    CustomButton(
+                      margin: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 2,
+                        horizontal: layoutStyle.defaultMargin,
+                      ),
+                      onPressed: () {},
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.resolveWith(
+                          (states) => colorStyle.blue,
+                        ),
+                        overlayColor: MaterialStateProperty.resolveWith(
+                          (states) => colorStyle.black.withOpacity(0.1),
+                        ),
+                        shape: MaterialStateProperty.resolveWith(
+                          (states) => RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              layoutStyle.defaultMargin / 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      label: Text(
+                        'Refresh Customer Page',
+                        style: textStyle.whiteText,
+                      ),
+                      height: layoutStyle.blockVertical * 6.5,
+                    ),
+                    CustomDropdownButton<CustomIdNameEntity>(
+                      height: layoutStyle.blockVertical * 6.5,
+                      items: controller.listPrinter
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text("${e.name}"),
+                            ),
+                          )
+                          .toList(),
+                      value: controller.printController.selectedPrinter.value,
+                      label: Text(
+                        'Pilih Printer',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      border: Border.all(
+                        color: colorStyle.lightGrey,
+                        width: 1,
+                      ),
+                      margin: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 4,
+                        horizontal: layoutStyle.defaultMargin,
+                      ),
+                      onChanged: (val) {},
+                    ),
+                  ],
                 ),
               ),
             ],

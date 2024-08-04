@@ -169,7 +169,8 @@ class PrintTicketDetailPageController extends GetxController {
   doActiveTicket() {}
 
   doPrintTicket() async {
-    var printController = Get.put(PrintController());
+    // var printController = Get.put(PrintController());
+    var printController = Get.find<PrintController>();
     bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
     if (bluetoothIsEnabled) {
       // var paymentPrintController = Get.put(PaymentPrintController());

@@ -1,6 +1,7 @@
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_drawer.dart';
 import 'package:jaya_propertiy/presentation/components/custom_sidebar.dart';
+import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/home_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,7 @@ class HomePage extends GetView<HomePageController> {
   @override
   Widget build(BuildContext context) {
     layoutStyle.init(context);
+    Get.put(PrintController());
 
     return GetX(
       init: controller,
