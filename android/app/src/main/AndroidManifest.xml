@@ -30,6 +30,9 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <!-- USB PERMISSION -->
+    <uses-permission android:name="android.permission.USB_PERMISSION" />
+
     <application
         android:label="jaya_propertiy"
         android:name="${applicationName}"

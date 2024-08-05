@@ -102,14 +102,17 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Image.asset(
-                                          'assets/images/ticket.png',
-                                          fit: BoxFit.fill,
-                                          errorBuilder: (BuildContext context,
-                                              Object exception,
-                                              StackTrace? stackTrace) {
-                                            return const Text('Img Not Found');
-                                          },
+                                        Expanded(
+                                          child: Image.asset(
+                                            'assets/images/ticket.png',
+                                            fit: BoxFit.fill,
+                                            errorBuilder: (BuildContext context,
+                                                Object exception,
+                                                StackTrace? stackTrace) {
+                                              return const Text(
+                                                  'Img Not Found');
+                                            },
+                                          ),
                                         ),
                                         SizedBox(
                                           height: layoutStyle.defaultMargin,
@@ -117,9 +120,11 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                         Text(
                                           e.ticketName!,
                                           style: TextStyle(
-                                            fontSize: fontSize.title,
+                                            fontSize: fontSize.subtitle,
                                             // fontWeight: FontWeight.bold,
                                           ),
+                                          softWrap: true,
+                                          // overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
