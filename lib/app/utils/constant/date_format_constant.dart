@@ -10,6 +10,7 @@ class DateFormatConstant {
   final DateFormat dateTime =
       DateFormat("dd MMM yyyy HH:mm:ss", constant.locale);
   final DateFormat dateWithoutTime = DateFormat("dd MMM yyyy", constant.locale);
+  final DateFormat dateDDMMMMYYYY = DateFormat("dd MMMM yyyy", constant.locale);
   final DateFormat withoutSecond =
       DateFormat("dd-MMM-yyyy HH:mm", constant.locale);
   final DateFormat fullTimePrinted =

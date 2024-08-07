@@ -13,7 +13,6 @@ import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ent
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 
 class BuktiPembayaranPageController extends GetxController {
   BuktiPembayaranPageController();
@@ -150,19 +149,19 @@ class BuktiPembayaranPageController extends GetxController {
 
   doPrintTicket() async {
     // var printController = Get.put(PrintController());
-    var printController = Get.find<PrintController>();
-    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    if (bluetoothIsEnabled) {
-      // var paymentPrintController = Get.put(PaymentPrintController());
-      // var gatePrintController = Get.put(GatePrintController());
-      // await printController.printPaymentTiket(
-      //   body,
-      //   paymentPrintController,
-      //   gatePrintController,
-      // );;
-      alert.warning('Warning', 'Action on under construction');
-    } else {
-      alert.error('Error', 'bluetooth is off, please turn it on first');
-    }
+    // var printController = Get.find<PrintController>();
+    // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
+    // if (bluetoothIsEnabled) {
+    //   // var paymentPrintController = Get.put(PaymentPrintController());
+    //   // var gatePrintController = Get.put(GatePrintController());
+    //   // await printController.printPaymentTiket(
+    //   //   body,
+    //   //   paymentPrintController,
+    //   //   gatePrintController,
+    //   // );;
+    //   alert.warning('Warning', 'Action on under construction');
+    // } else {
+    //   alert.error('Error', 'bluetooth is off, please turn it on first');
+    // }
   }
 }

@@ -1,9 +1,14 @@
 import 'dart:async';
 
 import 'package:either_dart/either.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
@@ -14,9 +19,6 @@ import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_e
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/gate_print_controller.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/payment_print_controller.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class OrderController extends GetxController {
@@ -300,22 +302,57 @@ class OrderUtil {
 
   _handleOnPrintOrder(OrderModel body) async {
     // var printController = Get.put(PrintController());
-    var printController = Get.find<PrintController>();
-    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    if (bluetoothIsEnabled) {
-      var paymentPrintController = Get.put(PaymentPrintController());
-      var gatePrintController = Get.put(GatePrintController());
-      await printController.printPaymentTiket(
-        body,
-        paymentPrintController,
-        gatePrintController,
-      );
+    // var printController = Get.find<PrintController>();
+    // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
+    // if (bluetoothIsEnabled) {
+    //   var paymentPrintController = Get.put(PaymentPrintController());
+    //   var gatePrintController = Get.put(GatePrintController());
+    //   await printController.printPaymentTiket(
+    //     body,
+    //     paymentPrintController,
+    //     gatePrintController,
+    //   );
+    //   await doRefreshCustomerDisplay(
+    //     paymentMethod: PaymentMethod.QRIS,
+    //   );
+    //   await clearOrder();
+    // } else {
+    //   alert.error('Error', 'bluetooth is off, please turn it on first');
+    // }
+
+    logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');
+    if(printerUtil.currPrinter != null){
+      String locationName = "Location Name";
+      List<int> data = [];
+      data = await generatePrintUtil.dataPaymentTiketPrint(locationName: locationName, paperSize: PaperSize.mm80, body: body);
+      int count = 1;
+      int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
+      for (var element in body.listTicket) {
+        for (var i = 0; i < element.totalTicket; i++) {
+          List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+            locationName: locationName,
+            paperSize: PaperSize.mm80,
+            reffNo: body.orderReffno!,
+            pakOf: count,
+            pakTotal: totalPak,
+            qrCode: '12345',
+            expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+            ticketModel: element,
+          );
+          data.addAll(dataPrint);
+          count++;
+        }
+      }
+
+      await printerUtil.print(printerUtil.currPrinter!, data);
       await doRefreshCustomerDisplay(
         paymentMethod: PaymentMethod.QRIS,
       );
       await clearOrder();
-    } else {
-      alert.error('Error', 'bluetooth is off, please turn it on first');
+
+      Get.back();
+    }else{
+      alert.error('Error', 'please check connection printer');
     }
   }
 

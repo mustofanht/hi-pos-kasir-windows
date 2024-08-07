@@ -3,19 +3,19 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/common/printer_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
-import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 
 class SettingPageController extends GetxController
     with SingleGetTickerProviderMixin {
   SettingPageController();
-  var printController = Get.find<PrintController>();
+  // var printController = Get.find<PrintController>();
 
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
@@ -95,19 +95,17 @@ class SettingPageController extends GetxController
     );
     listPrinter.clear();
     listPrinter.add(noneSelectedPrint);
-    printController.selectedPrinter.value = noneSelectedPrint;
-    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    if (bluetoothIsEnabled) {
-      await printController.getBluetoots();
-      listPrinter.addAll(printController.listBluetooth
-          .map((element) =>
-              CustomIdNameEntity(id: element.macAdress, name: element.name))
-          .toList());
-      printController.selectedPrinter.value = listPrinter.first;
-      printController.update();
-    } else {
-      // alert.error('Error', 'bluetooth is off, please turn it on first');
+    List<PrinterModel> printers = await printerUtil.getListDevices();
+    for (var element in printers) {
+      logger.safeLog('PRINTER : ${element.deviceName}');
+      listPrinter.add(
+        CustomIdNameEntity(
+          id: element.vendorId,
+          name: element.deviceName,
+        ),
+      );
     }
+    update();
   }
 
   doRefreshCustomerPage() {

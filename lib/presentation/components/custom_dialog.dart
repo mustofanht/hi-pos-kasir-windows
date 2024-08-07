@@ -1251,129 +1251,129 @@ class CustomDialog {
     );
   }
 
-  selectPrint({
-    required PrintController printController,
-    required String title,
-    required String msg,
-    required Function() onPrint,
-  }) async {
-    await printController.getBluetoots();
-    final listPrinter = [
-      CustomIdNameEntity(id: null, name: '--- Select Printer ---')
-    ];
-    listPrinter.addAll(printController.listBluetooth
-        .map((element) =>
-            CustomIdNameEntity(id: element.macAdress, name: element.name))
-        .toList());
-    printController.selectedPrinter.value = listPrinter.first;
-    printController.update();
+  // selectPrint({
+  //   required PrintController printController,
+  //   required String title,
+  //   required String msg,
+  //   required Function() onPrint,
+  // }) async {
+  //   await printController.getBluetoots();
+  //   final listPrinter = [
+  //     CustomIdNameEntity(id: null, name: '--- Select Printer ---')
+  //   ];
+  //   listPrinter.addAll(printController.listBluetooth
+  //       .map((element) =>
+  //           CustomIdNameEntity(id: element.macAdress, name: element.name))
+  //       .toList());
+  //   printController.selectedPrinter.value = listPrinter.first;
+  //   printController.update();
 
-    Get.dialog(
-      AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        content: Container(
-          width: layoutStyle.screenWidth / 2,
-          height: layoutStyle.blockVertical * 40,
-          decoration: BoxDecoration(
-            color: colorStyle.white,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(50),
-            ),
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(
-                    vertical: layoutStyle.defaultMargin / 5,
-                    horizontal: layoutStyle.defaultMargin,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        assetsConstant.icInformationDialog,
-                        alignment: Alignment.topCenter,
-                        fit: BoxFit.fill,
-                      ),
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: fontSize.title,
-                          fontWeight: fontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(
-                        height: layoutStyle.defaultMargin / 5,
-                      ),
-                      Flexible(
-                        child: Text(
-                          msg,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: fontSize.body,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: layoutStyle.defaultMargin / 5,
-                      ),
-                      CustomDropdownButton<CustomIdNameEntity>(
-                        height: layoutStyle.blockVertical * 6.5,
-                        items: listPrinter
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text("${e.name}"),
-                              ),
-                            )
-                            .toList(),
-                        value: printController.selectedPrinter.value,
-                        // label: Text(
-                        //   'Pilih Printer',
-                        //   style: textStyle.greyText.copyWith(
-                        //     fontSize: fontSize.small,
-                        //   ),
-                        // ),
-                        border: Border.all(
-                          color: colorStyle.lightGrey,
-                          width: 1,
-                        ),
-                        margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 4,
-                          horizontal: layoutStyle.defaultMargin,
-                        ),
-                        onChanged: (val) async {
-                          printController.selectedPrinter.value = val;
-                          printController.update();
-                          if (val != null) {
-                            bool result =
-                                await printController.connect(val.id!);
-                            if (result) {
-                              Get.back();
-                              await onPrint();
-                            } else {
-                              alert.error('Connect Failed',
-                                  'Please Check bluetooth and printer is Active and pairing');
-                            }
-                          } else {
-                            alert.error('Print', 'Please selected printer');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
+  //   Get.dialog(
+  //     AlertDialog(
+  //       contentPadding: EdgeInsets.zero,
+  //       content: Container(
+  //         width: layoutStyle.screenWidth / 2,
+  //         height: layoutStyle.blockVertical * 40,
+  //         decoration: BoxDecoration(
+  //           color: colorStyle.white,
+  //           borderRadius: const BorderRadius.all(
+  //             Radius.circular(50),
+  //           ),
+  //         ),
+  //         child: Column(
+  //           children: [
+  //             Expanded(
+  //               child: Container(
+  //                 alignment: Alignment.center,
+  //                 padding: EdgeInsets.symmetric(
+  //                   vertical: layoutStyle.defaultMargin / 5,
+  //                   horizontal: layoutStyle.defaultMargin,
+  //                 ),
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.center,
+  //                   mainAxisAlignment: MainAxisAlignment.center,
+  //                   children: [
+  //                     Image.asset(
+  //                       assetsConstant.icInformationDialog,
+  //                       alignment: Alignment.topCenter,
+  //                       fit: BoxFit.fill,
+  //                     ),
+  //                     Text(
+  //                       title,
+  //                       style: TextStyle(
+  //                         fontSize: fontSize.title,
+  //                         fontWeight: fontWeight.bold,
+  //                       ),
+  //                     ),
+  //                     SizedBox(
+  //                       height: layoutStyle.defaultMargin / 5,
+  //                     ),
+  //                     Flexible(
+  //                       child: Text(
+  //                         msg,
+  //                         textAlign: TextAlign.center,
+  //                         style: TextStyle(
+  //                           fontSize: fontSize.body,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                     SizedBox(
+  //                       height: layoutStyle.defaultMargin / 5,
+  //                     ),
+  //                     CustomDropdownButton<CustomIdNameEntity>(
+  //                       height: layoutStyle.blockVertical * 6.5,
+  //                       items: listPrinter
+  //                           .map(
+  //                             (e) => DropdownMenuItem(
+  //                               value: e,
+  //                               child: Text("${e.name}"),
+  //                             ),
+  //                           )
+  //                           .toList(),
+  //                       value: printController.selectedPrinter.value,
+  //                       // label: Text(
+  //                       //   'Pilih Printer',
+  //                       //   style: textStyle.greyText.copyWith(
+  //                       //     fontSize: fontSize.small,
+  //                       //   ),
+  //                       // ),
+  //                       border: Border.all(
+  //                         color: colorStyle.lightGrey,
+  //                         width: 1,
+  //                       ),
+  //                       margin: EdgeInsets.symmetric(
+  //                         vertical: layoutStyle.defaultMargin / 4,
+  //                         horizontal: layoutStyle.defaultMargin,
+  //                       ),
+  //                       onChanged: (val) async {
+  //                         printController.selectedPrinter.value = val;
+  //                         printController.update();
+  //                         if (val != null) {
+  //                           bool result =
+  //                               await printController.connect(val.id!);
+  //                           if (result) {
+  //                             Get.back();
+  //                             await onPrint();
+  //                           } else {
+  //                             alert.error('Connect Failed',
+  //                                 'Please Check bluetooth and printer is Active and pairing');
+  //                           }
+  //                         } else {
+  //                           alert.error('Print', 'Please selected printer');
+  //                         }
+  //                       },
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //     barrierDismissible: false,
+  //   );
+  // }
 }
 
 CustomDialog dialog = CustomDialog();

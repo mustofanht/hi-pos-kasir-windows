@@ -10,7 +10,6 @@ import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ent
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
@@ -169,20 +168,20 @@ class PrintTicketDetailPageController extends GetxController {
   doActiveTicket() {}
 
   doPrintTicket() async {
-    // var printController = Get.put(PrintController());
-    var printController = Get.find<PrintController>();
-    bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    if (bluetoothIsEnabled) {
-      // var paymentPrintController = Get.put(PaymentPrintController());
-      // var gatePrintController = Get.put(GatePrintController());
-      // await printController.printPaymentTiket(
-      //   body,
-      //   paymentPrintController,
-      //   gatePrintController,
-      // );;
-      alert.warning('Warning', 'Action on under construction');
-    } else {
-      alert.error('Error', 'bluetooth is off, please turn it on first');
-    }
+    // // var printController = Get.put(PrintController());
+    // var printController = Get.find<PrintController>();
+    // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
+    // if (bluetoothIsEnabled) {
+    //   // var paymentPrintController = Get.put(PaymentPrintController());
+    //   // var gatePrintController = Get.put(GatePrintController());
+    //   // await printController.printPaymentTiket(
+    //   //   body,
+    //   //   paymentPrintController,
+    //   //   gatePrintController,
+    //   // );;
+    //   alert.warning('Warning', 'Action on under construction');
+    // } else {
+    //   alert.error('Error', 'bluetooth is off, please turn it on first');
+    // }
   }
 }

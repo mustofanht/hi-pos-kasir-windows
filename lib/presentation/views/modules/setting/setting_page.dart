@@ -359,7 +359,8 @@ class SettingPage extends GetView<SettingPageController> {
                             ),
                           )
                           .toList(),
-                      value: controller.printController.selectedPrinter.value,
+                      // value: controller.printController.selectedPrinter.value,
+                      value: null,
                       label: Text(
                         'Pilih Printer',
                         style: textStyle.greyText.copyWith(
