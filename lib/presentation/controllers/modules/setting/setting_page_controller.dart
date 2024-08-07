@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/data/models/common/printer_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 
 class SettingPageController extends GetxController
     with SingleGetTickerProviderMixin {
@@ -34,6 +35,7 @@ class SettingPageController extends GetxController
   final model = UserEntity().obs;
 
   final listPrinter = <CustomIdNameEntity>[].obs;
+  final selectedCurrPrinter = CustomIdNameEntity().obs;
 
   @override
   void onInit() {
@@ -89,6 +91,12 @@ class SettingPageController extends GetxController
   }
 
   doInitializePrinter() async {
+    if (printerUtil.currPrinter != null) {
+      selectedCurrPrinter.value = CustomIdNameEntity(
+        id: printerUtil.currPrinter!.vendorId,
+        name: printerUtil.currPrinter!.deviceName,
+      );
+    }
     var noneSelectedPrint = CustomIdNameEntity(
       id: null,
       name: '--- Select Printer ---',
@@ -106,6 +114,22 @@ class SettingPageController extends GetxController
       );
     }
     update();
+  }
+
+  doUpdateConnectedPrinter(CustomIdNameEntity? val) async {
+    if (val != null && val.id != null) {
+      List<PrinterModel> printers = await printerUtil.getListDevices();
+      if (printers.isNotEmpty) {
+        PrinterModel selected = printers.firstWhere(
+          (element) => element.vendorId == val.id,
+        );
+        await printerUtil.disconnect(selected);
+        await printerUtil.connect(selected);
+        await printerUtil.stopSubscription();
+      }
+    } else {
+      alert.error('Error', 'please select active printer');
+    }
   }
 
   doRefreshCustomerPage() {

@@ -98,6 +98,11 @@ class PrinterUtil {
     return deviceList;
   }
 
+  Future<void> stopSubscription() async {
+    _subscription?.cancel();
+    _subscriptionUsbStatus?.cancel();
+  }
+
   Future<bool> connectPrinter() async {
     List<PrinterModel> printers = await getListDevices();
     if (printers.length == 1) {

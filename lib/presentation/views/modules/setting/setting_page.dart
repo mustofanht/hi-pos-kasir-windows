@@ -359,8 +359,7 @@ class SettingPage extends GetView<SettingPageController> {
                             ),
                           )
                           .toList(),
-                      // value: controller.printController.selectedPrinter.value,
-                      value: null,
+                      value: controller.selectedCurrPrinter.value,
                       label: Text(
                         'Pilih Printer',
                         style: textStyle.greyText.copyWith(
@@ -375,7 +374,7 @@ class SettingPage extends GetView<SettingPageController> {
                         vertical: layoutStyle.defaultMargin / 4,
                         horizontal: layoutStyle.defaultMargin,
                       ),
-                      onChanged: (val) {},
+                      onChanged: controller.doUpdateConnectedPrinter,
                     ),
                   ],
                 ),
