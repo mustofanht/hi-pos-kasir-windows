@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:either_dart/either.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
@@ -15,6 +16,7 @@ import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart'
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
@@ -319,12 +321,16 @@ class OrderUtil {
     // } else {
     //   alert.error('Error', 'bluetooth is off, please turn it on first');
     // }
+    if (printerUtil.currPrinter != null) {
+      String locationName = "";
+      UserEntity? user = await common.getUser();
+      if (user != null) {
+        locationName = user.locationName!;
+      }
 
-    logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');
-    if(printerUtil.currPrinter != null){
-      String locationName = "Location Name";
       List<int> data = [];
-      data = await generatePrintUtil.dataPaymentTiketPrint(locationName: locationName, paperSize: PaperSize.mm80, body: body);
+      data = await generatePrintUtil.dataPaymentTiketPrint(
+          locationName: locationName, paperSize: PaperSize.mm80, body: body);
       int count = 1;
       int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
       for (var element in body.listTicket) {
@@ -351,7 +357,7 @@ class OrderUtil {
       await clearOrder();
 
       Get.back();
-    }else{
+    } else {
       alert.error('Error', 'please check connection printer');
     }
   }

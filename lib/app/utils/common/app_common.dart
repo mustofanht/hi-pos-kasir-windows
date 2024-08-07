@@ -1,16 +1,19 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:intl/intl.dart';
+import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 
 class AppCommon {
@@ -20,6 +23,28 @@ class AppCommon {
     await printerUtil.init();
     await printerUtil.connectPrinter();
     logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');
+  }
+
+  Future<UserEntity?> getUser() async {
+    final _service = MainService();
+    final authToken = Get.arguments[argConstant.authToken];
+    UserEntity? userEntity;
+    try {
+      final result = await _service.auth.getUserInformation(
+        authToken: authToken,
+        userId: sessionUtil.getUserName(),
+      );
+
+      result.fold((l) {
+        logger.safeLog(l);
+      }, (r) {
+        userEntity = r.data!;
+      });
+      return userEntity;
+    } catch (e) {
+      logger.safeLog(e);
+      return null;
+    }
   }
 
   String randomString(int length) {

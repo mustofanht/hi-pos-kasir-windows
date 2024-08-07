@@ -9,6 +9,7 @@ class UserEntity {
   String? userPassNeedChg;
   String? userEnableSts;
   int? userLocId;
+  String? locationName;
   int? userUnitId;
   String? unitName;
   int? userRoleid;
@@ -28,6 +29,7 @@ class UserEntity {
     this.userPassNeedChg,
     this.userEnableSts,
     this.userLocId,
+    this.locationName,
     this.userUnitId,
     this.unitName,
     this.userRoleid,
@@ -56,6 +58,7 @@ class UserEntity {
     userPassNeedChg = json['userPassNeedChg'];
     userEnableSts = json['userEnableSts'];
     userLocId = json['userLocId'];
+    locationName = json['locationName'];
     userUnitId = json['userUnitId'];
     unitName = json['unitName'];
     userRoleid = json['userRoleid'];
