@@ -1,9 +1,9 @@
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
-import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_addon_page.dart';
@@ -234,35 +234,128 @@ class SalePage extends GetView<SalePageController> {
                   keyboardType: TextInputType.phone,
                   maxLength: 13,
                 ),
-                CustomDropdownButton<CustomIdNameEntity>(
-                  height: layoutStyle.blockVertical * 6.5,
-                  items: controller.paymentType
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e,
-                          child: Text("${e.name}"),
-                        ),
-                      )
-                      .toList(),
-                  value: controller.selectedPaymentType.value,
-                  label: Text(
-                    'Pilih Pembayaran',
-                    style: textStyle.greyText.copyWith(
-                      fontSize: fontSize.small,
-                    ),
-                  ),
-                  border: Border.all(
-                    color: colorStyle.lightGrey,
-                    width: 1,
-                  ),
+                Container(
                   margin: EdgeInsets.symmetric(
-                    vertical: layoutStyle.defaultMargin / 4,
                     horizontal: layoutStyle.defaultMargin,
+                    vertical: layoutStyle.defaultMargin / 2,
                   ),
-                  onChanged: (val) {
-                    controller.doSelectPaymentType(val!);
-                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pilih Pembayaram',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin / 2,
+                      ),
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                        ),
+                        child: Row(
+                          children: controller.paymentType.map((element) {
+                            String ic = assetsConstant.icPaymentQr;
+                            String label = '';
+                            if (PaymentMethod.QRIS == element.id) {
+                              ic = assetsConstant.icPaymentQr;
+                            } else if (PaymentMethod.EDC == element.id) {
+                              ic = assetsConstant.icPaymentEdc;
+                              label = 'EDC';
+                            } else if (PaymentMethod.TRAVELOKA == element.id) {
+                              ic = assetsConstant.icPaymentTraveloka;
+                              label = 'Traveloka';
+                            } else if (PaymentMethod.TICKET == element.id) {
+                              ic = assetsConstant.icPaymentTiket;
+                              label = 'Ticket.com';
+                            }
+                            if (element.id == null) {
+                              return Container();
+                            }
+                            return GestureDetector(
+                              onTap: () {
+                                controller.doSelectPaymentType(element);
+                              },
+                              child: Container(
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: layoutStyle.defaultMargin,
+                                ),
+                                padding: EdgeInsets.all(
+                                    layoutStyle.defaultMargin / 2),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: colorStyle.grey,
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  color:
+                                      controller.selectedPaymentType.value.id ==
+                                              element.id
+                                          ? colorStyle.primary
+                                          : colorStyle.white,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Image.asset(ic),
+                                    if (label.isNotEmpty) ...[
+                                      SizedBox(
+                                        width: layoutStyle.defaultMargin / 2,
+                                      ),
+                                      Text(
+                                        label,
+                                        style: textStyle.blackText.copyWith(
+                                            color: controller
+                                                        .selectedPaymentType
+                                                        .value
+                                                        .id ==
+                                                    element.id
+                                                ? colorStyle.white
+                                                : colorStyle.black),
+                                      ),
+                                    ]
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                // CustomDropdownButton<CustomIdNameEntity>(
+                //   height: layoutStyle.blockVertical * 6.5,
+                //   items: controller.paymentType
+                //       .map(
+                //         (e) => DropdownMenuItem(
+                //           value: e,
+                //           child: Text("${e.name}"),
+                //         ),
+                //       )
+                //       .toList(),
+                //   value: controller.selectedPaymentType.value,
+                //   label: Text(
+                //     'Pilih Pembayaran',
+                //     style: textStyle.greyText.copyWith(
+                //       fontSize: fontSize.small,
+                //     ),
+                //   ),
+                //   border: Border.all(
+                //     color: colorStyle.lightGrey,
+                //     width: 1,
+                //   ),
+                //   margin: EdgeInsets.symmetric(
+                //     vertical: layoutStyle.defaultMargin / 4,
+                //     horizontal: layoutStyle.defaultMargin,
+                //   ),
+                //   onChanged: (val) {
+                //     controller.doSelectPaymentType(val!);
+                //   },
+                // ),
                 // controller.showReffId.value
                 //     ? CustomTextBox(
                 //         height: layoutStyle.blockVertical * 6.5,

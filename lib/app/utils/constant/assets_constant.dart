@@ -26,6 +26,13 @@ class AppAssetConstant {
   final String imgExampleBarcode = "${constant.pathImages}example-barcode.png";
   final String imgExamplePrint = "${constant.pathImages}example-print.png";
   final String imgTraveloka = "${constant.pathImages}img-traveloka.png";
+
+  // payment Icons
+  final String icPaymentQr = "${constant.pathIcons}ic-payment-qr.png";
+  final String icPaymentEdc = "${constant.pathIcons}ic-payment-edc.png";
+  final String icPaymentTraveloka = "${constant.pathIcons}ic-payment-traveloka.png";
+  final String icPaymentTiket = "${constant.pathIcons}ic-payment-tiket.png";
+
 }
 
 AppAssetConstant assetsConstant = new AppAssetConstant();
