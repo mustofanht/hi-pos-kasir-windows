@@ -168,7 +168,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                               ),
                                             ),
                                             Text(
-                                              'Petugas:',
+                                              'Petugas: ${model.paymentDetail?.pymntCreatedBy ?? ''}',
                                               style: TextStyle(
                                                 fontSize: fontSize.subtitle,
                                               ),

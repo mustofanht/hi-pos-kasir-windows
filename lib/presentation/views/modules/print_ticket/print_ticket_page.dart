@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
+import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
@@ -66,140 +67,173 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
       });
     }
 
+    Widget dataValue({required CustomTableData element, required int index}) {
+      String id = element.id!;
+      String val = controller.dataList[index].toJson()[id].toString();
+      if (id == 'pymntStatus') {
+        return CustomBadge(
+          label: val == 'P' ? 'Paid' : 'Not Paid',
+          colorLabel: (val == 'P' ? colorStyle.black : colorStyle.white),
+          colorBox: (val == 'P' ? colorStyle.green : colorStyle.red),
+        );
+      } else if (id == 'otdtlStatus') {
+        return CustomBadge(
+          label: val == 'Y' ? 'Aktif' : 'Not Aktif',
+          colorLabel: (val == 'Y' ? colorStyle.black : colorStyle.white),
+          colorBox: (val == 'Y' ? colorStyle.green : colorStyle.red),
+        );
+      } else if (id == 'orderStatus') {
+        val = 'k';
+        return CustomBadge(
+          label: val == 'C' ? 'Cetak' : 'Belum Cetak',
+          colorLabel: (val == 'C' ? colorStyle.black : colorStyle.white),
+          colorBox: (val == 'C' ? colorStyle.green : colorStyle.grey),
+        );
+      } else {
+        return Text(element.defaultValue ?? val);
+      }
+    }
+
     Widget dataListSection(PrintTicketPageController controller) {
-      return Obx(() {
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              // if (controller.isLoading.value) {
-              //   return Container(
-              //     height: layoutStyle.screenHeight,
-              //     width: layoutStyle.screenWidth,
-              //     child: loading.simpleLoading(),
-              //   );
-              // } else
-              if (controller.dataList.isNotEmpty) {
-                return GestureDetector(
-                  onTap: () {
-                    controller.doToDetail(controller.dataList[index]);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: colorStyle.lightGrey,
-                          width: 1.0,
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            // if (controller.isLoading.value) {
+            //   return Container(
+            //     height: layoutStyle.screenHeight,
+            //     width: layoutStyle.screenWidth,
+            //     child: loading.simpleLoading(),
+            //   );
+            // } else
+            return Obx(
+              () {
+                logger.safeLog('DATA LIST : ${controller.dataList.length}');
+                if (controller.dataList.isNotEmpty) {
+                  return GestureDetector(
+                    onTap: () {
+                      controller.doToDetail(controller.dataList[index]);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: colorStyle.lightGrey,
+                            width: 1.0,
+                          ),
                         ),
                       ),
-                    ),
-                    child: Row(
-                      children: controller.listColumnHeader.map((element) {
-                        String val = controller.dataList[index]
-                            .toJson()[element.id]
-                            .toString();
-                        if (element.id == 'orderStatus') {
-                          val = controller.dataList[index].paymentDetail
-                                      ?.pymntStatus ==
-                                  'P'
-                              ? 'Paid'
-                              : 'Not Paid/Waiting';
-                        }
+                      child: Row(
+                        children: controller.listColumnHeader.map((element) {
+                          // String val = controller.dataList[index]
+                          //     .toJson()[element.id]
+                          //     .toString();
+                          // if (element.id == 'orderStatus') {
+                          //   val = controller.dataList[index].paymentDetail
+                          //               ?.pymntStatus ==
+                          //           'P'
+                          //       ? 'Paid'
+                          //       : 'Not Paid/Waiting';
+                          // }
 
-                        if (common.isNumeric(val)) {
-                          val = common.currencyFormat(double.parse(val));
-                        }
-
-                        return element.width != null
-                            ? Container(
-                                width: element.width,
-                                height: layoutStyle.blockVertical * 5,
-                                alignment: element.alignment,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: layoutStyle.defaultMargin / 2,
-                                  vertical: layoutStyle.defaultMargin / 4,
-                                ),
-                                child: Text(
-                                  val,
-                                ),
-                              )
-                            : Expanded(
-                                child: Container(
+                          // if (common.isNumeric(val)) {
+                          //   val = common.currencyFormat(double.parse(val));
+                          // }
+                          return element.width != null
+                              ? Container(
+                                  width: element.width,
+                                  height: layoutStyle.blockVertical * 5,
                                   alignment: element.alignment,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: layoutStyle.defaultMargin / 2,
                                     vertical: layoutStyle.defaultMargin / 4,
                                   ),
-                                  child: Text(
-                                    val,
+                                  child: dataValue(
+                                    element: element,
+                                    index: index,
                                   ),
-                                ),
-                              );
-                      }).toList(),
+                                )
+                              : Expanded(
+                                  child: Container(
+                                    alignment: element.alignment,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin / 2,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    child: dataValue(
+                                      element: element,
+                                      index: index,
+                                    ),
+                                  ),
+                                );
+                        }).toList(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Container();
-              }
-            },
-            childCount: controller.dataList.length,
-          ),
-        );
-      });
+                  );
+                } else {
+                  return Container();
+                }
+              },
+            );
+          },
+          childCount: controller.dataList.length,
+        ),
+      );
     }
 
     Widget contentTableSection(PrintTicketPageController controller) {
       return Expanded(
-        child: controller.isLoading.value ? loading.simpleLoading() :  Container(
-          width: layoutStyle.screenWidth,
-          decoration: BoxDecoration(
-            border: Border.all(width: 1, color: colorStyle.black),
-            borderRadius: BorderRadius.all(
-              Radius.circular(layoutStyle.defaultMargin / 5),
-            ),
-            color: colorStyle.white,
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Padding(
-                  padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      await controller.doPrepareList(page: 0);
-                    },
-                    child: CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverPersistentHeader(
-                          pinned: true,
-                          delegate: DataTableDelegate(
-                            minHeight: 50.0,
-                            maxHeight: 50.0,
-                            child: Material(
-                              color: colorStyle.lightGrey,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(
-                                  layoutStyle.defaultMargin / 5,
-                                ),
-                                topRight: Radius.circular(
-                                  layoutStyle.defaultMargin / 5,
+        child: controller.isLoading.value
+            ? loading.simpleLoading()
+            : Container(
+                width: layoutStyle.screenWidth,
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1, color: colorStyle.black),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(layoutStyle.defaultMargin / 5),
+                  ),
+                  color: colorStyle.white,
+                ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                        child: RefreshIndicator(
+                          onRefresh: () async {
+                            await controller.doPrepareList(page: 0);
+                          },
+                          child: CustomScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            slivers: [
+                              SliverPersistentHeader(
+                                pinned: true,
+                                delegate: DataTableDelegate(
+                                  minHeight: 50.0,
+                                  maxHeight: 50.0,
+                                  child: Material(
+                                    color: colorStyle.lightGrey,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(
+                                        layoutStyle.defaultMargin / 5,
+                                      ),
+                                      topRight: Radius.circular(
+                                        layoutStyle.defaultMargin / 5,
+                                      ),
+                                    ),
+                                    child: headerSection(controller),
+                                  ),
                                 ),
                               ),
-                              child: headerSection(controller),
-                            ),
+                              dataListSection(controller),
+                            ],
                           ),
                         ),
-                        dataListSection(controller),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
       );
     }
 
@@ -229,6 +263,10 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
               layoutStyle.defaultMargin / 2,
             ),
             controller: controller.searchController,
+            onChanged: (val) {
+              controller.searchController.text = val;
+              controller.update();
+            },
             // onSubmit: (val) async {
             //   await controller.doSearch(val);
             // },
@@ -239,6 +277,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
               suffixIcon: IconButton(
                 onPressed: () async {
                   await controller.doSearch(controller.searchController.text);
+                  controller.update();
                 },
                 icon: const Icon(
                   Icons.search,

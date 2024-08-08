@@ -5,11 +5,13 @@ class CustomTableData {
   String? columnName;
   double? width;
   AlignmentGeometry? alignment;
+  String? defaultValue;
 
   CustomTableData({
     this.id,
     this.columnName,
     this.width,
     this.alignment,
+    this.defaultValue,
   });
 }

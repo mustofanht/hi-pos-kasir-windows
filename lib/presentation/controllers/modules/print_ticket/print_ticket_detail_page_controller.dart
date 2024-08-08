@@ -7,7 +7,7 @@ import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
-import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
@@ -25,7 +25,7 @@ class PrintTicketDetailPageController extends GetxController {
   var selectAll = false.obs;
   final isLoading = false.obs;
 
-  final parentModel = TrnOrderEntity().obs;
+  final parentModel = VwOrderEntity().obs;
 
   final model = TrnDetailOrderEntity().obs;
 
@@ -118,7 +118,7 @@ class PrintTicketDetailPageController extends GetxController {
   doBack() {
     final parentController = Get.find<PrintTicketPageController>();
     parentController.openDetail.value = false;
-    parentModel.value = TrnOrderEntity();
+    parentModel.value = VwOrderEntity();
     parentController.update();
   }
 

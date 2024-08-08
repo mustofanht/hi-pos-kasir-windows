@@ -16,6 +16,7 @@ import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ent
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/payment/response_cek_payment_entity.dart';
 import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';

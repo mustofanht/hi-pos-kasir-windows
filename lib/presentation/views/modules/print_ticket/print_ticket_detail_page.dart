@@ -198,7 +198,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     leftColum(
                       column: 'Biaya Ppn',
                       value: Text(
-                        'Rp.${common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn}',
+                        'Rp.${model.ppn != null ? (common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn) : 0}',
                         style: TextStyle(
                           fontWeight: fontWeight.bold,
                         ),

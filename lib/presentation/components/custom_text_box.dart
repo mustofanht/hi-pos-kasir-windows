@@ -109,10 +109,8 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                     ),
                     enabled:
                         widget.isDisabled != null ? !widget.isDisabled! : true,
-                    onSubmitted:
-                        widget.isDisabled != null ? null : widget.onSubmit,
-                    onChanged:
-                        widget.isDisabled != null ? null : widget.onChanged,
+                    onSubmitted: widget.isDisabled! ? null : widget.onSubmit,
+                    onChanged: widget.isDisabled! ? null : widget.onChanged,
                   ),
                 ),
               ],

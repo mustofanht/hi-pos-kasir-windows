@@ -9,7 +9,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
-import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 
 class PrintTicketPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -20,12 +20,12 @@ class PrintTicketPageController extends GetxController
   final searchController = TextEditingController();
   final listColumnHeader = <CustomTableData>[].obs;
   final openDetail = false.obs;
-  final selectedData = TrnOrderEntity().obs;
+  final selectedData = VwOrderEntity().obs;
 
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
 
-  final dataList = <TrnOrderEntity>[].obs;
+  final dataList = <VwOrderEntity>[].obs;
   final isLoadMore = false.obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
@@ -42,36 +42,44 @@ class PrintTicketPageController extends GetxController
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderName',
+        id: 'ticketName',
         columnName: 'Nama',
         alignment: Alignment.centerLeft,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderTotalItem',
-        columnName: 'Jml Order',
+        id: 'orderSource',
+        columnName: 'Source Order',
+        alignment: Alignment.center,
+        defaultValue: 'Onsite',
+      ),
+    );
+    listColumnHeader.add(
+      CustomTableData(
+        id: 'pymntStatus',
+        columnName: 'Status Pembayaran',
         alignment: Alignment.center,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderTotalAmt',
-        columnName: 'Harga(Rp)',
-        alignment: Alignment.centerRight,
-      ),
-    );
-    listColumnHeader.add(
-      CustomTableData(
-        id: 'orderSource',
-        columnName: 'Order Source',
+        id: 'otdtlStatus',
+        columnName: 'Status Tiket',
         alignment: Alignment.center,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
         id: 'orderStatus',
-        columnName: 'Status Pembayaran',
+        columnName: 'Status Cetak',
+        alignment: Alignment.center,
+      ),
+    );
+    listColumnHeader.add(
+      CustomTableData(
+        id: 'countScan',
+        columnName: 'Status Scan',
         alignment: Alignment.center,
       ),
     );
@@ -109,8 +117,13 @@ class PrintTicketPageController extends GetxController
         );
       }
 
-      result = await _service.order.orderService.getAllOrder(
-          authToken: _authToken, dataFilter: dataFilter, paramsFilter: param);
+      // result = await _service.order.orderService.getAllOrder(
+      //     authToken: _authToken, dataFilter: dataFilter, paramsFilter: param);
+      result = await _service.order.orderService.getVwOrderTicket(
+        authToken: _authToken,
+        dataFilter: dataFilter,
+        paramsFilter: param,
+      );
       result.fold((l) {
         logger.safeLog(l);
         isLoading.value = false;
@@ -134,7 +147,7 @@ class PrintTicketPageController extends GetxController
     update();
   }
 
-  doToDetail(TrnOrderEntity? val) {
+  doToDetail(VwOrderEntity? val) {
     selectedData.value = val!;
     openDetail.value = true;
     update();
