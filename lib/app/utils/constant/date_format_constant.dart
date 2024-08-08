@@ -13,6 +13,8 @@ class DateFormatConstant {
   final DateFormat dateDDMMMMYYYY = DateFormat("dd MMMM yyyy", constant.locale);
   final DateFormat withoutSecond =
       DateFormat("dd-MMM-yyyy HH:mm", constant.locale);
+  final DateFormat dateStripedYYYYMMDDHHMMSS =
+      DateFormat("yyyy-MM-dd HH:mm:ss", constant.locale);
   final DateFormat fullTimePrinted =
       DateFormat("dd/MM/yyyy HH:mm", constant.locale);
   final DateFormat hourMinutes =

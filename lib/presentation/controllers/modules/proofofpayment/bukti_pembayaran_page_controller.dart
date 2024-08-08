@@ -2,8 +2,10 @@ import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/message_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
@@ -39,6 +41,8 @@ class BuktiPembayaranPageController extends GetxController {
   }
 
   doPrepareList({required int page, String? search}) async {
+    detailModel.value = TrnDetailOrderEntity();
+    selectedData.value = TrnOrderEntity();
     if (page > 0) {
       isLoadMore.value = true;
     } else {
@@ -53,6 +57,31 @@ class BuktiPembayaranPageController extends GetxController {
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
       };
 
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'orderDate',
+          OPERATOR_CONSTANTS.GREATHER_THAN_OR_EQUALS,
+          dateTimeUtil.getFormattedDate(
+            date: DateTime(DateTime.now().year, DateTime.now().month,
+                    DateTime.now().day, 0, 0, 0)
+                .toLocal(),
+            format: dateFormat.dateStripedYYYYMMDDHHMMSS,
+          ),
+        )!,
+      );
+
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'orderDate',
+          OPERATOR_CONSTANTS.LESS_THAN_OR_EQUALS,
+          dateTimeUtil.getFormattedDate(
+            date: DateTime(DateTime.now().year, DateTime.now().month,
+                    DateTime.now().day + 1, 0, 0, 0)
+                .toLocal(),
+            format: dateFormat.dateStripedYYYYMMDDHHMMSS,
+          ),
+        )!,
+      );
       if (search != '' && search != null) {
         dataFilter.add(
           apiFilterUtil.addSearch(
@@ -64,7 +93,10 @@ class BuktiPembayaranPageController extends GetxController {
       }
 
       result = await _service.order.orderService.getAllOrder(
-          authToken: _authToken, dataFilter: dataFilter, paramsFilter: param);
+        authToken: _authToken,
+        dataFilter: dataFilter,
+        paramsFilter: param,
+      );
       result.fold((l) {
         logger.safeLog(l);
         isLoading.value = false;
