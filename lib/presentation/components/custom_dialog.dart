@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
-import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
-import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
-import 'package:jaya_propertiy/presentation/controllers/common/print_controller.dart';
 
 class CustomDialog {
   Future<bool> dialog({
@@ -601,6 +598,152 @@ class CustomDialog {
                       ),
                     ],
                   ),
+                ),
+              ),
+              Container(
+                width: layoutStyle.screenWidth,
+                height: layoutStyle.blockVertical * 7,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          onCancle();
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: layoutStyle.screenWidth,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(
+                                color: colorStyle.grey.withOpacity(0.20),
+                                width: 1.0,
+                              ),
+                              right: BorderSide(
+                                color: colorStyle.grey.withOpacity(0.20),
+                                width: 1.0,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Batal',
+                            style: TextStyle(
+                              color: colorStyle.red,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          onCheck();
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: layoutStyle.screenWidth,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(
+                                color: colorStyle.grey.withOpacity(0.20),
+                                width: 1.0,
+                              ),
+                              left: BorderSide(
+                                color: colorStyle.grey.withOpacity(0.20),
+                                width: 1.0,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Cek',
+                            style: TextStyle(
+                              color: colorStyle.blue,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  waitingPaymentWithQr({
+    required String title,
+    required String msg,
+    String? qrCode,
+    required Function onCheck,
+    required Function onCancle,
+  }) {
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: layoutStyle.screenWidth / 2,
+          height: layoutStyle.blockVertical * 45,
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(50),
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              assetsConstant.icInformationDialog,
+                              alignment: Alignment.topCenter,
+                              fit: BoxFit.fill,
+                            ),
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: fontSize.title,
+                                fontWeight: fontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                              height: layoutStyle.defaultMargin / 5,
+                            ),
+                            Flexible(
+                              child: Text(
+                                msg,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: fontSize.body,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        child: common.getQrImg(
+                          qrCode!,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Container(

@@ -137,17 +137,16 @@ class SalePageController extends GetxController
       alert.error(
           "Terjadi Kesalahan!", messagesConstant.requiredField("Name Pemesan"));
     }
-
-    if (isValid && emailController.text.isEmpty) {
-      isValid = false;
-      alert.error(
-          "Terjadi Kesalahan!", messagesConstant.requiredField("Email"));
-    }
-    if (isValid && noWaController.text.isEmpty) {
-      isValid = false;
-      alert.error(
-          "Terjadi Kesalahan!", messagesConstant.requiredField("No Wa"));
-    }
+    // if (isValid && emailController.text.isEmpty) {
+    //   isValid = false;
+    //   alert.error(
+    //       "Terjadi Kesalahan!", messagesConstant.requiredField("Email"));
+    // }
+    // if (isValid && noWaController.text.isEmpty) {
+    //   isValid = false;
+    //   alert.error(
+    //       "Terjadi Kesalahan!", messagesConstant.requiredField("No Wa"));
+    // }
     if (isValid && selectedPaymentType.value.id == null) {
       isValid = false;
       alert.error('Warning', 'Pilih Pembayaran terlebih dahulu!');
@@ -159,7 +158,8 @@ class SalePageController extends GetxController
     if (doVerifyRequest()) {
       logger.safeLog('orderNo.value : ${orderNo.value}');
       final OrderController orderController = Get.put(OrderController());
-      final OrderPaymentController orderPayment = Get.put(OrderPaymentController());
+      final OrderPaymentController orderPayment =
+          Get.put(OrderPaymentController());
       if (selectedPaymentType.value.id == PaymentMethod.QRIS) {
         orderController.doPaymentQris(
           body: getBodyOrder(),
@@ -235,9 +235,12 @@ class SalePageController extends GetxController
     }
 
     return OrderModel(
-      orderName: orderNameController.text,
-      orderPhoneNumber: noWaController.text,
-      orderEmail: emailController.text,
+      orderName:
+          orderNameController.text.isEmpty ? null : orderNameController.text,
+      orderPhoneNumber:
+          noWaController.text.isEmpty ? null : noWaController.text,
+      orderEmail:
+          emailController.text.isEmpty ? null : emailController.text,
       orderReffno: null,
       orderTotalItem: totalOrderQty.value,
       orderTotalAmt: totalOrderAmnt.value,

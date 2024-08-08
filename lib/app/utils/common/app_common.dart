@@ -249,6 +249,18 @@ class AppCommon {
       logger.safeLog(e);
     }
   }
+
+  Image getQrImg(String? qrCode) {
+    return qrCode != null && qrCode.contains('http')
+        ? Image.network(qrCode, fit: BoxFit.fill, errorBuilder:
+            (BuildContext context, Object exception, StackTrace? stackTrace) {
+            return const Center(child: Text('Img Not Found'));
+          })
+        : Image.asset(qrCode!, fit: BoxFit.fill, errorBuilder:
+            (BuildContext context, Object exception, StackTrace? stackTrace) {
+            return const Center(child: Text('Img Not Found'));
+          });
+  }
 }
 
 AppCommon common = new AppCommon();

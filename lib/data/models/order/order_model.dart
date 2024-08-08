@@ -3,10 +3,11 @@ import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 
 class OrderModel {
-  String orderName;
-  String orderPhoneNumber;
-  String orderEmail;
+  String? orderName;
+  String? orderPhoneNumber;
+  String? orderEmail;
   String? orderReffno;
+  String? qrCode;
   int orderTotalItem;
   double orderTotalAmt;
   int orderUnitId;
@@ -18,10 +19,11 @@ class OrderModel {
   List<OrderVoucherModel> listVoucher;
 
   OrderModel({
-    required this.orderName,
-    required this.orderPhoneNumber,
-    required this.orderEmail,
+     this.orderName,
+     this.orderPhoneNumber,
+     this.orderEmail,
     this.orderReffno,
+    this.qrCode,
     required this.orderTotalItem,
     required this.orderTotalAmt,
     required this.orderUnitId,
@@ -39,6 +41,7 @@ class OrderModel {
       orderPhoneNumber: json['orderPhoneNumber'],
       orderEmail: json['orderEmail'],
       orderReffno: json['orderReffno'],
+      qrCode: json['qrCode'],
       orderTotalItem: json['orderTotalItem'],
       orderTotalAmt: json['orderTotalAmt'],
       orderUnitId: json['orderUnitId'],
@@ -61,6 +64,7 @@ class OrderModel {
       "orderPhoneNumber": orderPhoneNumber,
       "orderEmail": orderEmail,
       "orderReffno": orderReffno,
+      "qrCode": qrCode,
       "orderTotalItem": orderTotalItem,
       "orderTotalAmt": orderTotalAmt,
       "orderUnitId": orderUnitId,

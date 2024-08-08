@@ -42,15 +42,32 @@ class OrderController extends GetxController {
         alert.error('Payment Error', 'Terjadi Kesalahan');
         return;
       }
-      dialog.waitingPayment(
-        title: 'Menunggu Pembayaran',
-        msg:
-            'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
-        onCheck: () => _handlePaymentCheck(body),
-        onCancle: () {
-          Get.back();
-        },
-      );
+
+      await displayUtil.getDisplay();
+      logger.safeLog('QR CODE : ${body.qrCode}');
+      logger.safeLog('DISPLAY L : ${displayUtil.displays.length}');
+      if (displayUtil.displays.length == 1) {
+        dialog.waitingPaymentWithQr(
+          title: 'Menunggu Pembayaran',
+          qrCode: body.qrCode,
+          msg:
+              'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
+          onCheck: () => _handlePaymentCheck(body),
+          onCancle: () {
+            Get.back();
+          },
+        );
+      } else {
+        dialog.waitingPayment(
+          title: 'Menunggu Pembayaran',
+          msg:
+              'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
+          onCheck: () => _handlePaymentCheck(body),
+          onCancle: () {
+            Get.back();
+          },
+        );
+      }
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Unexpected Error');
@@ -141,6 +158,7 @@ class OrderController extends GetxController {
           orderNo?.value = r.data?.orderNumber;
           orderPaymentNo.value = r.data?.orderPaymentNo;
           body.orderReffno = r.data?.orderPaymentNo;
+          body.qrCode = r.data?.qrisUrl;
         },
       );
     } catch (e) {

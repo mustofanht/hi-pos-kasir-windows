@@ -62,7 +62,7 @@ class GeneratePrintUtil {
           width: 6,
         ),
         PosColumn(
-          text: body.orderName,
+          text: body.orderName ?? '',
           width: 6,
           styles: const PosStyles(
             align: PosAlign.right,
@@ -298,7 +298,7 @@ class GeneratePrintUtil {
     final generator = Generator(paperSize, profile);
     bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
-    
+
     // Location Name
     if (locationName != null) {
       bytes += generator.text(
