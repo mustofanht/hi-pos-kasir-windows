@@ -82,7 +82,6 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
           colorBox: (val == 'Y' ? colorStyle.green : colorStyle.red),
         );
       } else if (id == 'orderStatus') {
-        val = 'k';
         return CustomBadge(
           label: val == 'C' ? 'Cetak' : 'Belum Cetak',
           colorLabel: (val == 'C' ? colorStyle.black : colorStyle.white),

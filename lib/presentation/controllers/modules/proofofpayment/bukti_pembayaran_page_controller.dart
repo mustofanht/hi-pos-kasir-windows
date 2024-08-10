@@ -25,7 +25,8 @@ import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
-class BuktiPembayaranPageController extends GetxController with GetSingleTickerProviderStateMixin {
+class BuktiPembayaranPageController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   BuktiPembayaranPageController();
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
@@ -41,9 +42,9 @@ class BuktiPembayaranPageController extends GetxController with GetSingleTickerP
 
   final ScrollController scrollController = ScrollController();
   late AnimationController animationController;
-  
+
   final pagination = Pagination().obs;
-  
+
   @override
   void onInit() {
     scrollController.addListener(_onScroll);
@@ -81,7 +82,9 @@ class BuktiPembayaranPageController extends GetxController with GetSingleTickerP
     isLoading.value = true;
     animationController.repeat(reverse: true);
     logger.safeLog("NEXT PAGE : ${((pagination.value.currentPage ?? 0) + 1)}");
-    doPrepareList(page: ((pagination.value.currentPage ?? 0) + 1), search: searchController.text);
+    doPrepareList(
+        page: ((pagination.value.currentPage ?? 0) + 1),
+        search: searchController.text);
     isLoading.value = false;
     update();
   }
@@ -244,31 +247,39 @@ class BuktiPembayaranPageController extends GetxController with GetSingleTickerP
           locationName = user.locationName!;
         }
 
-        List<OrderTicketModel> ticketList = detailModel.value.detailOrderModels!
-            .map(
-              (e) => OrderTicketModel(
-                totalTicket: e.quantity!,
-                totalAmount: e.total!,
-              ),
-            )
-            .toList();
-        List<OrderAddonModel> productList = detailModel.value.detailOrderModels!
-            .map(
-              (e) => OrderAddonModel(
-                ordadTotalAddon: e.quantity!,
-                ordadTotalAmount: e.total!,
-              ),
-            )
-            .toList();
+        List<OrderTicketModel> ticketList =
+            detailModel.value.detailOrderModels == null
+                ? []
+                : detailModel.value.detailOrderModels!
+                    .map(
+                      (e) => OrderTicketModel(
+                        totalTicket: e.quantity!,
+                        totalAmount: e.total!,
+                      ),
+                    )
+                    .toList();
+        List<OrderAddonModel> productList =
+            detailModel.value.detailOrderModels == null
+                ? []
+                : detailModel.value.detailOrderModels!
+                    .map(
+                      (e) => OrderAddonModel(
+                        ordadTotalAddon: e.quantity!,
+                        ordadTotalAmount: e.total!,
+                      ),
+                    )
+                    .toList();
         List<OrderVoucherModel> voucherList =
-            detailModel.value.detailOrderModels!
-                .map(
-                  (e) => OrderVoucherModel(
-                    ordvcTotalVoucher: e.quantity!,
-                    ordvcTotalAmount: e.total!,
-                  ),
-                )
-                .toList();
+            detailModel.value.detailOrderModels == null
+                ? []
+                : detailModel.value.detailOrderModels!
+                    .map(
+                      (e) => OrderVoucherModel(
+                        ordvcTotalVoucher: e.quantity!,
+                        ordvcTotalAmount: e.total!,
+                      ),
+                    )
+                    .toList();
 
         OrderModel orderModel = OrderModel(
           orderTotalItem: detailModel.value.orderTotalItem!,
@@ -288,29 +299,12 @@ class BuktiPembayaranPageController extends GetxController with GetSingleTickerP
           paperSize: PaperSize.mm80,
           body: orderModel,
         );
-        if (orderModel.listCreateTicket != null) {
-          int count = 1;
-          int totalPak = orderModel.listCreateTicket!.length;
-          for (var element in orderModel.listCreateTicket!) {
-            List<int> dataPrint = await generatePrintUtil.dataGatePrint(
-              locationName: locationName,
-              paperSize: PaperSize.mm80,
-              reffNo: element.ticketNo!,
-              pakOf: count,
-              pakTotal: totalPak,
-              qrCode: element.ticketNo!,
-              expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
-              ticketName: element.ticketName,
-            );
-            data.addAll(dataPrint);
-            count++;
-          }
-        }
 
         await printerUtil.print(printerUtil.currPrinter!, data);
         Get.back();
       } else {
         alert.error('Error', 'please check connection printer');
+        printerUtil.connectPrinter();
       }
     } catch (e) {
       logger.safeLog(e);

@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -342,18 +343,26 @@ class OrderUtil {
     // } else {
     //   alert.error('Error', 'bluetooth is off, please turn it on first');
     // }
+    logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
+    printerUtil.connectPrinter();
     if (printerUtil.currPrinter != null) {
       String locationName = "";
+      String kasirName = "";
       UserEntity? user = await common.getUser(
         authToken: _authToken,
       );
       if (user != null) {
         locationName = user.locationName!;
       }
+      kasirName = sessionUtil.getUserName();
 
       List<int> data = [];
       data = await generatePrintUtil.dataPaymentTiketPrint(
-          locationName: locationName, paperSize: PaperSize.mm80, body: body);
+        locationName: locationName,
+        kasirName: kasirName,
+        paperSize: PaperSize.mm80,
+        body: body,
+      );
       // int count = 1;
       // int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
       // for (var element in body.listTicket) {
@@ -376,11 +385,13 @@ class OrderUtil {
       if (body.listCreateTicket != null) {
         int count = 1;
         int totalPak = body.listCreateTicket!.length;
+        String reffNo = body.orderReffno ?? '';
         for (var element in body.listCreateTicket!) {
+          // String reffNo = element.ticketNo ?? '';
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
             locationName: locationName,
             paperSize: PaperSize.mm80,
-            reffNo: element.ticketNo!,
+            reffNo: reffNo,
             pakOf: count,
             pakTotal: totalPak,
             qrCode: element.ticketNo!,
@@ -401,6 +412,7 @@ class OrderUtil {
       Get.back();
     } else {
       alert.error('Error', 'please check connection printer');
+      printerUtil.connectPrinter();
     }
   }
 

@@ -118,6 +118,7 @@ class PrinterUtil {
       logger.safeLog('IS CONNECTED : $_isConnected');
       return Future.value(_isConnected);
     } else {
+      currPrinter = null;
       return Future.value(false);
     }
   }

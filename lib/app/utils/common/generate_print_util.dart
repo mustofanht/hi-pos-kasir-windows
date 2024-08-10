@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/data/models/order/order_model.dart';
 class GeneratePrintUtil {
   Future<List<int>> dataPaymentTiketPrint({
     String? locationName,
+    String? kasirName,
     required PaperSize paperSize,
     required OrderModel body,
   }) async {
@@ -53,6 +54,13 @@ class GeneratePrintUtil {
         bold: true,
       ),
     );
+    bytes += generator.text(
+      'Kasir :  $kasirName',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
     bytes += generator.row(
       [
         PosColumn(
@@ -72,8 +80,10 @@ class GeneratePrintUtil {
     );
     bytes += generator.hr();
 
+    double totalBayar = 0;
     // List Ticket Order
     for (var element in body.listTicket) {
+      totalBayar += element.totalAmount;
       bytes += generator.text(
         element.ticket?.ticketName ?? '',
         styles: const PosStyles(
@@ -90,19 +100,19 @@ class GeneratePrintUtil {
             text: element.ticket?.ticketPrice != null
                 ? common.currencyFormat(element.ticket!.ticketPrice!)
                 : '',
-            width: 2,
+            width: 3,
           ),
-          PosColumn(
-            text: '( 0% )',
-            width: 2,
-          ),
+          // PosColumn(
+          //   text: '( 0% )',
+          //   width: 2,
+          // ),
           PosColumn(
             text: 'x ${element.totalTicket}',
             width: 2,
           ),
           PosColumn(
             text: common.currencyFormat(element.totalAmount),
-            width: 4,
+            width: 5,
             styles: const PosStyles(
               align: PosAlign.right,
             ),
@@ -112,6 +122,7 @@ class GeneratePrintUtil {
     }
     // List item Order
     for (var element in body.listProduct) {
+      totalBayar += element.ordadTotalAmount;
       bytes += generator.text(
         element.addOn?.productName ?? '',
         styles: const PosStyles(
@@ -128,19 +139,19 @@ class GeneratePrintUtil {
             text: element.addOn?.productPrice != null
                 ? common.currencyFormat(element.addOn!.productPrice!)
                 : '',
-            width: 2,
+            width: 3,
           ),
-          PosColumn(
-            text: '( 0% )',
-            width: 2,
-          ),
+          // PosColumn(
+          //   text: '( 0% )',
+          //   width: 2,
+          // ),
           PosColumn(
             text: 'x ${element.ordadTotalAddon}',
             width: 2,
           ),
           PosColumn(
             text: common.currencyFormat(element.ordadTotalAmount),
-            width: 4,
+            width: 5,
             styles: const PosStyles(
               align: PosAlign.right,
             ),
@@ -157,38 +168,74 @@ class GeneratePrintUtil {
           align: PosAlign.left,
         ),
       );
-      bytes += generator.row(
-        [
-          PosColumn(
-            text: 'Rp',
-            width: 2,
-          ),
-          PosColumn(
-            text: element.voucher?.voucherUnitValue != null
-                ? common.currencyFormat(element.voucher!.voucherUnitValue!)
-                : '',
-            width: 2,
-          ),
-          PosColumn(
-            text: '( 0% )',
-            width: 2,
-          ),
-          PosColumn(
-            text: 'x ${element.ordvcTotalVoucher}',
-            width: 2,
-          ),
-          PosColumn(
-            text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
-            width: 4,
-            styles: const PosStyles(
-              align: PosAlign.right,
+      if (element.voucher!.voucherUnitType == UnitType.PERCENT) {
+        double percentagePrice =
+            ((totalBayar * element.ordvcTotalAmount) / 100);
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: '%',
+              width: 2,
             ),
-          )
-        ],
-      );
+            PosColumn(
+              text: element.voucher?.voucherUnitValue != null
+                  ? common.currencyFormat(element.voucher!.voucherUnitValue!)
+                  : '',
+              width: 3,
+            ),
+            // PosColumn(
+            //   text: '( 0% )',
+            //   width: 2,
+            // ),
+            PosColumn(
+              text: 'x ${element.ordvcTotalVoucher}',
+              width: 2,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(percentagePrice)}',
+              width: 5,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      } else {
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: 'Rp',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.voucher?.voucherUnitValue != null
+                  ? common.currencyFormat(element.voucher!.voucherUnitValue!)
+                  : '',
+              width: 3,
+            ),
+            // PosColumn(
+            //   text: '( 0% )',
+            //   width: 2,
+            // ),
+            PosColumn(
+              text: 'x ${element.ordvcTotalVoucher}',
+              width: 2,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
+              width: 5,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      }
     }
     bytes += generator.hr();
     // Print Total
+    int totalPak =
+        body.listCreateTicket == null ? 0 : body.listCreateTicket!.length;
     bytes += generator.row(
       [
         PosColumn(
@@ -196,7 +243,7 @@ class GeneratePrintUtil {
           width: 4,
         ),
         PosColumn(
-          text: '1 PAK',
+          text: '${totalPak} PAK',
           width: 2,
         ),
         PosColumn(
@@ -256,7 +303,7 @@ class GeneratePrintUtil {
       ),
     );
     bytes += generator.text(
-      '1.Harap struk ini disimpan dengan baik',
+      '2.Harap struk ini disimpan dengan baik',
       styles: const PosStyles(
         align: PosAlign.left,
       ),
