@@ -4,7 +4,7 @@ import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
-import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
+// import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 
 class GeneratePrintUtil {
   Future<List<int>> dataPaymentTiketPrint({
@@ -290,7 +290,8 @@ class GeneratePrintUtil {
     required int pakTotal,
     required String qrCode,
     required String expiredAt,
-    required OrderTicketModel ticketModel,
+    // required OrderTicketModel ticketModel,
+    String? ticketName,
   }) async {
     List<int> bytes = [];
     // Using default profile
@@ -333,7 +334,7 @@ class GeneratePrintUtil {
     bytes += generator.hr();
 
     bytes += generator.text(
-      ticketModel.ticket?.ticketName ?? '',
+      ticketName ?? '',
       styles: const PosStyles(
         align: PosAlign.center,
       ),

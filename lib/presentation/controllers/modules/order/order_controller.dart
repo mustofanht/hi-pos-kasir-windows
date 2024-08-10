@@ -354,19 +354,38 @@ class OrderUtil {
       List<int> data = [];
       data = await generatePrintUtil.dataPaymentTiketPrint(
           locationName: locationName, paperSize: PaperSize.mm80, body: body);
-      int count = 1;
-      int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
-      for (var element in body.listTicket) {
-        for (var i = 0; i < element.totalTicket; i++) {
+      // int count = 1;
+      // int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
+      // for (var element in body.listTicket) {
+      //   for (var i = 0; i < element.totalTicket; i++) {
+      //     List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+      //       locationName: locationName,
+      //       paperSize: PaperSize.mm80,
+      //       reffNo: body.orderReffno!,
+      //       pakOf: count,
+      //       pakTotal: totalPak,
+      //       qrCode: '12345',
+      //       expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+      //       ticketModel: element,
+      //     );
+      //     data.addAll(dataPrint);
+      //     count++;
+      //   }
+      // }
+      
+      if (body.listCreateTicket != null) {
+        int count = 1;
+        int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
+        for (var element in body.listCreateTicket!) {
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
             locationName: locationName,
             paperSize: PaperSize.mm80,
-            reffNo: body.orderReffno!,
+            reffNo: element.ticketNo!,
             pakOf: count,
             pakTotal: totalPak,
-            qrCode: '12345',
+            qrCode: element.ticketNo!,
             expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
-            ticketModel: element,
+            ticketName: element.ticketName,
           );
           data.addAll(dataPrint);
           count++;
