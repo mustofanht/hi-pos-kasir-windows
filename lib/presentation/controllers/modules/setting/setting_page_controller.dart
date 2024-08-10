@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:presentation_displays/display.dart';
 
 class SettingPageController extends GetxController
     with SingleGetTickerProviderMixin {
@@ -36,9 +37,12 @@ class SettingPageController extends GetxController
 
   final listPrinter = <CustomIdNameEntity>[].obs;
   final selectedCurrPrinter = CustomIdNameEntity().obs;
+  final listScreens = <CustomIdNameEntity>[].obs;
+  final selectedScreens = CustomIdNameEntity().obs;
 
   @override
   void onInit() {
+    doInitializeScreen();
     doInitializePrinter();
     doPrepared();
     super.onInit();
@@ -91,12 +95,6 @@ class SettingPageController extends GetxController
   }
 
   doInitializePrinter() async {
-    if (printerUtil.currPrinter != null) {
-      selectedCurrPrinter.value = CustomIdNameEntity(
-        id: printerUtil.currPrinter!.vendorId,
-        name: printerUtil.currPrinter!.deviceName,
-      );
-    }
     var noneSelectedPrint = CustomIdNameEntity(
       id: null,
       name: '--- Select Printer ---',
@@ -110,6 +108,33 @@ class SettingPageController extends GetxController
         CustomIdNameEntity(
           id: element.vendorId,
           name: element.deviceName,
+        ),
+      );
+    }
+    selectedCurrPrinter.value = listPrinter.firstWhere(
+      (element) =>
+          element.id.toString() == printerUtil.currPrinter?.id.toString(),
+      orElse: () => noneSelectedPrint,
+    );
+    update();
+  }
+
+  doInitializeScreen() async {
+    displayUtil.getDisplay();
+    var noneSelectedScreen = CustomIdNameEntity(
+      id: null,
+      name: '--- None ---',
+    );
+    selectedScreens.value = noneSelectedScreen;
+    listScreens.clear();
+    listScreens.add(noneSelectedScreen);
+    List<Display?> screens = displayUtil.displays;
+    for (var element in screens) {
+      logger.safeLog('SCREENS : ${element!.name}');
+      listScreens.add(
+        CustomIdNameEntity(
+          id: element.displayId.toString(),
+          name: '${element.displayId} - ${element.name} - ${element.flag} - ${element.rotation}',
         ),
       );
     }

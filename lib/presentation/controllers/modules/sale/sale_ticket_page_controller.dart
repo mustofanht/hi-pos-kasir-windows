@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
@@ -49,15 +48,16 @@ class SaleTicketPageController extends GetxController {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'flMobile': 'Y',
+        'locationId': sessionUtil.getLocationId().toString(),
       };
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'ticketUnit',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getUnitId(),
-        )!,
-      );
+      // dataFilter.add(
+      //   apiFilterUtil.addSearch(
+      //     'ticketUnit',
+      //     OPERATOR_CONSTANTS.EQUALS,
+      //     sessionUtil.getLocationId(),
+      //   )!,
+      // );
 
       result = await _service.sale.ticketService.getAll(
         authToken: _authToken,

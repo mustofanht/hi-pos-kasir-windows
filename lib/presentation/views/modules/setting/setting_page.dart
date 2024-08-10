@@ -351,6 +351,33 @@ class SettingPage extends GetView<SettingPageController> {
                     ),
                     CustomDropdownButton<CustomIdNameEntity>(
                       height: layoutStyle.blockVertical * 6.5,
+                      items: controller.listScreens
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text("${e.name}"),
+                            ),
+                          )
+                          .toList(),
+                      value: controller.selectedScreens.value,
+                      label: Text(
+                        'List Screen Connect',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      border: Border.all(
+                        color: colorStyle.lightGrey,
+                        width: 1,
+                      ),
+                      margin: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 4,
+                        horizontal: layoutStyle.defaultMargin,
+                      ),
+                      onChanged: (val) {},
+                    ),
+                    CustomDropdownButton<CustomIdNameEntity>(
+                      height: layoutStyle.blockVertical * 6.5,
                       items: controller.listPrinter
                           .map(
                             (e) => DropdownMenuItem(

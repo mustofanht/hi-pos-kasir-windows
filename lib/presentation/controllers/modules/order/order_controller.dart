@@ -341,7 +341,9 @@ class OrderUtil {
     // }
     if (printerUtil.currPrinter != null) {
       String locationName = "";
-      UserEntity? user = await common.getUser();
+      UserEntity? user = await common.getUser(
+        authToken: _authToken,
+      );
       if (user != null) {
         locationName = user.locationName!;
       }

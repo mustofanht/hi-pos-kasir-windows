@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
@@ -48,16 +47,16 @@ class SaleVoucherPageController extends GetxController {
       Map<String, dynamic> param = {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
-        'flMobile': 'Y',
+        'locationId': sessionUtil.getLocationId().toString(),
       };
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'voucherLocId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getUnitId(),
-        )!,
-      );
+      // dataFilter.add(
+      //   apiFilterUtil.addSearch(
+      //     'voucherLocId',
+      //     OPERATOR_CONSTANTS.EQUALS,
+      //     sessionUtil.getUnitId(),
+      //   )!,
+      // );
 
       result = await _service.sale.voucherService.getAll(
         authToken: _authToken,
