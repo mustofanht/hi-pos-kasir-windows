@@ -20,7 +20,7 @@ Future<void> main() async {
     DeviceOrientation.landscapeRight,
   ]).then((_) {
     common.globalInitialize();
-    runApp(AppMain());
+    runApp(const AppMain());
     // runApp(CustomerMain());
   });
   // runApp(

@@ -130,11 +130,11 @@ class SettingPageController extends GetxController
     listScreens.add(noneSelectedScreen);
     List<Display?> screens = displayUtil.displays;
     for (var element in screens) {
-      logger.safeLog('SCREENS : ${element!.name}');
+      logger.safeLog('SCREENS : ${element!.a}');
       listScreens.add(
         CustomIdNameEntity(
-          id: element.displayId.toString(),
-          name: '${element.displayId} - ${element.name} - ${element.flag} - ${element.rotation}',
+          id: element.a.toString(),
+          name: '${element.a} - ${element.b} - ${element.c} - ${element.d}',
         ),
       );
     }

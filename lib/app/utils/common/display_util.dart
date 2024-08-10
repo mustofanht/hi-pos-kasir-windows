@@ -12,20 +12,20 @@ class DisplayUtil {
     displays.addAll(values!);
   }
 
-  hideDisplay(int? displayId) {
-    if (displayId != null) {
-      for (final display in displays) {
-        if (display?.displayId == displayId) {
-          displayManager.hideSecondaryDisplay(displayId: displayId);
-        }
-      }
-    }
-  }
+  // hideDisplay(int? displayId) {
+  //   if (displayId != null) {
+  //     for (final display in displays) {
+  //       if (display?.displayId == displayId) {
+  //         displayManager.hideSecondaryDisplay(displayId: displayId);
+  //       }
+  //     }
+  //   }
+  // }
 
-  showDisplay(int? displayId) {
+  showDisplay(String? displayId) {
     if (displayId != null) {
       for (final display in displays) {
-        if (display?.displayId == displayId) {
+        if (display?.a == displayId) {
           displayManager.showSecondaryDisplay(
               displayId: displayId, routerName: "presentation");
         }
@@ -46,11 +46,11 @@ class DisplayUtil {
     logger.safeLog('list display : ${displays}');
     if (displays.isNotEmpty) {
       for (var element in displays) {
-        int? id = element?.displayId;
+        String? id = element?.a;
         logger.safeLog('Display ID : ${id}');
-        logger.safeLog('Display NAME : ${element?.name}');
+        logger.safeLog('Display NAME : ${element?.d}');
         if (id != 0) {
-          await hideDisplay(id);
+          // await hideDisplay(id);
           await showDisplay(id);
           await transferData(val);
         }

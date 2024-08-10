@@ -6,6 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
+
+Route<dynamic> generateRoute(RouteSettings settings) {
+  switch (settings.name) {
+    case '/':
+      return MaterialPageRoute(builder: (_) => const  SplashPage());
+    case 'presentation':
+      return MaterialPageRoute(builder: (_) => const CustomerPage());
+    default:
+      return MaterialPageRoute(
+          builder: (_) => Scaffold(
+                body: Center(
+                    child: Text('No route defined for ${settings.name}')),
+              ));
+  }
+}
 
 class AppMain extends StatefulWidget {
   const AppMain({super.key});
@@ -30,6 +46,7 @@ class _AppMainState extends State<AppMain> {
       title: 'Jaya Propertiy',
       debugShowCheckedModeBanner: false,
       getPages: AppRoute.pages,
+      onGenerateRoute: generateRoute,
       // home: const SlidePage(),
       home: const SplashPage(),
       initialBinding: SplashPageBinding(),

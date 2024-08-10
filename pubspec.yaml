@@ -24,7 +24,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   loading_animation_widget: ^1.2.0+4
   logger: ^2.0.2+1
-  presentation_displays: ^1.0.0
+  # presentation_displays: ^1.0.0
   syncfusion_flutter_charts: ^24.1.45+2
   table_calendar: ^3.0.9
   flutter_svg: ^2.0.10+1
@@ -38,6 +38,8 @@ dependencies:
   # flutter_usb_printer: ^0.1.0+1
   # thermal_printer: ^1.0.5
   # flutter_thermal_printer: ^0.0.10
+  presentation_displays:
+    path: ./plugin/presentation_displays
 
 dev_dependencies:
   flutter_test:
