@@ -372,10 +372,10 @@ class OrderUtil {
       //     count++;
       //   }
       // }
-      
+
       if (body.listCreateTicket != null) {
         int count = 1;
-        int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
+        int totalPak = body.listCreateTicket!.length;
         for (var element in body.listCreateTicket!) {
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
             locationName: locationName,

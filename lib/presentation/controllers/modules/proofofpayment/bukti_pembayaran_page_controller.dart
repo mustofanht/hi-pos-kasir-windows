@@ -1,15 +1,24 @@
 import 'package:either_dart/either.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/message_util.dart';
+import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
@@ -180,20 +189,87 @@ class BuktiPembayaranPageController extends GetxController {
   }
 
   doPrintTicket() async {
-    // var printController = Get.put(PrintController());
-    // var printController = Get.find<PrintController>();
-    // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    // if (bluetoothIsEnabled) {
-    //   // var paymentPrintController = Get.put(PaymentPrintController());
-    //   // var gatePrintController = Get.put(GatePrintController());
-    //   // await printController.printPaymentTiket(
-    //   //   body,
-    //   //   paymentPrintController,
-    //   //   gatePrintController,
-    //   // );;
-    //   alert.warning('Warning', 'Action on under construction');
-    // } else {
-    //   alert.error('Error', 'bluetooth is off, please turn it on first');
-    // }
+    try {
+      if (printerUtil.currPrinter != null) {
+        String locationName = "";
+        UserEntity? user = await common.getUser(
+          authToken: _authToken,
+        );
+        if (user != null) {
+          locationName = user.locationName!;
+        }
+
+        List<OrderTicketModel> ticketList = detailModel.value.detailOrderModels!
+            .map(
+              (e) => OrderTicketModel(
+                totalTicket: e.quantity!,
+                totalAmount: e.total!,
+              ),
+            )
+            .toList();
+        List<OrderAddonModel> productList = detailModel.value.detailOrderModels!
+            .map(
+              (e) => OrderAddonModel(
+                ordadTotalAddon: e.quantity!,
+                ordadTotalAmount: e.total!,
+              ),
+            )
+            .toList();
+        List<OrderVoucherModel> voucherList =
+            detailModel.value.detailOrderModels!
+                .map(
+                  (e) => OrderVoucherModel(
+                    ordvcTotalVoucher: e.quantity!,
+                    ordvcTotalAmount: e.total!,
+                  ),
+                )
+                .toList();
+
+        OrderModel orderModel = OrderModel(
+          orderTotalItem: detailModel.value.orderTotalItem!,
+          orderTotalAmt: detailModel.value.orderTotalAmt!,
+          orderUnitId: 0,
+          orderLoacationId: 0,
+          orderPaidBy: detailModel.value.orderPaidBy!,
+          orderStatus: detailModel.value.orderStatus!,
+          listTicket: ticketList,
+          listProduct: productList,
+          listVoucher: voucherList,
+        );
+
+        List<int> data = [];
+        data = await generatePrintUtil.dataPaymentTiketPrint(
+          locationName: locationName,
+          paperSize: PaperSize.mm80,
+          body: orderModel,
+        );
+        if (orderModel.listCreateTicket != null) {
+          int count = 1;
+          int totalPak = orderModel.listCreateTicket!.length;
+          for (var element in orderModel.listCreateTicket!) {
+            List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+              locationName: locationName,
+              paperSize: PaperSize.mm80,
+              reffNo: element.ticketNo!,
+              pakOf: count,
+              pakTotal: totalPak,
+              qrCode: element.ticketNo!,
+              expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+              ticketName: element.ticketName,
+            );
+            data.addAll(dataPrint);
+            count++;
+          }
+        }
+
+        await printerUtil.print(printerUtil.currPrinter!, data);
+        Get.back();
+      } else {
+        alert.error('Error', 'please check connection printer');
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+    }
   }
 }

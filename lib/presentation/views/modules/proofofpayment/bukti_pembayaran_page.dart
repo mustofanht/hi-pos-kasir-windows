@@ -188,7 +188,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                               CrossAxisAlignment.end,
                                           children: [
                                             Text(
-                                              'Invoice #62374',
+                                              'Invoice #${model.orderNumber}',
                                               style: TextStyle(
                                                 fontSize: fontSize.subtitle,
                                               ),
