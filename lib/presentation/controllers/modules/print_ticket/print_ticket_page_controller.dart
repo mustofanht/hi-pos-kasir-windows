@@ -14,6 +14,7 @@ import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 class PrintTicketPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
   PrintTicketPageController();
+
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
@@ -22,13 +23,58 @@ class PrintTicketPageController extends GetxController
   final openDetail = false.obs;
   final selectedData = VwOrderEntity().obs;
 
-  final scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
+  late AnimationController animationController;
+
   final pagination = Pagination().obs;
 
   final dataList = <VwOrderEntity>[].obs;
   final isLoadMore = false.obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
+
+  @override
+  void onInit() {
+    scrollController.addListener(_onScroll);
+    animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    setListHeaderColumn();
+    doPrepareList(page: 0);
+
+    super.onInit();
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    animationController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      // logger.safeLog('CURR PAGE : ${pagination.value.currentPage}');
+      // logger.safeLog('DATA LIST : ${dataList.length}');
+      if (dataList.isNotEmpty &&
+          pagination.value.currentPage! < dataList.length) {
+        loadNextPage();
+      }
+    }
+  }
+
+  loadNextPage() async {
+    isLoading.value = true;
+    animationController.repeat(reverse: true);
+    logger.safeLog("NEXT PAGE : ${((pagination.value.currentPage ?? 0) + 1)}");
+    doPrepareList(page: ((pagination.value.currentPage ?? 0) + 1), search: searchController.text);
+    isLoading.value = false;
+    update();
+  }
 
   setListHeaderColumn() {
     listColumnHeader.clear();
@@ -93,6 +139,8 @@ class PrintTicketPageController extends GetxController
   }
 
   doPrepareList({required int page, String? search}) async {
+    logger.safeLog("PAGE : ${page}");
+    logger.safeLog("SEARCH : ${search}");
     if (page > 0) {
       isLoadMore.value = true;
     } else {

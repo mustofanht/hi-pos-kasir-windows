@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
@@ -107,7 +106,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             // } else
             return Obx(
               () {
-                logger.safeLog('DATA LIST : ${controller.dataList.length}');
+                // logger.safeLog('DATA LIST : ${controller.dataList.length}');
                 if (controller.dataList.isNotEmpty) {
                   return GestureDetector(
                     onTap: () {
@@ -181,59 +180,62 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
     }
 
     Widget contentTableSection(PrintTicketPageController controller) {
-      return Expanded(
-        child: controller.isLoading.value
-            ? loading.simpleLoading()
-            : Container(
-                width: layoutStyle.screenWidth,
-                decoration: BoxDecoration(
-                  border: Border.all(width: 1, color: colorStyle.black),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(layoutStyle.defaultMargin / 5),
+      return Obx(
+        () => Expanded(
+          child: controller.isLoading.value
+              ? loading.simpleLoading()
+              : Container(
+                  width: layoutStyle.screenWidth,
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 1, color: colorStyle.black),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(layoutStyle.defaultMargin / 5),
+                    ),
+                    color: colorStyle.white,
                   ),
-                  color: colorStyle.white,
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                        child: RefreshIndicator(
-                          onRefresh: () async {
-                            await controller.doPrepareList(page: 0);
-                          },
-                          child: CustomScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            slivers: [
-                              SliverPersistentHeader(
-                                pinned: true,
-                                delegate: DataTableDelegate(
-                                  minHeight: 50.0,
-                                  maxHeight: 50.0,
-                                  child: Material(
-                                    color: colorStyle.lightGrey,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(
-                                        layoutStyle.defaultMargin / 5,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await controller.doPrepareList(page: 0);
+                            },
+                            child: CustomScrollView(
+                              controller: controller.scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              slivers: [
+                                SliverPersistentHeader(
+                                  pinned: true,
+                                  delegate: DataTableDelegate(
+                                    minHeight: 50.0,
+                                    maxHeight: 50.0,
+                                    child: Material(
+                                      color: colorStyle.lightGrey,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(
+                                          layoutStyle.defaultMargin / 5,
+                                        ),
+                                        topRight: Radius.circular(
+                                          layoutStyle.defaultMargin / 5,
+                                        ),
                                       ),
-                                      topRight: Radius.circular(
-                                        layoutStyle.defaultMargin / 5,
-                                      ),
+                                      child: headerSection(controller),
                                     ),
-                                    child: headerSection(controller),
                                   ),
                                 ),
-                              ),
-                              dataListSection(controller),
-                            ],
+                                dataListSection(controller),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+        ),
       );
     }
 
@@ -343,10 +345,10 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
     return GetBuilder<PrintTicketPageController>(
       init: controller,
       tag: 'PrintTicketPage',
-      initState: (state) {
-        controller.setListHeaderColumn();
-        controller.doPrepareList(page: 0);
-      },
+      // initState: (state) {
+      //   controller.setListHeaderColumn();
+      //   controller.doPrepareList(page: 0);
+      // },
       builder: (controller) {
         return controller.openDetail.value
             ? const PrintTicketDetailPage()

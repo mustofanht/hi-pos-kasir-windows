@@ -1,6 +1,7 @@
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
+import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 
 class OrderModel {
   String? orderName;
@@ -17,11 +18,12 @@ class OrderModel {
   List<OrderTicketModel> listTicket;
   List<OrderAddonModel> listProduct;
   List<OrderVoucherModel> listVoucher;
+  List<ResponseCreateTicketNoEntity>? listCreateTicket;
 
   OrderModel({
-     this.orderName,
-     this.orderPhoneNumber,
-     this.orderEmail,
+    this.orderName,
+    this.orderPhoneNumber,
+    this.orderEmail,
     this.orderReffno,
     this.qrCode,
     required this.orderTotalItem,
@@ -33,6 +35,7 @@ class OrderModel {
     required this.listTicket,
     required this.listProduct,
     required this.listVoucher,
+    this.listCreateTicket,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +58,9 @@ class OrderModel {
       listVoucher: json['listVoucher']
           .map((e) => OrderVoucherModel.fromJson(e))
           .toList(),
+      listCreateTicket: json['listCreateTicket']
+              .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
+              .toList(),
     );
   }
 
@@ -74,6 +80,9 @@ class OrderModel {
       "listTicket": listTicket.map((e) => e.toJson()).toList(),
       "listProduct": listProduct.map((e) => e.toJson()).toList(),
       "listVoucher": listVoucher.map((e) => e.toJson()).toList(),
+      "listCreateTicket": listCreateTicket == null
+          ? []
+          : listCreateTicket?.map((e) => e.toJson()).toList(),
     };
   }
 }

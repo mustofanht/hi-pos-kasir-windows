@@ -74,7 +74,7 @@ class OrderController extends GetxController {
     }
   }
 
-  Future<bool> _checkPaymentStatus() async {
+  Future<bool> _checkPaymentStatus(OrderModel body) async {
     try {
       bool isSuccess = false;
       var result = await _service.payment.paymentOrderSercvice.cekPaymnet(
@@ -91,6 +91,7 @@ class OrderController extends GetxController {
           logger.safeLog('Create Order Success');
           logger.safeLog(r.data?.toJson());
           isSuccess = r.data?.status == PaymentStatus.Success;
+          body.listCreateTicket = r.data?.listTicket;
         },
       );
       return isSuccess;
@@ -103,7 +104,7 @@ class OrderController extends GetxController {
 
   _handlePaymentCheck(OrderModel body) async {
     try {
-      var isSuccess = await _checkPaymentStatus();
+      var isSuccess = await _checkPaymentStatus(body);
       if (isSuccess) {
         Get.back();
         orderUtil.showPaymentSuccessAlert(body);
@@ -186,7 +187,9 @@ class OrderPaymentController extends GetxController {
           if (val != '') {
             body.orderReffno = val;
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
-            await createTicketNo(orderNo!.value!);
+            List<ResponseCreateTicketNoEntity> listCreateTicket =
+                await createTicketNo(orderNo!.value!);
+            body.listCreateTicket = listCreateTicket;
             Get.back();
             // await orderUtil.handleOnPrintOrder(body);
             orderUtil.showPaymentSuccessAlert(body);
@@ -251,8 +254,8 @@ class OrderPaymentController extends GetxController {
         },
         (r) {
           logger.safeLog('Create Ticket No Success');
-          logger.safeLog(r.data);
-          dataList = r.data!;
+          logger.safeLog(r);
+          dataList = r;
         },
       );
       return dataList;

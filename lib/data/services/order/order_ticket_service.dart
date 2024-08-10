@@ -39,8 +39,7 @@ class OrderTicketService {
     }
   }
 
-  Future<Either<String, BaseResponse<List<ResponseCreateTicketNoEntity>>>>
-      createTicketNo({
+  Future<Either<String, List<ResponseCreateTicketNoEntity>>> createTicketNo({
     required AuthToken authToken,
     String? reffNo,
   }) async {
@@ -61,17 +60,14 @@ class OrderTicketService {
     logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
-      BaseResponse<List<ResponseCreateTicketNoEntity>> result =
-          BaseResponse<List<ResponseCreateTicketNoEntity>>.fromJson(
-        json.decode(response.body),
-        (data) => common.fromJsonList(
-          data,
-          (item) => ResponseCreateTicketNoEntity.fromJson(
-            item,
-          ),
-        ),
-      );
-      logger.safeLog(result.data!);
+      List<dynamic> listTicketData =
+          json.decode(response.body)['data']['listTicket'];
+
+      List<ResponseCreateTicketNoEntity> result = listTicketData
+          .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
+          .toList();
+
+      logger.safeLog(result);
       return Right(result);
     } else {
       return Left(common.getMetadataMessages(response.body));
