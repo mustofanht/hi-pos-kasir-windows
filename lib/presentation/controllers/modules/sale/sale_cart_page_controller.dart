@@ -36,7 +36,7 @@ class SaleCartPageController extends GetxController {
       CartTicket(
         qtyOrder: ticket.ticketMinimum,
         ticket: ticket,
-        totalPrice: ticket.ticketPrice!,
+        totalPrice: (ticket.ticketMinimum ?? 0) * ticket.ticketPrice!,
       ),
     );
     calculateTotalOrder();
@@ -44,8 +44,8 @@ class SaleCartPageController extends GetxController {
 
   addTicketCart(CartTicket ticket) {
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
-    ticket.totalPrice =
-        (ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0);
+    ticket.totalPrice = (ticket.qtyOrder ?? 0) *
+        ((ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0));
     calculateTotalOrder();
   }
 

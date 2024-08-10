@@ -713,17 +713,24 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
         ),
         child: controller.isLoading.value
             ? loading.simpleLoading()
-            : SingleChildScrollView(
-                child: Column(
-                  children: controller.dataList
-                      .map((e) => cardSection(
-                          model: e,
-                          selectedCard: controller
-                                      .selectedData.value.orderNumber !=
-                                  null &&
-                              e.orderNumber ==
-                                  controller.selectedData.value.orderNumber))
-                      .toList(),
+            : RefreshIndicator(
+                onRefresh: () async {
+                  await controller.doPrepareList(page: 0);
+                },
+                child: SingleChildScrollView(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: controller.dataList
+                        .map((e) => cardSection(
+                            model: e,
+                            selectedCard: controller
+                                        .selectedData.value.orderNumber !=
+                                    null &&
+                                e.orderNumber ==
+                                    controller.selectedData.value.orderNumber))
+                        .toList(),
+                  ),
                 ),
               ),
       );
@@ -749,9 +756,9 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
     return GetBuilder(
       init: controller,
       tag: 'BuktiPembayaranPage',
-      initState: (state) {
-        controller.doPrepareList(page: 0);
-      },
+      // initState: (state) {
+      //   controller.doPrepareList(page: 0);
+      // },
       builder: (controller) {
         return Container(
           padding: EdgeInsets.all(layoutStyle.defaultMargin),

@@ -25,7 +25,7 @@ import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
-class BuktiPembayaranPageController extends GetxController {
+class BuktiPembayaranPageController extends GetxController with GetSingleTickerProviderStateMixin {
   BuktiPembayaranPageController();
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
@@ -39,8 +39,52 @@ class BuktiPembayaranPageController extends GetxController {
   final isLoadingDetail = false.obs;
   final visibleLoadMore = false.obs;
 
-  final scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
+  late AnimationController animationController;
+  
   final pagination = Pagination().obs;
+  
+  @override
+  void onInit() {
+    scrollController.addListener(_onScroll);
+    animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    doPrepareList(page: 0);
+
+    super.onInit();
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    animationController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      // logger.safeLog('CURR PAGE : ${pagination.value.currentPage}');
+      // logger.safeLog('DATA LIST : ${dataList.length}');
+      if (dataList.isNotEmpty &&
+          pagination.value.currentPage! < dataList.length) {
+        loadNextPage();
+      }
+    }
+  }
+
+  loadNextPage() async {
+    isLoading.value = true;
+    animationController.repeat(reverse: true);
+    logger.safeLog("NEXT PAGE : ${((pagination.value.currentPage ?? 0) + 1)}");
+    doPrepareList(page: ((pagination.value.currentPage ?? 0) + 1), search: searchController.text);
+    isLoading.value = false;
+    update();
+  }
 
   doSearch(String search) {
     dataList.clear();
@@ -64,6 +108,7 @@ class BuktiPembayaranPageController extends GetxController {
       Map<String, dynamic> param = {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+        'desc': 'orderDate',
       };
 
       dataFilter.add(
