@@ -29,7 +29,37 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
               ),
             )
           : model.orderNumber == null
-              ? Container()
+              ? Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        assetsConstant.imgEmptyBox,
+                        fit: BoxFit.fill,
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          return const Text('Img Not Found');
+                        },
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin,
+                      ),
+                      Text(
+                        'Data Empty',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin,
+                      ),
+                    ],
+                  ),
+                ),
+              )
               : Expanded(
                   child: Container(
                     width: layoutStyle.screenWidth,
@@ -711,28 +741,59 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             Radius.circular(10),
           ),
         ),
-        child: controller.isLoading.value
-            ? loading.simpleLoading()
-            : RefreshIndicator(
-                onRefresh: () async {
-                  await controller.doPrepareList(page: 0);
-                },
-                child: SingleChildScrollView(
-                  controller: controller.scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: controller.dataList
-                        .map((e) => cardSection(
-                            model: e,
-                            selectedCard: controller
-                                        .selectedData.value.orderNumber !=
-                                    null &&
-                                e.orderNumber ==
-                                    controller.selectedData.value.orderNumber))
-                        .toList(),
-                  ),
+        child: controller.dataList.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      assetsConstant.imgEmptyBox,
+                      fit: BoxFit.fill,
+                      errorBuilder: (BuildContext context, Object exception,
+                          StackTrace? stackTrace) {
+                        return const Text('Img Not Found');
+                      },
+                    ),
+                    SizedBox(
+                      height: layoutStyle.defaultMargin,
+                    ),
+                    Text(
+                      'Data Empty',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: fontSize.title,
+                        fontWeight: fontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      height: layoutStyle.defaultMargin,
+                    ),
+                  ],
                 ),
-              ),
+              )
+            : controller.isLoading.value
+                ? loading.simpleLoading()
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      await controller.doPrepareList(page: 0);
+                    },
+                    child: SingleChildScrollView(
+                      controller: controller.scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: controller.dataList
+                            .map((e) => cardSection(
+                                model: e,
+                                selectedCard:
+                                    controller.selectedData.value.orderNumber !=
+                                            null &&
+                                        e.orderNumber ==
+                                            controller.selectedData.value
+                                                .orderNumber))
+                            .toList(),
+                      ),
+                    ),
+                  ),
       );
     }
 

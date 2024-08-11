@@ -92,7 +92,7 @@ class OrderController extends GetxController {
           logger.safeLog('Create Order Success');
           logger.safeLog(r.data?.toJson());
           isSuccess = r.data?.status == PaymentStatus.Success;
-          body.listCreateTicket = r.data?.listTicket;
+          // body.listCreateTicket = r.data?.listTicket;
         },
       );
       return isSuccess;

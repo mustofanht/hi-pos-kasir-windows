@@ -151,6 +151,14 @@ class SettingPageController extends GetxController
         await printerUtil.disconnect(selected);
         await printerUtil.connect(selected);
         await printerUtil.stopSubscription();
+        selectedCurrPrinter.value = listPrinter.firstWhere(
+          (element) =>
+              element.id.toString() == printerUtil.currPrinter?.id.toString(),
+          orElse: () => CustomIdNameEntity(
+            id: null,
+            name: '--- Select Printer ---',
+          ),
+        );
       }
     } else {
       alert.error('Error', 'please select active printer');
@@ -158,6 +166,7 @@ class SettingPageController extends GetxController
   }
 
   doRefreshCustomerPage() {
+    displayUtil.showDisplay(selectedScreens.value.id);
     displayUtil.displayCustomer(null);
   }
 }
