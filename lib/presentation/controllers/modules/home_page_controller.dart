@@ -131,8 +131,9 @@ class HomePageController extends GetxController {
       dialog.dialogDelete(
         title: 'LOGOUT',
         msg: 'Apakah anda yakin akan logout?',
-        onYes: () {
-          logout();
+        onYes: () async {
+          await logout();
+          Get.back();
         },
       );
     } else {
