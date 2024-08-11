@@ -40,9 +40,12 @@
 // //   runApp(const CustomerMain());
 // // }
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
@@ -65,6 +68,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 }
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = MyHttpOverrides();
+  await GetStorage.init("sessions");
   runApp(MyApp());
 }
 
@@ -95,5 +101,14 @@ class MyApp extends StatelessWidget {
       fallbackLocale: const Locale('id', 'ID'),
       supportedLocales: const [Locale('id', 'ID')],
     );
+  }
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

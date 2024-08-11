@@ -16,7 +16,7 @@ import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 
 class AppCommon {
   globalInitialize() async {
-    await GetStorage.init("sessions");
+    // await GetStorage.init("sessions");
     await printerUtil.init();
     await printerUtil.connectPrinter();
     logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');

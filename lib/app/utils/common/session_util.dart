@@ -33,7 +33,8 @@ class AppSessionUtil {
       _store.remove(constant.authentication);
     }
 
-    logger.safeLog('JWT : ${JwtDecoder.decode(authToken.token ?? "")}');
+    logger.safeLog(
+        'JWT updateToken : ${JwtDecoder.decode(authToken.token ?? "")}');
     _store.write(constant.authentication, authToken.toJson());
   }
 
@@ -42,6 +43,9 @@ class AppSessionUtil {
     try {
       Map<String, dynamic> data = _store.read(constant.authentication);
       AuthToken authToken = AuthToken.fromJson(data);
+
+      logger.safeLog(
+          'JWT getUserName : ${JwtDecoder.decode(authToken.token ?? "")}');
 
       name = JwtDecoder.decode(authToken.token ?? "")['sub'];
     } catch (e) {
@@ -56,6 +60,9 @@ class AppSessionUtil {
       Map<String, dynamic> data = _store.read(constant.authentication);
       AuthToken authToken = AuthToken.fromJson(data);
 
+      logger.safeLog(
+          'JWT getUnitId : ${JwtDecoder.decode(authToken.token ?? "")}');
+
       unitId = JwtDecoder.decode(authToken.token ?? "")['user']['unitId'];
     } catch (e) {
       logger.safeLog(e);
@@ -69,6 +76,9 @@ class AppSessionUtil {
       Map<String, dynamic> data = _store.read(constant.authentication);
       AuthToken authToken = AuthToken.fromJson(data);
 
+      logger.safeLog(
+          'JWT getLocationId : ${JwtDecoder.decode(authToken.token ?? "")}');
+
       unitId = JwtDecoder.decode(authToken.token ?? "")['user']['locId'];
     } catch (e) {
       logger.safeLog(e);
@@ -81,6 +91,9 @@ class AppSessionUtil {
     try {
       Map<String, dynamic> data = _store.read(constant.authentication);
       AuthToken authToken = AuthToken.fromJson(data);
+
+      logger.safeLog(
+          'JWT getRoleId : ${JwtDecoder.decode(authToken.token ?? "")}');
 
       roleId = JwtDecoder.decode(authToken.token ?? "")['user']['roleId'];
     } catch (e) {
