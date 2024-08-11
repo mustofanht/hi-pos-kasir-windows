@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/presentation/bindings/modules/setting/setting_pag
 import 'package:jaya_propertiy/presentation/bindings/modules/shift/shift_page_binding.dart';
 import 'package:jaya_propertiy/presentation/views/auth/login_page.dart';
 import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/home_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_detail_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
@@ -27,6 +28,13 @@ import 'package:jaya_propertiy/presentation/views/modules/shift/shift_page.dart'
 
 class AppRoute {
   static final pages = [
+    GetPage(
+      name: RouteName.presentationPage,
+      page: () => const CustomerPage(),
+      curve: Curves.easeInOut,
+      transition: Transition.rightToLeftWithFade,
+      transitionDuration: const Duration(milliseconds: 1000),
+    ),
     GetPage(
       name: RouteName.splashPage,
       page: () => const SplashPage(),
@@ -153,6 +161,7 @@ class AppRoute {
 
 abstract class RouteName {
   static const splashPage = '/';
+  static const presentationPage = '/presentation';
   // static const slidePage = '/';
   static const homePage = '/home';
 

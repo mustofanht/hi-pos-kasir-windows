@@ -41,7 +41,12 @@
 // // }
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
+import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/app/utils/translation/app_translation.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -66,11 +71,29 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    // return const MaterialApp(
+    //   title: 'Jaya Propertiy',
+    //   debugShowCheckedModeBanner: false,
+    //   onGenerateRoute: generateRoute,
+    //   initialRoute: '/',
+    // );
+
+    return GetMaterialApp(
       title: 'Jaya Propertiy',
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: generateRoute,
-      initialRoute: '/',
+      getPages: AppRoute.pages,
+      initialRoute: RouteName.splashPage,
+      theme: theme.light(),
+      // darkTheme: theme.dark(),
+      translations: AppTranslation(),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: const Locale('id', 'ID'),
+      fallbackLocale: const Locale('id', 'ID'),
+      supportedLocales: const [Locale('id', 'ID')],
     );
   }
 }
