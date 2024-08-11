@@ -17,6 +17,7 @@ import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart'
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -111,7 +112,7 @@ class OrderController extends GetxController {
       var isSuccess = await _checkPaymentStatus(body);
       if (isSuccess) {
         Get.back();
-        orderUtil.showPaymentSuccessAlert(body, orderNo);
+        orderUtil.showPaymentSuccessAlert(_authToken, body, orderNo);
         // _showPaymentSuccessAlert(body);
         displayUtil.updateSecondDisplay(
           CustomerDisplay(
@@ -193,7 +194,7 @@ class OrderPaymentController extends GetxController {
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
             Get.back();
             // await orderUtil.handleOnPrintOrder(body);
-            orderUtil.showPaymentSuccessAlert(body, orderNo);
+            orderUtil.showPaymentSuccessAlert(_authToken, body, orderNo);
             alert.success('Success', 'Payment Success');
           } else {
             alert.error(
@@ -243,22 +244,25 @@ class OrderPaymentController extends GetxController {
 
 class OrderUtil {
   final _service = MainService();
-  final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
 
   showPaymentSuccessAlert(
+    AuthToken authToken,
     OrderModel body,
     Rxn<String>? orderNo,
   ) {
     dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
-      onSendProofOfPayment: () => _handleSendProofOfPayment(body),
-      onPrint: () => _handleOnPrintOrder(body, orderNo),
+      onSendProofOfPayment: () => _handleSendProofOfPayment(authToken, body),
+      onPrint: () => _handleOnPrintOrder(authToken, body, orderNo),
     );
   }
 
-  _handleSendProofOfPayment(OrderModel body) {
+  _handleSendProofOfPayment(
+    AuthToken authToken,
+    OrderModel body,
+  ) {
     Get.back();
     dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
@@ -267,7 +271,7 @@ class OrderUtil {
       onSendEmail: (val) {
         logger.safeLog('Email : ${val}');
         var result = _service.message.sendEmail(
-          authToken: _authToken,
+          authToken: authToken,
           phoneNumber: int.parse(val),
           message: 'Thanks For Order ${body.toJson()}',
         );
@@ -279,7 +283,7 @@ class OrderUtil {
       onSendWa: (val) {
         logger.safeLog('WA : ${val}');
         var result = _service.message.sendWa(
-          authToken: _authToken,
+          authToken: authToken,
           phoneNumber: int.parse(val),
           message: 'Thanks For Order ${body.toJson()}',
         );
@@ -301,6 +305,7 @@ class OrderUtil {
   }
 
   _handleOnPrintOrder(
+    AuthToken authToken,
     OrderModel body,
     Rxn<String>? orderNo,
   ) async {
@@ -326,6 +331,7 @@ class OrderUtil {
     if (orderNo?.value != null) {
       List<ResponseCreateTicketNoEntity> listCreateTicket =
           await createTicketNo(
+        authToken,
         orderNo!.value!,
       );
       body.listCreateTicket = listCreateTicket;
@@ -337,7 +343,7 @@ class OrderUtil {
       String locationName = "";
       String kasirName = "";
       UserEntity? user = await common.getUser(
-        authToken: _authToken,
+        authToken: authToken,
       );
       if (user != null) {
         locationName = user.locationName!;
@@ -405,12 +411,13 @@ class OrderUtil {
   }
 
   Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
+    AuthToken authToken,
     String orderNo,
   ) async {
     try {
       List<ResponseCreateTicketNoEntity> dataList = [];
       var result = await _service.order.orderService.createTicketNo(
-        authToken: _authToken,
+        authToken: authToken,
         reffNo: orderNo,
       );
 
