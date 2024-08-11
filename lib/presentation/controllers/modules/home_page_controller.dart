@@ -60,7 +60,7 @@ class HomePageController extends GetxController {
     // notificationUtil.initializeNotification();
     // notificationUtil.requestPermissions();
     // //
-    
+
     // notificationUtil.selectNotificationStream.stream
     //     .listen((String? payload) async {
     //   logger.safeLog('Payload : $payload');
@@ -132,8 +132,8 @@ class HomePageController extends GetxController {
         title: 'LOGOUT',
         msg: 'Apakah anda yakin akan logout?',
         onYes: () async {
-          await logout();
           Get.back();
+          await logout();
         },
       );
     } else {
