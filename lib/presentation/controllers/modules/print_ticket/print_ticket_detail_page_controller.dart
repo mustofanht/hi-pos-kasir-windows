@@ -1,23 +1,13 @@
 import 'package:either_dart/either.dart';
-import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/app_common.dart';
-import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
-import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
-import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
-import 'package:jaya_propertiy/data/models/order/order_model.dart';
-import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
-import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
-import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
@@ -176,106 +166,73 @@ class PrintTicketDetailPageController extends GetxController {
     return bodyMsg;
   }
 
-  doActiveTicket() {}
+  doActiveTicket() {
+    dialog.dialogCustomerLeftRight(
+      title: 'Aktivasi Tiket',
+      msg: 'Apakah anda yakin akan aktivasi?',
+      labelLeft: 'No',
+      labelRight: 'Yes',
+      onLeft: () {
+        Get.back();
+      },
+      onRight: () async {
+        try {
+          if (model.value.orderNumber != null) {
+            await createTicketNo(model.value.orderNumber!);
+            alert.success('Success', 'Berhasil Aktivasi Tiket');
+          } else {
+            alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+          }
+        } catch (e) {
+          logger.safeLog(e);
+          alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+        }
+      },
+    );
+  }
 
   doPrintTicket() async {
-    // // var printController = Get.put(PrintController());
-    // var printController = Get.find<PrintController>();
-    // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    // if (bluetoothIsEnabled) {
-    //   // var paymentPrintController = Get.put(PaymentPrintController());
-    //   // var gatePrintController = Get.put(GatePrintController());
-    //   // await printController.printPaymentTiket(
-    //   //   body,
-    //   //   paymentPrintController,
-    //   //   gatePrintController,
-    //   // );;
-    //   alert.warning('Warning', 'Action on under construction');
-    // } else {
-    //   alert.error('Error', 'bluetooth is off, please turn it on first');
-    // }
-    
-    // try {
-    //   if (printerUtil.currPrinter != null) {
-    //     String locationName = "";
-    //     UserEntity? user = await common.getUser(
-    //       authToken: _authToken,
-    //     );
-    //     if (user != null) {
-    //       locationName = user.locationName!;
-    //     }
+    try {
+      if (model.value.orderNumber != null) {
+        await createTicketNo(model.value.orderNumber!);
+      } else {
+        alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      }
+      List<ResponseCreateTicketNoEntity> listCreateTicket =
+          await createTicketNo(model.value.orderNumber!);
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+    }
+  }
 
-    //     List<OrderTicketModel> ticketList = detailModel.value.detailOrderModels!
-    //         .map(
-    //           (e) => OrderTicketModel(
-    //             totalTicket: e.quantity!,
-    //             totalAmount: e.total!,
-    //           ),
-    //         )
-    //         .toList();
-    //     List<OrderAddonModel> productList = detailModel.value.detailOrderModels!
-    //         .map(
-    //           (e) => OrderAddonModel(
-    //             ordadTotalAddon: e.quantity!,
-    //             ordadTotalAmount: e.total!,
-    //           ),
-    //         )
-    //         .toList();
-    //     List<OrderVoucherModel> voucherList =
-    //         detailModel.value.detailOrderModels!
-    //             .map(
-    //               (e) => OrderVoucherModel(
-    //                 ordvcTotalVoucher: e.quantity!,
-    //                 ordvcTotalAmount: e.total!,
-    //               ),
-    //             )
-    //             .toList();
+  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
+    String orderNo,
+  ) async {
+    try {
+      List<ResponseCreateTicketNoEntity> dataList = [];
+      var result = await _service.order.orderService.createTicketNo(
+        authToken: _authToken,
+        reffNo: orderNo,
+      );
 
-    //     OrderModel orderModel = OrderModel(
-    //       orderTotalItem: parentModel.value.orderTotalItem!,
-    //       orderTotalAmt: detailModel.value.orderTotalAmt!,
-    //       orderUnitId: 0,
-    //       orderLoacationId: 0,
-    //       orderPaidBy: detailModel.value.orderPaidBy!,
-    //       orderStatus: detailModel.value.orderStatus!,
-    //       listTicket: ticketList,
-    //       listProduct: productList,
-    //       listVoucher: voucherList,
-    //     );
-
-    //     List<int> data = [];
-    //     data = await generatePrintUtil.dataPaymentTiketPrint(
-    //       locationName: locationName,
-    //       paperSize: PaperSize.mm80,
-    //       body: orderModel,
-    //     );
-    //     if (orderModel.listCreateTicket != null) {
-    //       int count = 1;
-    //       int totalPak = orderModel.listCreateTicket!.length;
-    //       for (var element in orderModel.listCreateTicket!) {
-    //         List<int> dataPrint = await generatePrintUtil.dataGatePrint(
-    //           locationName: locationName,
-    //           paperSize: PaperSize.mm80,
-    //           reffNo: element.ticketNo!,
-    //           pakOf: count,
-    //           pakTotal: totalPak,
-    //           qrCode: element.ticketNo!,
-    //           expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
-    //           ticketName: element.ticketName,
-    //         );
-    //         data.addAll(dataPrint);
-    //         count++;
-    //       }
-    //     }
-
-    //     await printerUtil.print(printerUtil.currPrinter!, data);
-    //     Get.back();
-    //   } else {
-    //     alert.error('Error', 'please check connection printer');
-    //   }
-    // } catch (e) {
-    //   logger.safeLog(e);
-    //   alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
-    // }
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Ticket No Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Ticket No Success');
+          logger.safeLog(r);
+          dataList = r;
+        },
+      );
+      return dataList;
+    } catch (e) {
+      logger.safeLog('Create Ticket No Error 2');
+      logger.safeLog(e.toString());
+      return [];
+    }
   }
 }
