@@ -320,36 +320,36 @@ class SettingPage extends GetView<SettingPageController> {
                     SizedBox(
                       height: layoutStyle.defaultMargin,
                     ),
-                    CustomDropdownButton<CustomIdNameEntity>(
-                      height: layoutStyle.blockVertical * 6.5,
-                      items: controller.listScreens
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text("${e.name}"),
-                            ),
-                          )
-                          .toList(),
-                      value: controller.selectedScreens.value,
-                      label: Text(
-                        'List Screen Connect',
-                        style: textStyle.greyText.copyWith(
-                          fontSize: fontSize.small,
-                        ),
-                      ),
-                      border: Border.all(
-                        color: colorStyle.lightGrey,
-                        width: 1,
-                      ),
-                      margin: EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 4,
-                        horizontal: layoutStyle.defaultMargin,
-                      ),
-                      onChanged: (val) {
-                        controller.selectedCurrPrinter.value = val!;
-                        controller.update();
-                      },
-                    ),
+                    // CustomDropdownButton<CustomIdNameEntity>(
+                    //   height: layoutStyle.blockVertical * 6.5,
+                    //   items: controller.listScreens
+                    //       .map(
+                    //         (e) => DropdownMenuItem(
+                    //           value: e,
+                    //           child: Text("${e.name}"),
+                    //         ),
+                    //       )
+                    //       .toList(),
+                    //   value: controller.selectedScreens.value,
+                    //   label: Text(
+                    //     'List Screen Connect',
+                    //     style: textStyle.greyText.copyWith(
+                    //       fontSize: fontSize.small,
+                    //     ),
+                    //   ),
+                    //   border: Border.all(
+                    //     color: colorStyle.lightGrey,
+                    //     width: 1,
+                    //   ),
+                    //   margin: EdgeInsets.symmetric(
+                    //     vertical: layoutStyle.defaultMargin / 4,
+                    //     horizontal: layoutStyle.defaultMargin,
+                    //   ),
+                    //   onChanged: (val) {
+                    //     controller.selectedCurrPrinter.value = val!;
+                    //     controller.update();
+                    //   },
+                    // ),
                     CustomButton(
                       margin: EdgeInsets.symmetric(
                         vertical: layoutStyle.defaultMargin / 2,

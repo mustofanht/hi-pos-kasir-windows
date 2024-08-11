@@ -166,7 +166,7 @@ class SettingPageController extends GetxController
   }
 
   doRefreshCustomerPage() {
-    displayUtil.showDisplay(selectedScreens.value.id);
+    // displayUtil.showDisplay(selectedScreens.value.id);
     displayUtil.displayCustomer(null);
   }
 }
