@@ -199,7 +199,9 @@ class PrintTicketDetailPageController extends GetxController {
         alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
       }
       List<ResponseCreateTicketNoEntity> listCreateTicket =
-          await createTicketNo(model.value.orderNumber!);
+          await createTicketNo(
+        model.value.orderNumber!,
+      );
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');

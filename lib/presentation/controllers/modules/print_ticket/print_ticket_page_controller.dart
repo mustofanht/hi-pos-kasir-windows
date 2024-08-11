@@ -191,7 +191,7 @@ class PrintTicketPageController extends GetxController
         //   dataList.value = r.data!;
         // } else {
         // }
-        dataList.addAll(r.data);
+        dataList.assignAll(r.data);
         logger.safeLog('LENGHT DATA CEK ORDER : ${dataList.length}');
         pagination.value = r.pagination!;
         isLoading.value = false;
