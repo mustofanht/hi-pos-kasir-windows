@@ -41,6 +41,8 @@ class AppSessionUtil {
       Map<String, dynamic> data = _store.read(constant.authentication);
       AuthToken authToken = AuthToken.fromJson(data);
 
+      logger.safeLog('JWT : ${JwtDecoder.decode(authToken.token ?? "")}');
+
       name = JwtDecoder.decode(authToken.token ?? "")['sub'];
     } catch (e) {
       logger.safeLog(e);

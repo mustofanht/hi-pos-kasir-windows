@@ -1,4 +1,4 @@
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+// import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/domain/entities/common/ticket_days_entity.dart';
 
 class TicketEntity {
@@ -25,7 +25,7 @@ class TicketEntity {
   });
 
   TicketEntity.fromJson(Map<String, dynamic> json) {
-    try {
+    // try {
       ticketId = json['ticketId'];
       ticketName = json['ticketName'];
       ticketType = json['ticketType'];
@@ -38,9 +38,9 @@ class TicketEntity {
       ticketDays = json['ticketDays'] != null
           ? TicketDaysEntity.fromJson(json['ticketDays'])
           : null;
-    } catch (e) {
-      logger.safeLog('error $e');
-    }
+    // } catch (e) {
+    //   logger.safeLog('error $e');
+    // }
   }
   Map<String, dynamic> toJson() {
     return {

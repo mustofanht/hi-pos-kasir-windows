@@ -223,22 +223,24 @@ class AppCommon {
     final _service = MainService();
     try {
       var locId = sessionUtil.getLocationId();
-      List<PromoEntity> listData = [];
-      var result = await _service.promo.getPromoByLoc(
-        authToken: authToken,
-        locId: locId!,
-      );
-      result.fold((l) {
-        logger.safeLog(l);
-      }, (r) {
-        listData = r.data!;
-        if (listData.isNotEmpty) {
-          for (var element in listData) {
-            var imageUrl = element.prmPathImg!;
-            localStorage.downloadAndSaveImagePromo(imageUrl);
+      if (locId != null) {
+        var result = await _service.promo.getPromoByLoc(
+          authToken: authToken,
+          locId: locId,
+        );
+        result.fold((l) {
+          logger.safeLog(l);
+        }, (r) {
+          List<PromoEntity> listData = [];
+          listData = r.data!;
+          if (listData.isNotEmpty) {
+            for (var element in listData) {
+              var imageUrl = element.prmPathImg!;
+              localStorage.downloadAndSaveImagePromo(imageUrl);
+            }
           }
-        }
-      });
+        });
+      }
     } catch (e) {
       logger.safeLog(e);
     }

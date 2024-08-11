@@ -7,7 +7,6 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
-import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
@@ -31,7 +30,6 @@ class CustomerSaleCartPageController extends GetxController {
     addonList: addonList,
   ).obs;
 
-  List<Widget> sliders = [];
   List<File> images = [];
 
   // final showBarcode = RxBool(false);
@@ -52,32 +50,11 @@ class CustomerSaleCartPageController extends GetxController {
     await loadImages();
 
     logger.safeLog('IMAGE PROMO : ${images.length}');
-
-    sliders = images
-        .map(
-          (e) => Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: layoutStyle.defaultMargin / 5,
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-              child: Container(
-                width: double.infinity,
-                child: Image.file(
-                  e,
-                  fit: BoxFit.fill,
-                  // width: layoutStyle.screenWidth,
-                  // height: layoutStyle.screenHeight,
-                ),
-              ),
-            ),
-          ),
-        )
-        .toList();
+;
     update();
   }
 
-  updateDataCustomer(Object value) {
+  updateDataCustomer(Object value) async {
     qrCode.value = null;
     showPaymentSuccess.value = false;
 
@@ -100,6 +77,7 @@ class CustomerSaleCartPageController extends GetxController {
           }
         }
       }
+      await doPrepared();
     } catch (e) {
       logger.safeLog('error : ${e}');
     }

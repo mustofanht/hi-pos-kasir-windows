@@ -121,7 +121,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
-                            e.ticket!.ticketName ?? '',
+                            e.ticket != null ? e.ticket!.ticketName ?? '' : '',
                             style: TextStyle(
                               fontSize: fontSize.title,
                             ),

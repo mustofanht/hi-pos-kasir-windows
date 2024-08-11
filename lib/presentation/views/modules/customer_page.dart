@@ -47,7 +47,29 @@ class _CustomerPageState extends State<CustomerPage> {
               autoPlayInterval: const Duration(seconds: 5),
               slideIndicator: CircularWaveSlideIndicator(),
             ),
-            items: customerSaleCartPageController.sliders,
+            items: customerSaleCartPageController.images.map((e) {
+              logger.safeLog(e.path);
+              return Padding(
+                // padding: EdgeInsets.symmetric(
+                //   horizontal: layoutStyle.defaultMargin / 5,
+                // ),
+                padding: EdgeInsets.all(
+                  layoutStyle.defaultMargin / 20,
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                  child: Container(
+                    width: double.infinity,
+                    child: Image.file(
+                      e,
+                      fit: BoxFit.fill,
+                      // width: layoutStyle.screenWidth,
+                      // height: layoutStyle.screenHeight,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ),
       );

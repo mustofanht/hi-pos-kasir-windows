@@ -17,7 +17,7 @@ class CartTicket {
     return {
       "qtyOrder": qtyOrder,
       "totalPrice": totalPrice,
-      "ticket": ticket != null ? ticket!.toJson() : [],
+      "ticket": ticket?.toJson(),
     };
   }
 

@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
-import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/auth/sign_in_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
-import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
-import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:get/get.dart';
 
@@ -70,7 +69,8 @@ class LoginPageController extends GetxController {
           }
           sessionUtil.updateToken(r);
           // await notificationEngine.getPermission();
-          await getImagePromo(r);
+          await common.getImagePromo(r);
+          displayUtil.displayCustomer(null);
           Get.offAllNamed(
             RouteName.homePage,
             arguments: {
@@ -116,31 +116,5 @@ class LoginPageController extends GetxController {
       arguments: {},
     );
     alert.success("Success", "Welcome");
-  }
-
-  getImagePromo(AuthToken authToken) async {
-    try {
-      var locId = sessionUtil.getLocationId();
-      if (locId != null) {
-        var result = await _service.promo.getPromoByLoc(
-          authToken: authToken,
-          locId: locId,
-        );
-        result.fold((l) {
-          logger.safeLog(l);
-        }, (r) {
-          List<PromoEntity> listData = [];
-          listData = r.data!;
-          if (listData.isNotEmpty) {
-            for (var element in listData) {
-              var imageUrl = element.prmPathImg!;
-              localStorage.downloadAndSaveImagePromo(imageUrl);
-            }
-          }
-        });
-      }
-    } catch (e) {
-      logger.safeLog(e);
-    }
   }
 }
