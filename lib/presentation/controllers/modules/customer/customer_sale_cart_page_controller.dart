@@ -30,7 +30,8 @@ class CustomerSaleCartPageController extends GetxController {
     addonList: addonList,
   ).obs;
 
-  List<File> images = [];
+  // List<File> images = [];
+  final images = <File>[].obs;
 
   // final showBarcode = RxBool(false);
   final qrCode = Rxn<String>(null);

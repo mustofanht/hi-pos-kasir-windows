@@ -48,7 +48,7 @@ class _CustomerPageState extends State<CustomerPage> {
               slideIndicator: CircularWaveSlideIndicator(),
             ),
             items: customerSaleCartPageController.images.map((e) {
-              logger.safeLog(e.path);
+              logger.safeLog('PATH : ${e.path}');
               return Padding(
                 // padding: EdgeInsets.symmetric(
                 //   horizontal: layoutStyle.defaultMargin / 5,
@@ -155,28 +155,28 @@ class _CustomerPageState extends State<CustomerPage> {
       );
     }
 
-    return Obx(
-      () => Scaffold(
-        appBar: AppBar(
-          toolbarHeight: layoutStyle.blockVertical * 10,
-          backgroundColor: colorStyle.primary,
-          foregroundColor: colorStyle.white,
-          shadowColor: colorStyle.transparent,
-          elevation: layoutStyle.defaultMargin,
-          leadingWidth: 100,
-          title: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset(
-                assetsConstant.imgLogo,
-                width: layoutStyle.blockHorizontal * 15,
-                height: layoutStyle.blockVertical * 15,
-              ),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: layoutStyle.blockVertical * 10,
+        backgroundColor: colorStyle.primary,
+        foregroundColor: colorStyle.white,
+        shadowColor: colorStyle.transparent,
+        elevation: layoutStyle.defaultMargin,
+        leadingWidth: 100,
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.asset(
+              assetsConstant.imgLogo,
+              width: layoutStyle.blockHorizontal * 15,
+              height: layoutStyle.blockVertical * 15,
+            ),
+          ],
         ),
-        body: SecondaryDisplay(
+      ),
+      body: Obx(
+        () => SecondaryDisplay(
           callback: (dynamic argument) {
             logger.safeLog('Data From main display : ${argument}');
             customerSaleCartPageController.updateDataCustomer(argument);
