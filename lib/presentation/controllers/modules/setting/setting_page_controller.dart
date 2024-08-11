@@ -111,9 +111,10 @@ class SettingPageController extends GetxController
         ),
       );
     }
+    logger.safeLog('SELECT PRINTER : ${printerUtil.currPrinter?.toJson()}');
     selectedCurrPrinter.value = listPrinter.firstWhere(
       (element) =>
-          element.id.toString() == printerUtil.currPrinter?.id.toString(),
+          element.id.toString() == printerUtil.currPrinter?.vendorId.toString(),
       orElse: () => noneSelectedPrint,
     );
     update();
@@ -159,6 +160,7 @@ class SettingPageController extends GetxController
             name: '--- Select Printer ---',
           ),
         );
+        alert.error('Success', 'Set Printer Active');
       }
     } else {
       alert.error('Error', 'please select active printer');

@@ -22,4 +22,18 @@ class PrinterModel {
     this.typePrinter = PrinterType.bluetooth,
     this.isBle = false,
   });
+
+Map<String, dynamic> toJson() {
+  return {
+    'id': id,
+    'deviceName': deviceName,
+    'address': address,
+    'port': port,
+    'vendorId': vendorId,
+    'productId': productId,
+    'isBle': isBle,
+    'typePrinter': typePrinter.toString().split('.').last,
+    'state': state,
+  };
+}
 }
