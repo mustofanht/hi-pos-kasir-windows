@@ -47,12 +47,16 @@ class DisplayUtil {
     if (displays.isNotEmpty) {
       for (var element in displays) {
         String? id = element?.a;
-        logger.safeLog('Display ID : ${id}');
-        logger.safeLog('Display NAME : ${element?.d}');
-        if (id != 0) {
-          // await hideDisplay(id);
-          await showDisplay(id);
-          await transferData(val);
+        if (id != null) {
+          logger.safeLog('Display ID : ${id}');
+          logger.safeLog('Display NAME : ${element?.d}');
+          if (int.parse(id) != 0) {
+            // await hideDisplay(id);
+            await showDisplay(id);
+            await transferData(val);
+          }
+        } else {
+          logger.safeLog('ID DISPLAY NULL');
         }
       }
     }

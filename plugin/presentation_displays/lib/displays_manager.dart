@@ -110,6 +110,7 @@ class DisplayManager {
   /// return [Future<bool>] about the status has been display or not
   Future<bool?>? showSecondaryDisplay(
       {required String displayId, required String routerName}) {
+    print('displayId : ${displayId} - routerName : $routerName');
     return _displayMethodChannel?.invokeMethod<bool?>(
         _showPresentation,
         "{"

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -16,8 +15,6 @@ import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 
 class AppCommon {
   globalInitialize() async {
-    await displayUtil.displayCustomer(null);
-
     await printerUtil.init();
     await printerUtil.connectPrinter();
     logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');

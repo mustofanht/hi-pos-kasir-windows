@@ -20,6 +20,7 @@ class CustomerPage extends StatefulWidget {
 class _CustomerPageState extends State<CustomerPage> {
   @override
   void initState() {
+    logger.safeLog('CUSTOMER PAGE');
     super.initState();
     Get.put(CustomerSaleCartPageController());
   }

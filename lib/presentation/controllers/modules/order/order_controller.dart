@@ -53,7 +53,7 @@ class OrderController extends GetxController {
           qrCode: body.qrCode,
           msg:
               'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
-          onCheck: () => _handlePaymentCheck(body),
+          onCheck: () => _handlePaymentCheck(body, orderNo),
           onCancle: () {
             Get.back();
           },
@@ -63,7 +63,7 @@ class OrderController extends GetxController {
           title: 'Menunggu Pembayaran',
           msg:
               'Tagihan anda telah dibuat dan sekarang menunggu pembayaran.\nKami membuatnya mudah bagi anda untuk menyelesaikan\npembayaran dengan cepat',
-          onCheck: () => _handlePaymentCheck(body),
+          onCheck: () => _handlePaymentCheck(body, orderNo),
           onCancle: () {
             Get.back();
           },
@@ -103,12 +103,15 @@ class OrderController extends GetxController {
     }
   }
 
-  _handlePaymentCheck(OrderModel body) async {
+  _handlePaymentCheck(
+    OrderModel body,
+    Rxn<String>? orderNo,
+  ) async {
     try {
       var isSuccess = await _checkPaymentStatus(body);
       if (isSuccess) {
         Get.back();
-        orderUtil.showPaymentSuccessAlert(body);
+        orderUtil.showPaymentSuccessAlert(body, orderNo);
         // _showPaymentSuccessAlert(body);
         displayUtil.updateSecondDisplay(
           CustomerDisplay(
@@ -188,12 +191,9 @@ class OrderPaymentController extends GetxController {
           if (val != '') {
             body.orderReffno = val;
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
-            List<ResponseCreateTicketNoEntity> listCreateTicket =
-                await createTicketNo(orderNo!.value!);
-            body.listCreateTicket = listCreateTicket;
             Get.back();
             // await orderUtil.handleOnPrintOrder(body);
-            orderUtil.showPaymentSuccessAlert(body);
+            orderUtil.showPaymentSuccessAlert(body, orderNo);
             alert.success('Success', 'Payment Success');
           } else {
             alert.error(
@@ -209,8 +209,10 @@ class OrderPaymentController extends GetxController {
     }
   }
 
-  _doCreateOrderPayment(
-      {required OrderModel body, Rxn<String>? orderNo}) async {
+  _doCreateOrderPayment({
+    required OrderModel body,
+    Rxn<String>? orderNo,
+  }) async {
     try {
       var result;
       result = await _service.order.orderService.createOrder(
@@ -237,35 +239,6 @@ class OrderPaymentController extends GetxController {
       alert.error('Error', 'Terjadi Kesalahan!');
     }
   }
-
-  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
-      String orderNo) async {
-    try {
-      List<ResponseCreateTicketNoEntity> dataList = [];
-      var result = await _service.order.orderService.createTicketNo(
-        authToken: _authToken,
-        reffNo: orderNo,
-      );
-
-      result.fold(
-        (l) {
-          logger.safeLog(l);
-          logger.safeLog('Create Ticket No Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
-        },
-        (r) {
-          logger.safeLog('Create Ticket No Success');
-          logger.safeLog(r);
-          dataList = r;
-        },
-      );
-      return dataList;
-    } catch (e) {
-      logger.safeLog('Create Ticket No Error 2');
-      logger.safeLog(e.toString());
-      return [];
-    }
-  }
 }
 
 class OrderUtil {
@@ -273,12 +246,15 @@ class OrderUtil {
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
 
-  showPaymentSuccessAlert(OrderModel body) {
+  showPaymentSuccessAlert(
+    OrderModel body,
+    Rxn<String>? orderNo,
+  ) {
     dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
       onSendProofOfPayment: () => _handleSendProofOfPayment(body),
-      onPrint: () => _handleOnPrintOrder(body),
+      onPrint: () => _handleOnPrintOrder(body, orderNo),
     );
   }
 
@@ -324,7 +300,10 @@ class OrderUtil {
     Get.back();
   }
 
-  _handleOnPrintOrder(OrderModel body) async {
+  _handleOnPrintOrder(
+    OrderModel body,
+    Rxn<String>? orderNo,
+  ) async {
     // var printController = Get.put(PrintController());
     // var printController = Get.find<PrintController>();
     // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
@@ -343,6 +322,15 @@ class OrderUtil {
     // } else {
     //   alert.error('Error', 'bluetooth is off, please turn it on first');
     // }
+
+    if (orderNo?.value != null) {
+      List<ResponseCreateTicketNoEntity> listCreateTicket =
+          await createTicketNo(
+        orderNo!.value!,
+      );
+      body.listCreateTicket = listCreateTicket;
+    }
+
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
     printerUtil.connectPrinter();
     if (printerUtil.currPrinter != null) {
@@ -413,6 +401,36 @@ class OrderUtil {
     } else {
       alert.error('Error', 'please check connection printer');
       printerUtil.connectPrinter();
+    }
+  }
+
+  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
+    String orderNo,
+  ) async {
+    try {
+      List<ResponseCreateTicketNoEntity> dataList = [];
+      var result = await _service.order.orderService.createTicketNo(
+        authToken: _authToken,
+        reffNo: orderNo,
+      );
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Ticket No Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Ticket No Success');
+          logger.safeLog(r);
+          dataList = r;
+        },
+      );
+      return dataList;
+    } catch (e) {
+      logger.safeLog('Create Ticket No Error 2');
+      logger.safeLog(e.toString());
+      return [];
     }
   }
 

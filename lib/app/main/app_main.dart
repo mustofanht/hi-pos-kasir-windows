@@ -1,27 +1,10 @@
 import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/app/utils/translation/app_translation.dart';
-import 'package:jaya_propertiy/presentation/bindings/default/splash_page_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';
-import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
-
-Route<dynamic> generateRoute(RouteSettings settings) {
-  switch (settings.name) {
-    case '/':
-      return MaterialPageRoute(builder: (_) => const  SplashPage());
-    case 'presentation':
-      return MaterialPageRoute(builder: (_) => const CustomerPage());
-    default:
-      return MaterialPageRoute(
-          builder: (_) => Scaffold(
-                body: Center(
-                    child: Text('No route defined for ${settings.name}')),
-              ));
-  }
-}
 
 class AppMain extends StatefulWidget {
   const AppMain({super.key});
@@ -33,10 +16,7 @@ class AppMain extends StatefulWidget {
 class _AppMainState extends State<AppMain> {
   @override
   void initState() {
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    // ]);
+    logger.safeLog('APP MAIN');
     super.initState();
   }
 
@@ -46,10 +26,7 @@ class _AppMainState extends State<AppMain> {
       title: 'Jaya Propertiy',
       debugShowCheckedModeBanner: false,
       getPages: AppRoute.pages,
-      onGenerateRoute: generateRoute,
-      // home: const SlidePage(),
-      home: const SplashPage(),
-      initialBinding: SplashPageBinding(),
+      initialRoute: RouteName.splashPage,
       theme: theme.light(),
       // darkTheme: theme.dark(),
       translations: AppTranslation(),

@@ -63,6 +63,7 @@ class PresentationDisplaysPlugin() : FlutterPlugin, ActivityAware, MethodChannel
           val flutterEngine = createFlutterEngine(tag)
 
           if (display != null) {
+            Log.i(TAG, "Found display: ${display.displayId}, Name: ${display.name}")
             flutterEngine?.let {
               flutterEngineChannel = MethodChannel(it.dartExecutor.binaryMessenger, "${viewTypeId}_engine")
               val presentation = context?.let { it1 -> PresentationDisplay(it1, tag, display) }
@@ -71,6 +72,7 @@ class PresentationDisplaysPlugin() : FlutterPlugin, ActivityAware, MethodChannel
             } ?: result.error("404", "Can't find FlutterEngine", null)
 
           } else {
+            Log.e(TAG, "Display with ID $displayId not found")
             result.error("404", "Can't find display with displayId is $displayId", null)
           }
 

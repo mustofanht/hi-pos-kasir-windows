@@ -13,9 +13,9 @@ class SplashPage extends GetView<SplashPageController> {
     return GetBuilder(
       init: controller,
       tag: 'SplashPage',
-      initState: (state) {
-        controller.sessionCheck();
-      },
+      // initState: (state) {
+      //   controller.sessionCheck();
+      // },
       builder: (controller) {
         return Scaffold(
           body: SizedBox(
