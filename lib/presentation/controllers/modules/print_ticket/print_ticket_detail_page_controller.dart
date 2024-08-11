@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_e
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
@@ -176,6 +177,7 @@ class PrintTicketDetailPageController extends GetxController {
         Get.back();
       },
       onRight: () async {
+        Get.back();
         try {
           if (model.value.orderNumber != null) {
             await createTicketNo(model.value.orderNumber!);

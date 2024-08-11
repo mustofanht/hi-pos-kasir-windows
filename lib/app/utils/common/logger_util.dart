@@ -28,13 +28,13 @@ class AppLogerUtil {
   }
 
   Future<void> _writeLog(String message) async {
-    final file = await _getLogFile();
-    await file.writeAsString(message, mode: FileMode.append, flush: true);
+    // final file = await _getLogFile();
+    // await file.writeAsString(message, mode: FileMode.append, flush: true);
   }
 
   safeLog(dynamic message) async {
     if (kDebugMode) {
-      await _writeLog(message);
+      await _writeLog(message == null ? 'null' : message.toString());
       return Logger().d(message);
     } else {
       return null;
