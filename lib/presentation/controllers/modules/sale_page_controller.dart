@@ -197,39 +197,55 @@ class SalePageController extends GetxController
     List<OrderAddonModel> listProduct = [];
     List<OrderVoucherModel> listVoucher = [];
 
+    double totalTicketProduct = 0;
+
     if (ticketList.isNotEmpty) {
       listTicket.addAll(
         ticketList.map(
-          (element) => OrderTicketModel(
-            ticket: element.ticket,
-            ordtcTicketId: element.ticket?.ticketId,
-            totalTicket: element.qtyOrder!,
-            totalAmount: element.totalPrice!,
-          ),
+          (element) {
+            totalTicketProduct += element.totalPrice!;
+            return OrderTicketModel(
+              ticket: element.ticket,
+              ordtcTicketId: element.ticket?.ticketId,
+              totalTicket: element.qtyOrder!,
+              totalAmount: element.totalPrice!,
+            );
+          },
         ),
       );
     }
     if (addonList.isNotEmpty) {
       listProduct.addAll(
         addonList.map(
-          (element) => OrderAddonModel(
-            addOn: element.addon,
-            ordadAddonId: element.addon?.productId,
-            ordadTotalAddon: element.qtyOrder!,
-            ordadTotalAmount: element.totalPrice!,
-          ),
+          (element) {
+            totalTicketProduct += element.totalPrice!;
+            return OrderAddonModel(
+              addOn: element.addon,
+              ordadAddonId: element.addon?.productId,
+              ordadTotalAddon: element.qtyOrder!,
+              ordadTotalAmount: element.totalPrice!,
+            );
+          },
         ),
       );
     }
     if (voucherList.isNotEmpty) {
       listVoucher.addAll(
         voucherList.map(
-          (element) => OrderVoucherModel(
-            voucher: element.voucher,
-            ordvcVoucherId: element.voucher?.voucherId,
-            ordvcTotalVoucher: element.qtyOrder!,
-            ordvcTotalAmount: element.totalPrice!,
-          ),
+          (element) {
+            double totalVouceher = element.totalPrice!;
+            if (element.voucher != null &&
+                element.voucher?.voucherUnitType == UnitType.PERCENT) {
+              totalVouceher =
+                  (totalTicketProduct * (element.totalPrice ?? 0) / 100);
+            }
+            return OrderVoucherModel(
+              voucher: element.voucher,
+              ordvcVoucherId: element.voucher?.voucherId,
+              ordvcTotalVoucher: element.qtyOrder!,
+              ordvcTotalAmount: totalVouceher,
+            );
+          },
         ),
       );
     }
@@ -239,8 +255,7 @@ class SalePageController extends GetxController
           orderNameController.text.isEmpty ? null : orderNameController.text,
       orderPhoneNumber:
           noWaController.text.isEmpty ? null : noWaController.text,
-      orderEmail:
-          emailController.text.isEmpty ? null : emailController.text,
+      orderEmail: emailController.text.isEmpty ? null : emailController.text,
       orderReffno: null,
       orderTotalItem: totalOrderQty.value,
       orderTotalAmt: totalOrderAmnt.value,
