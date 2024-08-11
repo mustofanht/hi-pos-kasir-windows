@@ -425,39 +425,39 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                           ],
                                         ),
                                       ),
-                                      Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin / 2),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  'Voucher:',
-                                                  style: TextStyle(
-                                                    fontSize: fontSize.body,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    layoutStyle.defaultMargin /
-                                                        2,
-                                              ),
-                                              child: Text(
-                                                'Not Set Yet',
-                                                style: TextStyle(
-                                                  fontSize: fontSize.body,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      // Padding(
+                                      //   padding: EdgeInsets.all(
+                                      //       layoutStyle.defaultMargin / 2),
+                                      //   child: Row(
+                                      //     children: [
+                                      //       Expanded(
+                                      //         child: Align(
+                                      //           alignment:
+                                      //               Alignment.centerRight,
+                                      //           child: Text(
+                                      //             'Voucher:',
+                                      //             style: TextStyle(
+                                      //               fontSize: fontSize.body,
+                                      //             ),
+                                      //           ),
+                                      //         ),
+                                      //       ),
+                                      //       Padding(
+                                      //         padding: EdgeInsets.symmetric(
+                                      //           horizontal:
+                                      //               layoutStyle.defaultMargin /
+                                      //                   2,
+                                      //         ),
+                                      //         child: Text(
+                                      //           'Not Set Yet',
+                                      //           style: TextStyle(
+                                      //             fontSize: fontSize.body,
+                                      //           ),
+                                      //         ),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
                                       Padding(
                                         padding: EdgeInsets.all(
                                             layoutStyle.defaultMargin / 2),
@@ -775,7 +775,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                 ? loading.simpleLoading()
                 : RefreshIndicator(
                     onRefresh: () async {
-                      await controller.doPrepareList(page: 0);
+                      await controller.doRefresh();
                     },
                     child: SingleChildScrollView(
                       controller: controller.scrollController,

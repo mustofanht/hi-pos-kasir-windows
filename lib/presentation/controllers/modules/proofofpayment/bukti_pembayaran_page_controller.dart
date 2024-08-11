@@ -46,14 +46,14 @@ class BuktiPembayaranPageController extends GetxController
   final pagination = Pagination().obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     scrollController.addListener(_onScroll);
     animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
-    doPrepareList(page: 0);
+    await doRefresh();
 
     super.onInit();
   }
@@ -93,6 +93,13 @@ class BuktiPembayaranPageController extends GetxController
     dataList.clear();
     detailModel.value = TrnDetailOrderEntity();
     doPrepareList(page: 0, search: search);
+    update();
+  }
+
+  doRefresh() {
+    dataList.clear();
+    detailModel.value = TrnDetailOrderEntity();
+    doPrepareList(page: 0);
     update();
   }
 
@@ -159,11 +166,12 @@ class BuktiPembayaranPageController extends GetxController
         isLoading.value = false;
         isLoadMore.value = false;
       }, (r) {
-        if (page == 0) {
-          dataList.value = r.data!;
-        } else {
-          dataList.addAll(r.data!);
-        }
+        // if (page == 0) {
+        //   dataList.value = r.data!;
+        // } else {
+        //   dataList.addAll(r.data!);
+        // }
+        dataList.addAll(r.data!);
         pagination.value = r.pagination!;
         isLoading.value = false;
         isLoadMore.value = false;
