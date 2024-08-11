@@ -32,6 +32,8 @@ class AppSessionUtil {
     if (_store.read(constant.authentication) != null) {
       _store.remove(constant.authentication);
     }
+
+    logger.safeLog('JWT : ${JwtDecoder.decode(authToken.token ?? "")}');
     _store.write(constant.authentication, authToken.toJson());
   }
 
@@ -40,8 +42,6 @@ class AppSessionUtil {
     try {
       Map<String, dynamic> data = _store.read(constant.authentication);
       AuthToken authToken = AuthToken.fromJson(data);
-
-      logger.safeLog('JWT : ${JwtDecoder.decode(authToken.token ?? "")}');
 
       name = JwtDecoder.decode(authToken.token ?? "")['sub'];
     } catch (e) {

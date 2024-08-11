@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/app/utils/translation/app_translation.dart';
@@ -20,6 +21,7 @@ class _AppMainState extends State<AppMain> {
   @override
   void initState() {
     logger.safeLog('APP MAIN');
+    common.globalInitialize();
     super.initState();
   }
 

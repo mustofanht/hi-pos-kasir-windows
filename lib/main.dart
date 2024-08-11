@@ -39,6 +39,7 @@
 // //   logger.safeLog('load second display');
 // //   runApp(const CustomerMain());
 // // }
+
 import 'package:flutter/material.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
@@ -58,7 +59,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   }
 }
 
-void main() {
+Future<void> main() async {
   runApp(MyApp());
 }
 

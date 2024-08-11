@@ -63,7 +63,7 @@ class LoginPageController extends GetxController {
             });
           }
         }, (r) async {
-          isLoading.value = false;
+          isLoading.value = true;
           if (isSaved.value) {
             sessionUtil.save(requestData);
           }
