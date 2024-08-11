@@ -814,38 +814,38 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             Radius.circular(10),
           ),
         ),
-        child: controller.dataList.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      assetsConstant.imgEmptyBox,
-                      fit: BoxFit.fill,
-                      errorBuilder: (BuildContext context, Object exception,
-                          StackTrace? stackTrace) {
-                        return const Text('Img Not Found');
-                      },
+        child: controller.isLoading.value
+            ? loading.simpleLoading()
+            : controller.dataList.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          assetsConstant.imgEmptyBox,
+                          fit: BoxFit.fill,
+                          errorBuilder: (BuildContext context, Object exception,
+                              StackTrace? stackTrace) {
+                            return const Text('Img Not Found');
+                          },
+                        ),
+                        SizedBox(
+                          height: layoutStyle.defaultMargin,
+                        ),
+                        Text(
+                          'Data Empty',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: fontSize.title,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(
+                          height: layoutStyle.defaultMargin,
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      height: layoutStyle.defaultMargin,
-                    ),
-                    Text(
-                      'Data Empty',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: fontSize.title,
-                        fontWeight: fontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      height: layoutStyle.defaultMargin,
-                    ),
-                  ],
-                ),
-              )
-            : controller.isLoading.value
-                ? loading.simpleLoading()
+                  )
                 : RefreshIndicator(
                     onRefresh: () async {
                       await controller.doRefresh();
