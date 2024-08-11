@@ -34,15 +34,15 @@ class PrintTicketPageController extends GetxController
   final visibleLoadMore = false.obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     scrollController.addListener(_onScroll);
     animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
-    setListHeaderColumn();
-    doPrepareList(page: 0);
+    await setListHeaderColumn();
+    await doRefresh();
 
     super.onInit();
   }
@@ -71,7 +71,9 @@ class PrintTicketPageController extends GetxController
     isLoading.value = true;
     animationController.repeat(reverse: true);
     logger.safeLog("NEXT PAGE : ${((pagination.value.currentPage ?? 0) + 1)}");
-    doPrepareList(page: ((pagination.value.currentPage ?? 0) + 1), search: searchController.text);
+    doPrepareList(
+        page: ((pagination.value.currentPage ?? 0) + 1),
+        search: searchController.text);
     isLoading.value = false;
     update();
   }
@@ -138,6 +140,13 @@ class PrintTicketPageController extends GetxController
     update();
   }
 
+  doRefresh() async {
+    setListHeaderColumn();
+    dataList.clear();
+    await doPrepareList(page: 0);
+    update();
+  }
+
   doPrepareList({required int page, String? search}) async {
     logger.safeLog("PAGE : ${page}");
     logger.safeLog("SEARCH : ${search}");
@@ -178,11 +187,12 @@ class PrintTicketPageController extends GetxController
         isLoading.value = false;
         isLoadMore.value = false;
       }, (r) {
-        if (page == 0) {
-          dataList.value = r.data!;
-        } else {
-          dataList.assignAll(r.data!);
-        }
+        // if (page == 0) {
+        //   dataList.value = r.data!;
+        // } else {
+        // }
+        dataList.addAll(r.data);
+        logger.safeLog('LENGHT DATA CEK ORDER : ${dataList.length}');
         pagination.value = r.pagination!;
         isLoading.value = false;
         isLoadMore.value = false;

@@ -200,7 +200,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                           padding: EdgeInsets.all(layoutStyle.defaultMargin),
                           child: RefreshIndicator(
                             onRefresh: () async {
-                              await controller.doPrepareList(page: 0);
+                              await controller.doRefresh();
                             },
                             child: CustomScrollView(
                               controller: controller.scrollController,

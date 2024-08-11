@@ -251,11 +251,11 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
               )
             : Row(
                 children: [
-                  Checkbox(
-                    fillColor: MaterialStatePropertyAll(colorStyle.blue),
-                    value: controller.selectAll.value,
-                    onChanged: (value) => controller.toggleSelectAll(value),
-                  ),
+                  // Checkbox(
+                  //   fillColor: MaterialStatePropertyAll(colorStyle.blue),
+                  //   value: controller.selectAll.value,
+                  //   onChanged: (value) => controller.toggleSelectAll(value),
+                  // ),
                   ...controller.detailListColumnHeader.map((element) {
                     return element.width != null
                         ? Container(
@@ -316,16 +316,16 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                     ),
                     child: Row(
                       children: [
-                        Checkbox(
-                          fillColor: MaterialStatePropertyAll(colorStyle.blue),
-                          value: controller.selected.contains(
-                            controller.model.value.detailOrderModels![index],
-                          ),
-                          onChanged: (value) => controller.toggleSelect(
-                            controller.model.value.detailOrderModels![index],
-                            value,
-                          ),
-                        ),
+                        // Checkbox(
+                        //   fillColor: MaterialStatePropertyAll(colorStyle.blue),
+                        //   value: controller.selected.contains(
+                        //     controller.model.value.detailOrderModels![index],
+                        //   ),
+                        //   onChanged: (value) => controller.toggleSelect(
+                        //     controller.model.value.detailOrderModels![index],
+                        //     value,
+                        //   ),
+                        // ),
                         ...controller.detailListColumnHeader.map((element) {
                           String val = controller
                               .model.value.detailOrderModels![index]
