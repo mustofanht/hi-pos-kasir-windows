@@ -45,6 +45,7 @@ class SaleAddonPageController extends GetxController {
       Map<String, dynamic> param = {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+        'flMobile': 'Y',
         'locationId': sessionUtil.getLocationId().toString(),
       };
 

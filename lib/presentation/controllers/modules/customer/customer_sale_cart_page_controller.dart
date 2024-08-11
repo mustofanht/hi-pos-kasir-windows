@@ -77,7 +77,6 @@ class CustomerSaleCartPageController extends GetxController {
           }
         }
       }
-      await doPrepared();
     } catch (e) {
       logger.safeLog('error : ${e}');
     }
