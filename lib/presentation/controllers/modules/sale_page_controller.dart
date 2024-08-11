@@ -198,12 +198,14 @@ class SalePageController extends GetxController
     List<OrderVoucherModel> listVoucher = [];
 
     double totalTicketProduct = 0;
+    int totalTotalTicketProduct = 0;
 
     if (ticketList.isNotEmpty) {
       listTicket.addAll(
         ticketList.map(
           (element) {
             totalTicketProduct += element.totalPrice!;
+            totalTotalTicketProduct += element.qtyOrder??0;
             return OrderTicketModel(
               ticket: element.ticket,
               ordtcTicketId: element.ticket?.ticketId,
@@ -219,6 +221,7 @@ class SalePageController extends GetxController
         addonList.map(
           (element) {
             totalTicketProduct += element.totalPrice!;
+            totalTotalTicketProduct += element.qtyOrder??0;
             return OrderAddonModel(
               addOn: element.addon,
               ordadAddonId: element.addon?.productId,
@@ -257,7 +260,8 @@ class SalePageController extends GetxController
           noWaController.text.isEmpty ? null : noWaController.text,
       orderEmail: emailController.text.isEmpty ? null : emailController.text,
       orderReffno: null,
-      orderTotalItem: totalOrderQty.value,
+      orderTotalItem: totalTotalTicketProduct,
+      // orderTotalItem: totalOrderQty.value,
       orderTotalAmt: totalOrderAmnt.value,
       orderUnitId: sessionUtil.getUnitId()!,
       orderLoacationId: 1,

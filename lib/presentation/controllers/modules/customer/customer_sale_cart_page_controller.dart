@@ -80,6 +80,7 @@ class CustomerSaleCartPageController extends GetxController {
     } catch (e) {
       logger.safeLog('error : ${e}');
     }
+    await loadImages();
     update();
   }
 

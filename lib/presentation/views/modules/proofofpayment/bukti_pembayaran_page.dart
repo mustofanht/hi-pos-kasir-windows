@@ -419,7 +419,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                                           ],
                                                         ),
                                                         Text(
-                                                          '- Rp.${common.currencyFormat(e.voucherUnitValue ?? 0)}',
+                                                          '- Rp.${common.currencyFormat(e.voucherUnitCalcValue ?? 0)}',
                                                           style: TextStyle(
                                                             fontSize:
                                                                 fontSize.body,

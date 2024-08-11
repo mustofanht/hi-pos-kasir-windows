@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -92,6 +93,13 @@ class ShiftPageController extends GetxController {
           OPERATOR_CONSTANTS.IS_NOT_NULL,
         )!,
       );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'shftUserid',
+          OPERATOR_CONSTANTS.EQUALS,
+          sessionUtil.getUserName(),
+        )!,
+      );
 
       result = await _service.shift.getAll(
         authToken: _authToken,
@@ -138,6 +146,13 @@ class ShiftPageController extends GetxController {
           'shftEnd',
           OPERATOR_CONSTANTS.EQUALS,
           OPERATOR_CONSTANTS.IS_NULL,
+        )!,
+      );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'shftUserid',
+          OPERATOR_CONSTANTS.EQUALS,
+          sessionUtil.getUserName(),
         )!,
       );
 

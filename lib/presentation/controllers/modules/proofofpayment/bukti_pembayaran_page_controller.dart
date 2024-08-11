@@ -249,7 +249,7 @@ class BuktiPembayaranPageController extends GetxController
 
   doPrintTicket() async {
     try {
-      // if (printerUtil.currPrinter != null) {
+      if (printerUtil.currPrinter != null) {
       String locationName = "";
       UserEntity? user = await common.getUser(
         authToken: _authToken,
@@ -261,20 +261,20 @@ class BuktiPembayaranPageController extends GetxController
       List<OrderTicketModel> ticketList =
           detailModel.value.detailOrderModels == null
               ? []
-              : detailModel.value.detailOrderModels!
+              : detailModel.value.trnOrderTicket!
                   .map(
                     (e) => OrderTicketModel(
-                      totalTicket: e.quantity!,
-                      totalAmount: e.total!,
+                      totalTicket: e.ticketQty!,
+                      totalAmount: e.ticketTtlAmount!,
                       ticket: TicketEntity(
-                        ticketName: e.productName,
-                        ticketPrice: e.total,
+                        ticketName: e.ticketName,
+                        ticketPrice: e.ticketPrice,
                       ),
                     ),
                   )
                   .toList();
       List<OrderAddonModel> productList =
-          detailModel.value.detailOrderModels == null
+          detailModel.value.trnOrderItem == null
               ? []
               : detailModel.value.detailOrderModels!
                   .map(
@@ -283,7 +283,7 @@ class BuktiPembayaranPageController extends GetxController
                       ordadTotalAmount: e.total!,
                       addOn: AddonEntity(
                         productName: e.productName,
-                        productPrice: e.total,
+                        productPrice: e.price,
                       ),
                     ),
                   )
@@ -333,10 +333,10 @@ class BuktiPembayaranPageController extends GetxController
 
       await printerUtil.print(printerUtil.currPrinter!, data);
       Get.back();
-      // } else {
-      //   alert.error('Error', 'please check connection printer');
-      //   printerUtil.connectPrinter();
-      // }
+      } else {
+        alert.error('Error', 'please check connection printer');
+        printerUtil.connectPrinter();
+      }
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');

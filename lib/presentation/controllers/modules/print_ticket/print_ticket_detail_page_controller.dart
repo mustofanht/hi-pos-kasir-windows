@@ -1,17 +1,23 @@
 import 'package:either_dart/either.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
-import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
@@ -181,6 +187,7 @@ class PrintTicketDetailPageController extends GetxController {
         try {
           if (model.value.orderNumber != null) {
             await createTicketNo(model.value.orderNumber!);
+            await doPrepared();
             alert.success('Success', 'Berhasil Aktivasi Tiket');
           } else {
             alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
@@ -193,17 +200,64 @@ class PrintTicketDetailPageController extends GetxController {
     );
   }
 
+  doVerifiedPrintTicket() {
+    bool isValid = true;
+    if (model.value.paymentDetail?.pymntStatus != 'P' &&
+        model.value.orderStatus != 'C') {
+      alert.warning('Warning', 'Tidak bisa melakukan Print Tiket');
+    }
+    return isValid;
+  }
+
   doPrintTicket() async {
     try {
-      if (model.value.orderNumber != null) {
-        await createTicketNo(model.value.orderNumber!);
-      } else {
-        alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      if (doVerifiedPrintTicket()) {
+        if (printerUtil.currPrinter != null) {
+          List<ResponseCreateTicketNoEntity> listCreateTicket = [];
+          if (model.value.orderNumber != null) {
+            listCreateTicket = await createTicketNo(model.value.orderNumber!);
+          } else {
+            alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+            return;
+          }
+
+          String locationName = "";
+          UserEntity? user = await common.getUser(
+            authToken: _authToken,
+          );
+          if (user != null) {
+            locationName = user.locationName!;
+          }
+
+          List<int> data = [];
+          if (listCreateTicket.isNotEmpty) {
+            int count = 1;
+            int totalPak = listCreateTicket.length;
+            String reffNo = model.value.orderNumber ?? '';
+            for (var element in listCreateTicket) {
+              // String reffNo = element.ticketNo ?? '';
+              List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+                locationName: locationName,
+                paperSize: PaperSize.mm80,
+                reffNo: reffNo,
+                pakOf: count,
+                pakTotal: totalPak,
+                qrCode: element.ticketNo!,
+                expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+                ticketName: element.ticketName,
+              );
+              data.addAll(dataPrint);
+              count++;
+            }
+            await printerUtil.print(printerUtil.currPrinter!, data);
+          } else {
+            alert.error('Error', 'Data Empty');
+          }
+        } else {
+          alert.error('Error', 'please check connection printer');
+          printerUtil.connectPrinter();
+        }
       }
-      List<ResponseCreateTicketNoEntity> listCreateTicket =
-          await createTicketNo(
-        model.value.orderNumber!,
-      );
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');

@@ -1,6 +1,8 @@
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_customer.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_item.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_payment.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ticket.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_voucher.dart';
 
 class TrnDetailOrderEntity {
@@ -18,7 +20,9 @@ class TrnDetailOrderEntity {
   dynamic ppn;
   TrnDetailOrderCustomer? customerDetail;
   List<TrnDetailOrder>? detailOrderModels;
+  List<TrnDetailOrderTicket>? trnOrderTicket;
   List<TrnDetailOrderVoucher>? trnOrderVouchers;
+  List<TrnDetailOrderItem>? trnOrderItem;
   TrnDetailOrderPayment? paymentDetail;
 
   TrnDetailOrderEntity({
@@ -36,7 +40,9 @@ class TrnDetailOrderEntity {
     this.ppn,
     this.customerDetail,
     this.detailOrderModels,
+    this.trnOrderTicket,
     this.trnOrderVouchers,
+    this.trnOrderItem,
     this.paymentDetail,
   });
 
@@ -70,9 +76,19 @@ class TrnDetailOrderEntity {
               .map((i) => TrnDetailOrder.fromJson(i))
               .toList()
           : null,
+      trnOrderTicket: json['trnOrderTicket'] != null
+          ? (json['trnOrderTicket'] as List)
+              .map((i) => TrnDetailOrderTicket.fromJson(i))
+              .toList()
+          : null,
       trnOrderVouchers: json['trnOrderVouchers'] != null
           ? (json['trnOrderVouchers'] as List)
               .map((i) => TrnDetailOrderVoucher.fromJson(i))
+              .toList()
+          : null,
+      trnOrderItem: json['trnOrderItem'] != null
+          ? (json['trnOrderItem'] as List)
+              .map((i) => TrnDetailOrderItem.fromJson(i))
               .toList()
           : null,
       paymentDetail: json['paymentDetail'] != null
@@ -97,7 +113,9 @@ class TrnDetailOrderEntity {
       'ppn': ppn,
       'customerDetail': customerDetail?.toJson(),
       'detailOrderModels': detailOrderModels?.map((e) => e.toJson()).toList(),
+      'trnOrderTicket': trnOrderTicket?.map((e) => e.toJson()).toList(),
       'trnOrderVouchers': trnOrderVouchers?.map((e) => e.toJson()).toList(),
+      'trnOrderItem': trnOrderItem?.map((e) => e.toJson()).toList(),
       'paymentDetail': paymentDetail?.toJson(),
     };
   }
