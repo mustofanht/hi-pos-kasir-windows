@@ -190,6 +190,8 @@ class OrderPaymentController extends GetxController {
           // create Order and waiting the prosess of payment
           logger.safeLog('val : $val');
           if (val != '') {
+            Get.back();
+            loading.popUpLoading();
             body.orderReffno = val;
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
             Get.back();
@@ -397,12 +399,13 @@ class OrderUtil {
         }
       }
 
+      Get.back();
+      loading.popUpLoading();
       await printerUtil.print(printerUtil.currPrinter!, data);
       await doRefreshCustomerDisplay(
         paymentMethod: PaymentMethod.QRIS,
       );
       await clearOrder();
-
       Get.back();
     } else {
       alert.error('Error', 'please check connection printer');
