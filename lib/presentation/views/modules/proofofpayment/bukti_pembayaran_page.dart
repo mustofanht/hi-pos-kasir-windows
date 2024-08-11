@@ -30,36 +30,36 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             )
           : model.orderNumber == null
               ? Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        assetsConstant.imgEmptyBox,
-                        fit: BoxFit.fill,
-                        errorBuilder: (BuildContext context, Object exception,
-                            StackTrace? stackTrace) {
-                          return const Text('Img Not Found');
-                        },
-                      ),
-                      SizedBox(
-                        height: layoutStyle.defaultMargin,
-                      ),
-                      Text(
-                        'Data Empty',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: fontSize.title,
-                          fontWeight: fontWeight.bold,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          assetsConstant.imgEmptyBox,
+                          fit: BoxFit.fill,
+                          errorBuilder: (BuildContext context, Object exception,
+                              StackTrace? stackTrace) {
+                            return const Text('Img Not Found');
+                          },
                         ),
-                      ),
-                      SizedBox(
-                        height: layoutStyle.defaultMargin,
-                      ),
-                    ],
+                        SizedBox(
+                          height: layoutStyle.defaultMargin,
+                        ),
+                        Text(
+                          'Data Empty',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: fontSize.title,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(
+                          height: layoutStyle.defaultMargin,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              )
+                )
               : Expanded(
                   child: Container(
                     width: layoutStyle.screenWidth,
@@ -303,62 +303,135 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                   padding:
                                       EdgeInsets.all(layoutStyle.defaultMargin),
                                   child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: model.detailOrderModels == null
-                                        ? []
-                                        : model.detailOrderModels!
-                                            .map(
-                                              (e) => Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: layoutStyle
-                                                            .defaultMargin /
-                                                        5),
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
+                                    children: [
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: model.detailOrderModels ==
+                                                null
+                                            ? []
+                                            : model.detailOrderModels!
+                                                .map(
+                                                  (e) => Padding(
+                                                    padding: EdgeInsets.symmetric(
+                                                        vertical: layoutStyle
+                                                                .defaultMargin /
+                                                            5),
+                                                    child: Row(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
                                                               .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
+                                                        Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              e.productName ??
+                                                                  '',
+                                                              style: TextStyle(
+                                                                fontSize: fontSize
+                                                                    .subtitle,
+                                                                fontWeight:
+                                                                    fontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                            // Text(
+                                                            //   'Not Set Yet',
+                                                            //   style: TextStyle(
+                                                            //     fontSize:
+                                                            //         fontSize.body,
+                                                            //   ),
+                                                            // ),
+                                                          ],
+                                                        ),
                                                         Text(
-                                                          e.productName ?? '',
+                                                          'Rp.${common.currencyFormat(e.price ?? 0)}',
                                                           style: TextStyle(
-                                                            fontSize: fontSize
-                                                                .subtitle,
-                                                            fontWeight:
-                                                                fontWeight.bold,
+                                                            fontSize:
+                                                                fontSize.body,
                                                           ),
                                                         ),
-                                                        // Text(
-                                                        //   'Not Set Yet',
-                                                        //   style: TextStyle(
-                                                        //     fontSize:
-                                                        //         fontSize.body,
-                                                        //   ),
-                                                        // ),
                                                       ],
                                                     ),
-                                                    Text(
-                                                      'Rp.${common.currencyFormat(e.price ?? 0)}',
-                                                      style: TextStyle(
-                                                        fontSize: fontSize.body,
-                                                      ),
+                                                  ),
+                                                )
+                                                .toList(),
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: model.trnOrderVouchers == null
+                                            ? []
+                                            : model.trnOrderVouchers!
+                                                .map(
+                                                  (e) => Padding(
+                                                    padding: EdgeInsets.symmetric(
+                                                        vertical: layoutStyle
+                                                                .defaultMargin /
+                                                            5),
+                                                    child: Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              e.voucherName ??
+                                                                  '',
+                                                              style: TextStyle(
+                                                                fontSize: fontSize
+                                                                    .subtitle,
+                                                                fontWeight:
+                                                                    fontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                            // Text(
+                                                            //   'Not Set Yet',
+                                                            //   style: TextStyle(
+                                                            //     fontSize:
+                                                            //         fontSize.body,
+                                                            //   ),
+                                                            // ),
+                                                          ],
+                                                        ),
+                                                        Text(
+                                                          '- Rp.${common.currencyFormat(e.voucherUnitValue ?? 0)}',
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                fontSize.body,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                            .toList(),
+                                                  ),
+                                                )
+                                                .toList(),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 Container(

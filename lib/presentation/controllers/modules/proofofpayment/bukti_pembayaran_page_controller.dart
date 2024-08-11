@@ -22,6 +22,7 @@ import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
@@ -278,13 +279,19 @@ class BuktiPembayaranPageController extends GetxController
                     )
                     .toList();
         List<OrderVoucherModel> voucherList =
-            detailModel.value.detailOrderModels == null
+            detailModel.value.trnOrderVouchers == null
                 ? []
-                : detailModel.value.detailOrderModels!
+                : detailModel.value.trnOrderVouchers!
                     .map(
                       (e) => OrderVoucherModel(
-                        ordvcTotalVoucher: e.quantity!,
-                        ordvcTotalAmount: e.total!,
+                        ordvcTotalVoucher: 1,
+                        ordvcTotalAmount: e.voucherUnitValue!,
+                        voucher: VoucherEntity(
+                          voucherUnitType: e.voucherUnitType,
+                          voucherUnitValue: e.voucherUnitValue,
+                          voucherName: e.voucherName,
+                          voucherCode: e.voucherCode,
+                        ),
                       ),
                     )
                     .toList();
