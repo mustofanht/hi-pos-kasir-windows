@@ -80,10 +80,10 @@ class GeneratePrintUtil {
     );
     bytes += generator.hr();
 
-    double totalBayar = 0;
+    // double totalBayar = 0;
     // List Ticket Order
     for (var element in body.listTicket) {
-      totalBayar += element.totalAmount;
+      // totalBayar += element.totalAmount;
       bytes += generator.text(
         element.ticket?.ticketName ?? '',
         styles: const PosStyles(
@@ -122,7 +122,7 @@ class GeneratePrintUtil {
     }
     // List item Order
     for (var element in body.listProduct) {
-      totalBayar += element.ordadTotalAmount;
+      // totalBayar += element.ordadTotalAmount;
       bytes += generator.text(
         element.addOn?.productName ?? '',
         styles: const PosStyles(
@@ -169,8 +169,8 @@ class GeneratePrintUtil {
         ),
       );
       if (element.voucher!.voucherUnitType == UnitType.PERCENT) {
-        double percentagePrice =
-            ((totalBayar * element.ordvcTotalAmount) / 100);
+        // double percentagePrice =
+        //     ((totalBayar * element.ordvcTotalAmount) / 100);
         bytes += generator.row(
           [
             PosColumn(
@@ -181,19 +181,19 @@ class GeneratePrintUtil {
               text: element.voucher?.voucherUnitValue != null
                   ? common.currencyFormat(element.voucher!.voucherUnitValue!)
                   : '',
-              width: 3,
+              width: 4,
             ),
             // PosColumn(
             //   text: '( 0% )',
             //   width: 2,
             // ),
+            // PosColumn(
+            //   text: 'x ${element.ordvcTotalVoucher}',
+            //   width: 2,
+            // ),
             PosColumn(
-              text: 'x ${element.ordvcTotalVoucher}',
-              width: 2,
-            ),
-            PosColumn(
-              text: '- ${common.currencyFormat(percentagePrice)}',
-              width: 5,
+              text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
+              width: 6,
               styles: const PosStyles(
                 align: PosAlign.right,
               ),
@@ -211,19 +211,19 @@ class GeneratePrintUtil {
               text: element.voucher?.voucherUnitValue != null
                   ? common.currencyFormat(element.voucher!.voucherUnitValue!)
                   : '',
-              width: 3,
+              width: 4,
             ),
             // PosColumn(
             //   text: '( 0% )',
             //   width: 2,
             // ),
-            PosColumn(
-              text: 'x ${element.ordvcTotalVoucher}',
-              width: 2,
-            ),
+            // PosColumn(
+            //   text: 'x ${element.ordvcTotalVoucher}',
+            //   width: 2,
+            // ),
             PosColumn(
               text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
-              width: 5,
+              width: 6,
               styles: const PosStyles(
                 align: PosAlign.right,
               ),
@@ -243,7 +243,7 @@ class GeneratePrintUtil {
           width: 4,
         ),
         PosColumn(
-          text: '${totalPak} PAK',
+          text: '$totalPak PAK',
           width: 2,
         ),
         PosColumn(

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
@@ -132,11 +131,11 @@ class SalePageController extends GetxController
 
   bool doVerifyRequest() {
     bool isValid = true;
-    if (isValid && orderNameController.text.isEmpty) {
-      isValid = false;
-      alert.error(
-          "Terjadi Kesalahan!", messagesConstant.requiredField("Name Pemesan"));
-    }
+    // if (isValid && orderNameController.text.isEmpty) {
+    //   isValid = false;
+    //   alert.error(
+    //       "Terjadi Kesalahan!", messagesConstant.requiredField("Name Pemesan"));
+    // }
     // if (isValid && emailController.text.isEmpty) {
     //   isValid = false;
     //   alert.error(
@@ -255,10 +254,10 @@ class SalePageController extends GetxController
 
     return OrderModel(
       orderName:
-          orderNameController.text.isEmpty ? null : orderNameController.text,
+          orderNameController.text.isEmpty ? ' ' : orderNameController.text,
       orderPhoneNumber:
-          noWaController.text.isEmpty ? null : noWaController.text,
-      orderEmail: emailController.text.isEmpty ? null : emailController.text,
+          noWaController.text.isEmpty ? ' ' : noWaController.text,
+      orderEmail: emailController.text.isEmpty ? ' ' : emailController.text,
       orderReffno: null,
       orderTotalItem: totalTotalTicketProduct,
       // orderTotalItem: totalOrderQty.value,

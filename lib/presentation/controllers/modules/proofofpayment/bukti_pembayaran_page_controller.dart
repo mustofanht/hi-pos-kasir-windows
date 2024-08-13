@@ -259,7 +259,7 @@ class BuktiPembayaranPageController extends GetxController
       }
 
       List<OrderTicketModel> ticketList =
-          detailModel.value.detailOrderModels == null
+          detailModel.value.trnOrderTicket == null
               ? []
               : detailModel.value.trnOrderTicket!
                   .map(
@@ -276,14 +276,14 @@ class BuktiPembayaranPageController extends GetxController
       List<OrderAddonModel> productList =
           detailModel.value.trnOrderItem == null
               ? []
-              : detailModel.value.detailOrderModels!
+              : detailModel.value.trnOrderItem!
                   .map(
                     (e) => OrderAddonModel(
-                      ordadTotalAddon: e.quantity!,
-                      ordadTotalAmount: e.total!,
+                      ordadTotalAddon: e.prodQty!,
+                      ordadTotalAmount: e.prodTtlAmount!,
                       addOn: AddonEntity(
-                        productName: e.productName,
-                        productPrice: e.price,
+                        productName: e.prodName,
+                        productPrice: e.prodPrice,
                       ),
                     ),
                   )
