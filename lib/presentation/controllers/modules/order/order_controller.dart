@@ -287,7 +287,7 @@ class OrderUtil {
         var result = _service.message.sendEmail(
           authToken: authToken,
           phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.toJson()}',
+          message: 'Thanks For Order ${body.orderReffno}',
         );
         result.fold(
           (left) => alert.error('Error', 'Send Wa Internal Server Error'),
@@ -299,7 +299,7 @@ class OrderUtil {
         var result = _service.message.sendWa(
           authToken: authToken,
           phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.toJson()}',
+          message: 'Thanks For Order ${body.orderReffno}',
         );
         result.fold(
           (left) => alert.error('Error', 'Send Wa Internal Server Error'),
