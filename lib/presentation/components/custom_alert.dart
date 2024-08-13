@@ -12,7 +12,7 @@ class CustomAlert {
       snackPosition: SnackPosition.TOP,
       backgroundColor: colorStyle.green,
       colorText: colorStyle.white,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       icon: Icon(
         Icons.check_circle_rounded,
         color: colorStyle.white,
@@ -29,7 +29,7 @@ class CustomAlert {
       snackPosition: SnackPosition.TOP,
       backgroundColor: colorStyle.yellow,
       colorText: colorStyle.white,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       icon: Icon(
         Icons.check_circle_rounded,
         color: colorStyle.white,
@@ -46,7 +46,7 @@ class CustomAlert {
       snackPosition: SnackPosition.TOP,
       backgroundColor: colorStyle.red,
       colorText: colorStyle.white,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       icon: Icon(
         Icons.dangerous,
         color: colorStyle.white,

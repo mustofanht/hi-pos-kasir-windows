@@ -265,10 +265,16 @@ class OrderUtil {
         await _handleSendProofOfPayment(authToken, body);
       },
       onPrint: () async {
-        loading.popUpLoading();
-        await Future.delayed(const Duration(seconds: 1), () {});
-        Get.back();
-        await _handleOnPrintOrder(authToken, body, orderNo);
+        if (printerUtil.currPrinter != null) {
+          Get.back();
+          loading.popUpLoading();
+          await Future.delayed(const Duration(seconds: 1), () {});
+          Get.back();
+          await _handleOnPrintOrder(authToken, body, orderNo);
+        } else {
+          alert.error('Error', 'please check connection printer');
+          printerUtil.connectPrinter();
+        }
       },
     );
   }
@@ -335,7 +341,6 @@ class OrderUtil {
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
     printerUtil.connectPrinter();
     if (printerUtil.currPrinter != null) {
-      Get.back();
       String locationName = "";
       String kasirName = "";
       UserEntity? user = await common.getUser(
