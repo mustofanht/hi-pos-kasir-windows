@@ -17,6 +17,9 @@ class CustomAlert {
         Icons.check_circle_rounded,
         color: colorStyle.white,
       ),
+      onTap: (snack) {
+        Get.back();
+      },
     );
   }
 
@@ -34,6 +37,9 @@ class CustomAlert {
         Icons.check_circle_rounded,
         color: colorStyle.white,
       ),
+      onTap: (snack) {
+        Get.back();
+      },
     );
   }
 
@@ -51,6 +57,9 @@ class CustomAlert {
         Icons.dangerous,
         color: colorStyle.white,
       ),
+      onTap: (snack) {
+        Get.back();
+      },
     );
   }
 }
