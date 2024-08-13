@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
 import 'package:presentation_displays/display.dart';
 
 class SettingPageController extends GetxController
@@ -170,5 +171,6 @@ class SettingPageController extends GetxController
   doRefreshCustomerPage() {
     // displayUtil.showDisplay(selectedScreens.value.id);
     displayUtil.displayCustomer(null);
+    orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
   }
 }

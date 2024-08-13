@@ -500,31 +500,34 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   ],
                 ),
               ),
-              CustomButton(
-                onPressed: () {
-                  controller.doPrintTicket();
-                },
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith(
-                    (states) => colorStyle.grey,
-                  ),
-                  overlayColor: MaterialStateProperty.resolveWith(
-                    (states) => colorStyle.black.withOpacity(0.1),
-                  ),
-                  shape: MaterialStateProperty.resolveWith(
-                    (states) => RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        layoutStyle.defaultMargin / 2,
+              (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
+                      controller.model.value.orderStatus != 'C')
+                  ? CustomButton(
+                      onPressed: () {
+                        controller.doPrintTicket();
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.resolveWith(
+                          (states) => colorStyle.grey,
+                        ),
+                        overlayColor: MaterialStateProperty.resolveWith(
+                          (states) => colorStyle.black.withOpacity(0.1),
+                        ),
+                        shape: MaterialStateProperty.resolveWith(
+                          (states) => RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              layoutStyle.defaultMargin / 2,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                label: Text(
-                  'Print Tiket',
-                  style: textStyle.whiteText,
-                ),
-                height: layoutStyle.blockVertical * 6.5,
-              ),
+                      label: Text(
+                        'Print Tiket',
+                        style: textStyle.whiteText,
+                      ),
+                      height: layoutStyle.blockVertical * 6.5,
+                    )
+                  : Container(),
             ],
           ),
         ),

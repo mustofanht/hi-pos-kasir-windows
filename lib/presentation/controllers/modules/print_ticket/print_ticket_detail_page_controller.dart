@@ -205,6 +205,7 @@ class PrintTicketDetailPageController extends GetxController {
     if (model.value.paymentDetail?.pymntStatus != 'P' &&
         model.value.orderStatus != 'C') {
       alert.warning('Warning', 'Tidak bisa melakukan Print Tiket');
+      isValid = false;
     }
     return isValid;
   }
