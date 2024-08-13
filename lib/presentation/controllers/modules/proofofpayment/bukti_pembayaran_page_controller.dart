@@ -250,89 +250,89 @@ class BuktiPembayaranPageController extends GetxController
   doPrintTicket() async {
     try {
       if (printerUtil.currPrinter != null) {
-      String locationName = "";
-      UserEntity? user = await common.getUser(
-        authToken: _authToken,
-      );
-      if (user != null) {
-        locationName = user.locationName!;
-      }
+        String locationName = "";
+        UserEntity? user = await common.getUser(
+          authToken: _authToken,
+        );
+        if (user != null) {
+          locationName = user.locationName!;
+        }
 
-      List<OrderTicketModel> ticketList =
-          detailModel.value.trnOrderTicket == null
-              ? []
-              : detailModel.value.trnOrderTicket!
-                  .map(
-                    (e) => OrderTicketModel(
-                      totalTicket: e.ticketQty!,
-                      totalAmount: e.ticketTtlAmount!,
-                      ticket: TicketEntity(
-                        ticketName: e.ticketName,
-                        ticketPrice: e.ticketPrice,
+        List<OrderTicketModel> ticketList =
+            detailModel.value.trnOrderTicket == null
+                ? []
+                : detailModel.value.trnOrderTicket!
+                    .map(
+                      (e) => OrderTicketModel(
+                        totalTicket: e.ticketQty!,
+                        totalAmount: e.ticketTtlAmount!,
+                        ticket: TicketEntity(
+                          ticketName: e.ticketName,
+                          ticketPrice: e.ticketPrice,
+                        ),
                       ),
-                    ),
-                  )
-                  .toList();
-      List<OrderAddonModel> productList =
-          detailModel.value.trnOrderItem == null
-              ? []
-              : detailModel.value.trnOrderItem!
-                  .map(
-                    (e) => OrderAddonModel(
-                      ordadTotalAddon: e.prodQty!,
-                      ordadTotalAmount: e.prodTtlAmount!,
-                      addOn: AddonEntity(
-                        productName: e.prodName,
-                        productPrice: e.prodPrice,
+                    )
+                    .toList();
+        List<OrderAddonModel> productList =
+            detailModel.value.trnOrderItem == null
+                ? []
+                : detailModel.value.trnOrderItem!
+                    .map(
+                      (e) => OrderAddonModel(
+                        ordadTotalAddon: e.prodQty!,
+                        ordadTotalAmount: e.prodTtlAmount!,
+                        addOn: AddonEntity(
+                          productName: e.prodName,
+                          productPrice: e.prodPrice,
+                        ),
                       ),
-                    ),
-                  )
-                  .toList();
-      List<OrderVoucherModel> voucherList =
-          detailModel.value.trnOrderVouchers == null
-              ? []
-              : detailModel.value.trnOrderVouchers!
-                  .map(
-                    (e) => OrderVoucherModel(
-                      ordvcTotalVoucher: 1,
-                      ordvcTotalAmount: e.voucherUnitValue!,
-                      voucher: VoucherEntity(
-                        voucherUnitType: e.voucherUnitType,
-                        voucherUnitValue: e.voucherUnitValue,
-                        voucherName: e.voucherName,
-                        voucherCode: e.voucherCode,
+                    )
+                    .toList();
+        List<OrderVoucherModel> voucherList =
+            detailModel.value.trnOrderVouchers == null
+                ? []
+                : detailModel.value.trnOrderVouchers!
+                    .map(
+                      (e) => OrderVoucherModel(
+                        ordvcTotalVoucher: 1,
+                        ordvcTotalAmount: e.voucherUnitCalcValue!,
+                        voucher: VoucherEntity(
+                          voucherUnitType: e.voucherUnitType,
+                          voucherUnitValue: e.voucherUnitValue,
+                          voucherName: e.voucherName,
+                          voucherCode: e.voucherCode,
+                        ),
                       ),
-                    ),
-                  )
-                  .toList();
+                    )
+                    .toList();
 
-      OrderModel orderModel = OrderModel(
-        orderTotalItem: detailModel.value.orderTotalItem!,
-        orderTotalAmt: detailModel.value.orderTotalAmt!,
-        orderUnitId: 0,
-        orderLoacationId: 0,
-        orderPaidBy: detailModel.value.orderPaidBy!,
-        orderStatus: detailModel.value.orderStatus!,
-        listTicket: ticketList,
-        listProduct: productList,
-        listVoucher: voucherList,
-      );
+        OrderModel orderModel = OrderModel(
+          orderTotalItem: detailModel.value.orderTotalItem!,
+          orderTotalAmt: detailModel.value.orderTotalAmt!,
+          orderUnitId: 0,
+          orderLoacationId: 0,
+          orderPaidBy: detailModel.value.orderPaidBy!,
+          orderStatus: detailModel.value.orderStatus!,
+          listTicket: ticketList,
+          listProduct: productList,
+          listVoucher: voucherList,
+        );
 
-      logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
-      logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
-      logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
-      logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
+        logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
+        logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
+        logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
+        logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
 
-      List<int> data = [];
-      data = await generatePrintUtil.dataPaymentTiketPrint(
-        locationName: locationName,
-        paperSize: PaperSize.mm80,
-        body: orderModel,
-        kasirName: detailModel.value.orderPaidBy,
-      );
+        List<int> data = [];
+        data = await generatePrintUtil.dataPaymentTiketPrint(
+          locationName: locationName,
+          paperSize: PaperSize.mm80,
+          body: orderModel,
+          kasirName: detailModel.value.orderPaidBy,
+        );
 
-      await printerUtil.print(printerUtil.currPrinter!, data);
-      Get.back();
+        await printerUtil.print(printerUtil.currPrinter!, data);
+        Get.back();
       } else {
         alert.error('Error', 'please check connection printer');
         printerUtil.connectPrinter();

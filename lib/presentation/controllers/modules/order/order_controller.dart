@@ -188,16 +188,17 @@ class OrderPaymentController extends GetxController {
         msg: 'Silahkan mengisi reference',
         onNext: (val) async {
           // create Order and waiting the prosess of payment
-          logger.safeLog('val : $val');
+          // logger.safeLog('val : $val');
           if (val != '') {
             Get.back();
             loading.popUpLoading();
             body.orderReffno = val;
             await _doCreateOrderPayment(body: body, orderNo: orderNo);
+            await Future.delayed(const Duration(seconds: 1), () {});
             Get.back();
             // await orderUtil.handleOnPrintOrder(body);
-            orderUtil.showPaymentSuccessAlert(_authToken, body, orderNo);
-            alert.success('Success', 'Payment Success');
+            await orderUtil.showPaymentSuccessAlert(_authToken, body, orderNo);
+            // alert.success('Success', 'Payment Success');
           } else {
             alert.error(
               'Error',
@@ -256,8 +257,20 @@ class OrderUtil {
     dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
-      onSendProofOfPayment: () => _handleSendProofOfPayment(authToken, body),
-      onPrint: () => _handleOnPrintOrder(authToken, body, orderNo),
+      onSendProofOfPayment: () async {
+        Get.back();
+        loading.popUpLoading();
+        await Future.delayed(const Duration(seconds: 1), () {});
+        Get.back();
+        await _handleSendProofOfPayment(authToken, body);
+      },
+      onPrint: () async {
+        Get.back();
+        loading.popUpLoading();
+        await Future.delayed(const Duration(seconds: 1), () {});
+        Get.back();
+        await _handleOnPrintOrder(authToken, body, orderNo);
+      },
     );
   }
 
@@ -265,7 +278,6 @@ class OrderUtil {
     AuthToken authToken,
     OrderModel body,
   ) {
-    Get.back();
     dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
       orderEmailValue: body.orderEmail,
@@ -301,6 +313,7 @@ class OrderUtil {
   _handleNewOrder() async {
     Get.back();
     loading.popUpLoading();
+    await Future.delayed(const Duration(seconds: 1), () {});
     await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
     await orderUtil.clearOrder();
     Get.back();
@@ -311,25 +324,6 @@ class OrderUtil {
     OrderModel body,
     Rxn<String>? orderNo,
   ) async {
-    // var printController = Get.put(PrintController());
-    // var printController = Get.find<PrintController>();
-    // bool bluetoothIsEnabled = await printController.bluetoothIsEnabled();
-    // if (bluetoothIsEnabled) {
-    //   var paymentPrintController = Get.put(PaymentPrintController());
-    //   var gatePrintController = Get.put(GatePrintController());
-    //   await printController.printPaymentTiket(
-    //     body,
-    //     paymentPrintController,
-    //     gatePrintController,
-    //   );
-    //   await doRefreshCustomerDisplay(
-    //     paymentMethod: PaymentMethod.QRIS,
-    //   );
-    //   await clearOrder();
-    // } else {
-    //   alert.error('Error', 'bluetooth is off, please turn it on first');
-    // }
-
     if (orderNo?.value != null) {
       List<ResponseCreateTicketNoEntity> listCreateTicket =
           await createTicketNo(
@@ -359,25 +353,6 @@ class OrderUtil {
         paperSize: PaperSize.mm80,
         body: body,
       );
-      // int count = 1;
-      // int totalPak = body.listTicket.fold(0, (sum, e) => sum + e.totalTicket);
-      // for (var element in body.listTicket) {
-      //   for (var i = 0; i < element.totalTicket; i++) {
-      //     List<int> dataPrint = await generatePrintUtil.dataGatePrint(
-      //       locationName: locationName,
-      //       paperSize: PaperSize.mm80,
-      //       reffNo: body.orderReffno!,
-      //       pakOf: count,
-      //       pakTotal: totalPak,
-      //       qrCode: '12345',
-      //       expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
-      //       ticketModel: element,
-      //     );
-      //     data.addAll(dataPrint);
-      //     count++;
-      //   }
-      // }
-
       if (body.listCreateTicket != null) {
         int count = 1;
         int totalPak = body.listCreateTicket!.length;

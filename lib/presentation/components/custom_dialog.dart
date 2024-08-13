@@ -826,8 +826,8 @@ class CustomDialog {
   paymentQrSuccess({
     required String title,
     required String msg,
-    required Function onSendProofOfPayment,
-    required Function onPrint,
+    required Function() onSendProofOfPayment,
+    required Function() onPrint,
   }) {
     Get.dialog(
       AlertDialog(
@@ -893,9 +893,7 @@ class CustomDialog {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {
-                            onPrint();
-                          },
+                          onTap: onPrint,
                           child: Container(
                             alignment: Alignment.center,
                             width: layoutStyle.screenWidth,
@@ -937,9 +935,7 @@ class CustomDialog {
                       ),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {
-                            onSendProofOfPayment();
-                          },
+                          onTap: onSendProofOfPayment,
                           child: Container(
                             alignment: Alignment.center,
                             width: layoutStyle.screenWidth,
