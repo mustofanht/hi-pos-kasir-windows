@@ -385,7 +385,6 @@ class OrderUtil {
     } else {
       alert.error('Error', 'please check connection printer');
       printerUtil.connectPrinter();
-      await clearOrder();
     }
   }
 

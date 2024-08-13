@@ -40,6 +40,7 @@ dependencies:
   # flutter_thermal_printer: ^0.0.10
   presentation_displays:
     path: ./plugin/presentation_displays
+  table_sticky_headers: ^2.0.5
 
 dev_dependencies:
   flutter_test:
