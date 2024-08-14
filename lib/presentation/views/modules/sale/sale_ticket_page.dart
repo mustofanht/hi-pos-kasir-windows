@@ -103,16 +103,35 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Expanded(
-                                          child: Image.asset(
-                                            'assets/images/ticket.png',
-                                            fit: BoxFit.fill,
-                                            errorBuilder: (BuildContext context,
-                                                Object exception,
-                                                StackTrace? stackTrace) {
-                                              return const Text(
-                                                  'Img Not Found');
-                                            },
-                                          ),
+                                          child: e.pathImg != null
+                                              ? Image.network(
+                                                  e.pathImg!,
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
+                                                      Image.asset(
+                                                    'assets/images/ticket.png',
+                                                    fit: BoxFit.fill,
+                                                    errorBuilder:
+                                                        (BuildContext context,
+                                                            Object exception,
+                                                            StackTrace?
+                                                                stackTrace) {
+                                                      return const Text(
+                                                          'Img Not Found');
+                                                    },
+                                                  ),
+                                                )
+                                              : Image.asset(
+                                                  'assets/images/ticket.png',
+                                                  fit: BoxFit.fill,
+                                                  errorBuilder: (BuildContext
+                                                          context,
+                                                      Object exception,
+                                                      StackTrace? stackTrace) {
+                                                    return const Text(
+                                                        'Img Not Found');
+                                                  },
+                                                ),
                                         ),
                                         SizedBox(
                                           height: layoutStyle.defaultMargin,

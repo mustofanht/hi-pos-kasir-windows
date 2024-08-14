@@ -10,6 +10,7 @@ class TicketEntity {
   double? ticketPrice;
   String? ticketState;
   int? ticketMinimum;
+  String? pathImg;
   TicketDaysEntity? ticketDays;
 
   TicketEntity({
@@ -21,6 +22,7 @@ class TicketEntity {
     this.ticketPrice,
     this.ticketState,
     this.ticketMinimum,
+    this.pathImg,
     this.ticketDays,
   });
 
@@ -35,6 +37,7 @@ class TicketEntity {
           json['ticketPrice'] != null ? (json['ticketPrice'] as num).toDouble() : null;
       ticketState = json['ticketState'];
       ticketMinimum = json['ticketMinimum'];
+      pathImg = json['pathImg'];
       ticketDays = json['ticketDays'] != null
           ? TicketDaysEntity.fromJson(json['ticketDays'])
           : null;
@@ -52,6 +55,7 @@ class TicketEntity {
       "ticketPrice": ticketPrice,
       "ticketState": ticketState,
       "ticketMinimum": ticketMinimum,
+      "pathImg": pathImg,
       "ticketDays": ticketDays?.toJson(),
     };
   }
