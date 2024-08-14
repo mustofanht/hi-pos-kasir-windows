@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -168,9 +169,10 @@ class SettingPageController extends GetxController
     }
   }
 
-  doRefreshCustomerPage() {
+  doRefreshCustomerPage() async {
     // displayUtil.showDisplay(selectedScreens.value.id);
-    displayUtil.displayCustomer(null);
-    orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    await common.getImagePromo(_authToken);
+    await displayUtil.displayCustomer(null);
+    await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
@@ -138,7 +139,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                                         height: layoutStyle.defaultMargin,
                                       ),
                                       Text(
-                                        'Disc: ${e.voucherUnitType == UnitType.PERCENT ? ('${e.voucherUnitValue} %') : ('Rp${e.voucherUnitValue}')}',
+                                        'Disc: ${e.voucherUnitType == UnitType.PERCENT ? ('${e.voucherUnitValue} %') : ('Rp.${common.currencyFormat(e.voucherUnitValue ?? 0)}')}',
                                         style: TextStyle(
                                           fontSize: fontSize.body,
                                           // fontWeight: FontWeight.bold,
