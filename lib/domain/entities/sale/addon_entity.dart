@@ -8,6 +8,7 @@ class AddonEntity {
   int? productLoc;
   String? productLocName;
   String? productState;
+  String? pathImg;
 
   AddonEntity({
     this.productId,
@@ -17,6 +18,7 @@ class AddonEntity {
     this.productLoc,
     this.productLocName,
     this.productState,
+    this.pathImg,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class AddonEntity {
       productLoc = json['productLoc'];
       productLocName = json['productLocName'];
       productState = json['productState'];
+      pathImg = json['pathImg'];
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -43,6 +46,7 @@ class AddonEntity {
       'productLoc': productLoc,
       'productLocName': productLocName,
       'productState': productState,
+      'pathImg': pathImg,
     };
   }
 }

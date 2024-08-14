@@ -106,6 +106,7 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                           child: e.pathImg != null
                                               ? Image.network(
                                                   e.pathImg!,
+                                                  fit: BoxFit.fill,
                                                   errorBuilder: (context, error,
                                                           stackTrace) =>
                                                       Image.asset(
