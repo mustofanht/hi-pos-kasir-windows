@@ -335,8 +335,11 @@ class OrderUtil {
         authToken,
         orderNo!.value!,
       );
+      body.orderNumber = orderNo.value ?? '';
       body.listCreateTicket = listCreateTicket;
     }
+
+    logger.safeLog('TEST : ${body.toJson()}');
 
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
     printerUtil.connectPrinter();
@@ -367,6 +370,7 @@ class OrderUtil {
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
             locationName: locationName,
             paperSize: PaperSize.mm80,
+            orderNo: body.orderNumber ?? '',
             reffNo: reffNo,
             pakOf: count,
             pakTotal: totalPak,

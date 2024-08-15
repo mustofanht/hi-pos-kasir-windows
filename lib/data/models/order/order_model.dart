@@ -7,6 +7,7 @@ class OrderModel {
   String? orderName;
   String? orderPhoneNumber;
   String? orderEmail;
+  String? orderNumber;
   String? orderReffno;
   String? qrCode;
   int orderTotalItem;
@@ -24,6 +25,7 @@ class OrderModel {
     this.orderName,
     this.orderPhoneNumber,
     this.orderEmail,
+    this.orderNumber,
     this.orderReffno,
     this.qrCode,
     required this.orderTotalItem,
@@ -43,6 +45,7 @@ class OrderModel {
       orderName: json['orderName'],
       orderPhoneNumber: json['orderPhoneNumber'],
       orderEmail: json['orderEmail'],
+      orderNumber: json['orderNumber'],
       orderReffno: json['orderReffno'],
       qrCode: json['qrCode'],
       orderTotalItem: json['orderTotalItem'],
@@ -69,6 +72,7 @@ class OrderModel {
       "orderName": orderName,
       "orderPhoneNumber": orderPhoneNumber,
       "orderEmail": orderEmail,
+      "orderNumber": orderNumber,
       "orderReffno": orderReffno,
       "qrCode": qrCode,
       "orderTotalItem": orderTotalItem,

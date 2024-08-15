@@ -240,6 +240,7 @@ class PrintTicketDetailPageController extends GetxController {
               List<int> dataPrint = await generatePrintUtil.dataGatePrint(
                 locationName: locationName,
                 paperSize: PaperSize.mm80,
+                orderNo: parentModel.value.orderNumber ?? '',
                 reffNo: reffNo,
                 pakOf: count,
                 pakTotal: totalPak,

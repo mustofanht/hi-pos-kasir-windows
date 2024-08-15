@@ -55,6 +55,13 @@ class GeneratePrintUtil {
       ),
     );
     bytes += generator.text(
+      'Order ID : ${body.orderNumber ?? ''}',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    bytes += generator.text(
       'Kasir :  $kasirName',
       styles: const PosStyles(
         align: PosAlign.left,
@@ -332,6 +339,7 @@ class GeneratePrintUtil {
   Future<List<int>> dataGatePrint({
     String? locationName,
     required PaperSize paperSize,
+    required String orderNo,
     required String reffNo,
     required int pakOf,
     required int pakTotal,
@@ -364,6 +372,13 @@ class GeneratePrintUtil {
     // Print Store Information
     bytes += generator.text(
       'No Reff. $reffNo',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    bytes += generator.text(
+      'Order ID : $orderNo',
       styles: const PosStyles(
         align: PosAlign.left,
         bold: true,

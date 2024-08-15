@@ -307,6 +307,8 @@ class BuktiPembayaranPageController extends GetxController
                     .toList();
 
         OrderModel orderModel = OrderModel(
+          orderNumber: selectedData.value.orderNumber ?? '',
+          orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
           orderTotalItem: detailModel.value.orderTotalItem!,
           orderTotalAmt: detailModel.value.orderTotalAmt!,
           orderUnitId: 0,
