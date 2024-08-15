@@ -330,11 +330,15 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   columnShift(
                                     key: 'Shift Mulai',
                                     // value: 'Senin, 17 Juli 2024 | 09:00',
-                                    value: controller.formatShiftDate(
-                                      dateTimeUtil.convertToDateTime(
-                                        detail.shftDate!,
-                                      ),
-                                    ),
+                                    value: detail.shftStart == null
+                                        ? ''
+                                        : controller
+                                            .formatShiftDate(detail.shftStart!),
+                                    // value: controller.formatShiftDate(
+                                    //   dateTimeUtil.convertToDateTime(
+                                    //     detail.shftDate!,
+                                    //   ),
+                                    // ),
                                     head: false,
                                   ),
                                   columnShift(
