@@ -244,7 +244,8 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                                   layoutStyle.defaultMargin / 5,
                                             ),
                                             Text(
-                                              'Nama: ${model.customerDetail?.custName ?? ''}',
+                                              // 'Nama: ${model.customerDetail?.custName ?? ''}',
+                                              'Nama: ${model.orderName ?? ''}',
                                               style: TextStyle(
                                                 fontSize: fontSize.subtitle,
                                               ),
@@ -759,7 +760,8 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                       height: layoutStyle.defaultMargin,
                                     ),
                                     Text(
-                                      model.customerDetail?.custName ?? '',
+                                      model.orderName ?? '',
+                                      // model.customerDetail?.custName ?? '',
                                       style: TextStyle(
                                         fontWeight: fontWeight.bold,
                                       ),

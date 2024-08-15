@@ -469,7 +469,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           Text(
                             e.voucher!.voucherUnitType == UnitType.PERCENT
                                 ? ('${e.voucher!.voucherUnitValue} %')
-                                : ('Rp${e.voucher!.voucherUnitValue}'),
+                                : ('Rp${common.currencyFormat(e.voucher!.voucherUnitValue ?? 0)}'),
                           ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,
