@@ -243,7 +243,7 @@ class SalePage extends GetView<SalePageController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pilih Pembayaram',
+                        'Pilih Pembayaran',
                         style: textStyle.greyText.copyWith(
                           fontSize: fontSize.small,
                         ),
