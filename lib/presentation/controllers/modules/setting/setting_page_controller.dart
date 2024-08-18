@@ -84,7 +84,7 @@ class SettingPageController extends GetxController
           format: dateFormat.dateTime,
         );
         nameController.text = model.value.userFullName!;
-        roleController.text = '';
+        roleController.text = model.value.roleName??'';
         noTelpController.text = model.value.userPhone!;
         emailController.text = model.value.userEmail!;
         isLoading.value = false;

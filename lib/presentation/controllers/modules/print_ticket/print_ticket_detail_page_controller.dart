@@ -174,30 +174,35 @@ class PrintTicketDetailPageController extends GetxController {
   }
 
   doActiveTicket() {
-    dialog.dialogCustomerLeftRight(
-      title: 'Aktivasi Tiket',
-      msg: 'Apakah anda yakin akan aktivasi?',
-      labelLeft: 'No',
-      labelRight: 'Yes',
-      onLeft: () {
-        Get.back();
-      },
-      onRight: () async {
-        Get.back();
-        try {
-          if (model.value.orderNumber != null) {
-            await createTicketNo(model.value.orderNumber!);
-            await doPrepared();
-            alert.success('Success', 'Berhasil Aktivasi Tiket');
-          } else {
+    if (model.value.paymentDetail?.pymntStatus == 'P' ||
+        model.value.orderStatus == 'C') {
+      alert.warning('Warning', 'Sudah melakukan aktifasi tiket');
+    } else {
+      dialog.dialogCustomerLeftRight(
+        title: 'Aktivasi Tiket',
+        msg: 'Apakah anda yakin akan aktivasi?',
+        labelLeft: 'No',
+        labelRight: 'Yes',
+        onLeft: () {
+          Get.back();
+        },
+        onRight: () async {
+          Get.back();
+          try {
+            if (model.value.orderNumber != null) {
+              await createTicketNo(model.value.orderNumber!);
+              await doPrepared();
+              alert.success('Success', 'Berhasil Aktivasi Tiket');
+            } else {
+              alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+            }
+          } catch (e) {
+            logger.safeLog(e);
             alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
           }
-        } catch (e) {
-          logger.safeLog(e);
-          alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
-        }
-      },
-    );
+        },
+      );
+    }
   }
 
   doVerifiedPrintTicket() {
