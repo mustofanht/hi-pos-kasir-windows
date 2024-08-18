@@ -5,7 +5,7 @@ class PromoService {
     required AuthToken authToken,
     required int locId,
   }) async {
-    var path = "mst_promo/images/$locId";
+    var path = "mst_promo/images/$locId/Y";
 
     final uri = source.baseUri(
       path: path,
