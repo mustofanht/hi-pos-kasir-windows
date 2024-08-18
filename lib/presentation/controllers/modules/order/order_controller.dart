@@ -335,6 +335,7 @@ class OrderUtil {
         authToken,
         orderNo!.value!,
       );
+      body.paymentDate = DateTime.now();
       body.orderNumber = orderNo.value ?? '';
       body.listCreateTicket = listCreateTicket;
     }
@@ -377,6 +378,7 @@ class OrderUtil {
             qrCode: element.ticketNo!,
             expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
             ticketName: element.ticketName,
+            paymentDate: body.paymentDate ?? DateTime.now(),
           );
           data.addAll(dataPrint);
           count++;

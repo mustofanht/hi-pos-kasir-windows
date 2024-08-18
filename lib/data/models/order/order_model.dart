@@ -16,6 +16,7 @@ class OrderModel {
   int orderLoacationId;
   String orderPaidBy;
   String orderStatus;
+  DateTime? paymentDate;
   List<OrderTicketModel> listTicket;
   List<OrderAddonModel> listProduct;
   List<OrderVoucherModel> listVoucher;
@@ -28,6 +29,7 @@ class OrderModel {
     this.orderNumber,
     this.orderReffno,
     this.qrCode,
+    this.paymentDate,
     required this.orderTotalItem,
     required this.orderTotalAmt,
     required this.orderUnitId,

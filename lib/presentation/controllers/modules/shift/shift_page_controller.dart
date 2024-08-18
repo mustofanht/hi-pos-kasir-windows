@@ -55,7 +55,7 @@ class ShiftPageController extends GetxController {
           shiftDate: dateTimeUtil.getFormattedDate(
               date: dateTimeUtil.convertToDateTime(val.shftDate!),
               format: dateFormat.yyyyMMdd),
-          userId: val.userFullName!,
+          userId: val.shftUserid!,
         );
         result.fold((l) {
           logger.safeLog(l);

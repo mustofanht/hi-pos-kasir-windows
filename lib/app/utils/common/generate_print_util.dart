@@ -71,9 +71,14 @@ class GeneratePrintUtil {
     bytes += generator.row(
       [
         PosColumn(
-          text: dateTimeUtil.now(
-            format: dateFormat.fullTimePrinted,
-          ),
+          text: body.paymentDate != null
+              ? dateTimeUtil.getFormattedDate(
+                  date: body.paymentDate!,
+                  format: dateFormat.fullTimePrinted,
+                )
+              : dateTimeUtil.now(
+                  format: dateFormat.fullTimePrinted,
+                ),
           width: 6,
         ),
         PosColumn(
@@ -344,6 +349,7 @@ class GeneratePrintUtil {
     required int pakOf,
     required int pakTotal,
     required String qrCode,
+    DateTime? paymentDate,
     required String expiredAt,
     // required OrderTicketModel ticketModel,
     String? ticketName,
@@ -385,9 +391,14 @@ class GeneratePrintUtil {
       ),
     );
     bytes += generator.text(
-      dateTimeUtil.now(
-        format: dateFormat.fullTimePrinted,
-      ),
+      paymentDate != null
+          ? dateTimeUtil.getFormattedDate(
+              date: paymentDate,
+              format: dateFormat.fullTimePrinted,
+            )
+          : dateTimeUtil.now(
+              format: dateFormat.fullTimePrinted,
+            ),
       styles: const PosStyles(
         align: PosAlign.left,
         bold: true,

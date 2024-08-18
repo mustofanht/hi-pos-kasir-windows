@@ -247,6 +247,7 @@ class PrintTicketDetailPageController extends GetxController {
                 qrCode: element.ticketNo!,
                 expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
                 ticketName: element.ticketName,
+                paymentDate: parentModel.value.orderDate ?? DateTime.now(),
               );
               data.addAll(dataPrint);
               count++;
