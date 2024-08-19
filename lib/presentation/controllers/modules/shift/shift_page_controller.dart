@@ -33,6 +33,7 @@ class ShiftPageController extends GetxController {
   doPrepared() async {
     dataListShiftEnded.value = [];
     shiftCurrent.value = ShiftEntity();
+    selectedShift.value = ShiftEntity();
     shiftDetail.value = ShiftDetailEntity();
     await _getShiftCurrent();
     await _getShiftEnded(page: 0);
@@ -206,7 +207,7 @@ class ShiftPageController extends GetxController {
       result = await _service.shift.shiftEnded(
         authToken: _authToken,
         shiftDate: DateTime.now().toLocal().toIso8601String(),
-        userId: val.userFullName!,
+        userId: val.shftUserid!,
       );
       result.fold((l) {
         logger.safeLog(l);

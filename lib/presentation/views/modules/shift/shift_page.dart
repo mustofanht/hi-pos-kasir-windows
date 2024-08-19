@@ -102,140 +102,143 @@ class ShiftPage extends GetView<ShiftPageController> {
       required ShiftEntity shiftCurrent,
       required List<ShiftEntity>? listShiftEnded,
     }) {
-      return Expanded(
-        child: Container(
-          height: layoutStyle.screenHeight,
-          padding: EdgeInsets.all(layoutStyle.defaultMargin),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                'Shift',
-                style: TextStyle(
-                  color: colorStyle.black,
-                  fontSize: fontSize.header,
-                  fontWeight: fontWeight.bold,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 2,
-                ),
-                child: Text(
-                  'Berlangsung',
+      return Obx(
+        () => Expanded(
+          child: Container(
+            height: layoutStyle.screenHeight,
+            padding: EdgeInsets.all(layoutStyle.defaultMargin),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'Shift',
                   style: TextStyle(
                     color: colorStyle.black,
-                    fontSize: fontSize.body,
+                    fontSize: fontSize.header,
+                    fontWeight: fontWeight.bold,
                   ),
                 ),
-              ),
-              controller.isLoadingShiftCurrent.value
-                  ? loading.simpleLoading()
-                  : shiftCurrent.shftDate == null
-                      ? Container()
-                      : GestureDetector(
-                          onTap: () {
-                            controller.doSelectedShift(shiftCurrent);
-                          },
-                          child: cardShift(
-                            date: dateTimeUtil.getFormattedDate(
-                              date: dateTimeUtil.convertToDateTime(
-                                shiftCurrent.shftDate!,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 2,
+                  ),
+                  child: Text(
+                    'Berlangsung',
+                    style: TextStyle(
+                      color: colorStyle.black,
+                      fontSize: fontSize.body,
+                    ),
+                  ),
+                ),
+                controller.isLoadingShiftCurrent.value
+                    ? loading.simpleLoading()
+                    : shiftCurrent.shftDate == null
+                        ? Container()
+                        : GestureDetector(
+                            onTap: () {
+                              controller.doSelectedShift(shiftCurrent);
+                            },
+                            child: cardShift(
+                              date: dateTimeUtil.getFormattedDate(
+                                date: dateTimeUtil.convertToDateTime(
+                                  shiftCurrent.shftDate!,
+                                ),
+                                format: dateFormat.dateWithoutTime,
                               ),
-                              format: dateFormat.dateWithoutTime,
-                            ),
-                            time: 'Sedang Berlangsung',
-                            selected: shiftCurrent.shftDate ==
-                                controller.selectedShift.value.shftDate,
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(
-                                  layoutStyle.defaultMargin / 2),
-                              bottomRight: Radius.circular(
-                                  layoutStyle.defaultMargin / 2),
+                              time: 'Sedang Berlangsung',
+                              selected: shiftCurrent.shftDate ==
+                                  controller.selectedShift.value.shftDate,
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(
+                                    layoutStyle.defaultMargin / 2),
+                                bottomRight: Radius.circular(
+                                    layoutStyle.defaultMargin / 2),
+                              ),
                             ),
                           ),
-                        ),
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(top: layoutStyle.defaultMargin),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: controller.isLoadingShiftEnded.value
-                        ? loading.simpleLoading()
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: layoutStyle.defaultMargin / 2,
-                                ),
-                                child: Text(
-                                  'History',
-                                  style: TextStyle(
-                                    color: colorStyle.black,
-                                    fontSize: fontSize.body,
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(top: layoutStyle.defaultMargin),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: controller.isLoadingShiftEnded.value
+                          ? loading.simpleLoading()
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: layoutStyle.defaultMargin / 2,
+                                  ),
+                                  child: Text(
+                                    'History',
+                                    style: TextStyle(
+                                      color: colorStyle.black,
+                                      fontSize: fontSize.body,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              if (listShiftEnded != null &&
-                                  listShiftEnded.isNotEmpty)
-                                ...listShiftEnded
-                                    .map(
-                                      (element) => GestureDetector(
-                                        onTap: () {
-                                          controller.doSelectedShift(element);
-                                        },
-                                        child: cardShift(
-                                          date: dateTimeUtil.getFormattedDate(
-                                            date:
-                                                dateTimeUtil.convertToDateTime(
-                                              element.shftDate!,
+                                if (listShiftEnded != null &&
+                                    listShiftEnded.isNotEmpty)
+                                  ...listShiftEnded
+                                      .map(
+                                        (element) => GestureDetector(
+                                          onTap: () {
+                                            controller.doSelectedShift(element);
+                                          },
+                                          child: cardShift(
+                                            date: dateTimeUtil.getFormattedDate(
+                                              date: dateTimeUtil
+                                                  .convertToDateTime(
+                                                element.shftDate!,
+                                              ),
+                                              format:
+                                                  dateFormat.dateWithoutTime,
                                             ),
-                                            format: dateFormat.dateWithoutTime,
+                                            time:
+                                                '${dateTimeUtil.getFormattedDate(
+                                              date: element.shftStart!,
+                                              format: dateFormat.hourMinutes,
+                                            )} - ${dateTimeUtil.getFormattedDate(
+                                              date: element.shftEnd!,
+                                              format: dateFormat.hourMinutes,
+                                            )}',
+                                            selected: element.shftDate ==
+                                                controller.selectedShift.value
+                                                    .shftDate,
+                                            borderRadius: BorderRadius.zero,
                                           ),
-                                          time:
-                                              '${dateTimeUtil.getFormattedDate(
-                                            date: element.shftStart!,
-                                            format: dateFormat.hourMinutes,
-                                          )} - ${dateTimeUtil.getFormattedDate(
-                                            date: element.shftEnd!,
-                                            format: dateFormat.hourMinutes,
-                                          )}',
-                                          selected: element.shftDate ==
-                                              controller
-                                                  .selectedShift.value.shftDate,
-                                          borderRadius: BorderRadius.zero,
                                         ),
-                                      ),
-                                    )
-                                    .toList(),
-                              // cardShift(
-                              //   date: '17 Jul 2024',
-                              //   time: '10:00 - 15:00',
-                              //   selected: false,
-                              //   borderRadius: BorderRadius.only(
-                              //     topLeft: Radius.circular(
-                              //       layoutStyle.defaultMargin / 2,
-                              //     ),
-                              //     topRight: Radius.circular(
-                              //       layoutStyle.defaultMargin / 2,
-                              //     ),
-                              //   ),
-                              // ),
-                              // cardShift(
-                              //   date: '17 Jul 2024',
-                              //   time: '10:00 - 15:00',
-                              //   selected: false,
-                              //   borderRadius: BorderRadius.zero,
-                              // ),
-                            ],
-                          ),
+                                      )
+                                      .toList(),
+                                // cardShift(
+                                //   date: '17 Jul 2024',
+                                //   time: '10:00 - 15:00',
+                                //   selected: false,
+                                //   borderRadius: BorderRadius.only(
+                                //     topLeft: Radius.circular(
+                                //       layoutStyle.defaultMargin / 2,
+                                //     ),
+                                //     topRight: Radius.circular(
+                                //       layoutStyle.defaultMargin / 2,
+                                //     ),
+                                //   ),
+                                // ),
+                                // cardShift(
+                                //   date: '17 Jul 2024',
+                                //   time: '10:00 - 15:00',
+                                //   selected: false,
+                                //   borderRadius: BorderRadius.zero,
+                                // ),
+                              ],
+                            ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );

@@ -24,6 +24,7 @@ class SettingPageController extends GetxController
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
   final isLoading = false.obs;
+  final isLoadingPrinter = false.obs;
 
   TabController? tabController;
   var tabIndex = 0.obs;
@@ -43,10 +44,10 @@ class SettingPageController extends GetxController
   final selectedScreens = CustomIdNameEntity().obs;
 
   @override
-  void onInit() {
-    doInitializeScreen();
-    doInitializePrinter();
+  Future<void> onInit() async {
     doPrepared();
+    await doInitializeScreen();
+    await doInitializePrinter();
     super.onInit();
     tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
@@ -69,6 +70,7 @@ class SettingPageController extends GetxController
   }
 
   doPrepared() async {
+    isLoading.value = true;
     try {
       var result;
       result = await _service.auth.getUserInformation(
@@ -84,7 +86,7 @@ class SettingPageController extends GetxController
           format: dateFormat.dateTime,
         );
         nameController.text = model.value.userFullName!;
-        roleController.text = model.value.roleName??'';
+        roleController.text = model.value.roleName ?? '';
         noTelpController.text = model.value.userPhone!;
         emailController.text = model.value.userEmail!;
         isLoading.value = false;
@@ -97,28 +99,38 @@ class SettingPageController extends GetxController
   }
 
   doInitializePrinter() async {
+    isLoadingPrinter.value = true;
     var noneSelectedPrint = CustomIdNameEntity(
       id: null,
       name: '--- Select Printer ---',
     );
+    selectedCurrPrinter.value = noneSelectedPrint;
     listPrinter.clear();
-    listPrinter.add(noneSelectedPrint);
+    listPrinter.insert(0, noneSelectedPrint);
+    update();
     List<PrinterModel> printers = await printerUtil.getListDevices();
+    int count = 0;
     for (var element in printers) {
       logger.safeLog('PRINTER : ${element.deviceName}');
-      listPrinter.add(
+      listPrinter.insert(
+        count,
         CustomIdNameEntity(
           id: element.vendorId,
           name: element.deviceName,
         ),
       );
+      count++;
     }
     logger.safeLog('SELECT PRINTER : ${printerUtil.currPrinter?.toJson()}');
-    selectedCurrPrinter.value = listPrinter.firstWhere(
-      (element) =>
-          element.id.toString() == printerUtil.currPrinter?.vendorId.toString(),
-      orElse: () => noneSelectedPrint,
-    );
+    if (printerUtil.currPrinter != null) {
+      selectedCurrPrinter.value = listPrinter.firstWhere(
+        (element) =>
+            element.id.toString() ==
+            printerUtil.currPrinter?.vendorId.toString(),
+      );
+    }
+    logger.safeLog('LIST PRINTER : ${listPrinter.length}');
+    isLoadingPrinter.value = false;
     update();
   }
 
