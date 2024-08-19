@@ -8,6 +8,7 @@ import 'package:thermal_printer/thermal_printer.dart';
 class PrinterUtil {
   var printerManager = PrinterManager.instance;
   StreamSubscription<PrinterDevice>? _subscription;
+  StreamSubscription<BTStatus>? _subscriptionBtStatus;
   StreamSubscription<USBStatus>? _subscriptionUsbStatus;
   // USBStatus _currentUsbStatus = USBStatus.none;
   BTStatus _currentStatus = BTStatus.none;
@@ -15,11 +16,40 @@ class PrinterUtil {
   var defaultPrinterType = PrinterType.usb;
   PrinterModel? currPrinter;
   bool _isConnected = false;
-  final _isBle = false;
-  final _reconnect = false;
+  final _isBle = true;
+  final _reconnect = true;
 
   Future<void> init() async {
     logger.safeLog(' ---- PRINTER ---- ');
+
+    // subscription to listen change status of bluetooth connection
+    _subscriptionBtStatus =
+        PrinterManager.instance.stateBluetooth.listen((status) {
+      logger.safeLog(
+        ' ----------------- status bt $status ------------------ ',
+      );
+      _currentStatus = status;
+      if (status == BTStatus.connected) {
+        _isConnected = true;
+      }
+      if (status == BTStatus.none) {
+        _isConnected = false;
+      }
+      if (status == BTStatus.connected && pendingTask != null) {
+        if (Platform.isAndroid) {
+          Future.delayed(const Duration(milliseconds: 1000), () {
+            PrinterManager.instance
+                .send(type: PrinterType.bluetooth, bytes: pendingTask!);
+            pendingTask = null;
+          });
+        } else if (Platform.isIOS) {
+          PrinterManager.instance
+              .send(type: PrinterType.bluetooth, bytes: pendingTask!);
+          pendingTask = null;
+        }
+      }
+    });
+
     //  PrinterManager.instance.stateUSB is only supports on Android
     _subscriptionUsbStatus = PrinterManager.instance.stateUSB.listen((status) {
       logger.safeLog(
@@ -39,6 +69,7 @@ class PrinterUtil {
       }
     });
   }
+
 
   Future<void> connect(PrinterModel selectedPrinter) async {
     switch (selectedPrinter.typePrinter) {
@@ -75,6 +106,8 @@ class PrinterUtil {
   Future<void> disconnect(PrinterModel selectedPrinter) async {
     printerManager.disconnect(type: selectedPrinter.typePrinter);
     _isConnected = false;
+    pendingTask = null;
+    _currentStatus = BTStatus.none;
   }
 
   Future<List<PrinterModel>> getListDevices() async {
@@ -82,6 +115,7 @@ class PrinterUtil {
     _subscription = printerManager
         .discovery(type: defaultPrinterType, isBle: _isBle)
         .listen((device) {
+      logger.safeLog('DEVICE NAME : ${device} ');
       logger.safeLog('DEVICE NAME : ${device.name} ');
       deviceList.add(PrinterModel(
         deviceName: device.name,
@@ -94,6 +128,21 @@ class PrinterUtil {
     });
     await _subscription?.asFuture();
     await _subscription?.cancel();
+    _subscription = printerManager
+        .discovery(type: PrinterType.bluetooth, isBle: true)
+        .listen((device) {
+      logger.safeLog('DEVICE NAME : ${device.name} ');
+      deviceList.add(PrinterModel(
+        deviceName: device.name,
+        address: device.address,
+        isBle: true,
+        vendorId: device.vendorId,
+        productId: device.productId,
+        typePrinter: PrinterType.bluetooth,
+      ));
+    });
+    await _subscription?.asFuture();
+    await _subscription?.cancel();
     logger.safeLog('deviceList : $deviceList');
     return deviceList;
   }
@@ -101,6 +150,7 @@ class PrinterUtil {
   Future<void> stopSubscription() async {
     _subscription?.cancel();
     _subscriptionUsbStatus?.cancel();
+    _subscriptionBtStatus?.cancel();
   }
 
   Future<bool> connectPrinter() async {
@@ -114,6 +164,7 @@ class PrinterUtil {
       // stoped subsciption
       _subscription?.cancel();
       _subscriptionUsbStatus?.cancel();
+      _subscriptionBtStatus?.cancel();
 
       logger.safeLog('IS CONNECTED : $_isConnected');
       return Future.value(_isConnected);
