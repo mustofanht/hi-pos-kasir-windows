@@ -195,6 +195,24 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                         ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                ),
+                child: Row(
+                  children: [
+                    leftColum(
+                      column: 'Biaya Admin',
+                      value: Text(
+                        'Rp.${common.currencyFormat(model.paymentDetail?.pymntAdminFee ?? 0)}',
+                        style: TextStyle(
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
                     leftColum(
                       column: 'Biaya Ppn',
                       value: Text(

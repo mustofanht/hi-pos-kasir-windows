@@ -190,15 +190,19 @@ class OrderPaymentController extends GetxController {
           // create Order and waiting the prosess of payment
           // logger.safeLog('val : $val');
           if (val != '') {
-            Get.back();
-            loading.popUpLoading();
             body.orderReffno = val;
-            await _doCreateOrderPayment(body: body, orderNo: orderNo);
-            await Future.delayed(const Duration(seconds: 1), () {});
-            Get.back();
-            // await orderUtil.handleOnPrintOrder(body);
-            await orderUtil.showPaymentSuccessAlert(_authToken, body, orderNo);
-            // alert.success('Success', 'Payment Success');
+            bool isSuccess =
+                await _doCreateOrderPayment(body: body, orderNo: orderNo);
+            if (isSuccess) {
+              Get.back();
+              loading.popUpLoading();
+              await Future.delayed(const Duration(seconds: 1), () {});
+              Get.back();
+              // await orderUtil.handleOnPrintOrder(body);
+              await orderUtil.showPaymentSuccessAlert(
+                  _authToken, body, orderNo);
+              // alert.success('Success', 'Payment Success');
+            }
           } else {
             alert.error(
               'Error',
@@ -213,7 +217,7 @@ class OrderPaymentController extends GetxController {
     }
   }
 
-  _doCreateOrderPayment({
+  Future<bool> _doCreateOrderPayment({
     required OrderModel body,
     Rxn<String>? orderNo,
   }) async {
@@ -225,22 +229,27 @@ class OrderPaymentController extends GetxController {
         reffNo: orderNo?.value,
       );
 
+      bool isSuccess = false;
       result.fold(
         (l) {
           logger.safeLog(l);
           logger.safeLog('Create Order Error 1');
           alert.error('Error', 'Terjadi Kesalahan!');
+          isSuccess = false;
         },
         (r) {
           logger.safeLog('Create Order Success');
           logger.safeLog(r.data);
           orderNo?.value = r.data?.orderNumber;
+          isSuccess = true;
         },
       );
+      return Future.value(isSuccess);
     } catch (e) {
       logger.safeLog(e);
       logger.safeLog('Create Order Error 2');
       alert.error('Error', 'Terjadi Kesalahan!');
+      return Future.value(false);
     }
   }
 }

@@ -48,6 +48,22 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
               fontWeight: fontWeight.bold,
             ),
           ),
+          SizedBox(
+            height: layoutStyle.defaultMargin,
+          ),
+          Text(
+            'Biaya Admin',
+            style: TextStyle(
+              color: colorStyle.grey,
+              fontSize: fontSize.title,
+            ),
+          ),
+          Text(
+            'Rp.${common.currencyFormat(controller.paymentFee.value)}',
+            style: TextStyle(
+              fontSize: fontSize.title ,
+            ),
+          ),
         ],
       ),
     );

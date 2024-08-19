@@ -1,8 +1,8 @@
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
-import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
@@ -94,9 +94,7 @@ class SalePage extends GetView<SalePageController> {
                           height: layoutStyle.blockVertical * 5,
                           child: CustomButton(
                             onPressed: () {
-                              controller.openPayment.value =
-                                  !controller.openPayment.value;
-                              controller.update();
+                              controller.doBackPayment();
                             },
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
@@ -257,23 +255,28 @@ class SalePage extends GetView<SalePageController> {
                         ),
                         child: Row(
                           children: controller.paymentType.map((element) {
-                            String ic = assetsConstant.icPaymentQr;
-                            String label = '';
-                            if (PaymentMethod.QRIS == element.id) {
-                              ic = assetsConstant.icPaymentQr;
-                            } else if (PaymentMethod.EDC == element.id) {
-                              ic = assetsConstant.icPaymentEdc;
-                              label = 'EDC';
-                            } else if (PaymentMethod.TRAVELOKA == element.id) {
-                              ic = assetsConstant.icPaymentTraveloka;
-                              label = 'Traveloka';
-                            } else if (PaymentMethod.TICKET == element.id) {
-                              ic = assetsConstant.icPaymentTiket;
-                              label = 'Ticket.com';
-                            }
                             if (element.id == null) {
                               return Container();
                             }
+                            MstPayment mstPayment =
+                                controller.mstPayments.firstWhere(
+                              (e) => e.pymntCode == element.id,
+                            );
+                            String ic = assetsConstant.icPaymentEdc;
+                            String label = mstPayment.pymntName ?? '-';
+                            // String ic = assetsConstant.icPaymentQr;
+                            // if (PaymentMethod.QRIS == element.id) {
+                            //   ic = assetsConstant.icPaymentQr;
+                            // } else if (PaymentMethod.EDC == element.id) {
+                            //   ic = assetsConstant.icPaymentEdc;
+                            //   label = mstPayment.pymntName;
+                            // } else if (PaymentMethod.TRAVELOKA == element.id) {
+                            //   ic = assetsConstant.icPaymentTraveloka;
+                            //   label = mstPayment.pymntName;
+                            // } else if (PaymentMethod.TICKET == element.id) {
+                            //   ic = assetsConstant.icPaymentTiket;
+                            //   label = mstPayment.pymntName;
+                            // }
                             return GestureDetector(
                               onTap: () {
                                 controller.doSelectPaymentType(element);

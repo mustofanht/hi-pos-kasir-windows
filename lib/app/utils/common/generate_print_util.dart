@@ -267,6 +267,23 @@ class GeneratePrintUtil {
         ),
       ],
     );
+    if (body.adminFeeAmt > 0) {
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Biaya Admin',
+            width: 6,
+          ),
+          PosColumn(
+            text: common.currencyFormat(body.adminFeeAmt),
+            width: 6,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          ),
+        ],
+      );
+    }
     if (totalVoucher > 0) {
       bytes += generator.row(
         [

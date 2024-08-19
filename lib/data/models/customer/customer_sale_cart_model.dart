@@ -9,12 +9,14 @@ class CustomerSaleCart {
   List<CartVoucher>? voucherList = [];
   List<CartAddon>? addonList = [];
   double? totalOrder;
+  double? paymentFee;
 
   CustomerSaleCart({
     this.ticketList,
     this.addonList,
     this.voucherList,
     this.totalOrder,
+    this.paymentFee,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class CustomerSaleCart {
       'addonList': addonList?.map((e) => e.toJson()).toList(),
       'voucherList': voucherList?.map((e) => e.toJson2()).toList(),
       'totalOrder': totalOrder,
+      'paymentFee': paymentFee,
     };
   }
 
@@ -63,6 +66,9 @@ class CustomerSaleCart {
       }
       totalOrder = json['totalOrder'] != null
           ? (json['totalOrder'] as num).toDouble()
+          : null;
+      paymentFee = json['paymentFee'] != null
+          ? (json['paymentFee'] as num).toDouble()
           : null;
     } catch (e) {
       logger.safeLog('Error $e');

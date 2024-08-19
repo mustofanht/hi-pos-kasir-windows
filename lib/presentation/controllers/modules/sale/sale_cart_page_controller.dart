@@ -8,6 +8,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
@@ -20,6 +21,7 @@ class SaleCartPageController extends GetxController {
   DisplayUtil displayUtil = DisplayUtil();
 
   var totalOrderAmnt = RxDouble(0);
+  var finalTotalOrderAmt = RxDouble(0);
   var totalOrderQty = RxInt(0);
 
   final addonList = RxList<CartAddon>([]);
@@ -30,6 +32,8 @@ class SaleCartPageController extends GetxController {
     cartVoucherList: voucherList,
     addonList: addonList,
   ).obs;
+
+  final selectedMstPayment = MstPayment().obs;
 
   addTicket(TicketEntity ticket) {
     ticketList.add(
@@ -147,31 +151,25 @@ class SaleCartPageController extends GetxController {
       totalAmntFinal = ticketTotalAmnt;
     }
     totalOrderAmnt.value = totalAmntFinal > 0 ? totalAmntFinal : 0;
+    double paymentFee = getPricePayemntFee();
+    logger.safeLog('TOTAL PAYMENT : ${totalOrderAmnt.value}');
+    logger.safeLog('FEE PAYMENT : $paymentFee');
+    finalTotalOrderAmt.value = (totalOrderAmnt.value + paymentFee);
     totalOrderQty.value = ticketTotalQtyVal;
 
     salePageController.totalOrderQty(totalOrderQty.value);
-    salePageController.totalOrderAmnt(totalOrderAmnt.value);
+    salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
     salePageController.addonList(addonList);
     salePageController.voucherList(voucherList);
     salePageController.ticketList(ticketList);
 
     update();
 
-    displayUtil.updateSecondDisplay(
-      CustomerDisplay(
-        key: CustomerDisplayAction.ADD_CART,
-        value: CustomerSaleCart(
-          ticketList: ticketList,
-          addonList: addonList,
-          voucherList: voucherList,
-          totalOrder: totalOrderAmnt.value,
-        ).toJson(),
-      ).toJson(),
-    );
+    updateCustomer();
   }
 
   onPayment() {
-    if (totalOrderAmnt.value == 0) {
+    if (finalTotalOrderAmt.value == 0) {
       alert.warning('warning', 'Order cannot empty');
       return;
     }
@@ -182,7 +180,7 @@ class SaleCartPageController extends GetxController {
     } else {
       salePageController.doPrepared();
       salePageController.totalOrderQty(totalOrderQty.value);
-      salePageController.totalOrderAmnt(totalOrderAmnt.value);
+      salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
       salePageController.voucherList(voucherList);
       salePageController.ticketList(ticketList);
@@ -197,21 +195,11 @@ class SaleCartPageController extends GetxController {
       addonList.clear();
       voucherList.clear();
       calculateTotalOrder();
-      displayUtil.updateSecondDisplay(
-        CustomerDisplay(
-          key: CustomerDisplayAction.ADD_CART,
-          value: CustomerSaleCart(
-            ticketList: ticketList,
-            addonList: addonList,
-            voucherList: voucherList,
-            totalOrder: totalOrderAmnt.value,
-          ).toJson(),
-        ).toJson(),
-      );
+      updateCustomer();
 
       // clear and back payment page
       salePageController.totalOrderQty(totalOrderQty.value);
-      salePageController.totalOrderAmnt(totalOrderAmnt.value);
+      salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
       salePageController.voucherList(voucherList);
       salePageController.ticketList(ticketList);
@@ -223,5 +211,30 @@ class SaleCartPageController extends GetxController {
     }
     Get.back();
     update();
+  }
+
+  updateCustomer() {
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.ADD_CART,
+        value: CustomerSaleCart(
+          ticketList: ticketList,
+          addonList: addonList,
+          voucherList: voucherList,
+          totalOrder: finalTotalOrderAmt.value,
+          paymentFee: getPricePayemntFee(),
+        ).toJson(),
+      ).toJson(),
+    );
+  }
+
+  double getPricePayemntFee() {
+    if (selectedMstPayment.value.pymntTypeFee == UnitType.PERCENT) {
+      return (totalOrderAmnt.value *
+          (selectedMstPayment.value.pymntAdminFee ?? 0) /
+          100);
+    } else {
+      return selectedMstPayment.value.pymntAdminFee ?? 0;
+    }
   }
 }

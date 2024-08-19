@@ -311,6 +311,9 @@ class BuktiPembayaranPageController extends GetxController
           orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
           orderTotalItem: detailModel.value.orderTotalItem!,
           orderTotalAmt: detailModel.value.orderTotalAmt!,
+          adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee ??
+              selectedData.value.paymentDetail?.pymntAdminFee ??
+              0,
           orderUnitId: 0,
           orderLoacationId: 0,
           orderPaidBy: detailModel.value.orderPaidBy!,

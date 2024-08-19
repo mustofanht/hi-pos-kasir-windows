@@ -7,18 +7,24 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class SalePageController extends GetxController
     with SingleGetTickerProviderMixin {
   SalePageController();
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
 
   TabController? tabController;
@@ -66,6 +72,18 @@ class SalePageController extends GetxController
 
   final orderNo = Rxn<String>(null);
 
+  final isLoadingPayment = false.obs;
+  final mstPayments = <MstPayment>[].obs;
+
+  doBackPayment() {
+    openPayment.value = !openPayment.value;
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+    saleCartPageController.selectedMstPayment.value = MstPayment();
+    saleCartPageController.calculateTotalOrder();
+    update();
+  }
+
   refreshForm() {
     orderNo.value = null;
     orderNameController.text = '';
@@ -82,6 +100,14 @@ class SalePageController extends GetxController
 
   doSelectPaymentType(CustomIdNameEntity value) {
     selectedPaymentType.value = value;
+
+    MstPayment mstPayment = mstPayments.firstWhere(
+      (e) => e.pymntCode == value.id,
+    );
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+    saleCartPageController.selectedMstPayment.value = mstPayment;
+    saleCartPageController.calculateTotalOrder();
     update();
   }
 
@@ -89,7 +115,7 @@ class SalePageController extends GetxController
     doInitialValueDropdown();
   }
 
-  doInitialValueDropdown() {
+  doInitialValueDropdown() async {
     paymentType.clear();
     paymentType.insert(
       0,
@@ -98,35 +124,81 @@ class SalePageController extends GetxController
         name: ' --- Pilih Pembayaran --- ',
       ),
     );
-    paymentType.insert(
-      1,
-      CustomIdNameEntity(
-        id: PaymentMethod.QRIS,
-        name: 'Qris',
-      ),
+
+    var result;
+    List<FilterQuery> dataFilter = [];
+    Map<String, dynamic> param = {
+      'page': '0',
+      'size': '999',
+      'flMobile': 'Y',
+    };
+
+    // dataFilter.add(
+    //   apiFilterUtil.addSearch(
+    //     'pymntStatus',
+    //     OPERATOR_CONSTANTS.EQUALS,
+    //     'Y',
+    //   )!,
+    // );
+
+    result = await _service.masterData.getAll(
+      authToken: _authToken,
+      dataFilter: dataFilter,
+      paramsFilter: param,
     );
-    paymentType.insert(
-      2,
-      CustomIdNameEntity(
-        id: PaymentMethod.EDC,
-        name: 'EDC',
-      ),
-    );
-    paymentType.insert(
-      3,
-      CustomIdNameEntity(
-        id: PaymentMethod.TRAVELOKA,
-        name: 'Traveloka',
-      ),
-    );
-    paymentType.insert(
-      4,
-      CustomIdNameEntity(
-        id: PaymentMethod.TICKET,
-        name: 'Tiket',
-      ),
-    );
+
+    result.fold((l) {
+      logger.safeLog(l);
+      isLoadingPayment.value = false;
+    }, (r) {
+      // if (page == 0) {
+      //   dataList.value = r.data!;
+      // } else {
+      // }
+      // paymentType.addAll(r.data);
+      if (r.data != null) {
+        mstPayments.value = r.data;
+        for (var element in mstPayments) {
+          paymentType.add(
+            CustomIdNameEntity(
+              id: element.pymntCode,
+              name: element.pymntName,
+            ),
+          );
+        }
+      }
+      isLoadingPayment.value = false;
+    });
+    // paymentType.insert(
+    //   1,
+    //   CustomIdNameEntity(
+    //     id: PaymentMethod.QRIS,
+    //     name: 'Qris',
+    //   ),
+    // );
+    // paymentType.insert(
+    //   2,
+    //   CustomIdNameEntity(
+    //     id: PaymentMethod.EDC,
+    //     name: 'EDC',
+    //   ),
+    // );
+    // paymentType.insert(
+    //   3,
+    //   CustomIdNameEntity(
+    //     id: PaymentMethod.TRAVELOKA,
+    //     name: 'Traveloka',
+    //   ),
+    // );
+    // paymentType.insert(
+    //   4,
+    //   CustomIdNameEntity(
+    //     id: PaymentMethod.TICKET,
+    //     name: 'Tiket',
+    //   ),
+    // );
     selectedPaymentType.value = paymentType.first;
+    update();
   }
 
   bool doVerifyRequest() {
@@ -159,39 +231,58 @@ class SalePageController extends GetxController
       final OrderController orderController = Get.put(OrderController());
       final OrderPaymentController orderPayment =
           Get.put(OrderPaymentController());
-      if (selectedPaymentType.value.id == PaymentMethod.QRIS) {
+
+      MstPayment mstPayment = mstPayments.firstWhere(
+        (e) => e.pymntCode == selectedPaymentType.value.id,
+      );
+      if (mstPayment.pymntCategory == PaymentMethod.QRIS) {
+        OrderModel body = getBodyOrder(mstPayment.pymntCode!);
+        logger.safeLog('ORDER BODY : ${body.toJson()}');
         orderController.doPaymentQris(
-          body: getBodyOrder(),
+          body: body,
           orderNo: orderNo,
         );
-      } else if (selectedPaymentType.value.id == PaymentMethod.EDC) {
-        OrderModel body = getBodyOrder();
-        body.orderPaidBy = PaymentMethod.EDC;
+      } else if (mstPayment.pymntCategory != PaymentMethod.QRIS) {
+        OrderModel body = getBodyOrder(mstPayment.pymntCode!);
+        logger.safeLog('ORDER BODY : ${body.toJson()}');
         orderPayment.doOrderPayment(
           body: body,
           orderNo: orderNo,
         );
-      } else if (selectedPaymentType.value.id == PaymentMethod.TRAVELOKA) {
-        OrderModel body = getBodyOrder();
-        body.orderPaidBy = PaymentMethod.TRAVELOKA;
-        orderPayment.doOrderPayment(
-          body: body,
-          orderNo: orderNo,
-        );
-      } else if (selectedPaymentType.value.id == PaymentMethod.TICKET) {
-        OrderModel body = getBodyOrder();
-        body.orderPaidBy = PaymentMethod.TICKET;
-        orderPayment.doOrderPayment(
-          body: body,
-          orderNo: orderNo,
-        );
-      } else {
-        alert.error('Error', 'Please please select payment method');
       }
+      // if (selectedPaymentType.value.id == PaymentMethod.QRIS) {
+      //   orderController.doPaymentQris(
+      //     body: getBodyOrder(),
+      //     orderNo: orderNo,
+      //   );
+      // } else if (selectedPaymentType.value.id == PaymentMethod.EDC) {
+      //   OrderModel body = getBodyOrder();
+      //   body.orderPaidBy = PaymentMethod.EDC;
+      //   orderPayment.doOrderPayment(
+      //     body: body,
+      //     orderNo: orderNo,
+      //   );
+      // } else if (selectedPaymentType.value.id == PaymentMethod.TRAVELOKA) {
+      //   OrderModel body = getBodyOrder();
+      //   body.orderPaidBy = PaymentMethod.TRAVELOKA;
+      //   orderPayment.doOrderPayment(
+      //     body: body,
+      //     orderNo: orderNo,
+      //   );
+      // } else if (selectedPaymentType.value.id == PaymentMethod.TICKET) {
+      //   OrderModel body = getBodyOrder();
+      //   body.orderPaidBy = PaymentMethod.TICKET;
+      //   orderPayment.doOrderPayment(
+      //     body: body,
+      //     orderNo: orderNo,
+      //   );
+      // } else {
+      //   alert.error('Error', 'Please please select payment method');
+      // }
     }
   }
 
-  OrderModel getBodyOrder() {
+  OrderModel getBodyOrder(String paymentMethod) {
     List<OrderTicketModel> listTicket = [];
     List<OrderAddonModel> listProduct = [];
     List<OrderVoucherModel> listVoucher = [];
@@ -204,7 +295,7 @@ class SalePageController extends GetxController
         ticketList.map(
           (element) {
             totalTicketProduct += element.totalPrice!;
-            totalTotalTicketProduct += element.qtyOrder??0;
+            totalTotalTicketProduct += element.qtyOrder ?? 0;
             return OrderTicketModel(
               ticket: element.ticket,
               ordtcTicketId: element.ticket?.ticketId,
@@ -220,7 +311,7 @@ class SalePageController extends GetxController
         addonList.map(
           (element) {
             totalTicketProduct += element.totalPrice!;
-            totalTotalTicketProduct += element.qtyOrder??0;
+            totalTotalTicketProduct += element.qtyOrder ?? 0;
             return OrderAddonModel(
               addOn: element.addon,
               ordadAddonId: element.addon?.productId,
@@ -252,19 +343,22 @@ class SalePageController extends GetxController
       );
     }
 
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
     return OrderModel(
       orderName:
           orderNameController.text.isEmpty ? ' ' : orderNameController.text,
-      orderPhoneNumber:
-          noWaController.text.isEmpty ? ' ' : noWaController.text,
+      orderPhoneNumber: noWaController.text.isEmpty ? ' ' : noWaController.text,
       orderEmail: emailController.text.isEmpty ? ' ' : emailController.text,
       orderReffno: null,
       orderTotalItem: totalTotalTicketProduct,
       // orderTotalItem: totalOrderQty.value,
       orderTotalAmt: totalOrderAmnt.value,
+      adminFeeAmt: saleCartPageController.getPricePayemntFee(),
       orderUnitId: sessionUtil.getUnitId()!,
       orderLoacationId: 1,
-      orderPaidBy: PaymentMethod.QRIS,
+      orderPaidBy: paymentMethod,
       orderStatus: 'N',
       listTicket: listTicket,
       listProduct: listProduct,

@@ -563,8 +563,49 @@ class SaleCartPage extends GetView<SaleCartPageController> {
   Widget footerCart(BuildContext context) {
     return Container(
         padding: EdgeInsets.all(layoutStyle.defaultMargin),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              width: 1,
+              color: colorStyle.lightGrey,
+            ),
+          ),
+        ),
         child: Column(
           children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Biaya Admin',
+                      style: textStyle.blackText,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Obx(
+                        () => Text(
+                          controller.selectedMstPayment.value.pymntTypeFee ==
+                                  UnitType.PERCENT
+                              ? 'Rp.${common.currencyFormat(controller.getPricePayemntFee())}'
+                              : 'Rp.${common.currencyFormat(controller.getPricePayemntFee())}',
+                          style: textStyle.blackText,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: layoutStyle.defaultMargin / 2,
+            ),
             Row(
               children: [
                 Expanded(
@@ -586,7 +627,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        'Rp.${common.currencyFormat(controller.totalOrderAmnt.value)}',
+                        'Rp.${common.currencyFormat(controller.finalTotalOrderAmt.value)}',
                         style: TextStyle(
                           color: colorStyle.black,
                           fontWeight: FontWeight.bold,

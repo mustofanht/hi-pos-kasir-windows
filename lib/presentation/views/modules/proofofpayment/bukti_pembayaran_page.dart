@@ -347,6 +347,16 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                                                         .bold,
                                                               ),
                                                             ),
+                                                            Text(
+                                                              'X ${e.quantity ?? 0}',
+                                                              style: TextStyle(
+                                                                fontSize: fontSize
+                                                                    .subtitle,
+                                                                fontWeight:
+                                                                    fontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
                                                             // Text(
                                                             //   'Not Set Yet',
                                                             //   style: TextStyle(

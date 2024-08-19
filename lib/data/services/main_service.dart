@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/data/resources/network_source.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/base_response.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
@@ -37,6 +38,7 @@ part 'sale/voucher_service.dart';
 part 'sale/addon_service.dart';
 part 'order/order_ticket_service.dart';
 part 'payment/payment_order_service.dart';
+part 'master_data_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -46,4 +48,5 @@ class MainService {
   final message = MessageService();
   final shift = ShiftService();
   final promo = PromoService();
+  final masterData = MasterDataService();
 }

@@ -19,6 +19,7 @@ class CustomerSaleCartPageController extends GetxController {
   CustomerSaleCartPageController();
 
   var totalOrder = RxDouble(0);
+  var paymentFee = RxDouble(0);
   var reffNo = RxString('10108274389324');
 
   final addonList = RxList<CartAddon>([]);
@@ -128,6 +129,9 @@ class CustomerSaleCartPageController extends GetxController {
     }
     if (customerSaleCart.totalOrder != null) {
       totalOrder.value = customerSaleCart.totalOrder!;
+    }
+    if (customerSaleCart.paymentFee != null) {
+      paymentFee.value = customerSaleCart.paymentFee ?? 0;
     }
   }
 

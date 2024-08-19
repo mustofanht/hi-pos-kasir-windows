@@ -12,6 +12,7 @@ class OrderModel {
   String? qrCode;
   int orderTotalItem;
   double orderTotalAmt;
+  double adminFeeAmt;
   int orderUnitId;
   int orderLoacationId;
   String orderPaidBy;
@@ -32,6 +33,7 @@ class OrderModel {
     this.paymentDate,
     required this.orderTotalItem,
     required this.orderTotalAmt,
+    required this.adminFeeAmt,
     required this.orderUnitId,
     required this.orderLoacationId,
     required this.orderPaidBy,
@@ -52,6 +54,7 @@ class OrderModel {
       qrCode: json['qrCode'],
       orderTotalItem: json['orderTotalItem'],
       orderTotalAmt: json['orderTotalAmt'],
+      adminFeeAmt: json['adminFeeAmt'],
       orderUnitId: json['orderUnitId'],
       orderLoacationId: json['orderLoacationId'],
       orderPaidBy: json['orderPaidBy'],
@@ -79,6 +82,7 @@ class OrderModel {
       "qrCode": qrCode,
       "orderTotalItem": orderTotalItem,
       "orderTotalAmt": orderTotalAmt,
+      "adminFeeAmt": adminFeeAmt,
       "orderUnitId": orderUnitId,
       "orderLoacationId": orderLoacationId,
       "orderPaidBy": orderPaidBy,
