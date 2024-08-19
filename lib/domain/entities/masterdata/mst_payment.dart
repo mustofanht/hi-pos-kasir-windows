@@ -1,6 +1,8 @@
 class MstPayment {
   int? pymntLocId;
+  String? locName;
   String? pymntCode;
+  String? pymntImgPath;
   String? pymntName;
   String? pymntType;
   String? pymntCategory;
@@ -15,7 +17,9 @@ class MstPayment {
 
   MstPayment({
     this.pymntLocId,
+    this.locName,
     this.pymntCode,
+    this.pymntImgPath,
     this.pymntName,
     this.pymntType,
     this.pymntCategory,
@@ -32,7 +36,9 @@ class MstPayment {
   factory MstPayment.fromJson(Map<String, dynamic> json) {
     return MstPayment(
       pymntLocId: json['pymntLocId'],
+      locName: json['locName'],
       pymntCode: json['pymntCode'],
+      pymntImgPath: json['pymntImgPath'],
       pymntName: json['pymntName'],
       pymntType: json['pymntType'],
       pymntCategory: json['pymntCategory'],
@@ -52,7 +58,9 @@ class MstPayment {
   Map<String, dynamic> toJson() {
     return {
       'pymntLocId': pymntLocId,
+      'locName': locName,
       'pymntCode': pymntCode,
+      'pymntImgPath': pymntImgPath,
       'pymntName': pymntName,
       'pymntType': pymntType,
       'pymntCategory': pymntCategory,
