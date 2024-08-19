@@ -63,6 +63,20 @@ class LocalStorage {
     return directory;
   }
 
+  Future<void> deleteDirectory(Directory dir) async {
+  if (await dir.exists()) {
+    final List<FileSystemEntity> entities = dir.listSync();
+    for (FileSystemEntity entity in entities) {
+      if (entity is File) {
+        await entity.delete();
+      } else if (entity is Directory) {
+        await deleteDirectory(entity);
+      }
+    }
+    await dir.delete();
+  }
+}
+
   Future<void> downloadAndSaveImagePromo(String imageUrl) async {
     if (imageUrl.isNotEmpty) {
       logger.safeLog('URL : $imageUrl');
@@ -89,6 +103,9 @@ class LocalStorage {
         final finalDir = path.join(directory.path, promoDir);
 
         final dir = Directory(finalDir);
+
+        if (await dir.exists()) await deleteDirectory(dir);
+
         if (!await dir.exists()) {
           await dir.create(recursive: true);
         }
