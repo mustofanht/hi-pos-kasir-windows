@@ -196,8 +196,8 @@ class SaleCartPageController extends GetxController {
       voucherList.clear();
       calculateTotalOrder();
       updateCustomer();
-
       // clear and back payment page
+      selectedMstPayment.value = MstPayment();
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
