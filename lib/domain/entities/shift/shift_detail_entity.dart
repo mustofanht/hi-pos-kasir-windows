@@ -1,4 +1,6 @@
-class ShiftDetailEntity{
+import 'package:jaya_propertiy/domain/entities/shift/shift_detail_payment_entity.dart';
+
+class ShiftDetailEntity {
   final String? shftDate;
   final String? shftUserid;
   final DateTime? shftStart;
@@ -11,6 +13,7 @@ class ShiftDetailEntity{
   final String? edcSum;
   final String? travelokaSum;
   final String? ticketdotcomSum;
+  final List<ShiftDetailPaymentEntity>? listSumPayment;
 
   ShiftDetailEntity({
     this.shftDate,
@@ -25,14 +28,19 @@ class ShiftDetailEntity{
     this.edcSum,
     this.travelokaSum,
     this.ticketdotcomSum,
+    this.listSumPayment,
   });
 
   factory ShiftDetailEntity.fromJson(Map<String, dynamic> json) {
     return ShiftDetailEntity(
       shftDate: json['shftDate'],
       shftUserid: json['shftUserid'],
-      shftStart: json['shftStart'] != null ? DateTime.parse(json['shftStart']).toLocal() : null,
-      shftEnd: json['shftEnd'] != null ? DateTime.parse(json['shftEnd']).toLocal() : null,
+      shftStart: json['shftStart'] != null
+          ? DateTime.parse(json['shftStart']).toLocal()
+          : null,
+      shftEnd: json['shftEnd'] != null
+          ? DateTime.parse(json['shftEnd']).toLocal()
+          : null,
       userFullName: json['userFullName'],
       lokasiName: json['lokasiName'],
       tiketCount: json['tiketCount'],
@@ -41,6 +49,11 @@ class ShiftDetailEntity{
       edcSum: json['edcSum'],
       travelokaSum: json['travelokaSum'],
       ticketdotcomSum: json['ticketdotcomSum'],
+      listSumPayment: json['listSumPayment'] != null
+          ? (json['listSumPayment'] as List)
+              .map((i) => ShiftDetailPaymentEntity.fromJson(i))
+              .toList()
+          : null,
     );
   }
 
@@ -58,6 +71,7 @@ class ShiftDetailEntity{
       'edcSum': edcSum,
       'travelokaSum': travelokaSum,
       'ticketdotcomSum': ticketdotcomSum,
+      'listSumPayment': listSumPayment?.map((e) => e.toJson()).toList(),
     };
   }
 }

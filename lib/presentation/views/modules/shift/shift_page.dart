@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
@@ -373,104 +374,49 @@ class ShiftPage extends GetView<ShiftPageController> {
                                     key: '',
                                     head: true,
                                   ),
-                                  columnShift(
-                                    key: 'QRIS',
-                                    value: (detail.qrisSum ?? 0).toString(),
-                                    head: false,
-                                    // paddingKey: EdgeInsets.only(
-                                    //   left: layoutStyle.defaultMargin,
-                                    // ),
-                                  ),
-                                  columnShift(
-                                    key: 'EDC',
-                                    value: (detail.edcSum ?? 0).toString(),
-                                    head: false,
-                                    // paddingKey: EdgeInsets.only(
-                                    //   left: layoutStyle.defaultMargin,
-                                    // ),
-                                  ),
-                                  columnShift(
-                                    key: 'TRAVELOKA',
-                                    value:
-                                        (detail.travelokaSum ?? 0).toString(),
-                                    head: false,
-                                    // paddingKey: EdgeInsets.only(
-                                    //   left: layoutStyle.defaultMargin,
-                                    // ),
-                                  ),
-                                  columnShift(
-                                    key: 'TICKET.COM',
-                                    value: (detail.ticketdotcomSum ?? 0)
-                                        .toString(),
-                                    head: false,
-                                    // paddingKey: EdgeInsets.only(
-                                    //   left: layoutStyle.defaultMargin,
-                                    // ),
-                                  ),
+                                  if (detail.listSumPayment != null)
+                                    ...detail.listSumPayment!
+                                        .map(
+                                          (e) => columnShift(
+                                              key: e.name ?? '',
+                                              value:
+                                                  'Rp.${common.currencyFormat(e.amount ?? 0)}',
+                                              head: false),
+                                        )
+                                        .toList(),
                                   // columnShift(
-                                  //   key: 'E-Wallet',
-                                  //   head: true,
-                                  // ),
-                                  // columnShift(
-                                  //   key: 'Gopay',
-                                  //   value: 'IDR 1.200.000',
+                                  //   key: 'QRIS',
+                                  //   value: (detail.qrisSum ?? 0).toString(),
                                   //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
+                                  //   // paddingKey: EdgeInsets.only(
+                                  //   //   left: layoutStyle.defaultMargin,
+                                  //   // ),
                                   // ),
                                   // columnShift(
-                                  //   key: 'OVO',
-                                  //   value: 'IDR 1.000.000',
+                                  //   key: 'EDC',
+                                  //   value: (detail.edcSum ?? 0).toString(),
                                   //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
+                                  //   // paddingKey: EdgeInsets.only(
+                                  //   //   left: layoutStyle.defaultMargin,
+                                  //   // ),
                                   // ),
                                   // columnShift(
-                                  //   key: 'Dana',
-                                  //   value: 'IDR 100.000',
+                                  //   key: 'TRAVELOKA',
+                                  //   value:
+                                  //       (detail.travelokaSum ?? 0).toString(),
                                   //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
+                                  //   // paddingKey: EdgeInsets.only(
+                                  //   //   left: layoutStyle.defaultMargin,
+                                  //   // ),
                                   // ),
                                   // columnShift(
-                                  //   key: 'Link Aja',
-                                  //   value: 'IDR 0',
+                                  //   key: 'TICKET.COM',
+                                  //   value: (detail.ticketdotcomSum ?? 0)
+                                  //       .toString(),
                                   //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
-                                  // ),
-                                  // columnShift(
-                                  //   key: 'Shopee Pay',
-                                  //   value: 'IDR 0',
-                                  //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
-                                  // ),
-                                  // columnShift(
-                                  //   key: 'Kredivo',
-                                  //   value: 'IDR 0',
-                                  //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
-                                  // ),
-                                  // columnShift(
-                                  //   key: 'Akulaku',
-                                  //   value: 'IDR 0',
-                                  //   head: false,
-                                  //   paddingKey: EdgeInsets.only(
-                                  //     left: layoutStyle.defaultMargin,
-                                  //   ),
-                                  // ),
-                                  // columnShift(
-                                  //   key: 'Total',
-                                  //   value: 'IDR 4.600.000',
-                                  //   head: true,
+                                  //   // paddingKey: EdgeInsets.only(
+                                  //   //   left: layoutStyle.defaultMargin,
+                                  //   // ),
                                   // ),
                                 ],
                               ),
