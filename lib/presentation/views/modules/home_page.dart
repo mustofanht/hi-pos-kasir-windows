@@ -33,23 +33,45 @@ class HomePage extends GetView<HomePageController> {
                 controller.toggleDrawer();
               },
             ),
-            title: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hi, ${controller.user.value.userName}',
-                  style: TextStyle(
-                    fontSize: fontSize.title,
+            title: Padding(
+              padding:
+                  EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hi, ${controller.user.value.userName}',
+                          style: TextStyle(
+                            fontSize: fontSize.title,
+                          ),
+                        ),
+                        Text(
+                          controller.timeString.value,
+                          style: TextStyle(
+                            fontSize: fontSize.small,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Text(
-                  controller.timeString.value,
-                  style: TextStyle(
-                    fontSize: fontSize.small,
+                  Expanded(
+                    child: Container(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        controller.user.value.locationName ?? '',
+                        style: textStyle.whiteText.copyWith(
+                          fontSize: fontSize.title,
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           backgroundColor: colorStyle.white,
