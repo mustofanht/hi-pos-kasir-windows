@@ -4,6 +4,7 @@ import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_addon_page.dart';
@@ -256,98 +257,114 @@ class SalePage extends GetView<SalePageController> {
                         alignment: Alignment.centerLeft,
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: controller.paymentType.map((element) {
-                              if (element.id == null) {
-                                return Container();
-                              }
-                              MstPayment mstPayment =
-                                  controller.mstPayments.firstWhere(
-                                (e) => e.pymntCode == element.id,
-                              );
-                              String img = mstPayment.pymntImgPath ?? '';
-                              String label = mstPayment.pymntName ?? '-';
-                              logger.safeLog('IMG : $img');
-                              // String ic = assetsConstant.icPaymentQr;
-                              // if (PaymentMethod.QRIS == element.id) {
-                              //   ic = assetsConstant.icPaymentQr;
-                              // } else if (PaymentMethod.EDC == element.id) {
-                              //   ic = assetsConstant.icPaymentEdc;
-                              //   label = mstPayment.pymntName;
-                              // } else if (PaymentMethod.TRAVELOKA == element.id) {
-                              //   ic = assetsConstant.icPaymentTraveloka;
-                              //   label = mstPayment.pymntName;
-                              // } else if (PaymentMethod.TICKET == element.id) {
-                              //   ic = assetsConstant.icPaymentTiket;
-                              //   label = mstPayment.pymntName;
-                              // }
-                              return GestureDetector(
-                                onTap: () {
-                                  controller.doSelectPaymentType(element);
-                                },
-                                child: Container(
+                          child: controller.isLoadingPayment.value
+                              ? Container(
                                   margin: EdgeInsets.symmetric(
-                                    horizontal: layoutStyle.defaultMargin,
+                                    vertical: layoutStyle.defaultMargin / 2,
                                   ),
-                                  padding: EdgeInsets.all(
-                                      layoutStyle.defaultMargin / 2),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: colorStyle.grey,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      layoutStyle.defaultMargin / 2,
-                                    ),
-                                    color: controller
-                                                .selectedPaymentType.value.id ==
-                                            element.id
-                                        ? colorStyle.primary
-                                        : colorStyle.white,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      img.isNotEmpty
-                                          ? Image.network(
-                                              img,
-                                              width:
-                                                  layoutStyle.blockHorizontal *
-                                                      3,
-                                              height:
-                                                  layoutStyle.blockVertical * 3,
-                                              errorBuilder: (context, error,
-                                                      stackTrace) =>
-                                                  Image.asset(
-                                                assetsConstant.icPaymentEdc,
+                                  alignment: Alignment.centerLeft,
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 5,
+                                  child: loading.simpleLoading(),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children:
+                                      controller.paymentType.map((element) {
+                                    if (element.id == null) {
+                                      return Container();
+                                    }
+                                    MstPayment mstPayment =
+                                        controller.mstPayments.firstWhere(
+                                      (e) => e.pymntCode == element.id,
+                                    );
+                                    String img = mstPayment.pymntImgPath ?? '';
+                                    String label = mstPayment.pymntName ?? '-';
+                                    logger.safeLog('IMG : $img');
+                                    // String ic = assetsConstant.icPaymentQr;
+                                    // if (PaymentMethod.QRIS == element.id) {
+                                    //   ic = assetsConstant.icPaymentQr;
+                                    // } else if (PaymentMethod.EDC == element.id) {
+                                    //   ic = assetsConstant.icPaymentEdc;
+                                    //   label = mstPayment.pymntName;
+                                    // } else if (PaymentMethod.TRAVELOKA == element.id) {
+                                    //   ic = assetsConstant.icPaymentTraveloka;
+                                    //   label = mstPayment.pymntName;
+                                    // } else if (PaymentMethod.TICKET == element.id) {
+                                    //   ic = assetsConstant.icPaymentTiket;
+                                    //   label = mstPayment.pymntName;
+                                    // }
+                                    return GestureDetector(
+                                      onTap: () {
+                                        controller.doSelectPaymentType(element);
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: layoutStyle.defaultMargin,
+                                        ),
+                                        padding: EdgeInsets.all(
+                                            layoutStyle.defaultMargin / 2),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: colorStyle.grey,
+                                            width: 1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            layoutStyle.defaultMargin / 2,
+                                          ),
+                                          color: controller.selectedPaymentType
+                                                      .value.id ==
+                                                  element.id
+                                              ? colorStyle.primary
+                                              : colorStyle.white,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            img.isNotEmpty
+                                                ? Image.network(
+                                                    img,
+                                                    width: layoutStyle
+                                                            .blockHorizontal *
+                                                        3,
+                                                    height: layoutStyle
+                                                            .blockVertical *
+                                                        3,
+                                                    errorBuilder: (context,
+                                                            error,
+                                                            stackTrace) =>
+                                                        Image.asset(
+                                                      assetsConstant
+                                                          .icPaymentEdc,
+                                                    ),
+                                                  )
+                                                : Image.asset(
+                                                    assetsConstant.icPaymentEdc,
+                                                  ),
+                                            if (label.isNotEmpty) ...[
+                                              SizedBox(
+                                                width:
+                                                    layoutStyle.defaultMargin /
+                                                        2,
                                               ),
-                                            )
-                                          : Image.asset(
-                                              assetsConstant.icPaymentEdc,
-                                            ),
-                                      if (label.isNotEmpty) ...[
-                                        SizedBox(
-                                          width: layoutStyle.defaultMargin / 2,
+                                              Text(
+                                                label,
+                                                style: textStyle.blackText.copyWith(
+                                                    color: controller
+                                                                .selectedPaymentType
+                                                                .value
+                                                                .id ==
+                                                            element.id
+                                                        ? colorStyle.white
+                                                        : colorStyle.black),
+                                              ),
+                                            ]
+                                          ],
                                         ),
-                                        Text(
-                                          label,
-                                          style: textStyle.blackText.copyWith(
-                                              color: controller
-                                                          .selectedPaymentType
-                                                          .value
-                                                          .id ==
-                                                      element.id
-                                                  ? colorStyle.white
-                                                  : colorStyle.black),
-                                        ),
-                                      ]
-                                    ],
-                                  ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
-                              );
-                            }).toList(),
-                          ),
                         ),
                       ),
                     ],

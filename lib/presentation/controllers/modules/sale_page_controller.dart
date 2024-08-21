@@ -133,70 +133,35 @@ class SalePageController extends GetxController
       'flMobile': 'Y',
     };
 
-    // dataFilter.add(
-    //   apiFilterUtil.addSearch(
-    //     'pymntStatus',
-    //     OPERATOR_CONSTANTS.EQUALS,
-    //     'Y',
-    //   )!,
-    // );
+    isLoadingPayment.value = true;
+    try {
+      result = await _service.masterData.getAll(
+        authToken: _authToken,
+        dataFilter: dataFilter,
+        paramsFilter: param,
+      );
 
-    result = await _service.masterData.getAll(
-      authToken: _authToken,
-      dataFilter: dataFilter,
-      paramsFilter: param,
-    );
-
-    result.fold((l) {
-      logger.safeLog(l);
-      isLoadingPayment.value = false;
-    }, (r) {
-      // if (page == 0) {
-      //   dataList.value = r.data!;
-      // } else {
-      // }
-      // paymentType.addAll(r.data);
-      if (r.data != null) {
-        mstPayments.value = r.data;
-        for (var element in mstPayments) {
-          paymentType.add(
-            CustomIdNameEntity(
-              id: element.pymntCode,
-              name: element.pymntName,
-            ),
-          );
+      result.fold((l) {
+        logger.safeLog(l);
+        isLoadingPayment.value = false;
+      }, (r) {
+        if (r.data != null) {
+          mstPayments.value = r.data;
+          for (var element in mstPayments) {
+            paymentType.add(
+              CustomIdNameEntity(
+                id: element.pymntCode,
+                name: element.pymntName,
+              ),
+            );
+          }
         }
-      }
+        isLoadingPayment.value = false;
+      });
+    } catch (e) {
       isLoadingPayment.value = false;
-    });
-    // paymentType.insert(
-    //   1,
-    //   CustomIdNameEntity(
-    //     id: PaymentMethod.QRIS,
-    //     name: 'Qris',
-    //   ),
-    // );
-    // paymentType.insert(
-    //   2,
-    //   CustomIdNameEntity(
-    //     id: PaymentMethod.EDC,
-    //     name: 'EDC',
-    //   ),
-    // );
-    // paymentType.insert(
-    //   3,
-    //   CustomIdNameEntity(
-    //     id: PaymentMethod.TRAVELOKA,
-    //     name: 'Traveloka',
-    //   ),
-    // );
-    // paymentType.insert(
-    //   4,
-    //   CustomIdNameEntity(
-    //     id: PaymentMethod.TICKET,
-    //     name: 'Tiket',
-    //   ),
-    // );
+      logger.safeLog(e);
+    }
     selectedPaymentType.value = paymentType.first;
     update();
   }
