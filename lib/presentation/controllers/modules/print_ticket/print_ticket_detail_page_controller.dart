@@ -176,6 +176,7 @@ class PrintTicketDetailPageController extends GetxController {
   doActiveTicket() {
     if (model.value.paymentDetail?.pymntStatus == 'P' ||
         model.value.orderStatus == 'C') {
+    // if (parentModel.value.otdtlStatus == 'Y') {
       alert.warning('Warning', 'Sudah melakukan aktifasi tiket');
     } else {
       dialog.dialogCustomerLeftRight(

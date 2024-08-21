@@ -520,6 +520,7 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
               ),
               (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
                       controller.model.value.orderStatus != 'C')
+              // controller.parentModel.value.otdtlStatus == 'Y'
                   ? Container()
                   : CustomButton(
                       onPressed: () {

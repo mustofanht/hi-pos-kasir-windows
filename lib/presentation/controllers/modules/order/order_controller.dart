@@ -262,7 +262,8 @@ class OrderUtil {
     AuthToken authToken,
     OrderModel body,
     Rxn<String>? orderNo,
-  ) {
+  ) async {
+    await _createTicket(authToken, body, orderNo);
     dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
@@ -292,10 +293,14 @@ class OrderUtil {
     AuthToken authToken,
     OrderModel body,
   ) {
+    logger.safeLog('NO WA : ${body.orderPhoneNumber}');
+    logger.safeLog('EMAIL : ${body.orderEmail}');
     dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
-      orderEmailValue: body.orderEmail,
-      orderNoWaValue: body.orderPhoneNumber,
+      orderEmailValue: body.orderEmail != ' ' ? body.orderEmail : null,
+      orderNoWaValue:
+          body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
+      // orderNoWaValue: body.orderPhoneNumber,
       onSendEmail: (val) {
         logger.safeLog('Email : ${val}');
         var result = _service.message.sendEmail(
@@ -338,17 +343,7 @@ class OrderUtil {
     OrderModel body,
     Rxn<String>? orderNo,
   ) async {
-    if (orderNo?.value != null) {
-      List<ResponseCreateTicketNoEntity> listCreateTicket =
-          await createTicketNo(
-        authToken,
-        orderNo!.value!,
-      );
-      body.paymentDate = DateTime.now();
-      body.orderNumber = orderNo.value ?? '';
-      body.listCreateTicket = listCreateTicket;
-    }
-
+    await _createTicket(authToken, body, orderNo);
     logger.safeLog('TEST : ${body.toJson()}');
 
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
@@ -405,6 +400,23 @@ class OrderUtil {
     } else {
       alert.error('Error', 'please check connection printer');
       printerUtil.connectPrinter();
+    }
+  }
+
+  Future<void> _createTicket(
+    AuthToken authToken,
+    OrderModel body,
+    Rxn<String>? orderNo,
+  ) async {
+    if (orderNo?.value != null) {
+      List<ResponseCreateTicketNoEntity> listCreateTicket =
+          await createTicketNo(
+        authToken,
+        orderNo!.value!,
+      );
+      body.paymentDate = DateTime.now();
+      body.orderNumber = orderNo.value ?? '';
+      body.listCreateTicket = listCreateTicket;
     }
   }
 

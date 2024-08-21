@@ -169,7 +169,7 @@ class SaleCartPageController extends GetxController {
   }
 
   onPayment() {
-    if (finalTotalOrderAmt.value == 0) {
+    if (finalTotalOrderAmt.value < 0) {
       alert.warning('warning', 'Order cannot empty');
       return;
     }
@@ -191,13 +191,13 @@ class SaleCartPageController extends GetxController {
 
   clearCartOrder() {
     try {
+      selectedMstPayment.value = MstPayment();
       ticketList.clear();
       addonList.clear();
       voucherList.clear();
       calculateTotalOrder();
       updateCustomer();
       // clear and back payment page
-      selectedMstPayment.value = MstPayment();
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
