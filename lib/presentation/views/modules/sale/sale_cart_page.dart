@@ -573,36 +573,37 @@ class SaleCartPage extends GetView<SaleCartPageController> {
         ),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Biaya Admin',
-                      style: textStyle.blackText,
+            if (controller.selectedMstPayment.value.pymntFlBbnCust == 'Y')
+              Row(
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Biaya Admin',
+                        style: textStyle.blackText,
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Obx(
-                        () => Text(
-                          controller.selectedMstPayment.value.pymntTypeFee ==
-                                  UnitType.PERCENT
-                              ? 'Rp.${common.currencyFormat(controller.getPricePayemntFee())}'
-                              : 'Rp.${common.currencyFormat(controller.getPricePayemntFee())}',
-                          style: textStyle.blackText,
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Obx(
+                          () => Text(
+                            controller.selectedMstPayment.value.pymntTypeFee ==
+                                    UnitType.PERCENT
+                                ? 'Rp.${common.currencyFormat(controller.getPricePayemntFee())}'
+                                : 'Rp.${common.currencyFormat(controller.getPricePayemntFee())}',
+                            style: textStyle.blackText,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             SizedBox(
               height: layoutStyle.defaultMargin / 2,
             ),

@@ -229,12 +229,16 @@ class SaleCartPageController extends GetxController {
   }
 
   double getPricePayemntFee() {
-    if (selectedMstPayment.value.pymntTypeFee == UnitType.PERCENT) {
-      return (totalOrderAmnt.value *
-          (selectedMstPayment.value.pymntAdminFee ?? 0) /
-          100);
+    if (selectedMstPayment.value.pymntFlBbnCust == 'Y') {
+      if (selectedMstPayment.value.pymntTypeFee == UnitType.PERCENT) {
+        return (totalOrderAmnt.value *
+            (selectedMstPayment.value.pymntAdminFee ?? 0) /
+            100);
+      } else {
+        return selectedMstPayment.value.pymntAdminFee ?? 0;
+      }
     } else {
-      return selectedMstPayment.value.pymntAdminFee ?? 0;
+      return 0;
     }
   }
 }

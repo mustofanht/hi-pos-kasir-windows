@@ -14,6 +14,7 @@ class MstPayment {
   String? pymntCreatedBy;
   DateTime? pymntUpdatedDate;
   String? pymntUpdatedBy;
+  String? pymntFlBbnCust;
 
   MstPayment({
     this.pymntLocId,
@@ -31,6 +32,7 @@ class MstPayment {
     this.pymntCreatedBy,
     this.pymntUpdatedDate,
     this.pymntUpdatedBy,
+    this.pymntFlBbnCust,
   });
 
   factory MstPayment.fromJson(Map<String, dynamic> json) {
@@ -52,6 +54,7 @@ class MstPayment {
           ? DateTime.parse(json['pymntUpdatedDate']).toLocal()
           : null,
       pymntUpdatedBy: json['pymntUpdatedBy'],
+      pymntFlBbnCust: json['pymntFlBbnCust'],
     );
   }
 
@@ -73,6 +76,7 @@ class MstPayment {
       'pymntUpdatedDate':
           pymntUpdatedDate != null ? pymntUpdatedDate!.toIso8601String() : null,
       'pymntUpdatedBy': pymntUpdatedBy,
+      'pymntFlBbnCust': pymntFlBbnCust,
     };
   }
 }
