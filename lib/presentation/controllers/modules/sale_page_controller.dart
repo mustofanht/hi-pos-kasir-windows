@@ -26,6 +26,8 @@ class SalePageController extends GetxController
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
+  
+  final scrollController = ScrollController();
 
   TabController? tabController;
 
@@ -117,13 +119,13 @@ class SalePageController extends GetxController
 
   doInitialValueDropdown() async {
     paymentType.clear();
-    paymentType.insert(
-      0,
-      CustomIdNameEntity(
-        id: null,
-        name: ' --- Pilih Pembayaran --- ',
-      ),
-    );
+    // paymentType.insert(
+    //   0,
+    //   CustomIdNameEntity(
+    //     id: null,
+    //     name: ' --- Pilih Pembayaran --- ',
+    //   ),
+    // );
 
     var result;
     List<FilterQuery> dataFilter = [];

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 // import 'package:jaya_propertiy/app/utils/common/notification_utils.dart';
@@ -36,7 +37,7 @@ import 'package:jaya_propertiy/presentation/views/modules/shift/shift_page.dart'
 
 class HomePageController extends GetxController {
   HomePageController();
-  // final _authToken = Get.arguments[argConstant.authToken];
+  final _authToken = Get.arguments[argConstant.authToken];
 
   final _service = MainService();
   final authToken = Get.arguments[argConstant.authToken];
@@ -72,6 +73,8 @@ class HomePageController extends GetxController {
     //     .listen((ReceivedNotification receivedNotification) async {
     //   logger.safeLog('Payload : ${receivedNotification.toJson()}');
     // });
+
+    onSelectedMenu(MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined));
 
     username.value = sessionUtil.getUserName();
     timeString.value = _formatDateTime(DateTime.now());
@@ -126,19 +129,38 @@ class HomePageController extends GetxController {
     MenuItem(id: 6, name: 'Logout', icon: Icons.logout),
   ];
 
-  void onSelectedMenu(MenuItem menu) {
-    if (menu.id == 6) {
-      dialog.dialogDelete(
-        title: 'LOGOUT',
-        msg: 'Apakah anda yakin akan logout?',
-        onYes: () async {
-          Get.back();
-          await logout();
-        },
-      );
-    } else {
-      selectedMenu.value = menu.id;
-      update();
+  Future<void> onSelectedMenu(MenuItem menu) async {
+    logger.safeLog('CURR MENU : ${selectedMenu.value}');
+    bool isValid = true;
+    if (menu.id == 1) {
+      bool isActiveKasir = await common.shiftActive(_authToken);
+      if (!isActiveKasir) {
+        isValid = false;
+        alert.warning(
+          'Shift',
+          'Tidak bisa melakukan penjualan, shift sudah berakhir',
+        );
+
+        if(selectedMenu.value == 1){
+          selectedMenu.value = 2;
+        }
+      }
+    }
+
+    if (isValid) {
+      if (menu.id == 6) {
+        dialog.dialogDelete(
+          title: 'LOGOUT',
+          msg: 'Apakah anda yakin akan logout?',
+          onYes: () async {
+            Get.back();
+            await logout();
+          },
+        );
+      } else {
+        selectedMenu.value = menu.id;
+        update();
+      }
     }
   }
 

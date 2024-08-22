@@ -135,39 +135,42 @@ class ShiftPageController extends GetxController {
 
     try {
       var result;
-      List<FilterQuery> dataFilter = [];
-      Map<String, dynamic> param = {
-        'page': '0',
-        'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
-        SORTING_CONSTANT.DESC: 'shftStart',
-      };
+      // List<FilterQuery> dataFilter = [];
+      // Map<String, dynamic> param = {
+      //   'page': '0',
+      //   'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+      //   SORTING_CONSTANT.DESC: 'shftStart',
+      // };
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'shftEnd',
-          OPERATOR_CONSTANTS.EQUALS,
-          OPERATOR_CONSTANTS.IS_NULL,
-        )!,
-      );
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'shftUserid',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getUserName(),
-        )!,
-      );
+      // dataFilter.add(
+      //   apiFilterUtil.addSearch(
+      //     'shftEnd',
+      //     OPERATOR_CONSTANTS.EQUALS,
+      //     OPERATOR_CONSTANTS.IS_NULL,
+      //   )!,
+      // );
+      // dataFilter.add(
+      //   apiFilterUtil.addSearch(
+      //     'shftUserid',
+      //     OPERATOR_CONSTANTS.EQUALS,
+      //     sessionUtil.getUserName(),
+      //   )!,
+      // );
 
-      result = await _service.shift.getAll(
+      // result = await _service.shift.getAll(
+      //   authToken: _authToken,
+      //   dataFilter: dataFilter,
+      //   paramsFilter: param,
+      // );
+      result = await _service.shift.getCurrentShift(
         authToken: _authToken,
-        dataFilter: dataFilter,
-        paramsFilter: param,
       );
       result.fold((l) {
         logger.safeLog(l);
         isLoadingShiftCurrent.value = false;
       }, (r) {
-        if (r.data.isNotEmpty) {
-          shiftCurrent.value = r.data.first;
+        if (r != null) {
+          shiftCurrent.value = r;
         }
         isLoadingShiftCurrent.value = false;
       });

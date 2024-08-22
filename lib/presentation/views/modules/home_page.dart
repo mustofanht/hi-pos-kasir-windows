@@ -18,7 +18,7 @@ class HomePage extends GetView<HomePageController> {
       initState: (state) {},
       builder: (context) {
         return Scaffold(
-          resizeToAvoidBottomInset: true,
+          resizeToAvoidBottomInset: false,
           key: controller.scaffoldKey,
           appBar: AppBar(
             toolbarHeight: layoutStyle.blockVertical * 10,

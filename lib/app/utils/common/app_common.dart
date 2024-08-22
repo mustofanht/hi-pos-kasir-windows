@@ -259,6 +259,23 @@ class AppCommon {
             return const Center(child: Text('Img Not Found'));
           });
   }
+
+  Future<bool> shiftActive(AuthToken _authToken) async {
+    MainService _service = MainService();
+    bool isActive = true;
+    var result = await _service.shift.getCurrentShift(authToken: _authToken);
+    result.fold(
+      (l) {
+        logger.safeLog(l);
+        isActive = false;
+      },
+      (r) {
+        logger.safeLog(r);
+        isActive = (r != null);
+      },
+    );
+    return isActive;
+  }
 }
 
 AppCommon common = new AppCommon();
