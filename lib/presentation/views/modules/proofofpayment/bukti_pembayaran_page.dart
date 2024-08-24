@@ -257,7 +257,8 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                               ),
                                             ),
                                             Text(
-                                              'Metode Pembayaran: ${MapPaymentMethod[model.orderPaidBy]}',
+                                              // 'Metode Pembayaran: ${MapPaymentMethod[model.orderPaidBy]}',
+                                              'Metode Pembayaran: ${model.orderPaidByName}',
                                               style: TextStyle(
                                                 fontSize: fontSize.subtitle,
                                               ),

@@ -14,6 +14,7 @@ class TrnDetailOrderEntity {
   double? orderTotalAmt;
   double? orderTotalTgh;
   String? orderPaidBy;
+  String? orderPaidByName;
   String? orderSource;
   String? orderStatus;
   dynamic voucher;
@@ -34,6 +35,7 @@ class TrnDetailOrderEntity {
     this.orderTotalAmt,
     this.orderTotalTgh,
     this.orderPaidBy,
+    this.orderPaidByName,
     this.orderSource,
     this.orderStatus,
     this.voucher,
@@ -64,6 +66,7 @@ class TrnDetailOrderEntity {
           ? (json['orderTotalTgh'] as num).toDouble()
           : null,
       orderPaidBy: json['orderPaidBy'],
+      orderPaidByName: json['orderPaidByName'],
       orderSource: json['orderSource'],
       orderStatus: json['orderStatus'],
       voucher: json['voucher'],
@@ -107,6 +110,7 @@ class TrnDetailOrderEntity {
       'orderTotalAmt': orderTotalAmt,
       'orderTotalTgh': orderTotalTgh,
       'orderPaidBy': orderPaidBy,
+      'orderPaidByName': orderPaidByName,
       'orderSource': orderSource,
       'orderStatus': orderStatus,
       'voucher': voucher,
