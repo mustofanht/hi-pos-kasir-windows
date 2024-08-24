@@ -50,8 +50,17 @@ class OrderTicketService {
 
     final uri = source.baseUri(path: path);
 
+    var body = json.encode({
+      // "orderActivationReason": "",
+      // "orderActivationPath": "",
+      "orderStatus": "C"
+    });
+
+    logger.safeLog('BODY CREATE TICKET : $body');
+
     final response = await http.post(
       uri,
+      body: body,
       headers: common.generateHeader(
         sessionToken: authToken,
       ),
