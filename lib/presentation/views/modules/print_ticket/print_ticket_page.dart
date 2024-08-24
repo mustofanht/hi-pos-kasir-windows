@@ -228,7 +228,15 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ),
             controller: controller.searchController,
             onChanged: (val) {
+              // final cursorPosition = controller.searchController.selection;
+
               controller.searchController.text = val;
+
+              controller.searchController.selection =
+                  TextSelection.fromPosition(
+                TextPosition(offset: controller.searchController.text.length),
+              );
+
               controller.update();
             },
             // onSubmit: (val) async {
@@ -251,6 +259,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
               //   Icons.search,
               // ),
             ),
+            keyboardType: TextInputType.text,
           ),
           SizedBox(height: layoutStyle.defaultMargin),
           contentTableSection(controller),

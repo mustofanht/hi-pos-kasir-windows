@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
@@ -164,6 +165,14 @@ class PrintTicketPageController extends GetxController
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'desc': 'orderDate',
       };
+
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'locId',
+          OPERATOR_CONSTANTS.EQUALS,
+          sessionUtil.getLocationId(),
+        )!,
+      );
 
       if (search != '' && search != null) {
         dataFilter.add(

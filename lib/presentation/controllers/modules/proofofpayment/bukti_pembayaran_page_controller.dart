@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/message_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -123,6 +124,14 @@ class BuktiPembayaranPageController extends GetxController
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'desc': 'orderDate',
       };
+
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'orderLoacationId',
+          OPERATOR_CONSTANTS.EQUALS,
+          sessionUtil.getLocationId(),
+        )!,
+      );
 
       dataFilter.add(
         apiFilterUtil.addSearch(

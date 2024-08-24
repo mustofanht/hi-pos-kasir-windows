@@ -101,6 +101,7 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                     style: widget.style ?? textStyle.blackText,
                     maxLines: 1,
                     textAlignVertical: TextAlignVertical.center,
+                    textDirection: TextDirection.ltr,
                     decoration: widget.decoration.copyWith(
                       counterText: "",
                       border: InputBorder.none,
