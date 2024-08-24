@@ -741,7 +741,8 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                 height: layoutStyle.blockVertical * 10,
                               ),
                               Text(
-                                MapPaymentMethod[model.orderPaidBy] ?? '',
+                                // MapPaymentMethod[model.orderPaidBy] ?? '',
+                                model.orderPaidByName ?? '',
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                                 softWrap: true,
