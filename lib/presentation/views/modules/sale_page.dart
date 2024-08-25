@@ -141,6 +141,7 @@ class SalePage extends GetView<SalePageController> {
             vertical: layoutStyle.defaultMargin / 4,
             horizontal: layoutStyle.defaultMargin,
           ),
+          height: layoutStyle.screenHeight,
           child: Column(
             children: [
               Container(
@@ -213,181 +214,156 @@ class SalePage extends GetView<SalePageController> {
                     ),
                     color: colorStyle.white,
                   ),
-                  child: Column(
-                    children: [
-                      Center(
-                        child: Text(
-                          common
-                              .currencyFormat(controller.totalOrderAmnt.value),
-                          style: TextStyle(
-                            fontSize: fontSize.header * 2,
-                            fontWeight: fontWeight.bold,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Text(
+                            common.currencyFormat(
+                                controller.totalOrderAmnt.value),
+                            style: TextStyle(
+                              fontSize: fontSize.header * 2,
+                              fontWeight: fontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            CustomTextBox(
-                              height: layoutStyle.blockVertical * 6.5,
-                              margin: EdgeInsets.symmetric(
-                                horizontal: layoutStyle.defaultMargin,
-                                vertical: layoutStyle.defaultMargin / 4,
-                              ),
-                              obscureText: false,
-                              border: Border.all(
-                                color: colorStyle.grey,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
-                              label: Text(
-                                'Nama Pemesan',
-                                style: textStyle.greyText.copyWith(
-                                  fontSize: fontSize.small,
-                                ),
-                              ),
-                              controller: controller.orderNameController,
-                              decoration: InputDecoration(
-                                hintText: 'Tulis Nama',
-                                hintStyle: textStyle.greyText,
-                                border: InputBorder.none,
-                              ),
-                              onChanged: (val) {
-                                logger.safeLog(val);
-                              },
-                            ),
-                            CustomTextBox(
-                              height: layoutStyle.blockVertical * 6.5,
-                              margin: EdgeInsets.symmetric(
-                                horizontal: layoutStyle.defaultMargin,
-                                vertical: layoutStyle.defaultMargin / 4,
-                              ),
-                              obscureText: false,
-                              border: Border.all(
-                                color: colorStyle.grey,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
-                              label: Text(
-                                'Email',
-                                style: textStyle.greyText.copyWith(
-                                  fontSize: fontSize.small,
-                                ),
-                              ),
-                              controller: controller.emailController,
-                              decoration: InputDecoration(
-                                hintText: 'Tulis Email',
-                                hintStyle: textStyle.greyText,
-                                border: InputBorder.none,
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                            ),
-                            CustomTextBox(
-                              height: layoutStyle.blockVertical * 6.5,
-                              margin: EdgeInsets.symmetric(
-                                horizontal: layoutStyle.defaultMargin,
-                                vertical: layoutStyle.defaultMargin / 4,
-                              ),
-                              obscureText: false,
-                              border: Border.all(
-                                color: colorStyle.grey,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
-                              label: Text(
-                                'No WA',
-                                style: textStyle.greyText.copyWith(
-                                  fontSize: fontSize.small,
-                                ),
-                              ),
-                              controller: controller.noWaController,
-                              decoration: InputDecoration(
-                                hintText: 'Nomor Whatsaap',
-                                hintStyle: textStyle.greyText,
-                                border: InputBorder.none,
-                              ),
-                              keyboardType: TextInputType.phone,
-                              maxLength: 13,
-                            ),
-                          ],
+                        SizedBox(
+                          height: layoutStyle.defaultMargin / 2,
                         ),
-                      ),
-                      Expanded(
-                        child: Container(
+                        CustomTextBox(
+                          height: layoutStyle.blockVertical * 6.5,
                           margin: EdgeInsets.symmetric(
                             horizontal: layoutStyle.defaultMargin,
                             vertical: layoutStyle.defaultMargin / 4,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Pilih Pembayaran',
-                                style: textStyle.greyText.copyWith(
-                                  fontSize: fontSize.small,
-                                ),
-                              ),
-                              SizedBox(
-                                height: layoutStyle.defaultMargin / 2,
-                              ),
-                              Expanded(
-                                child: controller.isLoadingPayment.value
-                                    ? Container(
-                                        margin: EdgeInsets.symmetric(
-                                          vertical:
-                                              layoutStyle.defaultMargin / 2,
-                                        ),
-                                        alignment: Alignment.centerLeft,
-                                        width: layoutStyle.blockHorizontal * 3,
-                                        height: layoutStyle.blockVertical * 5,
-                                        child: loading.simpleLoading(),
-                                      )
-                                    : SingleChildScrollView(
-                                        child: Wrap(
-                                          spacing:
-                                              layoutStyle.defaultMargin / 2,
-                                          runSpacing:
-                                              layoutStyle.defaultMargin / 2,
-                                          children: controller.paymentType
-                                              .map(
-                                                (element) =>
-                                                    cardPayment(element),
-                                              )
-                                              .toList(),
-                                        ),
-                                      ),
-                                // : GridView.count(
-                                //     controller:
-                                //         controller.scrollController,
-                                //     physics:
-                                //         const AlwaysScrollableScrollPhysics(),
-                                //     primary: false,
-                                //     shrinkWrap: true,
-                                //     // padding: EdgeInsets.all(
-                                //     //     layoutStyle.defaultMargin),
-                                //     crossAxisSpacing: 10,
-                                //     mainAxisSpacing: 10,
-                                //     crossAxisCount: 4,
-                                //     children: controller.paymentType
-                                //         .map(
-                                //           (element) => cardPayment(
-                                //             element,
-                                //           ),
-                                //         )
-                                //         .toList(),
-                                //   ),
-                              ),
-                            ],
+                          obscureText: false,
+                          border: Border.all(
+                            color: colorStyle.grey,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            layoutStyle.defaultMargin / 2,
+                          ),
+                          label: Text(
+                            'Nama Pemesan',
+                            style: textStyle.greyText.copyWith(
+                              fontSize: fontSize.small,
+                            ),
+                          ),
+                          controller: controller.orderNameController,
+                          decoration: InputDecoration(
+                            hintText: 'Tulis Nama',
+                            hintStyle: textStyle.greyText,
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (val) {
+                            logger.safeLog(val);
+                          },
+                        ),
+                        CustomTextBox(
+                          height: layoutStyle.blockVertical * 6.5,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin,
+                            vertical: layoutStyle.defaultMargin / 4,
+                          ),
+                          obscureText: false,
+                          border: Border.all(
+                            color: colorStyle.grey,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            layoutStyle.defaultMargin / 2,
+                          ),
+                          label: Text(
+                            'Email',
+                            style: textStyle.greyText.copyWith(
+                              fontSize: fontSize.small,
+                            ),
+                          ),
+                          controller: controller.emailController,
+                          decoration: InputDecoration(
+                            hintText: 'Tulis Email',
+                            hintStyle: textStyle.greyText,
+                            border: InputBorder.none,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        CustomTextBox(
+                          height: layoutStyle.blockVertical * 6.5,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin,
+                            vertical: layoutStyle.defaultMargin / 4,
+                          ),
+                          obscureText: false,
+                          border: Border.all(
+                            color: colorStyle.grey,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            layoutStyle.defaultMargin / 2,
+                          ),
+                          label: Text(
+                            'No WA',
+                            style: textStyle.greyText.copyWith(
+                              fontSize: fontSize.small,
+                            ),
+                          ),
+                          controller: controller.noWaController,
+                          decoration: InputDecoration(
+                            hintText: 'Nomor Whatsaap',
+                            hintStyle: textStyle.greyText,
+                            border: InputBorder.none,
+                          ),
+                          keyboardType: TextInputType.phone,
+                          maxLength: 13,
+                        ),
+                        SizedBox(
+                          height: layoutStyle.defaultMargin / 2,
+                        ),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin,
+                            ),
+                          child: Text(
+                            'Pilih Pembayaran',
+                            style: textStyle.greyText.copyWith(
+                              fontSize: fontSize.small,
+                            ),
+                            textAlign: TextAlign.start,
                           ),
                         ),
-                      ),
-                    ],
+                        SizedBox(
+                          height: layoutStyle.defaultMargin / 2,
+                        ),
+                        if (controller.isLoadingPayment.value) ...[
+                          Container(
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 2,
+                            ),
+                            alignment: Alignment.centerLeft,
+                            width: layoutStyle.blockHorizontal * 3,
+                            height: layoutStyle.blockVertical * 5,
+                            child: loading.simpleLoading(),
+                          )
+                        ] else ...[
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin,
+                            ),
+                            child: Wrap(
+                              spacing: layoutStyle.defaultMargin / 2,
+                              runSpacing: layoutStyle.defaultMargin / 2,
+                              children: controller.paymentType
+                                  .map(
+                                    (element) => cardPayment(element),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -397,302 +373,270 @@ class SalePage extends GetView<SalePageController> {
       );
     }
 
-    Widget paymentSection() {
-      return Expanded(
-        child: Container(
-          alignment: Alignment.topCenter,
-          padding: EdgeInsets.symmetric(
-            vertical: layoutStyle.defaultMargin / 4,
-            horizontal: layoutStyle.defaultMargin,
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              // padding: EdgeInsets.symmetric(
-              //     vertical: layoutStyle.defaultMargin / 4,
-              //     horizontal: layoutStyle.defaultMargin),
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin,
-                      vertical: layoutStyle.defaultMargin / 2),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: layoutStyle.blockHorizontal * 4,
-                          height: layoutStyle.blockVertical * 5,
-                          child: CustomButton(
-                            onPressed: () {
-                              controller.doBackPayment();
-                            },
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.white),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.primary),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.primary.withOpacity(0.1)),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                  BorderSide(
-                                      color: colorStyle.primary, width: 1)),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                      EdgeInsets.symmetric(
-                                          vertical:
-                                              layoutStyle.defaultMargin / 5,
-                                          horizontal:
-                                              layoutStyle.defaultMargin / 5)),
-                              elevation: MaterialStateProperty.all<double>(0),
-                              alignment: Alignment.center,
-                            ),
-                            label: const Icon(
-                              Icons.arrow_back,
-                            ),
-                            height: double.infinity,
-                          ),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              'Total Pembayaran',
-                              style: TextStyle(
-                                fontSize: fontSize.title,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    common.currencyFormat(controller.totalOrderAmnt.value),
-                    style: TextStyle(
-                      fontSize: fontSize.header * 2,
-                      fontWeight: fontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      CustomTextBox(
-                        height: layoutStyle.blockVertical * 6.5,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.defaultMargin,
-                          vertical: layoutStyle.defaultMargin / 4,
-                        ),
-                        obscureText: false,
-                        border: Border.all(
-                          color: colorStyle.grey,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          layoutStyle.defaultMargin / 2,
-                        ),
-                        label: Text(
-                          'Nama Pemesan',
-                          style: textStyle.greyText.copyWith(
-                            fontSize: fontSize.small,
-                          ),
-                        ),
-                        controller: controller.orderNameController,
-                        decoration: InputDecoration(
-                          hintText: 'Tulis Nama',
-                          hintStyle: textStyle.greyText,
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (val) {
-                          logger.safeLog(val);
-                        },
-                      ),
-                      CustomTextBox(
-                        height: layoutStyle.blockVertical * 6.5,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.defaultMargin,
-                          vertical: layoutStyle.defaultMargin / 4,
-                        ),
-                        obscureText: false,
-                        border: Border.all(
-                          color: colorStyle.grey,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          layoutStyle.defaultMargin / 2,
-                        ),
-                        label: Text(
-                          'Email',
-                          style: textStyle.greyText.copyWith(
-                            fontSize: fontSize.small,
-                          ),
-                        ),
-                        controller: controller.emailController,
-                        decoration: InputDecoration(
-                          hintText: 'Tulis Email',
-                          hintStyle: textStyle.greyText,
-                          border: InputBorder.none,
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      CustomTextBox(
-                        height: layoutStyle.blockVertical * 6.5,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.defaultMargin,
-                          vertical: layoutStyle.defaultMargin / 4,
-                        ),
-                        obscureText: false,
-                        border: Border.all(
-                          color: colorStyle.grey,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          layoutStyle.defaultMargin / 2,
-                        ),
-                        label: Text(
-                          'No WA',
-                          style: textStyle.greyText.copyWith(
-                            fontSize: fontSize.small,
-                          ),
-                        ),
-                        controller: controller.noWaController,
-                        decoration: InputDecoration(
-                          hintText: 'Nomor Whatsaap',
-                          hintStyle: textStyle.greyText,
-                          border: InputBorder.none,
-                        ),
-                        keyboardType: TextInputType.phone,
-                        maxLength: 13,
-                      ),
-                    ],
-                  ),
-                ), // Container(
-                //   margin: EdgeInsets.symmetric(
-                //     horizontal: layoutStyle.defaultMargin,
-                //     vertical: layoutStyle.defaultMargin / 2,
-                //   ),
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Text(
-                //         'Pilih Pembayaran',
-                //         style: textStyle.greyText.copyWith(
-                //           fontSize: fontSize.small,
-                //         ),
-                //       ),
-                //       SizedBox(
-                //         height: layoutStyle.defaultMargin / 2,
-                //       ),
-                //       Container(
-                //         margin: EdgeInsets.symmetric(
-                //           vertical: layoutStyle.defaultMargin / 2,
-                //         ),
-                //         // alignment: Alignment.centerLeft,
-                //         child: RefreshIndicator(
-                //           onRefresh: () async {},
-                //           child: SingleChildScrollView(
-                //             scrollDirection: Axis.vertical,
-                //             child: controller.isLoadingPayment.value
-                //                 ? Container(
-                //                     margin: EdgeInsets.symmetric(
-                //                       vertical: layoutStyle.defaultMargin / 2,
-                //                     ),
-                //                     alignment: Alignment.centerLeft,
-                //                     width: layoutStyle.blockHorizontal * 3,
-                //                     height: layoutStyle.blockVertical * 5,
-                //                     child: loading.simpleLoading(),
-                //                   )
-                //                 : GridView.count(
-                //                     controller: controller.scrollController,
-                //                     physics:
-                //                         const AlwaysScrollableScrollPhysics(),
-                //                     primary: false,
-                //                     // padding: EdgeInsets.all(
-                //                     //     layoutStyle.defaultMargin),
-                //                     crossAxisSpacing: 10,
-                //                     mainAxisSpacing: 10,
-                //                     crossAxisCount: 4,
-                //                     children: controller.paymentType
-                //                         .map(
-                //                           (element) => cardPayment(
-                //                             element,
-                //                           ),
-                //                         )
-                //                         .toList(),
-                //                   ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                // CustomDropdownButton<CustomIdNameEntity>(
-                //   height: layoutStyle.blockVertical * 6.5,
-                //   items: controller.paymentType
-                //       .map(
-                //         (e) => DropdownMenuItem(
-                //           value: e,
-                //           child: Text("${e.name}"),
-                //         ),
-                //       )
-                //       .toList(),
-                //   value: controller.selectedPaymentType.value,
-                //   label: Text(
-                //     'Pilih Pembayaran',
-                //     style: textStyle.greyText.copyWith(
-                //       fontSize: fontSize.small,
-                //     ),
-                //   ),
-                //   border: Border.all(
-                //     color: colorStyle.lightGrey,
-                //     width: 1,
-                //   ),
-                //   margin: EdgeInsets.symmetric(
-                //     vertical: layoutStyle.defaultMargin / 4,
-                //     horizontal: layoutStyle.defaultMargin,
-                //   ),
-                //   onChanged: (val) {
-                //     controller.doSelectPaymentType(val!);
-                //   },
-                // ),
-                // controller.showReffId.value
-                //     ? CustomTextBox(
-                //         height: layoutStyle.blockVertical * 6.5,
-                //         margin: EdgeInsets.symmetric(
-                //           horizontal: layoutStyle.defaultMargin,
-                //           vertical: layoutStyle.defaultMargin / 4,
-                //         ),
-                //         obscureText: false,
-                //         border: Border.all(
-                //           color: colorStyle.grey,
-                //           width: 1,
-                //         ),
-                //         borderRadius: BorderRadius.circular(
-                //           layoutStyle.defaultMargin / 2,
-                //         ),
-                //         label: Text(
-                //           'Reference ID',
-                //           style: textStyle.greyText.copyWith(
-                //             fontSize: fontSize.small,
-                //           ),
-                //         ),
-                //         controller: controller.referenceIdController,
-                //         decoration: InputDecoration(
-                //           hintText: '-',
-                //           hintStyle: textStyle.greyText,
-                //           border: InputBorder.none,
-                //         ),
-                //         keyboardType: TextInputType.text,
-                //       )
-                //     : Container(),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    // Widget paymentForm() {
+    //   return Expanded(
+    //     child: Container(
+    //       alignment: Alignment.topCenter,
+    //       padding: EdgeInsets.symmetric(
+    //         vertical: layoutStyle.defaultMargin / 4,
+    //         horizontal: layoutStyle.defaultMargin,
+    //       ),
+    //       height: layoutStyle.screenHeight,
+    //       child: Column(
+    //         children: [
+    //           Container(
+    //             padding: EdgeInsets.symmetric(
+    //               horizontal: layoutStyle.defaultMargin,
+    //               vertical: layoutStyle.defaultMargin / 2,
+    //             ),
+    //             child: Align(
+    //               alignment: Alignment.topLeft,
+    //               child: Row(
+    //                 children: [
+    //                   SizedBox(
+    //                     width: layoutStyle.blockHorizontal * 4,
+    //                     height: layoutStyle.blockVertical * 5,
+    //                     child: CustomButton(
+    //                       onPressed: () {
+    //                         controller.doBackPayment();
+    //                       },
+    //                       style: ButtonStyle(
+    //                         backgroundColor: MaterialStateProperty.all<Color>(
+    //                             colorStyle.white),
+    //                         foregroundColor: MaterialStateProperty.all<Color>(
+    //                             colorStyle.primary),
+    //                         overlayColor: MaterialStateProperty.all<Color>(
+    //                             colorStyle.primary.withOpacity(0.1)),
+    //                         side: MaterialStateProperty.all<BorderSide>(
+    //                             BorderSide(
+    //                                 color: colorStyle.primary, width: 1)),
+    //                         padding:
+    //                             MaterialStateProperty.all<EdgeInsetsGeometry>(
+    //                                 EdgeInsets.symmetric(
+    //                                     vertical: layoutStyle.defaultMargin / 5,
+    //                                     horizontal:
+    //                                         layoutStyle.defaultMargin / 5)),
+    //                         elevation: MaterialStateProperty.all<double>(0),
+    //                         alignment: Alignment.center,
+    //                       ),
+    //                       label: const Icon(
+    //                         Icons.arrow_back,
+    //                       ),
+    //                       height: double.infinity,
+    //                     ),
+    //                   ),
+    //                   Expanded(
+    //                     child: Center(
+    //                       child: Text(
+    //                         'Total Pembayaran',
+    //                         style: TextStyle(
+    //                           fontSize: fontSize.title,
+    //                         ),
+    //                       ),
+    //                     ),
+    //                   ),
+    //                 ],
+    //               ),
+    //             ),
+    //           ),
+    //           Expanded(
+    //             child: Container(
+    //               width: layoutStyle.screenWidth,
+    //               margin: EdgeInsets.all(layoutStyle.defaultMargin),
+    //               padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+    //               decoration: BoxDecoration(
+    //                 border: Border.all(
+    //                   color: colorStyle.primary,
+    //                   width: 1,
+    //                 ),
+    //                 borderRadius: BorderRadius.circular(
+    //                   layoutStyle.defaultMargin / 2,
+    //                 ),
+    //                 color: colorStyle.white,
+    //               ),
+    //               child: Column(
+    //                 children: [
+    //                   Center(
+    //                     child: Text(
+    //                       common
+    //                           .currencyFormat(controller.totalOrderAmnt.value),
+    //                       style: TextStyle(
+    //                         fontSize: fontSize.header * 2,
+    //                         fontWeight: fontWeight.bold,
+    //                       ),
+    //                     ),
+    //                   ),
+    //                   Expanded(
+    //                     child: Column(
+    //                       children: [
+    //                         CustomTextBox(
+    //                           height: layoutStyle.blockVertical * 6.5,
+    //                           margin: EdgeInsets.symmetric(
+    //                             horizontal: layoutStyle.defaultMargin,
+    //                             vertical: layoutStyle.defaultMargin / 4,
+    //                           ),
+    //                           obscureText: false,
+    //                           border: Border.all(
+    //                             color: colorStyle.grey,
+    //                             width: 1,
+    //                           ),
+    //                           borderRadius: BorderRadius.circular(
+    //                             layoutStyle.defaultMargin / 2,
+    //                           ),
+    //                           label: Text(
+    //                             'Nama Pemesan',
+    //                             style: textStyle.greyText.copyWith(
+    //                               fontSize: fontSize.small,
+    //                             ),
+    //                           ),
+    //                           controller: controller.orderNameController,
+    //                           decoration: InputDecoration(
+    //                             hintText: 'Tulis Nama',
+    //                             hintStyle: textStyle.greyText,
+    //                             border: InputBorder.none,
+    //                           ),
+    //                           onChanged: (val) {
+    //                             logger.safeLog(val);
+    //                           },
+    //                         ),
+    //                         CustomTextBox(
+    //                           height: layoutStyle.blockVertical * 6.5,
+    //                           margin: EdgeInsets.symmetric(
+    //                             horizontal: layoutStyle.defaultMargin,
+    //                             vertical: layoutStyle.defaultMargin / 4,
+    //                           ),
+    //                           obscureText: false,
+    //                           border: Border.all(
+    //                             color: colorStyle.grey,
+    //                             width: 1,
+    //                           ),
+    //                           borderRadius: BorderRadius.circular(
+    //                             layoutStyle.defaultMargin / 2,
+    //                           ),
+    //                           label: Text(
+    //                             'Email',
+    //                             style: textStyle.greyText.copyWith(
+    //                               fontSize: fontSize.small,
+    //                             ),
+    //                           ),
+    //                           controller: controller.emailController,
+    //                           decoration: InputDecoration(
+    //                             hintText: 'Tulis Email',
+    //                             hintStyle: textStyle.greyText,
+    //                             border: InputBorder.none,
+    //                           ),
+    //                           keyboardType: TextInputType.emailAddress,
+    //                         ),
+    //                         CustomTextBox(
+    //                           height: layoutStyle.blockVertical * 6.5,
+    //                           margin: EdgeInsets.symmetric(
+    //                             horizontal: layoutStyle.defaultMargin,
+    //                             vertical: layoutStyle.defaultMargin / 4,
+    //                           ),
+    //                           obscureText: false,
+    //                           border: Border.all(
+    //                             color: colorStyle.grey,
+    //                             width: 1,
+    //                           ),
+    //                           borderRadius: BorderRadius.circular(
+    //                             layoutStyle.defaultMargin / 2,
+    //                           ),
+    //                           label: Text(
+    //                             'No WA',
+    //                             style: textStyle.greyText.copyWith(
+    //                               fontSize: fontSize.small,
+    //                             ),
+    //                           ),
+    //                           controller: controller.noWaController,
+    //                           decoration: InputDecoration(
+    //                             hintText: 'Nomor Whatsaap',
+    //                             hintStyle: textStyle.greyText,
+    //                             border: InputBorder.none,
+    //                           ),
+    //                           keyboardType: TextInputType.phone,
+    //                           maxLength: 13,
+    //                         ),
+    //                       ],
+    //                     ),
+    //                   ),
+    //                   Expanded(
+    //                     child: Container(
+    //                       margin: EdgeInsets.symmetric(
+    //                         horizontal: layoutStyle.defaultMargin,
+    //                         vertical: layoutStyle.defaultMargin / 4,
+    //                       ),
+    //                       child: Column(
+    //                         crossAxisAlignment: CrossAxisAlignment.start,
+    //                         children: [
+    //                           Text(
+    //                             'Pilih Pembayaran',
+    //                             style: textStyle.greyText.copyWith(
+    //                               fontSize: fontSize.small,
+    //                             ),
+    //                           ),
+    //                           SizedBox(
+    //                             height: layoutStyle.defaultMargin / 2,
+    //                           ),
+    //                           Expanded(
+    //                             child: controller.isLoadingPayment.value
+    //                                 ? Container(
+    //                                     margin: EdgeInsets.symmetric(
+    //                                       vertical:
+    //                                           layoutStyle.defaultMargin / 2,
+    //                                     ),
+    //                                     alignment: Alignment.centerLeft,
+    //                                     width: layoutStyle.blockHorizontal * 3,
+    //                                     height: layoutStyle.blockVertical * 5,
+    //                                     child: loading.simpleLoading(),
+    //                                   )
+    //                                 : SingleChildScrollView(
+    //                                     child: Wrap(
+    //                                       spacing:
+    //                                           layoutStyle.defaultMargin / 2,
+    //                                       runSpacing:
+    //                                           layoutStyle.defaultMargin / 2,
+    //                                       children: controller.paymentType
+    //                                           .map(
+    //                                             (element) =>
+    //                                                 cardPayment(element),
+    //                                           )
+    //                                           .toList(),
+    //                                     ),
+    //                                   ),
+    //                             // : GridView.count(
+    //                             //     controller:
+    //                             //         controller.scrollController,
+    //                             //     physics:
+    //                             //         const AlwaysScrollableScrollPhysics(),
+    //                             //     primary: false,
+    //                             //     shrinkWrap: true,
+    //                             //     // padding: EdgeInsets.all(
+    //                             //     //     layoutStyle.defaultMargin),
+    //                             //     crossAxisSpacing: 10,
+    //                             //     mainAxisSpacing: 10,
+    //                             //     crossAxisCount: 4,
+    //                             //     children: controller.paymentType
+    //                             //         .map(
+    //                             //           (element) => cardPayment(
+    //                             //             element,
+    //                             //           ),
+    //                             //         )
+    //                             //         .toList(),
+    //                             //   ),
+    //                           ),
+    //                         ],
+    //                       ),
+    //                     ),
+    //                   ),
+    //                 ],
+    //               ),
+    //             ),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   );
+    // }
 
     return GetBuilder(
       init: controller,

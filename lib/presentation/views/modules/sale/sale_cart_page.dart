@@ -167,7 +167,12 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text('${e.qtyOrder} X '),
-                          Text(e.ticket!.ticketName ?? ''),
+                          Expanded(
+                            child: Text(
+                              e.ticket!.ticketName ?? '',
+                              softWrap: true,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -316,7 +321,12 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text('${e.qtyOrder} X '),
-                          Text(e.addon!.productName ?? ''),
+                          Expanded(
+                            child: Text(
+                              e.addon!.productName ?? '',
+                              softWrap: true,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -458,7 +468,10 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                     Expanded(
                       child: Row(
                         children: [
-                          Text(e.voucher!.voucherName ?? ''),
+                          Text(
+                            e.voucher!.voucherName ?? '',
+                            softWrap: true,
+                          ),
                         ],
                       ),
                     ),
@@ -673,7 +686,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                   ),
                   label: const Text('Batal'),
                   width: layoutStyle.blockHorizontal * 14,
-                  height: layoutStyle.blockVertical * 5,
+                  height: layoutStyle.blockVertical * 6,
                 ),
                 SizedBox(
                   width: layoutStyle.defaultMargin,
@@ -708,7 +721,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                   ),
                   label: const Text('Bayar'),
                   width: layoutStyle.blockHorizontal * 14,
-                  height: layoutStyle.blockVertical * 5,
+                  height: layoutStyle.blockVertical * 6,
                 ),
               ],
             )
