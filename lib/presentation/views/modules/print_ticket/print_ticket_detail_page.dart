@@ -518,11 +518,10 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   ],
                 ),
               ),
-              (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
-                      controller.model.value.orderStatus != 'C')
-              // controller.parentModel.value.otdtlStatus == 'Y'
-                  ? Container()
-                  : CustomButton(
+              // (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
+              //         controller.model.value.orderStatus != 'C')
+              controller.parentModel.value.otdtlStatus == 'Y'
+                  ? CustomButton(
                       onPressed: () {
                         controller.doPrintTicket();
                       },
@@ -546,7 +545,8 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                         style: textStyle.whiteText,
                       ),
                       height: layoutStyle.blockVertical * 6.5,
-                    ),
+                    )
+                  : Container(),
             ],
           ),
         ),
