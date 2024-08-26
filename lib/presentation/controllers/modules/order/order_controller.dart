@@ -263,7 +263,7 @@ class OrderUtil {
     OrderModel body,
     Rxn<String>? orderNo,
   ) async {
-    await _createTicket(authToken, body, orderNo);
+    await _createTicket(authToken, body, orderNo, 'P');
     dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
@@ -343,7 +343,7 @@ class OrderUtil {
     OrderModel body,
     Rxn<String>? orderNo,
   ) async {
-    await _createTicket(authToken, body, orderNo);
+    await _createTicket(authToken, body, orderNo, 'C');
     logger.safeLog('TEST : ${body.toJson()}');
 
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
@@ -407,12 +407,14 @@ class OrderUtil {
     AuthToken authToken,
     OrderModel body,
     Rxn<String>? orderNo,
+    String status
   ) async {
     if (orderNo?.value != null) {
       List<ResponseCreateTicketNoEntity> listCreateTicket =
           await createTicketNo(
         authToken,
         orderNo!.value!,
+        status,
       );
       body.paymentDate = DateTime.now();
       body.orderNumber = orderNo.value ?? '';
@@ -423,12 +425,14 @@ class OrderUtil {
   Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
     AuthToken authToken,
     String orderNo,
+    String status
   ) async {
     try {
       List<ResponseCreateTicketNoEntity> dataList = [];
       var result = await _service.order.orderService.createTicketNo(
         authToken: authToken,
         reffNo: orderNo,
+        status: status
       );
 
       result.fold(

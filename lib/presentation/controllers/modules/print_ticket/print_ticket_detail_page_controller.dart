@@ -281,6 +281,7 @@ class PrintTicketDetailPageController extends GetxController {
       var result = await _service.order.orderService.createTicketNo(
         authToken: _authToken,
         reffNo: orderNo,
+        status: 'C'
       );
 
       result.fold(

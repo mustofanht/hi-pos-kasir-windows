@@ -42,6 +42,7 @@ class OrderTicketService {
   Future<Either<String, List<ResponseCreateTicketNoEntity>>> createTicketNo({
     required AuthToken authToken,
     String? reffNo,
+    required String status,
   }) async {
     var path = "trn_order/createTicketNo";
     if (reffNo != null) {
@@ -53,7 +54,7 @@ class OrderTicketService {
     var body = json.encode({
       // "orderActivationReason": "",
       // "orderActivationPath": "",
-      "orderStatus": "C"
+      "orderStatus": status
     });
 
     logger.safeLog('BODY CREATE TICKET : $body');
