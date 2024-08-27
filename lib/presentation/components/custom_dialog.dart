@@ -1450,7 +1450,7 @@ class CustomDialog {
                       ),
                       CustomTextBox(
                         // width: layoutStyle.blockHorizontal * 25,
-                        height: layoutStyle.blockVertical * 10,
+                        height: layoutStyle.blockVertical * 12,
                         margin: EdgeInsets.symmetric(
                           vertical: layoutStyle.defaultMargin / 2,
                           horizontal: layoutStyle.defaultMargin,
@@ -1469,7 +1469,7 @@ class CustomDialog {
                           hintStyle: textStyle.greyText,
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(
-                            layoutStyle.defaultMargin * 2,
+                            layoutStyle.defaultMargin * 4,
                           ),
                         ),
                         maxLine: 5,
