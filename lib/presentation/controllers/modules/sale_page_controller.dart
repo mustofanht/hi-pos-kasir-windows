@@ -62,6 +62,8 @@ class SalePageController extends GetxController
   final emailController = TextEditingController();
   final noWaController = TextEditingController();
   final referenceIdController = TextEditingController();
+  final alamatController = TextEditingController();
+  final keteranganVoucher = TextEditingController();
   final paymentType = <CustomIdNameEntity>[].obs;
   final selectedPaymentType = CustomIdNameEntity().obs;
   final totalOrderQty = RxInt(0);

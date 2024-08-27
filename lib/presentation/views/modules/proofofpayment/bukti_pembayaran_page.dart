@@ -109,6 +109,41 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                 children: [
                                   CustomButton(
                                     onPressed: () {
+                                      controller.doVoidPayment();
+                                    },
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                        colorStyle.primary,
+                                      ),
+                                      foregroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                        colorStyle.white,
+                                      ),
+                                      overlayColor:
+                                          MaterialStateProperty.all<Color>(
+                                        colorStyle.white.withOpacity(0.1),
+                                      ),
+                                      elevation:
+                                          MaterialStateProperty.all<double>(0),
+                                    ),
+                                    label: Row(
+                                      children: [
+                                        const Icon(Icons.block_outlined),
+                                        SizedBox(
+                                          width: layoutStyle.defaultMargin / 5,
+                                        ),
+                                        const Text('Void'),
+                                      ],
+                                    ),
+                                    width: layoutStyle.blockHorizontal * 8,
+                                    height: layoutStyle.blockVertical * 5,
+                                  ),
+                                  SizedBox(
+                                    width: layoutStyle.defaultMargin,
+                                  ),
+                                  CustomButton(
+                                    onPressed: () {
                                       controller.doPrintTicket();
                                     },
                                     style: ButtonStyle(

@@ -361,4 +361,8 @@ class BuktiPembayaranPageController extends GetxController
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
     }
   }
+
+  doVoidPayment() {
+    alert.warning('Warning', 'Fungsi masih dalam development');
+  }
 }

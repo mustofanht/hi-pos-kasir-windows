@@ -118,13 +118,17 @@ class SalePage extends GetView<SalePageController> {
                 SizedBox(
                   width: layoutStyle.defaultMargin / 2,
                 ),
-                Text(
-                  label,
-                  style: textStyle.blackText.copyWith(
-                      color:
-                          controller.selectedPaymentType.value.id == element.id
-                              ? colorStyle.white
-                              : colorStyle.black),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: textStyle.blackText.copyWith(
+                      color: controller.selectedPaymentType.value.id == element.id
+                          ? colorStyle.white
+                          : colorStyle.black,
+                    ),
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                  ),
                 ),
               ]
             ],
@@ -231,100 +235,176 @@ class SalePage extends GetView<SalePageController> {
                         SizedBox(
                           height: layoutStyle.defaultMargin / 2,
                         ),
-                        CustomTextBox(
-                          height: layoutStyle.blockVertical * 6.5,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                            vertical: layoutStyle.defaultMargin / 4,
-                          ),
-                          obscureText: false,
-                          border: Border.all(
-                            color: colorStyle.grey,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            layoutStyle.defaultMargin / 2,
-                          ),
-                          label: Text(
-                            'Nama Pemesan',
-                            style: textStyle.greyText.copyWith(
-                              fontSize: fontSize.small,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      'Nama Pemesan',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.orderNameController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Tulis Nama',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    onChanged: (val) {
+                                      logger.safeLog(val);
+                                    },
+                                  ),
+                                  CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      'Email',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.emailController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Tulis Email',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      'No WA',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.noWaController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Nomor Whatsaap',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    keyboardType: TextInputType.phone,
+                                    maxLength: 13,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          controller: controller.orderNameController,
-                          decoration: InputDecoration(
-                            hintText: 'Tulis Nama',
-                            hintStyle: textStyle.greyText,
-                            border: InputBorder.none,
-                          ),
-                          onChanged: (val) {
-                            logger.safeLog(val);
-                          },
-                        ),
-                        CustomTextBox(
-                          height: layoutStyle.blockVertical * 6.5,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                            vertical: layoutStyle.defaultMargin / 4,
-                          ),
-                          obscureText: false,
-                          border: Border.all(
-                            color: colorStyle.grey,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            layoutStyle.defaultMargin / 2,
-                          ),
-                          label: Text(
-                            'Email',
-                            style: textStyle.greyText.copyWith(
-                              fontSize: fontSize.small,
-                            ),
-                          ),
-                          controller: controller.emailController,
-                          decoration: InputDecoration(
-                            hintText: 'Tulis Email',
-                            hintStyle: textStyle.greyText,
-                            border: InputBorder.none,
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        CustomTextBox(
-                          height: layoutStyle.blockVertical * 6.5,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                            vertical: layoutStyle.defaultMargin / 4,
-                          ),
-                          obscureText: false,
-                          border: Border.all(
-                            color: colorStyle.grey,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            layoutStyle.defaultMargin / 2,
-                          ),
-                          label: Text(
-                            'No WA',
-                            style: textStyle.greyText.copyWith(
-                              fontSize: fontSize.small,
-                            ),
-                          ),
-                          controller: controller.noWaController,
-                          decoration: InputDecoration(
-                            hintText: 'Nomor Whatsaap',
-                            hintStyle: textStyle.greyText,
-                            border: InputBorder.none,
-                          ),
-                          keyboardType: TextInputType.phone,
-                          maxLength: 13,
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      'Alamat/Lokasi',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.alamatController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Tulis Alamat/Lokasi',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    onChanged: (val) {
+                                      logger.safeLog(val);
+                                    },
+                                    keyboardType: TextInputType.text,
+                                  ),
+                                  CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      'Keterangan Voucher ',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.keteranganVoucher,
+                                    decoration: InputDecoration(
+                                      hintText: 'Tulis Keterangan Voucher',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    keyboardType: TextInputType.text,
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
                         ),
                         SizedBox(
                           height: layoutStyle.defaultMargin / 2,
                         ),
                         Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin,
-                            ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin,
+                          ),
                           child: Text(
                             'Pilih Pembayaran',
                             style: textStyle.greyText.copyWith(
@@ -351,14 +431,34 @@ class SalePage extends GetView<SalePageController> {
                             padding: EdgeInsets.symmetric(
                               horizontal: layoutStyle.defaultMargin,
                             ),
-                            child: Wrap(
-                              spacing: layoutStyle.defaultMargin / 2,
-                              runSpacing: layoutStyle.defaultMargin / 2,
-                              children: controller.paymentType
-                                  .map(
-                                    (element) => cardPayment(element),
-                                  )
-                                  .toList(),
+                            // child: Wrap(
+                            //   spacing: layoutStyle.defaultMargin / 2,
+                            //   runSpacing: layoutStyle.defaultMargin / 2,
+                            //   children: controller.paymentType
+                            //       .map(
+                            //         (element) => cardPayment(element),
+                            //       )
+                            //       .toList(),
+                            // ),
+                            child: GridView.builder(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: layoutStyle.defaultMargin / 2,
+                                mainAxisSpacing: layoutStyle.defaultMargin / 2,
+                                childAspectRatio: 3,
+                              ),
+                              itemCount: controller.paymentType.length,
+                              itemBuilder: (context, index) {
+                                return SizedBox(
+                                  height: layoutStyle.blockVertical * 2,
+                                  child: cardPayment(
+                                    controller.paymentType[index],
+                                  ),
+                                );
+                              },
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
                             ),
                           ),
                         ]
