@@ -22,6 +22,7 @@ class CustomTextBox extends StatefulWidget {
   final Function(String)? onChanged;
   final Function(String)? onSubmit;
   final int? maxLength;
+  final int? maxLine;
   final bool? isDisabled;
 
   const CustomTextBox({
@@ -44,6 +45,7 @@ class CustomTextBox extends StatefulWidget {
     this.borderRadius = BorderRadius.zero,
     this.onChanged,
     this.onSubmit,
+    this.maxLine = 1,
     this.maxLength,
     this.isDisabled = false,
   }) : super(key: key);
@@ -99,7 +101,7 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                     textAlign: widget.textAlign,
                     maxLength: widget.maxLength,
                     style: widget.style ?? textStyle.blackText,
-                    maxLines: 1,
+                    maxLines: widget.maxLine,
                     textAlignVertical: TextAlignVertical.center,
                     textDirection: TextDirection.ltr,
                     decoration: widget.decoration.copyWith(

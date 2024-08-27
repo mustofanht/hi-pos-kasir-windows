@@ -42,6 +42,7 @@ class OrderTicketService {
   Future<Either<String, List<ResponseCreateTicketNoEntity>>> createTicketNo({
     required AuthToken authToken,
     String? reffNo,
+    String? reason,
     required String status,
   }) async {
     var path = "trn_order/createTicketNo";
@@ -52,7 +53,7 @@ class OrderTicketService {
     final uri = source.baseUri(path: path);
 
     var body = json.encode({
-      // "orderActivationReason": "",
+      "orderActivationReason": reason,
       // "orderActivationPath": "",
       "orderStatus": status
     });

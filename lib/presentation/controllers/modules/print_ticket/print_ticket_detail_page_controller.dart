@@ -50,7 +50,9 @@ class PrintTicketDetailPageController extends GetxController {
     try {
       var result;
       result = await _service.order.orderService.getDetailOrder(
-          authToken: _authToken, orderNo: parentModel.value.orderNumber);
+        authToken: _authToken,
+        orderNo: parentModel.value.orderNumber,
+      );
       result.fold((l) {
         logger.safeLog(l);
       }, (r) {
@@ -179,19 +181,18 @@ class PrintTicketDetailPageController extends GetxController {
     if (parentModel.value.otdtlStatus == 'Y') {
       alert.warning('Warning', 'Sudah melakukan aktifasi tiket');
     } else {
-      dialog.dialogCustomerLeftRight(
+      dialog.dialogActiovcationTicket(
         title: 'Aktivasi Tiket',
         msg: 'Apakah anda yakin akan aktivasi?',
-        labelLeft: 'No',
-        labelRight: 'Yes',
-        onLeft: () {
-          Get.back();
-        },
-        onRight: () async {
-          Get.back();
+        onNext: (reasonVal) async {
           try {
             if (model.value.orderNumber != null) {
-              await createTicketNo(model.value.orderNumber!);
+              await createTicketNo(
+                orderNo: model.value.orderNumber!,
+                reason: reasonVal,
+                status: 'P',
+              );
+              Get.back();
               await doPrepared();
               alert.success('Success', 'Berhasil Aktivasi Tiket');
             } else {
@@ -203,14 +204,40 @@ class PrintTicketDetailPageController extends GetxController {
           }
         },
       );
+      // dialog.dialogCustomerLeftRight(
+      //   title: 'Aktivasi Tiket',
+      //   msg: 'Apakah anda yakin akan aktivasi?',
+      //   labelLeft: 'No',
+      //   labelRight: 'Yes',
+      //   onLeft: () {
+      //     Get.back();
+      //   },
+      //   onRight: () async {
+      //     Get.back();
+      //     try {
+      //       if (model.value.orderNumber != null) {
+      //         await createTicketNo(model.value.orderNumber!);
+      //         await doPrepared();
+      //         alert.success('Success', 'Berhasil Aktivasi Tiket');
+      //       } else {
+      //         alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      //       }
+      //     } catch (e) {
+      //       logger.safeLog(e);
+      //       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      //     }
+      //   },
+      // );
     }
   }
 
   doVerifiedPrintTicket() {
     bool isValid = true;
-    if (model.value.paymentDetail?.pymntStatus != 'P' &&
-        model.value.orderStatus != 'C') {
-      alert.warning('Warning', 'Tidak bisa melakukan Print Tiket');
+    // if (model.value.paymentDetail?.pymntStatus != 'P' &&
+    //     model.value.orderStatus != 'C') {
+    if (parentModel.value.otdtlStatus != 'Y') {
+      alert.warning('Warning',
+          'Tidak bisa melakukan print tiket, Karena tiket belum aktif');
       isValid = false;
     }
     return isValid;
@@ -222,9 +249,12 @@ class PrintTicketDetailPageController extends GetxController {
         if (printerUtil.currPrinter != null) {
           List<ResponseCreateTicketNoEntity> listCreateTicket = [];
           if (model.value.orderNumber != null) {
-            listCreateTicket = await createTicketNo(model.value.orderNumber!);
+            listCreateTicket = await createTicketNo(
+              orderNo: model.value.orderNumber!,
+              status: 'C',
+            );
           } else {
-            alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+            alert.error('Error', 'Terjadi Kesalahan , silahkan hubungi admin');
             return;
           }
 
@@ -273,15 +303,17 @@ class PrintTicketDetailPageController extends GetxController {
     }
   }
 
-  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
-    String orderNo,
-  ) async {
+  Future<List<ResponseCreateTicketNoEntity>> createTicketNo({
+    required String orderNo,
+    String? reason,
+    required String status,
+  }) async {
     try {
       List<ResponseCreateTicketNoEntity> dataList = [];
       var result = await _service.order.orderService.createTicketNo(
         authToken: _authToken,
         reffNo: orderNo,
-        status: 'C'
+        status: status,
       );
 
       result.fold(

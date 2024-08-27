@@ -1390,6 +1390,176 @@ class CustomDialog {
     );
   }
 
+  dialogActiovcationTicket({
+    required String title,
+    required String msg,
+    required Function(String reffNo) onNext,
+  }) {
+    final reasonController = TextEditingController();
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: layoutStyle.screenWidth / 2,
+          height: layoutStyle.blockVertical * 40,
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(50),
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                    horizontal: layoutStyle.defaultMargin,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        assetsConstant.icInformationDialog,
+                        alignment: Alignment.topCenter,
+                        fit: BoxFit.fill,
+                      ),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin / 5,
+                      ),
+                      Flexible(
+                        child: Text(
+                          msg,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: fontSize.body,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin / 5,
+                      ),
+                      CustomTextBox(
+                        // width: layoutStyle.blockHorizontal * 25,
+                        height: layoutStyle.blockVertical * 10,
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        obscureText: false,
+                        border: Border.all(
+                          color: colorStyle.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          layoutStyle.defaultMargin / 2,
+                        ),
+                        controller: reasonController,
+                        decoration: InputDecoration(
+                          hintText: 'Alasan Aktifasi',
+                          hintStyle: textStyle.greyText,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(
+                            layoutStyle.defaultMargin * 2,
+                          ),
+                        ),
+                        maxLine: 5,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                width: layoutStyle.screenWidth,
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                  horizontal: layoutStyle.defaultMargin,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.red,
+                          ),
+                          overlayColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.resolveWith(
+                            (states) => RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin / 2,
+                              ),
+                            ),
+                          ),
+                          elevation: const MaterialStatePropertyAll(0),
+                        ),
+                        label: Text(
+                          'Batal',
+                          style: textStyle.whiteText,
+                        ),
+                        height: layoutStyle.blockVertical * 6.5,
+                      ),
+                    ),
+                    Expanded(
+                      child: CustomButton(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        onPressed: () => onNext(reasonController.text),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.primary,
+                          ),
+                          overlayColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.resolveWith(
+                            (states) => RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin / 2,
+                              ),
+                            ),
+                          ),
+                          elevation: const MaterialStatePropertyAll(0),
+                        ),
+                        label: Text(
+                          'Lanjutkan',
+                          style: textStyle.whiteText,
+                        ),
+                        height: layoutStyle.blockVertical * 6.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
   // selectPrint({
   //   required PrintController printController,
   //   required String title,

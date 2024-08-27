@@ -1,6 +1,4 @@
-import 'dart:io';
 
-import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -47,89 +45,89 @@ class _AppMainState extends State<AppMain> {
   }
 }
 
-class TestPage extends StatelessWidget {
-  const TestPage({super.key});
+// class TestPage extends StatelessWidget {
+//   const TestPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    layoutStyle.init(context);
-    File e = File(
-        '/data/user/0/com.example.jaya_propertiy/app_flutter/PROMO/logo-social.png');
-    print('File exists: ${e.existsSync()}');
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        toolbarHeight: layoutStyle.blockVertical * 10,
-        backgroundColor: colorStyle.primary,
-        foregroundColor: colorStyle.white,
-        shadowColor: colorStyle.transparent,
-        elevation: layoutStyle.defaultMargin,
-        leadingWidth: 100,
-        leading: IconButton(
-          icon: Icon(Icons.menu, size: fontSize.header * 2),
-          onPressed: () {
-            // controller.toggleDrawer();
-          },
-        ),
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hi, ',
-              style: TextStyle(
-                fontSize: fontSize.title,
-              ),
-            ),
-            Text(
-              '',
-              style: TextStyle(
-                fontSize: fontSize.small,
-              ),
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: colorStyle.white,
-      body: FlutterCarousel(
-        options: CarouselOptions(
-          height: layoutStyle.screenHeight,
-          viewportFraction: 1.0,
-          enlargeCenterPage: false,
-          autoPlay: true,
-          enableInfiniteScroll: true,
-          autoPlayInterval: const Duration(seconds: 5),
-          slideIndicator: CircularWaveSlideIndicator(),
-        ),
-        items: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: layoutStyle.defaultMargin / 5,
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-              child: Container(
-                width: double.infinity,
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  child: Image.file(
-                    e,
-                    fit: BoxFit.contain,
-                    // color: colorStyle.red,
-                    errorBuilder: (BuildContext context, Object exception,
-                        StackTrace? stackTrace) {
-                      return Text('Error loading image $exception');
-                    },
-                    // width: layoutStyle.screenWidth,
-                    // height: layoutStyle.screenHeight,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     layoutStyle.init(context);
+//     File e = File(
+//         '/data/user/0/com.example.jaya_propertiy/app_flutter/PROMO/logo-social.png');
+//     print('File exists: ${e.existsSync()}');
+//     return Scaffold(
+//       resizeToAvoidBottomInset: true,
+//       appBar: AppBar(
+//         toolbarHeight: layoutStyle.blockVertical * 10,
+//         backgroundColor: colorStyle.primary,
+//         foregroundColor: colorStyle.white,
+//         shadowColor: colorStyle.transparent,
+//         elevation: layoutStyle.defaultMargin,
+//         leadingWidth: 100,
+//         leading: IconButton(
+//           icon: Icon(Icons.menu, size: fontSize.header * 2),
+//           onPressed: () {
+//             // controller.toggleDrawer();
+//           },
+//         ),
+//         title: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(
+//               'Hi, ',
+//               style: TextStyle(
+//                 fontSize: fontSize.title,
+//               ),
+//             ),
+//             Text(
+//               '',
+//               style: TextStyle(
+//                 fontSize: fontSize.small,
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//       backgroundColor: colorStyle.white,
+//       body: FlutterCarousel(
+//         options: CarouselOptions(
+//           height: layoutStyle.screenHeight,
+//           viewportFraction: 1.0,
+//           enlargeCenterPage: false,
+//           autoPlay: true,
+//           enableInfiniteScroll: true,
+//           autoPlayInterval: const Duration(seconds: 5),
+//           slideIndicator: CircularWaveSlideIndicator(),
+//         ),
+//         items: [
+//           Padding(
+//             padding: EdgeInsets.symmetric(
+//               horizontal: layoutStyle.defaultMargin / 5,
+//             ),
+//             child: ClipRRect(
+//               borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+//               child: Container(
+//                 width: double.infinity,
+//                 child: Container(
+//                   width: 300,
+//                   height: 300,
+//                   child: Image.file(
+//                     e,
+//                     fit: BoxFit.contain,
+//                     // color: colorStyle.red,
+//                     errorBuilder: (BuildContext context, Object exception,
+//                         StackTrace? stackTrace) {
+//                       return Text('Error loading image $exception');
+//                     },
+//                     // width: layoutStyle.screenWidth,
+//                     // height: layoutStyle.screenHeight,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
