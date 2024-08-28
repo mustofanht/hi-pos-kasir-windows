@@ -18,6 +18,8 @@ class OrderModel {
   String orderPaidBy;
   String orderStatus;
   DateTime? paymentDate;
+  String? orderVoucherDesc;
+  String? custAddres;
   List<OrderTicketModel> listTicket;
   List<OrderAddonModel> listProduct;
   List<OrderVoucherModel> listVoucher;
@@ -31,6 +33,8 @@ class OrderModel {
     this.orderReffno,
     this.qrCode,
     this.paymentDate,
+    this.orderVoucherDesc,
+    this.custAddres,
     required this.orderTotalItem,
     required this.orderTotalAmt,
     required this.adminFeeAmt,
@@ -87,6 +91,8 @@ class OrderModel {
       "orderLoacationId": orderLoacationId,
       "orderPaidBy": orderPaidBy,
       "orderStatus": orderStatus,
+      "orderVoucherDesc": orderVoucherDesc,
+      "custAddres": custAddres,
       "listTicket": listTicket.map((e) => e.toJson()).toList(),
       "listProduct": listProduct.map((e) => e.toJson()).toList(),
       "listVoucher": listVoucher.map((e) => e.toJson()).toList(),
