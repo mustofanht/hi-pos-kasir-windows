@@ -81,7 +81,13 @@ class OrderTicketService {
       logger.safeLog(result);
       return Right(result);
     } else {
-      return Left(common.getMetadataMessages(response.body));
+      var err = json.decode(response.body)['error'];
+      var msg = json.decode(response.body)['error'];
+      return Left(
+        common.getMetadataMessages(
+          err ?? msg ?? 'Terjadi Kesalahan',
+        ),
+      );
     }
   }
 
