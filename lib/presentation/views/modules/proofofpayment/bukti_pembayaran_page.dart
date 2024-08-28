@@ -103,108 +103,137 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                   // Icon(Icons.copy),
                                 ],
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  CustomButton(
-                                    onPressed: () {
-                                      controller.doVoidPayment();
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        colorStyle.primary,
-                                      ),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        colorStyle.white,
-                                      ),
-                                      overlayColor:
-                                          MaterialStateProperty.all<Color>(
-                                        colorStyle.white.withOpacity(0.1),
-                                      ),
-                                      elevation:
-                                          MaterialStateProperty.all<double>(0),
-                                    ),
-                                    label: Row(
+                              controller.selectedData.value.orderStatus == 'V'
+                                  ? Container()
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        const Icon(Icons.block_outlined),
+                                        controller
+                                                    .selectedData
+                                                    .value
+                                                    .paymentDetail
+                                                    ?.pymntStatus ==
+                                                'P'
+                                            ? CustomButton(
+                                                onPressed: () {
+                                                  controller.doVoidPayment();
+                                                },
+                                                style: ButtonStyle(
+                                                  backgroundColor:
+                                                      MaterialStateProperty.all<
+                                                          Color>(
+                                                    colorStyle.primary,
+                                                  ),
+                                                  foregroundColor:
+                                                      MaterialStateProperty.all<
+                                                          Color>(
+                                                    colorStyle.white,
+                                                  ),
+                                                  overlayColor:
+                                                      MaterialStateProperty.all<
+                                                          Color>(
+                                                    colorStyle.white
+                                                        .withOpacity(0.1),
+                                                  ),
+                                                  elevation:
+                                                      MaterialStateProperty.all<
+                                                          double>(0),
+                                                ),
+                                                label: Row(
+                                                  children: [
+                                                    const Icon(
+                                                        Icons.block_outlined),
+                                                    SizedBox(
+                                                      width: layoutStyle
+                                                              .defaultMargin /
+                                                          5,
+                                                    ),
+                                                    const Text('Void'),
+                                                  ],
+                                                ),
+                                                width: layoutStyle
+                                                        .blockHorizontal *
+                                                    8,
+                                                height:
+                                                    layoutStyle.blockVertical *
+                                                        5,
+                                              )
+                                            : Container(),
                                         SizedBox(
-                                          width: layoutStyle.defaultMargin / 5,
+                                          width: layoutStyle.defaultMargin,
                                         ),
-                                        const Text('Void'),
-                                      ],
-                                    ),
-                                    width: layoutStyle.blockHorizontal * 8,
-                                    height: layoutStyle.blockVertical * 5,
-                                  ),
-                                  SizedBox(
-                                    width: layoutStyle.defaultMargin,
-                                  ),
-                                  CustomButton(
-                                    onPressed: () {
-                                      controller.doPrintTicket();
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              colorStyle.primary),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              colorStyle.white),
-                                      overlayColor: MaterialStateProperty.all<
-                                              Color>(
-                                          colorStyle.white.withOpacity(0.1)),
-                                      elevation:
-                                          MaterialStateProperty.all<double>(0),
-                                    ),
-                                    label: Row(
-                                      children: [
-                                        Icon(Icons.print),
+                                        CustomButton(
+                                          onPressed: () {
+                                            controller.doPrintTicket();
+                                          },
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(colorStyle.primary),
+                                            foregroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(colorStyle.white),
+                                            overlayColor: MaterialStateProperty
+                                                .all<Color>(colorStyle.white
+                                                    .withOpacity(0.1)),
+                                            elevation: MaterialStateProperty
+                                                .all<double>(0),
+                                          ),
+                                          label: Row(
+                                            children: [
+                                              Icon(Icons.print),
+                                              SizedBox(
+                                                width:
+                                                    layoutStyle.defaultMargin /
+                                                        5,
+                                              ),
+                                              Text('Cetak'),
+                                            ],
+                                          ),
+                                          width:
+                                              layoutStyle.blockHorizontal * 8,
+                                          height: layoutStyle.blockVertical * 5,
+                                        ),
                                         SizedBox(
-                                          width: layoutStyle.defaultMargin / 5,
+                                          width: layoutStyle.defaultMargin,
                                         ),
-                                        Text('Cetak'),
-                                      ],
-                                    ),
-                                    width: layoutStyle.blockHorizontal * 8,
-                                    height: layoutStyle.blockVertical * 5,
-                                  ),
-                                  SizedBox(
-                                    width: layoutStyle.defaultMargin,
-                                  ),
-                                  CustomButton(
-                                    onPressed: () {
-                                      controller.doSendMessage();
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              colorStyle.primary),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              colorStyle.white),
-                                      overlayColor: MaterialStateProperty.all<
-                                              Color>(
-                                          colorStyle.white.withOpacity(0.1)),
-                                      elevation:
-                                          MaterialStateProperty.all<double>(0),
-                                    ),
-                                    label: Row(
-                                      children: [
-                                        Icon(Icons.send),
-                                        SizedBox(
-                                          width: layoutStyle.defaultMargin / 5,
+                                        CustomButton(
+                                          onPressed: () {
+                                            controller.doSendMessage();
+                                          },
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(colorStyle.primary),
+                                            foregroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(colorStyle.white),
+                                            overlayColor: MaterialStateProperty
+                                                .all<Color>(colorStyle.white
+                                                    .withOpacity(0.1)),
+                                            elevation: MaterialStateProperty
+                                                .all<double>(0),
+                                          ),
+                                          label: Row(
+                                            children: [
+                                              Icon(Icons.send),
+                                              SizedBox(
+                                                width:
+                                                    layoutStyle.defaultMargin /
+                                                        5,
+                                              ),
+                                              Text('Kirim Bukti Pembayaran'),
+                                            ],
+                                          ),
+                                          width:
+                                              layoutStyle.blockHorizontal * 18,
+                                          height: layoutStyle.blockVertical * 5,
                                         ),
-                                        Text('Kirim Bukti Pembayaran'),
                                       ],
-                                    ),
-                                    width: layoutStyle.blockHorizontal * 18,
-                                    height: layoutStyle.blockVertical * 5,
-                                  ),
-                                ],
-                              )
+                                    )
                             ],
                           ),
                         ),
@@ -775,15 +804,17 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                 width: layoutStyle.blockHorizontal * 8,
                                 height: layoutStyle.blockVertical * 10,
                               ),
-                              Text(
-                                // MapPaymentMethod[model.orderPaidBy] ?? '',
-                                model.orderPaidByName ?? '',
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                softWrap: true,
-                                style: TextStyle(
-                                  fontWeight: fontWeight.bold,
-                                  fontSize: fontSize.small,
+                              Expanded(
+                                child: Text(
+                                  // MapPaymentMethod[model.orderPaidBy] ?? '',
+                                  model.orderPaidByName ?? '',
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: true,
+                                  style: TextStyle(
+                                    fontWeight: fontWeight.bold,
+                                    fontSize: fontSize.small,
+                                  ),
                                 ),
                               )
                             ],

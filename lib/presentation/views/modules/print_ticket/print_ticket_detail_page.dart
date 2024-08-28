@@ -443,84 +443,89 @@ class PrintTicketDetailPage extends GetView<PrintTicketDetailPageController> {
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    vertical: layoutStyle.defaultMargin / 2),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 2,
-                          // horizontal: layoutStyle.defaultMargin,
-                        ),
-                        onPressed: () {
-                          controller.doSendEmail();
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.white,
-                          ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
+              controller.parentModel.value.orderStatus == 'V'
+                  ? Container()
+                  : Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomButton(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                // horizontal: layoutStyle.defaultMargin,
                               ),
+                              onPressed: () {
+                                controller.doSendEmail();
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.white,
+                                ),
+                                overlayColor: MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                ),
+                                elevation: const MaterialStatePropertyAll(0),
+                              ),
+                              label: Text(
+                                'Kirim Email',
+                                style: textStyle.blackText,
+                              ),
+                              height: layoutStyle.blockVertical * 6.5,
                             ),
                           ),
-                          elevation: const MaterialStatePropertyAll(0),
-                        ),
-                        label: Text(
-                          'Kirim Email',
-                          style: textStyle.blackText,
-                        ),
-                        height: layoutStyle.blockVertical * 6.5,
-                      ),
-                    ),
-                    SizedBox(
-                      width: layoutStyle.defaultMargin / 2,
-                    ),
-                    Expanded(
-                      child: CustomButton(
-                        margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 2,
-                          // horizontal: layoutStyle.defaultMargin,
-                        ),
-                        onPressed: () {
-                          controller.doActiveTicket();
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.white,
+                          SizedBox(
+                            width: layoutStyle.defaultMargin / 2,
                           ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
+                          Expanded(
+                            child: CustomButton(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                // horizontal: layoutStyle.defaultMargin,
                               ),
+                              onPressed: () {
+                                controller.doActiveTicket();
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.white,
+                                ),
+                                overlayColor: MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                ),
+                                elevation: const MaterialStatePropertyAll(0),
+                              ),
+                              label: Text(
+                                'Aktivasi Status Tiket',
+                                style: textStyle.blackText,
+                              ),
+                              height: layoutStyle.blockVertical * 6.5,
                             ),
                           ),
-                          elevation: const MaterialStatePropertyAll(0),
-                        ),
-                        label: Text(
-                          'Aktivasi Status Tiket',
-                          style: textStyle.blackText,
-                        ),
-                        height: layoutStyle.blockVertical * 6.5,
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
               // (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
               //         controller.model.value.orderStatus != 'C')
-              controller.parentModel.value.otdtlStatus == 'Y'
+              controller.parentModel.value.otdtlStatus == 'Y' &&
+                      controller.parentModel.value.orderStatus != 'V'
                   ? CustomButton(
                       onPressed: () {
                         controller.doPrintTicket();

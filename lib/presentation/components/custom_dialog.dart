@@ -1401,7 +1401,7 @@ class CustomDialog {
         contentPadding: EdgeInsets.zero,
         content: Container(
           width: layoutStyle.screenWidth / 2,
-          height: layoutStyle.blockVertical * 40,
+          height: layoutStyle.blockVertical * 45,
           decoration: BoxDecoration(
             color: colorStyle.white,
             borderRadius: const BorderRadius.all(
@@ -1465,7 +1465,7 @@ class CustomDialog {
                         ),
                         controller: reasonController,
                         decoration: InputDecoration(
-                          hintText: 'Alasan Aktifasi',
+                          hintText: 'Tulis Alasan',
                           hintStyle: textStyle.greyText,
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(
