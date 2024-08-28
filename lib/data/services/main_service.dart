@@ -22,6 +22,7 @@ import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/payment/response_cek_payment_entity.dart';
 import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
+import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
@@ -41,6 +42,7 @@ part 'sale/addon_service.dart';
 part 'order/order_ticket_service.dart';
 part 'payment/payment_order_service.dart';
 part 'master_data_service.dart';
+part 'reason_void_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -51,4 +53,5 @@ class MainService {
   final shift = ShiftService();
   final promo = PromoService();
   final masterData = MasterDataService();
+  final reasonVoid = ReasonVoidService();
 }

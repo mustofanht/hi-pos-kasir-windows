@@ -20,9 +20,11 @@ import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
+import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
@@ -364,10 +366,18 @@ class BuktiPembayaranPageController extends GetxController
     }
   }
 
-  doVoidPayment() {
-    dialog.dialogActiovcationTicket(
+  final selectReasonRx = Rxn<CustomIdNameEntity>(null);
+
+  doVoidPayment() async {
+    var reasons = await getListReasonVoid();
+    selectReasonRx.value = reasons.first;
+    update();
+    logger.safeLog('reasons : ${reasons.length}');
+    dialog.dialogVoidTicket(
       title: 'Void',
       msg: 'Apakah anda yakin akan melakukan void pembayaran ini?',
+      selectReason: selectReasonRx,
+      listReason: reasons,
       onNext: (reasonVal) async {
         try {
           if (selectedData.value.orderNumber != null) {
@@ -383,18 +393,17 @@ class BuktiPembayaranPageController extends GetxController
               reason: reasonVal,
             );
 
+            Get.back();
             result.fold(
               (l) {
                 logger.safeLog(l);
                 logger.safeLog('Create Ticket No Error 1');
                 alert.error('Error', 'Terjadi Kesalahan!');
-                Get.back();
                 alert.success('Success', l);
               },
               (r) {
                 logger.safeLog('Create Ticket No Success');
                 logger.safeLog(r);
-                Get.back();
                 alert.success('Success', 'void pembayaran berhasil');
               },
             );
@@ -407,5 +416,39 @@ class BuktiPembayaranPageController extends GetxController
         }
       },
     );
+  }
+
+  Future<List<CustomIdNameEntity>> getListReasonVoid() async {
+    List<CustomIdNameEntity> reasons = [];
+    reasons.add(
+      CustomIdNameEntity(
+        id: null,
+        name: ' --- select reason --- ',
+      ),
+    );
+    try {
+      var result;
+      result = await _service.reasonVoid.getAll(authToken: _authToken);
+      result.fold((l) {
+        logger.safeLog(l);
+      }, (r) {
+        logger.safeLog('REASONS : ${r.data!.length}');
+
+        if (r.data != null) {
+          List<ReasonVoidEntity> reasonList = r.data! as List<ReasonVoidEntity>;
+          for (var element in reasonList) {
+            reasons.add(
+              CustomIdNameEntity(
+                id: element.reasonCode,
+                name: element.reasonName,
+              ),
+            );
+          }
+        }
+      });
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    return reasons;
   }
 }
