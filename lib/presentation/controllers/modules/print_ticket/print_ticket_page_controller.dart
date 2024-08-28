@@ -120,7 +120,7 @@ class PrintTicketPageController extends GetxController
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'orderStatus',
+        id: 'statusCetak',
         columnName: 'Status Cetak',
         alignment: Alignment.center,
       ),

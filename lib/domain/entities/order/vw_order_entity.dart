@@ -12,6 +12,7 @@ class VwOrderEntity {
   String? locId;
   String? unitName;
   String? unitId;
+  String? statusCetak;
 
   VwOrderEntity({
     this.orderNumber,
@@ -27,6 +28,7 @@ class VwOrderEntity {
     this.locId,
     this.unitName,
     this.unitId,
+    this.statusCetak,
   });
 
   factory VwOrderEntity.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class VwOrderEntity {
       locId: json['locId'],
       unitName: json['unitName'],
       unitId: json['unitId'],
+      statusCetak: json['statusCetak'],
     );
   }
 
@@ -64,6 +67,7 @@ class VwOrderEntity {
       'locId': locId,
       'unitName': unitName,
       'unitId': unitId,
+      'statusCetak': statusCetak,
     };
   }
 }

@@ -65,28 +65,29 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
           colorBox: (val == 'P' ? colorStyle.green : colorStyle.red),
         );
       } else if (id == 'otdtlStatus') {
+        String? voidStatus =
+            controller.dataList[index].toJson()['orderStatus'].toString();
+        if (voidStatus.isNotEmpty && voidStatus == 'V') {
+          return CustomBadge(
+            label: 'Void',
+            colorLabel: colorStyle.white,
+            colorBox: colorStyle.grey,
+          );
+        } else {
+          return CustomBadge(
+            label: val == 'Y' ? 'Aktif' : 'Not Aktif',
+            colorLabel: (val == 'Y' ? colorStyle.black : colorStyle.white),
+            colorBox: (val == 'Y' ? colorStyle.green : colorStyle.red),
+          );
+        }
+      } else if (id == 'statusCetak') {
         return CustomBadge(
-          label: val == 'Y' ? 'Aktif' : 'Not Aktif',
+          label: val == 'Y' ? 'Cetak' : 'Belum Cetak',
           colorLabel: (val == 'Y' ? colorStyle.black : colorStyle.white),
-          colorBox: (val == 'Y' ? colorStyle.green : colorStyle.red),
-        );
-      } else if (id == 'orderStatus') {
-        return CustomBadge(
-          label: val == 'C'
-              ? 'Cetak'
-              : val == 'V'
-                  ? 'Void'
-                  : 'Belum Cetak',
-          colorLabel: (val == 'C'
-              ? colorStyle.black
-              : val == 'V'
-                  ? colorStyle.white
-                  : colorStyle.white),
-          colorBox: (val == 'C'
-              ? colorStyle.green
-              : val == 'V'
-                  ? colorStyle.red
-                  : colorStyle.grey),
+          colorBox: (val == 'Y' ? colorStyle.green : colorStyle.grey),
+          // label: val == 'C' ? 'Cetak' : 'Belum Cetak',
+          // colorLabel: (val == 'C' ? colorStyle.black : colorStyle.white),
+          // colorBox: (val == 'C' ? colorStyle.green : colorStyle.grey),
         );
       } else {
         return Text(element.defaultValue ?? val);
