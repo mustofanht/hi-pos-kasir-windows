@@ -91,6 +91,40 @@ class OrderTicketService {
     }
   }
 
+  Future<Either<String, String>> voidOrder({
+    required AuthToken authToken,
+    required String orderNo,
+    required String voidReason,
+  }) async {
+    var path = "trn_order/void";
+    path += '?orderNo=$orderNo&';
+    path += 'voidReason=$voidReason';
+
+    final uri = source.baseUri(path: path);
+
+    final response = await http.post(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      var msg = json.decode(response.body)['message'];
+      return Right(msg ?? 'void pembayaran berhasil');
+    } else {
+      var err = json.decode(response.body)['error'];
+      var msg = json.decode(response.body)['message'];
+      return Left(
+        common.getMetadataMessages(
+          err ?? msg ?? 'Terjadi Kesalahan',
+        ),
+      );
+    }
+  }
+
   Future<Either<String, BaseResponse<List<TrnOrderEntity>>>> getAllOrder({
     required AuthToken authToken,
     List<FilterQuery>? dataFilter,

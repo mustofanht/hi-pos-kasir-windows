@@ -22,703 +22,722 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
     layoutStyle.init(context);
 
     Widget rightSection(TrnDetailOrderEntity model) {
-      return controller.isLoadingDetail.value
-          ? Expanded(
-              child: Container(
-                child: loading.simpleLoading(),
-              ),
-            )
-          : model.orderNumber == null
-              ? Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          assetsConstant.imgEmptyBox,
-                          fit: BoxFit.fill,
-                          errorBuilder: (BuildContext context, Object exception,
-                              StackTrace? stackTrace) {
-                            return const Text('Img Not Found');
-                          },
-                        ),
-                        SizedBox(
-                          height: layoutStyle.defaultMargin,
-                        ),
-                        Text(
-                          'Data Empty',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: fontSize.title,
-                            fontWeight: fontWeight.bold,
+      return Obx(
+        () => controller.isLoadingDetail.value
+            ? Expanded(
+                child: Container(
+                  child: loading.simpleLoading(),
+                ),
+              )
+            : model.orderNumber == null
+                ? Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            assetsConstant.imgEmptyBox,
+                            fit: BoxFit.fill,
+                            errorBuilder: (BuildContext context,
+                                Object exception, StackTrace? stackTrace) {
+                              return const Text('Img Not Found');
+                            },
                           ),
-                        ),
-                        SizedBox(
-                          height: layoutStyle.defaultMargin,
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : Expanded(
-                  child: Container(
-                    width: layoutStyle.screenWidth,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: colorStyle.grey,
-                      ),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(10),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                          Text(
+                            'Data Empty',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                              fontWeight: fontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            vertical: layoutStyle.defaultMargin / 2,
-                            horizontal: layoutStyle.defaultMargin,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colorStyle.lightGrey,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${model.orderNumber}',
-                                    style: TextStyle(
-                                      fontWeight: fontWeight.bold,
-                                      fontSize: fontSize.subtitle,
+                  )
+                : Expanded(
+                    child: Container(
+                      width: layoutStyle.screenWidth,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 1,
+                          color: colorStyle.grey,
+                        ),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 2,
+                              horizontal: layoutStyle.defaultMargin,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorStyle.lightGrey,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${model.orderNumber}',
+                                      style: TextStyle(
+                                        fontWeight: fontWeight.bold,
+                                        fontSize: fontSize.subtitle,
+                                      ),
                                     ),
+                                    // SizedBox(
+                                    //   width: layoutStyle.defaultMargin,
+                                    // ),
+                                    // Icon(Icons.copy),
+                                  ],
+                                ),
+                                controller.detailModel.value.orderStatus == 'V'
+                                    ? Container()
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          controller
+                                                      .selectedData
+                                                      .value
+                                                      .paymentDetail
+                                                      ?.pymntStatus ==
+                                                  'P'
+                                              ? CustomButton(
+                                                  onPressed: () {
+                                                    controller.doVoidPayment();
+                                                  },
+                                                  style: ButtonStyle(
+                                                    backgroundColor:
+                                                        MaterialStateProperty
+                                                            .all<Color>(
+                                                      colorStyle.primary,
+                                                    ),
+                                                    foregroundColor:
+                                                        MaterialStateProperty
+                                                            .all<Color>(
+                                                      colorStyle.white,
+                                                    ),
+                                                    overlayColor:
+                                                        MaterialStateProperty
+                                                            .all<Color>(
+                                                      colorStyle.white
+                                                          .withOpacity(0.1),
+                                                    ),
+                                                    elevation:
+                                                        MaterialStateProperty
+                                                            .all<double>(0),
+                                                  ),
+                                                  label: Row(
+                                                    children: [
+                                                      const Icon(
+                                                          Icons.block_outlined),
+                                                      SizedBox(
+                                                        width: layoutStyle
+                                                                .defaultMargin /
+                                                            5,
+                                                      ),
+                                                      const Text('Void'),
+                                                    ],
+                                                  ),
+                                                  width: layoutStyle
+                                                          .blockHorizontal *
+                                                      8,
+                                                  height: layoutStyle
+                                                          .blockVertical *
+                                                      5,
+                                                )
+                                              : Container(),
+                                          SizedBox(
+                                            width: layoutStyle.defaultMargin,
+                                          ),
+                                          CustomButton(
+                                            onPressed: () {
+                                              controller.doPrintTicket();
+                                            },
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  MaterialStateProperty.all<
+                                                          Color>(
+                                                      colorStyle.primary),
+                                              foregroundColor:
+                                                  MaterialStateProperty.all<
+                                                      Color>(colorStyle.white),
+                                              overlayColor:
+                                                  MaterialStateProperty.all<
+                                                          Color>(
+                                                      colorStyle.white
+                                                          .withOpacity(0.1)),
+                                              elevation: MaterialStateProperty
+                                                  .all<double>(0),
+                                            ),
+                                            label: Row(
+                                              children: [
+                                                Icon(Icons.print),
+                                                SizedBox(
+                                                  width: layoutStyle
+                                                          .defaultMargin /
+                                                      5,
+                                                ),
+                                                Text('Cetak'),
+                                              ],
+                                            ),
+                                            width:
+                                                layoutStyle.blockHorizontal * 8,
+                                            height:
+                                                layoutStyle.blockVertical * 5,
+                                          ),
+                                          SizedBox(
+                                            width: layoutStyle.defaultMargin,
+                                          ),
+                                          CustomButton(
+                                            onPressed: () {
+                                              controller.doSendMessage();
+                                            },
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  MaterialStateProperty.all<
+                                                          Color>(
+                                                      colorStyle.primary),
+                                              foregroundColor:
+                                                  MaterialStateProperty.all<
+                                                      Color>(colorStyle.white),
+                                              overlayColor:
+                                                  MaterialStateProperty.all<
+                                                          Color>(
+                                                      colorStyle.white
+                                                          .withOpacity(0.1)),
+                                              elevation: MaterialStateProperty
+                                                  .all<double>(0),
+                                            ),
+                                            label: Row(
+                                              children: [
+                                                Icon(Icons.send),
+                                                SizedBox(
+                                                  width: layoutStyle
+                                                          .defaultMargin /
+                                                      5,
+                                                ),
+                                                Text('Kirim Bukti Pembayaran'),
+                                              ],
+                                            ),
+                                            width: layoutStyle.blockHorizontal *
+                                                18,
+                                            height:
+                                                layoutStyle.blockVertical * 5,
+                                          ),
+                                        ],
+                                      )
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: layoutStyle.screenWidth / 4,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(
+                                              layoutStyle.defaultMargin),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'DI TERBITKAN OLEH',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.header,
+                                                  fontWeight: fontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Petugas: ${model.paymentDetail?.pymntCreatedBy ?? ''}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.subtitle,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(
+                                              layoutStyle.defaultMargin),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                'Invoice #${model.orderNumber}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.subtitle,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Created: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.subtitle,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    layoutStyle.defaultMargin,
+                                              ),
+                                              Text(
+                                                'CUSTOMER',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.header,
+                                                  fontWeight: fontWeight.bold,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    layoutStyle.defaultMargin /
+                                                        5,
+                                              ),
+                                              Text(
+                                                // 'Nama: ${model.customerDetail?.custName ?? ''}',
+                                                'Nama: ${model.orderName ?? ''}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.subtitle,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Tanggal Pembayaran: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.subtitle,
+                                                ),
+                                              ),
+                                              Text(
+                                                // 'Metode Pembayaran: ${MapPaymentMethod[model.orderPaidBy]}',
+                                                'Metode Pembayaran: ${model.orderPaidByName}',
+                                                style: TextStyle(
+                                                  fontSize: fontSize.subtitle,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  // SizedBox(
-                                  //   width: layoutStyle.defaultMargin,
-                                  // ),
-                                  // Icon(Icons.copy),
-                                ],
-                              ),
-                              controller.selectedData.value.orderStatus == 'V'
-                                  ? Container()
-                                  : Row(
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: layoutStyle.defaultMargin / 2,
+                                      horizontal: layoutStyle.defaultMargin,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colorStyle.lightGrey,
+                                    ),
+                                    child: Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                          MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        controller
-                                                    .selectedData
-                                                    .value
-                                                    .paymentDetail
-                                                    ?.pymntStatus ==
-                                                'P'
-                                            ? CustomButton(
-                                                onPressed: () {
-                                                  controller.doVoidPayment();
-                                                },
-                                                style: ButtonStyle(
-                                                  backgroundColor:
-                                                      MaterialStateProperty.all<
-                                                          Color>(
-                                                    colorStyle.primary,
-                                                  ),
-                                                  foregroundColor:
-                                                      MaterialStateProperty.all<
-                                                          Color>(
-                                                    colorStyle.white,
-                                                  ),
-                                                  overlayColor:
-                                                      MaterialStateProperty.all<
-                                                          Color>(
-                                                    colorStyle.white
-                                                        .withOpacity(0.1),
-                                                  ),
-                                                  elevation:
-                                                      MaterialStateProperty.all<
-                                                          double>(0),
-                                                ),
-                                                label: Row(
-                                                  children: [
-                                                    const Icon(
-                                                        Icons.block_outlined),
-                                                    SizedBox(
-                                                      width: layoutStyle
-                                                              .defaultMargin /
-                                                          5,
-                                                    ),
-                                                    const Text('Void'),
-                                                  ],
-                                                ),
-                                                width: layoutStyle
-                                                        .blockHorizontal *
-                                                    8,
-                                                height:
-                                                    layoutStyle.blockVertical *
-                                                        5,
-                                              )
-                                            : Container(),
-                                        SizedBox(
-                                          width: layoutStyle.defaultMargin,
+                                        Text(
+                                          'INFO TIKET',
+                                          style: TextStyle(
+                                            fontWeight: fontWeight.bold,
+                                            fontSize: fontSize.subtitle,
+                                          ),
                                         ),
-                                        CustomButton(
-                                          onPressed: () {
-                                            controller.doPrintTicket();
-                                          },
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(colorStyle.primary),
-                                            foregroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(colorStyle.white),
-                                            overlayColor: MaterialStateProperty
-                                                .all<Color>(colorStyle.white
-                                                    .withOpacity(0.1)),
-                                            elevation: MaterialStateProperty
-                                                .all<double>(0),
+                                        Text(
+                                          'JUMLAH HARGA SATUAN',
+                                          style: TextStyle(
+                                            fontWeight: fontWeight.bold,
+                                            fontSize: fontSize.subtitle,
                                           ),
-                                          label: Row(
-                                            children: [
-                                              Icon(Icons.print),
-                                              SizedBox(
-                                                width:
-                                                    layoutStyle.defaultMargin /
-                                                        5,
-                                              ),
-                                              Text('Cetak'),
-                                            ],
-                                          ),
-                                          width:
-                                              layoutStyle.blockHorizontal * 8,
-                                          height: layoutStyle.blockVertical * 5,
-                                        ),
-                                        SizedBox(
-                                          width: layoutStyle.defaultMargin,
-                                        ),
-                                        CustomButton(
-                                          onPressed: () {
-                                            controller.doSendMessage();
-                                          },
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(colorStyle.primary),
-                                            foregroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(colorStyle.white),
-                                            overlayColor: MaterialStateProperty
-                                                .all<Color>(colorStyle.white
-                                                    .withOpacity(0.1)),
-                                            elevation: MaterialStateProperty
-                                                .all<double>(0),
-                                          ),
-                                          label: Row(
-                                            children: [
-                                              Icon(Icons.send),
-                                              SizedBox(
-                                                width:
-                                                    layoutStyle.defaultMargin /
-                                                        5,
-                                              ),
-                                              Text('Kirim Bukti Pembayaran'),
-                                            ],
-                                          ),
-                                          width:
-                                              layoutStyle.blockHorizontal * 18,
-                                          height: layoutStyle.blockVertical * 5,
                                         ),
                                       ],
-                                    )
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: layoutStyle.screenWidth / 4,
-                                      child: Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'DI TERBITKAN OLEH',
-                                              style: TextStyle(
-                                                fontSize: fontSize.header,
-                                                fontWeight: fontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Petugas: ${model.paymentDetail?.pymntCreatedBy ?? ''}',
-                                              style: TextStyle(
-                                                fontSize: fontSize.subtitle,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
                                     ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin),
-                                        child: Column(
+                                  ),
+                                  Container(
+                                    width: layoutStyle.screenWidth,
+                                    padding: EdgeInsets.all(
+                                        layoutStyle.defaultMargin),
+                                    child: Column(
+                                      children: [
+                                        Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              'Invoice #${model.orderNumber}',
-                                              style: TextStyle(
-                                                fontSize: fontSize.subtitle,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Created: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
-                                              style: TextStyle(
-                                                fontSize: fontSize.subtitle,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: layoutStyle.defaultMargin,
-                                            ),
-                                            Text(
-                                              'CUSTOMER',
-                                              style: TextStyle(
-                                                fontSize: fontSize.header,
-                                                fontWeight: fontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height:
-                                                  layoutStyle.defaultMargin / 5,
-                                            ),
-                                            Text(
-                                              // 'Nama: ${model.customerDetail?.custName ?? ''}',
-                                              'Nama: ${model.orderName ?? ''}',
-                                              style: TextStyle(
-                                                fontSize: fontSize.subtitle,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Tanggal Pembayaran: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
-                                              style: TextStyle(
-                                                fontSize: fontSize.subtitle,
-                                              ),
-                                            ),
-                                            Text(
-                                              // 'Metode Pembayaran: ${MapPaymentMethod[model.orderPaidBy]}',
-                                              'Metode Pembayaran: ${model.orderPaidByName}',
-                                              style: TextStyle(
-                                                fontSize: fontSize.subtitle,
-                                              ),
-                                            ),
-                                          ],
+                                              CrossAxisAlignment.start,
+                                          children: model.detailOrderModels ==
+                                                  null
+                                              ? []
+                                              : model.detailOrderModels!
+                                                  .map(
+                                                    (e) => Padding(
+                                                      padding: EdgeInsets.symmetric(
+                                                          vertical: layoutStyle
+                                                                  .defaultMargin /
+                                                              5),
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .start,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                e.productName ??
+                                                                    '',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: fontSize
+                                                                      .subtitle,
+                                                                  fontWeight:
+                                                                      fontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                'X ${e.quantity ?? 0}',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: fontSize
+                                                                      .subtitle,
+                                                                  fontWeight:
+                                                                      fontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              // Text(
+                                                              //   'Not Set Yet',
+                                                              //   style: TextStyle(
+                                                              //     fontSize:
+                                                              //         fontSize.body,
+                                                              //   ),
+                                                              // ),
+                                                            ],
+                                                          ),
+                                                          Text(
+                                                            'Rp.${common.currencyFormat(e.price ?? 0)}',
+                                                            style: TextStyle(
+                                                              fontSize:
+                                                                  fontSize.body,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
                                         ),
-                                      ),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: model.trnOrderVouchers ==
+                                                  null
+                                              ? []
+                                              : model.trnOrderVouchers!
+                                                  .map(
+                                                    (e) => Padding(
+                                                      padding: EdgeInsets.symmetric(
+                                                          vertical: layoutStyle
+                                                                  .defaultMargin /
+                                                              5),
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .start,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                e.voucherName ??
+                                                                    '',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: fontSize
+                                                                      .subtitle,
+                                                                  fontWeight:
+                                                                      fontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              // Text(
+                                                              //   'Not Set Yet',
+                                                              //   style: TextStyle(
+                                                              //     fontSize:
+                                                              //         fontSize.body,
+                                                              //   ),
+                                                              // ),
+                                                            ],
+                                                          ),
+                                                          Text(
+                                                            '- Rp.${common.currencyFormat(e.voucherUnitCalcValue ?? 0)}',
+                                                            style: TextStyle(
+                                                              fontSize:
+                                                                  fontSize.body,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: layoutStyle.defaultMargin / 2,
-                                    horizontal: layoutStyle.defaultMargin,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: colorStyle.lightGrey,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'INFO TIKET',
-                                        style: TextStyle(
-                                          fontWeight: fontWeight.bold,
-                                          fontSize: fontSize.subtitle,
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: layoutStyle.defaultMargin / 2,
+                                      horizontal: layoutStyle.defaultMargin,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colorStyle.lightGrey,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Harga Total: Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
+                                          style: TextStyle(
+                                            fontWeight: fontWeight.bold,
+                                            fontSize: fontSize.subtitle,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        'JUMLAH HARGA SATUAN',
-                                        style: TextStyle(
-                                          fontWeight: fontWeight.bold,
-                                          fontSize: fontSize.subtitle,
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  width: layoutStyle.screenWidth,
-                                  padding:
-                                      EdgeInsets.all(layoutStyle.defaultMargin),
-                                  child: Column(
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: model.detailOrderModels ==
-                                                null
-                                            ? []
-                                            : model.detailOrderModels!
-                                                .map(
-                                                  (e) => Padding(
-                                                    padding: EdgeInsets.symmetric(
-                                                        vertical: layoutStyle
-                                                                .defaultMargin /
-                                                            5),
-                                                    child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              e.productName ??
-                                                                  '',
-                                                              style: TextStyle(
-                                                                fontSize: fontSize
-                                                                    .subtitle,
-                                                                fontWeight:
-                                                                    fontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              'X ${e.quantity ?? 0}',
-                                                              style: TextStyle(
-                                                                fontSize: fontSize
-                                                                    .subtitle,
-                                                                fontWeight:
-                                                                    fontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            // Text(
-                                                            //   'Not Set Yet',
-                                                            //   style: TextStyle(
-                                                            //     fontSize:
-                                                            //         fontSize.body,
-                                                            //   ),
-                                                            // ),
-                                                          ],
-                                                        ),
-                                                        Text(
-                                                          'Rp.${common.currencyFormat(e.price ?? 0)}',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                fontSize.body,
-                                                          ),
-                                                        ),
-                                                      ],
+                                  Container(
+                                    width: layoutStyle.screenWidth,
+                                    padding: EdgeInsets.all(
+                                        layoutStyle.defaultMargin),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(
+                                              layoutStyle.defaultMargin / 2),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    'Discount:',
+                                                    style: TextStyle(
+                                                      fontSize: fontSize.body,
                                                     ),
                                                   ),
-                                                )
-                                                .toList(),
-                                      ),
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: model.trnOrderVouchers == null
-                                            ? []
-                                            : model.trnOrderVouchers!
-                                                .map(
-                                                  (e) => Padding(
-                                                    padding: EdgeInsets.symmetric(
-                                                        vertical: layoutStyle
-                                                                .defaultMargin /
-                                                            5),
-                                                    child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              e.voucherName ??
-                                                                  '',
-                                                              style: TextStyle(
-                                                                fontSize: fontSize
-                                                                    .subtitle,
-                                                                fontWeight:
-                                                                    fontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            // Text(
-                                                            //   'Not Set Yet',
-                                                            //   style: TextStyle(
-                                                            //     fontSize:
-                                                            //         fontSize.body,
-                                                            //   ),
-                                                            // ),
-                                                          ],
-                                                        ),
-                                                        Text(
-                                                          '- Rp.${common.currencyFormat(e.voucherUnitCalcValue ?? 0)}',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                fontSize.body,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: layoutStyle
+                                                          .defaultMargin /
+                                                      2,
+                                                ),
+                                                child: Text(
+                                                  'Rp.${common.currencyFormat(model.orderDiskon ?? 0)}',
+                                                  style: TextStyle(
+                                                    fontSize: fontSize.body,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Padding(
+                                        //   padding: EdgeInsets.all(
+                                        //       layoutStyle.defaultMargin / 2),
+                                        //   child: Row(
+                                        //     children: [
+                                        //       Expanded(
+                                        //         child: Align(
+                                        //           alignment:
+                                        //               Alignment.centerRight,
+                                        //           child: Text(
+                                        //             'Voucher:',
+                                        //             style: TextStyle(
+                                        //               fontSize: fontSize.body,
+                                        //             ),
+                                        //           ),
+                                        //         ),
+                                        //       ),
+                                        //       Padding(
+                                        //         padding: EdgeInsets.symmetric(
+                                        //           horizontal:
+                                        //               layoutStyle.defaultMargin /
+                                        //                   2,
+                                        //         ),
+                                        //         child: Text(
+                                        //           'Not Set Yet',
+                                        //           style: TextStyle(
+                                        //             fontSize: fontSize.body,
+                                        //           ),
+                                        //         ),
+                                        //       ),
+                                        //     ],
+                                        //   ),
+                                        // ),
+                                        Padding(
+                                          padding: EdgeInsets.all(
+                                              layoutStyle.defaultMargin / 2),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    'Biaya Admin:',
+                                                    style: TextStyle(
+                                                      fontSize: fontSize.body,
                                                     ),
                                                   ),
-                                                )
-                                                .toList(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: layoutStyle.defaultMargin / 2,
-                                    horizontal: layoutStyle.defaultMargin,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorStyle.lightGrey,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Harga Total: Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
-                                        style: TextStyle(
-                                          fontWeight: fontWeight.bold,
-                                          fontSize: fontSize.subtitle,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  width: layoutStyle.screenWidth,
-                                  padding:
-                                      EdgeInsets.all(layoutStyle.defaultMargin),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin / 2),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: layoutStyle
+                                                          .defaultMargin /
+                                                      2,
+                                                ),
                                                 child: Text(
-                                                  'Discount:',
+                                                  'Rp.${common.currencyFormat(model.paymentDetail?.pymntAdminFee ?? 0)}',
                                                   style: TextStyle(
                                                     fontSize: fontSize.body,
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    layoutStyle.defaultMargin /
-                                                        2,
-                                              ),
-                                              child: Text(
-                                                'Rp.${common.currencyFormat(model.orderDiskon ?? 0)}',
-                                                style: TextStyle(
-                                                  fontSize: fontSize.body,
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(
+                                              layoutStyle.defaultMargin / 2),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    'Biaya Ppn:',
+                                                    style: TextStyle(
+                                                      fontSize: fontSize.body,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Padding(
-                                      //   padding: EdgeInsets.all(
-                                      //       layoutStyle.defaultMargin / 2),
-                                      //   child: Row(
-                                      //     children: [
-                                      //       Expanded(
-                                      //         child: Align(
-                                      //           alignment:
-                                      //               Alignment.centerRight,
-                                      //           child: Text(
-                                      //             'Voucher:',
-                                      //             style: TextStyle(
-                                      //               fontSize: fontSize.body,
-                                      //             ),
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //       Padding(
-                                      //         padding: EdgeInsets.symmetric(
-                                      //           horizontal:
-                                      //               layoutStyle.defaultMargin /
-                                      //                   2,
-                                      //         ),
-                                      //         child: Text(
-                                      //           'Not Set Yet',
-                                      //           style: TextStyle(
-                                      //             fontSize: fontSize.body,
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                      Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin / 2),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: layoutStyle
+                                                          .defaultMargin /
+                                                      2,
+                                                ),
                                                 child: Text(
-                                                  'Biaya Admin:',
+                                                  'Rp.${common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn}',
                                                   style: TextStyle(
                                                     fontSize: fontSize.body,
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    layoutStyle.defaultMargin /
-                                                        2,
-                                              ),
-                                              child: Text(
-                                                'Rp.${common.currencyFormat(model.paymentDetail?.pymntAdminFee ?? 0)}',
-                                                style: TextStyle(
-                                                  fontSize: fontSize.body,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin / 2),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  'Biaya Ppn:',
-                                                  style: TextStyle(
-                                                    fontSize: fontSize.body,
+                                        Padding(
+                                          padding: EdgeInsets.all(
+                                              layoutStyle.defaultMargin / 2),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    'Total Tagihan:',
+                                                    style: TextStyle(
+                                                      fontSize: fontSize.body,
+                                                      fontWeight:
+                                                          fontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    layoutStyle.defaultMargin /
-                                                        2,
-                                              ),
-                                              child: Text(
-                                                'Rp.${common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn}',
-                                                style: TextStyle(
-                                                  fontSize: fontSize.body,
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: layoutStyle
+                                                          .defaultMargin /
+                                                      2,
                                                 ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.all(
-                                            layoutStyle.defaultMargin / 2),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
                                                 child: Text(
-                                                  'Total Tagihan:',
+                                                  'Rp.${common.currencyFormat(model.orderTotalTgh ?? 0)}',
                                                   style: TextStyle(
                                                     fontSize: fontSize.body,
                                                     fontWeight: fontWeight.bold,
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    layoutStyle.defaultMargin /
-                                                        2,
-                                              ),
-                                              child: Text(
-                                                'Rp.${common.currencyFormat(model.orderTotalTgh ?? 0)}',
-                                                style: TextStyle(
-                                                  fontSize: fontSize.body,
-                                                  fontWeight: fontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                );
+      );
     }
 
     Widget cardSection({

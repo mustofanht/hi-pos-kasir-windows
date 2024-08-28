@@ -386,25 +386,22 @@ class BuktiPembayaranPageController extends GetxController
             //   reason: reasonVal,
             //   status: 'V',
             // );
-            var result = await _service.order.orderService.createTicketNo(
+            var result = await _service.order.orderService.voidOrder(
               authToken: _authToken,
-              reffNo: selectedData.value.orderNumber!,
-              status: 'V',
-              reason: reasonVal,
+              orderNo: selectedData.value.orderNumber!,
+              voidReason: reasonVal,
             );
 
             Get.back();
             result.fold(
               (l) {
                 logger.safeLog(l);
-                logger.safeLog('Create Ticket No Error 1');
-                alert.error('Error', 'Terjadi Kesalahan!');
-                alert.success('Success', l);
+                alert.error('Error', l);
               },
               (r) {
-                logger.safeLog('Create Ticket No Success');
                 logger.safeLog(r);
-                alert.success('Success', 'void pembayaran berhasil');
+                alert.success('Success', r);
+                doSelectedOrder(selectedData.value);
               },
             );
           } else {
