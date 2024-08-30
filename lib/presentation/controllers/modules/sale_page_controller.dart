@@ -26,7 +26,7 @@ class SalePageController extends GetxController
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
   DisplayUtil displayUtil = DisplayUtil();
-  
+
   final scrollController = ScrollController();
 
   TabController? tabController;
@@ -93,6 +93,8 @@ class SalePageController extends GetxController
     orderNameController.text = '';
     emailController.text = '';
     noWaController.text = '';
+    alamatController.text = '';
+    keteranganVoucher.text = '';
     doInitialValueDropdown();
     doSelectPaymentType(
       CustomIdNameEntity(
@@ -322,8 +324,9 @@ class SalePageController extends GetxController
       orderEmail: emailController.text.isEmpty ? ' ' : emailController.text,
       orderReffno: null,
       orderTotalItem: totalTotalTicketProduct,
-      custAddres: alamatController.text,
-      orderVoucherDesc: keteranganVoucher.text,
+      custAddres: alamatController.text.isEmpty ? ' ' : alamatController.text,
+      orderVoucherDesc:
+          keteranganVoucher.text.isEmpty ? ' ' : keteranganVoucher.text,
       // orderTotalItem: totalOrderQty.value,
       orderTotalAmt: totalOrderAmnt.value,
       adminFeeAmt: saleCartPageController.getPricePayemntFee(),
