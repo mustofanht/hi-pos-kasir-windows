@@ -1638,7 +1638,7 @@ class CustomDialog {
                               .toList(),
                           value: selectReason.value,
                           label: Text(
-                            'Pilih Printer',
+                            'Pilih Alasan',
                             style: textStyle.greyText.copyWith(
                               fontSize: fontSize.small,
                             ),
