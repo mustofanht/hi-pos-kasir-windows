@@ -35,7 +35,7 @@
     <uses-feature android:name="android.hardware.usb.host"/>
 
     <application
-        android:label="jaya_propertiy"
+        android:label="Jaya POS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

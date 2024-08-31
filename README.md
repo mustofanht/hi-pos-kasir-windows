@@ -1,3 +1,3 @@
-# jaya_propertiy
+# Jaya POS
 
 A new Flutter project.
