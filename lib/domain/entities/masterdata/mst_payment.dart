@@ -46,7 +46,9 @@ class MstPayment {
       pymntCategory: json['pymntCategory'],
       pymntCodePayGateway: json['pymntCodePayGateway'],
       pymntTypeFee: json['pymntTypeFee'],
-      pymntAdminFee: (json['pymntAdminFee'] as num).toDouble(),
+      pymntAdminFee: json['pymntAdminFee'] == null
+          ? null
+          : (json['pymntAdminFee'] as num).toDouble(),
       pymntStatus: json['pymntStatus'],
       pymntCreatedDate: DateTime.parse(json['pymntCreatedDate']).toLocal(),
       pymntCreatedBy: json['pymntCreatedBy'],
