@@ -28,6 +28,8 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_contro
 import 'package:jaya_propertiy/presentation/controllers/modules/setting/setting_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/shift/shift_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
+// import 'package:jaya_propertiy/presentation/views/modules/print_ticket/cek_order_page.dart';
+// import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/proofofpayment/bukti_pembayaran_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale_page.dart';
 import 'package:flutter/material.dart';
@@ -251,8 +253,9 @@ class HomePageController extends GetxController {
         return const BuktiPembayaranPage();
       case 3:
         Get.lazyPut(() => PrintTicketPageController());
-        Get.lazyPut(() => PrintTicketDetailPageController());
+        // Get.lazyPut(() => PrintTicketDetailPageController());
         return const PrintTicketPage();
+        // return const CekOrderPage();
       case 4:
         Get.lazyPut(() => ShiftPageController());
         return const ShiftPage();

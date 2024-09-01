@@ -45,6 +45,9 @@ class PrintTicketPageController extends GetxController
     await setListHeaderColumn();
     await doRefresh();
 
+    logger.safeLog(' --- INITIALIZE PAGE INQ --- ');
+    logger.safeLog(' openDetail : ${openDetail.value} ');
+
     super.onInit();
   }
 

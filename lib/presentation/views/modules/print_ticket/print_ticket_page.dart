@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
@@ -325,22 +326,16 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
     //     ],
     //   );
     // }
-
-    return GetBuilder<PrintTicketPageController>(
-      init: controller,
-      tag: 'PrintTicketPage',
-      // initState: (state) {
-      //   controller.setListHeaderColumn();
-      //   controller.doPrepareList(page: 0);
-      // },
-      builder: (controller) {
-        return controller.openDetail.value
-            ? const PrintTicketDetailPage()
-            : Container(
-                padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                child: ticketSection());
-        // : contentSection(controller);
-      },
-    );
+    return Obx(() {
+      logger.safeLog('OPEN DETAIL IS : ${controller.openDetail.value}');
+      return controller.openDetail.value
+          ? PrintTicketDetailPage(
+              parentController: controller,
+            )
+          : Container(
+              padding: EdgeInsets.all(layoutStyle.defaultMargin),
+              child: ticketSection(),
+            );
+    });
   }
 }

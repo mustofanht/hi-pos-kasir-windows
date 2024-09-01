@@ -112,14 +112,14 @@ class AppRoute {
       transition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 1000),
     ),
-    GetPage(
-      name: RouteName.printTicketDetailPage,
-      page: () => const PrintTicketDetailPage(),
-      binding: PrintTicketDetailPageBinding(),
-      curve: Curves.easeInOut,
-      transition: Transition.cupertino,
-      transitionDuration: const Duration(milliseconds: 1000),
-    ),
+    // GetPage(
+    //   name: RouteName.printTicketDetailPage,
+    //   page: () => const PrintTicketDetailPage(),
+    //   binding: PrintTicketDetailPageBinding(),
+    //   curve: Curves.easeInOut,
+    //   transition: Transition.cupertino,
+    //   transitionDuration: const Duration(milliseconds: 1000),
+    // ),
     //Proof Of Payment
     GetPage(
       name: RouteName.buktiPembayaranPage,
@@ -181,7 +181,7 @@ abstract class RouteName {
 
   // Print Ticket
   static const printTicketPage = '/print-ticket-page';
-  static const printTicketDetailPage = '/print-ticket-detail-page';
+  // static const printTicketDetailPage = '/print-ticket-detail-page';
 
   // shift
   static const shiftPage = '/shift-page';

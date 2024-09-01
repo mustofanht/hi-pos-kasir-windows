@@ -1,36 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
-class PrintTicketDetailPage extends StatefulWidget {
-  final PrintTicketPageController parentController;
-  const PrintTicketDetailPage({super.key, required this.parentController});
-  @override
-  State<PrintTicketDetailPage> createState() => _PrintTicketDetailPageState();
-}
+class CekOrderDetailPage extends StatelessWidget {
+  const CekOrderDetailPage({super.key});
 
-class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
   @override
   Widget build(BuildContext context) {
-    layoutStyle.init(context);
-    PrintTicketDetailPageController controller =
-        Get.isRegistered<PrintTicketDetailPageController>()
-            ? Get.find<PrintTicketDetailPageController>()
-            : Get.put(
-                PrintTicketDetailPageController(
-                  parentController: widget.parentController,
-                ),
-              );
+    final controller = Get.find<PrintTicketDetailPageController>();
+    controller.doPrepared();
+    // layoutStyle.init(context);
 
     Widget leftColum({required String column, required Widget value}) {
       return Expanded(
@@ -329,50 +318,61 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
     }
 
     Widget dataListSection() {
-      return Obx(() {
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              if (controller.isLoading.value) {
-                return loading.simpleLoading();
-              } else if (controller.model.value.detailOrderModels!.isNotEmpty) {
-                return GestureDetector(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: colorStyle.lightGrey,
-                          width: 1.0,
-                        ),
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            if (controller.isLoading.value) {
+              return loading.simpleLoading();
+            } else if (controller.model.value.detailOrderModels!.isNotEmpty) {
+              return GestureDetector(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: colorStyle.lightGrey,
+                        width: 1.0,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        // Checkbox(
-                        //   fillColor: MaterialStatePropertyAll(colorStyle.blue),
-                        //   value: controller.selected.contains(
-                        //     controller.model.value.detailOrderModels![index],
-                        //   ),
-                        //   onChanged: (value) => controller.toggleSelect(
-                        //     controller.model.value.detailOrderModels![index],
-                        //     value,
-                        //   ),
-                        // ),
-                        ...controller.detailListColumnHeader.map((element) {
-                          String val = controller
-                              .model.value.detailOrderModels![index]
-                              .toJson()[element.id]
-                              .toString();
+                  ),
+                  child: Row(
+                    children: [
+                      // Checkbox(
+                      //   fillColor: MaterialStatePropertyAll(colorStyle.blue),
+                      //   value: controller.selected.contains(
+                      //     controller.model.value.detailOrderModels![index],
+                      //   ),
+                      //   onChanged: (value) => controller.toggleSelect(
+                      //     controller.model.value.detailOrderModels![index],
+                      //     value,
+                      //   ),
+                      // ),
+                      ...controller.detailListColumnHeader.map((element) {
+                        String val = controller
+                            .model.value.detailOrderModels![index]
+                            .toJson()[element.id]
+                            .toString();
 
-                          if (common.isNumeric(val)) {
-                            val = common.currencyFormat(double.parse(val));
-                          }
+                        if (common.isNumeric(val)) {
+                          val = common.currencyFormat(double.parse(val));
+                        }
 
-                          return element.width != null
-                              ? Container(
-                                  width: element.width,
-                                  height: layoutStyle.blockVertical * 5,
+                        return element.width != null
+                            ? Container(
+                                width: element.width,
+                                height: layoutStyle.blockVertical * 5,
+                                alignment: element.alignment,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: layoutStyle.defaultMargin / 2,
+                                  vertical: layoutStyle.defaultMargin / 4,
+                                ),
+                                child: Text(
+                                  val,
+                                ),
+                              )
+                            : Expanded(
+                                child: Container(
                                   alignment: element.alignment,
+                                  height: layoutStyle.blockVertical * 5,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: layoutStyle.defaultMargin / 2,
                                     vertical: layoutStyle.defaultMargin / 4,
@@ -380,299 +380,180 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
                                   child: Text(
                                     val,
                                   ),
-                                )
-                              : Expanded(
-                                  child: Container(
-                                    alignment: element.alignment,
-                                    height: layoutStyle.blockVertical * 5,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: layoutStyle.defaultMargin / 2,
-                                      vertical: layoutStyle.defaultMargin / 4,
-                                    ),
-                                    child: Text(
-                                      val,
-                                    ),
-                                  ),
-                                );
-                        }).toList(),
-                      ],
-                    ),
+                                ),
+                              );
+                      }).toList(),
+                    ],
                   ),
-                );
-              } else {
-                return Container();
-              }
-            },
-            childCount: controller.model.value.detailOrderModels!.length,
-          ),
-        );
-      });
-    }
-
-    Widget dataTableCustom(TrnDetailOrder e) {
-      return Container(
-        padding: EdgeInsets.symmetric(
-          vertical: layoutStyle.defaultMargin / 2,
-        ),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: colorStyle.lightGrey,
-              width: 1,
-            ),
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: controller.detailListColumnHeader.map(
-            (element) {
-              String val = e.toJson()[element.id];
-
-              if (common.isNumeric(val)) {
-                val = common.currencyFormat(double.parse(val));
-              }
-              return Expanded(
-                child: Container(
-                  alignment: element.alignment,
-                  margin: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.defaultMargin / 3,
-                  ),
-                  child: Text(val),
                 ),
               );
-            },
-          ).toList(),
-        ),
-      );
-    }
-
-    Widget tableCustom() {
-      return Obx(
-        () => Column(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin,
-                horizontal: layoutStyle.defaultMargin,
-              ),
-              decoration: BoxDecoration(
-                color: colorStyle.lightGrey,
-              ),
-              child: Row(
-                children: controller.detailListColumnHeader
-                    .map(
-                      (element) => Expanded(
-                        child: Container(
-                          alignment: element.alignment,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin / 3,
-                          ),
-                          child: Text(
-                            element.columnName ?? '',
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin,
-                  horizontal: layoutStyle.defaultMargin,
-                ),
-                child: controller.model.value.detailOrderModels == null
-                    ? Container()
-                    : RefreshIndicator(
-                        onRefresh: () async {},
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          scrollDirection: Axis.vertical,
-                          child: Column(
-                            children: controller.model.value.detailOrderModels!
-                                .map(
-                                  (e) => dataTableCustom(e),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-          ],
+            } else {
+              return Container();
+            }
+          },
+          childCount: controller.model.value.detailOrderModels!.length,
         ),
       );
     }
 
     Widget rightSection() {
-      return Obx(
-        () => Expanded(
-          child: Container(
-            height: layoutStyle.screenHeight,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorStyle.white,
-                      borderRadius:
-                          BorderRadius.circular(layoutStyle.defaultMargin / 2),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(
-                        layoutStyle.defaultMargin,
+      return Expanded(
+        child: Container(
+          height: layoutStyle.screenHeight,
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorStyle.white,
+                    borderRadius:
+                        BorderRadius.circular(layoutStyle.defaultMargin / 2),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        // await controller.doPrepareList(page: 1);
+                      },
+                      child: CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverPersistentHeader(
+                            pinned: true,
+                            delegate: DataTableDelegate(
+                              minHeight: 50.0,
+                              maxHeight: 50.0,
+                              child: Material(
+                                color: colorStyle.lightGrey,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 5,
+                                  ),
+                                  topRight: Radius.circular(
+                                    layoutStyle.defaultMargin / 5,
+                                  ),
+                                ),
+                                child: headerSection(),
+                              ),
+                            ),
+                          ),
+                          dataListSection(),
+                        ],
                       ),
-                      child: tableCustom(),
-                      // child: RefreshIndicator(
-                      //   onRefresh: () async {
-                      //     // await controller.doPrepareList(page: 1);
-                      //   },
-                      //   child: CustomScrollView(
-                      //     physics: const AlwaysScrollableScrollPhysics(),
-                      //     slivers: [
-                      //       SliverPersistentHeader(
-                      //         pinned: true,
-                      //         delegate: DataTableDelegate(
-                      //           minHeight: 50.0,
-                      //           maxHeight: 50.0,
-                      //           child: Material(
-                      //             color: colorStyle.lightGrey,
-                      //             borderRadius: BorderRadius.only(
-                      //               topLeft: Radius.circular(
-                      //                 layoutStyle.defaultMargin / 5,
-                      //               ),
-                      //               topRight: Radius.circular(
-                      //                 layoutStyle.defaultMargin / 5,
-                      //               ),
-                      //             ),
-                      //             child: headerSection(),
-                      //           ),
-                      //         ),
-                      //       ),
-                      //       dataListSection(),
-                      //     ],
-                      //   ),
-                      // ),
                     ),
                   ),
                 ),
-                controller.parentModel.value.orderStatus == 'V'
-                    ? Container()
-                    : Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: layoutStyle.defaultMargin / 2),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: CustomButton(
-                                margin: EdgeInsets.symmetric(
-                                  vertical: layoutStyle.defaultMargin / 2,
-                                  // horizontal: layoutStyle.defaultMargin,
+              ),
+              controller.parentModel.value.orderStatus == 'V'
+                  ? Container()
+                  : Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomButton(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                // horizontal: layoutStyle.defaultMargin,
+                              ),
+                              onPressed: () {
+                                controller.doSendEmail();
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.white,
                                 ),
-                                onPressed: () {
-                                  controller.doSendEmail();
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) => colorStyle.white,
-                                  ),
-                                  overlayColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) =>
-                                        colorStyle.black.withOpacity(0.1),
-                                  ),
-                                  shape: MaterialStateProperty.resolveWith(
-                                    (states) => RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        layoutStyle.defaultMargin / 2,
-                                      ),
+                                overlayColor: MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
                                     ),
                                   ),
-                                  elevation: const MaterialStatePropertyAll(0),
                                 ),
-                                label: Text(
-                                  'Kirim Email',
-                                  style: textStyle.blackText,
-                                ),
-                                height: layoutStyle.blockVertical * 6.5,
+                                elevation: const MaterialStatePropertyAll(0),
                               ),
+                              label: Text(
+                                'Kirim Email',
+                                style: textStyle.blackText,
+                              ),
+                              height: layoutStyle.blockVertical * 6.5,
                             ),
-                            SizedBox(
-                              width: layoutStyle.defaultMargin / 2,
-                            ),
-                            Expanded(
-                              child: CustomButton(
-                                margin: EdgeInsets.symmetric(
-                                  vertical: layoutStyle.defaultMargin / 2,
-                                  // horizontal: layoutStyle.defaultMargin,
+                          ),
+                          SizedBox(
+                            width: layoutStyle.defaultMargin / 2,
+                          ),
+                          Expanded(
+                            child: CustomButton(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                // horizontal: layoutStyle.defaultMargin,
+                              ),
+                              onPressed: () {
+                                controller.doActiveTicket();
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.white,
                                 ),
-                                onPressed: () {
-                                  controller.doActiveTicket();
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) => colorStyle.white,
-                                  ),
-                                  overlayColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) =>
-                                        colorStyle.black.withOpacity(0.1),
-                                  ),
-                                  shape: MaterialStateProperty.resolveWith(
-                                    (states) => RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        layoutStyle.defaultMargin / 2,
-                                      ),
+                                overlayColor: MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
                                     ),
                                   ),
-                                  elevation: const MaterialStatePropertyAll(0),
                                 ),
-                                label: Text(
-                                  'Aktivasi Status Tiket',
-                                  style: textStyle.blackText,
-                                ),
-                                height: layoutStyle.blockVertical * 6.5,
+                                elevation: const MaterialStatePropertyAll(0),
                               ),
+                              label: Text(
+                                'Aktivasi Status Tiket',
+                                style: textStyle.blackText,
+                              ),
+                              height: layoutStyle.blockVertical * 6.5,
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+              // (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
+              //         controller.model.value.orderStatus != 'C')
+              controller.parentModel.value.otdtlStatus == 'Y' &&
+                      controller.parentModel.value.orderStatus != 'V'
+                  ? CustomButton(
+                      onPressed: () {
+                        controller.doPrintTicket();
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.resolveWith(
+                          (states) => colorStyle.grey,
+                        ),
+                        overlayColor: MaterialStateProperty.resolveWith(
+                          (states) => colorStyle.black.withOpacity(0.1),
+                        ),
+                        shape: MaterialStateProperty.resolveWith(
+                          (states) => RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              layoutStyle.defaultMargin / 2,
+                            ),
+                          ),
                         ),
                       ),
-                // (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
-                //         controller.model.value.orderStatus != 'C')
-                controller.parentModel.value.otdtlStatus == 'Y' &&
-                        controller.parentModel.value.orderStatus != 'V'
-                    ? CustomButton(
-                        onPressed: () {
-                          controller.doPrintTicket();
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.grey,
-                          ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        label: Text(
-                          'Print Tiket',
-                          style: textStyle.whiteText,
-                        ),
-                        height: layoutStyle.blockVertical * 6.5,
-                      )
-                    : Container(),
-              ],
-            ),
+                      label: Text(
+                        'Print Tiket',
+                        style: textStyle.whiteText,
+                      ),
+                      height: layoutStyle.blockVertical * 6.5,
+                    )
+                  : Container(),
+            ],
           ),
         ),
       );

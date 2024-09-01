@@ -12,7 +12,6 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
-import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
@@ -21,21 +20,29 @@ import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
-  PrintTicketDetailPageController();
+  final PrintTicketPageController parentController;
+  PrintTicketDetailPageController({required this.parentController});
 
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
-  final parentController = Get.find<PrintTicketPageController>();
+  // final parentController = Get.find<PrintTicketPageController>();
 
   final detailListColumnHeader = <CustomTableData>[].obs;
-  var selected = <TrnDetailOrder>[].obs;
-  var selectAll = false.obs;
+  // var selected = <TrnDetailOrder>[].obs;
+  // var selectAll = false.obs;
   final isLoading = false.obs;
 
   final parentModel = VwOrderEntity().obs;
 
   final model = TrnDetailOrderEntity().obs;
+
+  @override
+  void onInit() {
+    // TODO: implement onInit
+    super.onInit();
+    doPrepared();
+  }
 
   doPrepared() async {
     isLoading.value = true;
@@ -64,26 +71,26 @@ class PrintTicketDetailPageController extends GetxController {
     update();
   }
 
-  void toggleSelectAll(bool? value) {
-    selectAll.value = value ?? false;
-    selected.clear();
-    if (value!) {
-      for (var element in model.value.detailOrderModels!) {
-        selected.add(element);
-      }
-    }
-    update();
-  }
+  // void toggleSelectAll(bool? value) {
+  //   selectAll.value = value ?? false;
+  //   selected.clear();
+  //   if (value!) {
+  //     for (var element in model.value.detailOrderModels!) {
+  //       selected.add(element);
+  //     }
+  //   }
+  //   update();
+  // }
 
-  void toggleSelect(TrnDetailOrder modelSelected, bool? value) {
-    if (value!) {
-      selected.add(modelSelected);
-    } else {
-      selected.remove(modelSelected);
-    }
-    selectAll.value = selected.length == model.value.detailOrderModels!.length;
-    update();
-  }
+  // void toggleSelect(TrnDetailOrder modelSelected, bool? value) {
+  //   if (value!) {
+  //     selected.add(modelSelected);
+  //   } else {
+  //     selected.remove(modelSelected);
+  //   }
+  //   selectAll.value = selected.length == model.value.detailOrderModels!.length;
+  //   update();
+  // }
 
   setListHeaderColumn() {
     detailListColumnHeader.clear();
@@ -126,7 +133,8 @@ class PrintTicketDetailPageController extends GetxController {
   }
 
   doBack() {
-    final parentController = Get.find<PrintTicketPageController>();
+    logger.safeLog('BACK TO INQ');
+    // final parentController = Get.find<PrintTicketPageController>();
     parentController.openDetail.value = false;
     parentModel.value = VwOrderEntity();
     parentController.update();
@@ -169,9 +177,9 @@ class PrintTicketDetailPageController extends GetxController {
   String _buildBodyMessage() {
     String bodyMsg = '';
     bodyMsg += 'Your Ticket';
-    for (var element in selected) {
-      bodyMsg += 'Product Name : ${element.productName}';
-    }
+    // for (var element in selected) {
+    //   bodyMsg += 'Product Name : ${element.productName}';
+    // }
     return bodyMsg;
   }
 
@@ -193,7 +201,8 @@ class PrintTicketDetailPageController extends GetxController {
                 status: 'P',
               );
               Get.back();
-              await doPrepared();
+              doBack();
+              // await doPrepared();
               alert.success('Success', 'Berhasil Aktivasi Tiket');
             } else {
               alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
