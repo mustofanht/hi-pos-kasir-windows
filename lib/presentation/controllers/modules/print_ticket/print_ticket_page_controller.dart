@@ -30,9 +30,9 @@ class PrintTicketPageController extends GetxController
   final pagination = Pagination().obs;
 
   final dataList = <VwOrderEntity>[].obs;
-  final isLoadMore = false.obs;
+  // final isLoadMore = false.obs;
   final isLoading = false.obs;
-  final visibleLoadMore = false.obs;
+  // final visibleLoadMore = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -137,10 +137,11 @@ class PrintTicketPageController extends GetxController
     );
   }
 
-  doSearch(String search) async {
+  doSearch() async {
+    logger.safeLog('SEARCH : ${searchController.text}');
     setListHeaderColumn();
     dataList.clear();
-    await doPrepareList(page: 0, search: search);
+    await doPrepareList(page: 0, search: searchController.text);
     update();
   }
 
@@ -154,11 +155,8 @@ class PrintTicketPageController extends GetxController
   doPrepareList({required int page, String? search}) async {
     logger.safeLog("PAGE : ${page}");
     logger.safeLog("SEARCH : ${search}");
-    if (page > 0) {
-      isLoadMore.value = true;
-    } else {
-      isLoading.value = true;
-    }
+    isLoading.value = true;
+    update();
 
     try {
       var result;
@@ -194,28 +192,30 @@ class PrintTicketPageController extends GetxController
         dataFilter: dataFilter,
         paramsFilter: param,
       );
-      result.fold((l) {
-        logger.safeLog(l);
-        isLoading.value = false;
-        isLoadMore.value = false;
-      }, (r) {
-        // if (page == 0) {
-        //   dataList.value = r.data!;
-        // } else {
-        // }
-        dataList.addAll(r.data);
-        logger.safeLog('LENGHT DATA CEK ORDER : ${dataList.length}');
-        pagination.value = r.pagination!;
-        isLoading.value = false;
-        isLoadMore.value = false;
-        visibleLoadMore.value = false;
-      });
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          isLoading.value = false;
+        },
+        (r) {
+          if (r.data != null) {
+            if (page == 0) {
+              dataList.value = r.data!;
+            } else {
+              dataList.addAll(r.data);
+            }
+          }
+          pagination.value = r.pagination!;
+          isLoading.value = false;
+          update();
+        },
+      );
     } catch (e) {
       logger.safeLog(e);
       isLoading.value = false;
-      isLoadMore.value = false;
+      update();
     }
-    update();
+    logger.safeLog('LENGHT DATA CEK ORDER : ${dataList.length}');
   }
 
   doToDetail(VwOrderEntity? val) {

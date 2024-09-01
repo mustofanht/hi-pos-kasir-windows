@@ -435,6 +435,7 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
               return Expanded(
                 child: Container(
                   alignment: element.alignment,
+                  height: layoutStyle.blockVertical * 5,
                   margin: EdgeInsets.symmetric(
                     horizontal: layoutStyle.defaultMargin / 3,
                   ),
@@ -470,6 +471,9 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
                           ),
                           child: Text(
                             element.columnName ?? '',
+                            style: textStyle.blackText.copyWith(
+                              fontWeight: fontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -480,7 +484,7 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin,
+                  // vertical: layoutStyle.defaultMargin,
                   horizontal: layoutStyle.defaultMargin,
                 ),
                 child: controller.model.value.detailOrderModels == null

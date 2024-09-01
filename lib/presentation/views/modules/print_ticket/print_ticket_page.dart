@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/common/table_delgate.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
+import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
@@ -17,48 +18,12 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
   Widget build(BuildContext context) {
     layoutStyle.init(context);
 
-    Widget headerSection(PrintTicketPageController controller) {
-      return Row(
-        children: controller.listColumnHeader.map((element) {
-          return element.width != null
-              ? Container(
-                  width: element.width,
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.defaultMargin / 2,
-                    vertical: layoutStyle.defaultMargin / 4,
-                  ),
-                  child: Text(
-                    element.columnName ?? '',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: colorStyle.black, fontWeight: FontWeight.bold),
-                  ),
-                )
-              : Expanded(
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin / 2,
-                      vertical: layoutStyle.defaultMargin / 4,
-                    ),
-                    child: Text(
-                      element.columnName ?? '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: colorStyle.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                );
-        }).toList(),
-      );
-    }
-
-    Widget dataValue({required CustomTableData element, required int index}) {
+    Widget dataValueCustom({
+      required CustomTableData element,
+      required VwOrderEntity entity,
+    }) {
       String id = element.id!;
-      String val = controller.dataList[index].toJson()[id].toString();
+      String val = entity.toJson()[id].toString();
       if (id == 'pymntStatus') {
         return CustomBadge(
           label: val == 'P' ? 'Paid' : 'Not Paid',
@@ -66,8 +31,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
           colorBox: (val == 'P' ? colorStyle.green : colorStyle.red),
         );
       } else if (id == 'otdtlStatus') {
-        String? voidStatus =
-            controller.dataList[index].toJson()['orderStatus'].toString();
+        String? voidStatus = entity.toJson()['orderStatus'].toString();
         if (voidStatus.isNotEmpty && voidStatus == 'V') {
           return CustomBadge(
             label: 'Void',
@@ -95,63 +59,111 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
       }
     }
 
-    Widget dataListSection(PrintTicketPageController controller) {
-      return SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (BuildContext context, int index) {
-            if (controller.dataList.isNotEmpty) {
-              return GestureDetector(
-                onTap: () {
-                  controller.doToDetail(controller.dataList[index]);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: colorStyle.lightGrey,
-                        width: 1.0,
-                      ),
+    Widget dataTableCustom(VwOrderEntity e) {
+      return GestureDetector(
+        onTap: () {
+          controller.doToDetail(e);
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            vertical: layoutStyle.defaultMargin / 2,
+          ),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: colorStyle.lightGrey,
+                width: 1,
+              ),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: controller.listColumnHeader.map(
+              (element) {
+                String val = e.toJson()[element.id] ?? '';
+
+                if (common.isNumeric(val)) {
+                  val = common.currencyFormat(double.parse(val));
+                }
+                return Expanded(
+                  child: Container(
+                    alignment: element.alignment,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: layoutStyle.defaultMargin / 2,
+                      vertical: layoutStyle.defaultMargin / 4,
+                    ),
+                    child: dataValueCustom(
+                      element: element,
+                      entity: e,
                     ),
                   ),
-                  child: Row(
-                    children: controller.listColumnHeader.map((element) {
-                      return element.width != null
-                          ? Container(
-                              width: element.width,
-                              height: layoutStyle.blockVertical * 5,
-                              alignment: element.alignment,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: layoutStyle.defaultMargin / 2,
-                                vertical: layoutStyle.defaultMargin / 4,
-                              ),
-                              child: dataValue(
-                                element: element,
-                                index: index,
-                              ),
-                            )
-                          : Expanded(
-                              child: Container(
-                                alignment: element.alignment,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: layoutStyle.defaultMargin / 2,
-                                  vertical: layoutStyle.defaultMargin / 4,
-                                ),
-                                child: dataValue(
-                                  element: element,
-                                  index: index,
-                                ),
-                              ),
-                            );
-                    }).toList(),
+                );
+              },
+            ).toList(),
+          ),
+        ),
+      );
+    }
+
+    Widget tableCustom() {
+      logger.safeLog('DATA NYA : ${controller.dataList.length}');
+      return Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+              vertical: layoutStyle.defaultMargin,
+              horizontal: layoutStyle.defaultMargin,
+            ),
+            decoration: BoxDecoration(
+              color: colorStyle.lightGrey,
+            ),
+            child: Row(
+              children: controller.listColumnHeader
+                  .map(
+                    (element) => Expanded(
+                      child: Container(
+                        alignment: element.alignment,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin / 3,
+                        ),
+                        child: Text(
+                          element.columnName ?? '',
+                          style: textStyle.blackText.copyWith(
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin,
+              ),
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await controller.doRefresh();
+                },
+                child: SingleChildScrollView(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: controller.dataList
+                        .map(
+                          (e) => dataTableCustom(e),
+                        )
+                        .toList(),
                   ),
                 ),
-              );
-            } else {
-              return Container();
-            }
-          },
-          childCount: controller.dataList.length,
-        ),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -174,39 +186,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
                       flex: 1,
                       child: Padding(
                         padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                        child: RefreshIndicator(
-                          onRefresh: () async {
-                            await controller.doRefresh();
-                          },
-                          child: Obx(
-                            () => CustomScrollView(
-                              controller: controller.scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              slivers: [
-                                SliverPersistentHeader(
-                                  pinned: true,
-                                  delegate: DataTableDelegate(
-                                    minHeight: 50.0,
-                                    maxHeight: 50.0,
-                                    child: Material(
-                                      color: colorStyle.lightGrey,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(
-                                          layoutStyle.defaultMargin / 5,
-                                        ),
-                                        topRight: Radius.circular(
-                                          layoutStyle.defaultMargin / 5,
-                                        ),
-                                      ),
-                                      child: headerSection(controller),
-                                    ),
-                                  ),
-                                ),
-                                dataListSection(controller),
-                              ],
-                            ),
-                          ),
-                        ),
+                        child: tableCustom(),
                       ),
                     ),
                   ],
@@ -229,7 +209,6 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
           CustomTextBox(
             height: layoutStyle.blockVertical * 6.5,
             margin: EdgeInsets.symmetric(
-              // horizontal: layoutStyle.defaultMargin,
               vertical: layoutStyle.defaultMargin / 4,
             ),
             obscureText: false,
@@ -242,36 +221,27 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ),
             controller: controller.searchController,
             onChanged: (val) {
-              // final cursorPosition = controller.searchController.selection;
-
               controller.searchController.text = val;
-
               controller.searchController.selection =
                   TextSelection.fromPosition(
                 TextPosition(offset: controller.searchController.text.length),
               );
-
               controller.update();
             },
-            // onSubmit: (val) async {
-            //   await controller.doSearch(val);
-            // },
             decoration: InputDecoration(
               hintText: 'Masukan nomor ID Order atau ID Ticket',
               hintStyle: textStyle.greyText,
               border: InputBorder.none,
               suffixIcon: IconButton(
                 onPressed: () async {
-                  await controller.doSearch(controller.searchController.text);
-                  controller.update();
+                  await controller.doSearch();
+                  logger.safeLog(
+                      'LENGHT DATA CEK ORDER SEARCH : ${controller.dataList.length}');
                 },
                 icon: const Icon(
                   Icons.search,
                 ),
               ),
-              // suffixIcon: const Icon(
-              //   Icons.search,
-              // ),
             ),
             keyboardType: TextInputType.text,
           ),
@@ -281,61 +251,18 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
       );
     }
 
-    // Widget contentSection(PrintTicketPageController controller) {
-    //   return Column(
-    //     children: [
-    //       Container(
-    //         width: layoutStyle.screenWidth,
-    //         color: colorStyle.lightGrey,
-    //         child: Container(
-    //           padding: EdgeInsets.symmetric(
-    //             horizontal: layoutStyle.screenWidth / 3,
-    //           ),
-    //           child: TabBar(
-    //             controller: controller.tabController,
-    //             indicator: BoxDecoration(
-    //               color: colorStyle.white,
-    //               border: Border(
-    //                 bottom: BorderSide(
-    //                   color: colorStyle.primary,
-    //                   width: 1.0,
-    //                 ),
-    //               ),
-    //             ),
-    //             labelColor: colorStyle.primary,
-    //             unselectedLabelColor: colorStyle.black,
-    //             tabs: const [
-    //               Tab(text: 'Ticket'),
-    //             ],
-    //           ),
-    //         ),
-    //       ),
-    //       Expanded(
-    //         child: Padding(
-    //           padding: EdgeInsets.all(
-    //             layoutStyle.defaultMargin * 1.5,
-    //           ),
-    //           child: TabBarView(
-    //             controller: controller.tabController,
-    //             children: [
-    //               ticketSection(),
-    //             ],
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   );
-    // }
-    return Obx(() {
-      logger.safeLog('OPEN DETAIL IS : ${controller.openDetail.value}');
-      return controller.openDetail.value
-          ? PrintTicketDetailPage(
-              parentController: controller,
-            )
-          : Container(
-              padding: EdgeInsets.all(layoutStyle.defaultMargin),
-              child: ticketSection(),
-            );
-    });
+    return Obx(
+      () {
+        logger.safeLog('OPEN DETAIL IS : ${controller.openDetail.value}');
+        return controller.openDetail.value
+            ? PrintTicketDetailPage(
+                parentController: controller,
+              )
+            : Container(
+                padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                child: ticketSection(),
+              );
+      },
+    );
   }
 }

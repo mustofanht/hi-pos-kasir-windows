@@ -232,7 +232,7 @@ class CekOrderInqPage extends StatelessWidget {
                 border: InputBorder.none,
                 suffixIcon: IconButton(
                   onPressed: () async {
-                    await controller.doSearch(controller.searchController.text);
+                    // await controller.doSearch(controller.searchController.text);
                     // controller.update();
                   },
                   icon: const Icon(
