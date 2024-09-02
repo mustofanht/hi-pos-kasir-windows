@@ -35,7 +35,8 @@ class OrderTicketService {
       logger.safeLog(result.data!.toJson());
       return Right(result);
     } else {
-      return Left(common.getMetadataMessages(response.body));
+      var respMsg = json.decode(response.body)['message'];
+      return Left(respMsg.toString());
     }
   }
 

@@ -37,8 +37,13 @@ class OrderController extends GetxController {
     try {
       // create Order and waiting the prosess of payment
       loading.popUpLoading();
-      await _doCreateOrderQr(body: body, orderNo: orderNo);
+      String? msg = await _doCreateOrderQr(body: body, orderNo: orderNo);
       Get.back();
+      logger.safeLog('message : $msg');
+      if (msg.isNotEmpty) {
+        alert.error('Error', msg);
+        return;
+      }
       // Display the waiting payment alert
       if (orderPaymentNo.value == null) {
         alert.error('Payment Error', 'Terjadi Kesalahan');
@@ -143,7 +148,8 @@ class OrderController extends GetxController {
     }
   }
 
-  _doCreateOrderQr({required OrderModel body, Rxn<String>? orderNo}) async {
+  Future<String> _doCreateOrderQr(
+      {required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       var result = await _service.order.orderService.createOrder(
         authToken: _authToken,
@@ -151,11 +157,14 @@ class OrderController extends GetxController {
         // reffNo: orderNo?.value,
       );
 
+      String? msg = null;
+
       result.fold(
         (l) {
           logger.safeLog(l);
           logger.safeLog('Create Order Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
+          // alert.error('Error', l);
+          msg = l;
         },
         (r) {
           logger.safeLog('Create Order Success');
@@ -178,10 +187,12 @@ class OrderController extends GetxController {
           body.qrCode = r.data?.qrisUrl;
         },
       );
+      return Future.value(msg);
     } catch (e) {
       logger.safeLog(e);
       logger.safeLog('Create Order Error 2');
-      alert.error('Error', 'Terjadi Kesalahan!');
+      // alert.error('Error', e.toString());
+      return e.toString();
     }
   }
 }

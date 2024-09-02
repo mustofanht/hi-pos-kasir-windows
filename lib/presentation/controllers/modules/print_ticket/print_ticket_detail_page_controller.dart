@@ -136,6 +136,9 @@ class PrintTicketDetailPageController extends GetxController {
     logger.safeLog('BACK TO INQ');
     // final parentController = Get.find<PrintTicketPageController>();
     parentController.openDetail.value = false;
+    parentController.doSearch();
+    // parentController.doRefresh();
+    // parentController.searchController.text = '';
     parentModel.value = VwOrderEntity();
     parentController.update();
   }

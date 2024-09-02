@@ -30,12 +30,11 @@ class PrintTicketPageController extends GetxController
   final pagination = Pagination().obs;
 
   final dataList = <VwOrderEntity>[].obs;
-  // final isLoadMore = false.obs;
   final isLoading = false.obs;
-  // final visibleLoadMore = false.obs;
 
   @override
   Future<void> onInit() async {
+    super.onInit();
     scrollController.addListener(_onScroll);
     animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -44,11 +43,8 @@ class PrintTicketPageController extends GetxController
 
     await setListHeaderColumn();
     await doRefresh();
-
     logger.safeLog(' --- INITIALIZE PAGE INQ --- ');
     logger.safeLog(' openDetail : ${openDetail.value} ');
-
-    super.onInit();
   }
 
   @override
@@ -62,7 +58,7 @@ class PrintTicketPageController extends GetxController
   void _onScroll() {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
-      // logger.safeLog('CURR PAGE : ${pagination.value.currentPage}');
+      logger.safeLog('CURR PAGE : ${pagination.value.currentPage}');
       // logger.safeLog('DATA LIST : ${dataList.length}');
       if (dataList.isNotEmpty &&
           pagination.value.currentPage! < dataList.length) {
@@ -76,8 +72,9 @@ class PrintTicketPageController extends GetxController
     animationController.repeat(reverse: true);
     logger.safeLog("NEXT PAGE : ${((pagination.value.currentPage ?? 0) + 1)}");
     doPrepareList(
-        page: ((pagination.value.currentPage ?? 0) + 1),
-        search: searchController.text);
+      page: ((pagination.value.currentPage ?? 0) + 1),
+      search: searchController.text,
+    );
     isLoading.value = false;
     update();
   }
@@ -138,7 +135,7 @@ class PrintTicketPageController extends GetxController
   }
 
   doSearch() async {
-    logger.safeLog('SEARCH : ${searchController.text}');
+    logger.safeLog('SEARCH -- : ${searchController.text}');
     setListHeaderColumn();
     dataList.clear();
     await doPrepareList(page: 0, search: searchController.text);
@@ -153,10 +150,9 @@ class PrintTicketPageController extends GetxController
   }
 
   doPrepareList({required int page, String? search}) async {
-    logger.safeLog("PAGE : ${page}");
-    logger.safeLog("SEARCH : ${search}");
+    logger.safeLog("PAGE : $page");
+    logger.safeLog("SEARCH : $search");
     isLoading.value = true;
-    update();
 
     try {
       var result;
@@ -185,8 +181,6 @@ class PrintTicketPageController extends GetxController
         );
       }
 
-      // result = await _service.order.orderService.getAllOrder(
-      //     authToken: _authToken, dataFilter: dataFilter, paramsFilter: param);
       result = await _service.order.orderService.getVwOrderTicket(
         authToken: _authToken,
         dataFilter: dataFilter,
@@ -207,15 +201,14 @@ class PrintTicketPageController extends GetxController
           }
           pagination.value = r.pagination!;
           isLoading.value = false;
-          update();
         },
       );
     } catch (e) {
       logger.safeLog(e);
       isLoading.value = false;
-      update();
     }
     logger.safeLog('LENGHT DATA CEK ORDER : ${dataList.length}');
+    update();
   }
 
   doToDetail(VwOrderEntity? val) {

@@ -169,7 +169,15 @@ class SaleCartPageController extends GetxController {
   }
 
   onPayment() {
-    if (finalTotalOrderAmt.value < 0) {
+    // logger.safeLog('TOTAL AMT : ${finalTotalOrderAmt.value}');
+    // logger.safeLog('TICKERT LIST : ${ticketList.length}');
+    // logger.safeLog('TICKERT LIST : ${ticketList.isEmpty}');
+    // logger.safeLog('VOUCHER LIST : ${voucherList.length}');
+    // logger.safeLog('VOUCHER LIST : ${voucherList.isEmpty}');
+    // logger.safeLog(
+    //     'VALID TO PAYMENT  : ${(finalTotalOrderAmt.value < 0 && voucherList.isEmpty && ticketList.isEmpty)}');
+    if (finalTotalOrderAmt.value < 0 ||
+        (addonList.isEmpty && ticketList.isEmpty)) {
       alert.warning('warning', 'Order cannot empty');
       return;
     }

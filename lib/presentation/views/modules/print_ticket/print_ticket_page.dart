@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_badge.dart';
+import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
-import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_detail_page.dart';
 
-class PrintTicketPage extends GetView<PrintTicketPageController> {
+// class PrintTicketPage extends GetView<PrintTicketPageController> {
+class PrintTicketPage extends StatelessWidget {
   const PrintTicketPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     layoutStyle.init(context);
+    final controller = Get.find<PrintTicketPageController>();
 
     Widget dataValueCustom({
       required CustomTableData element,
@@ -107,7 +108,7 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
     }
 
     Widget tableCustom() {
-      logger.safeLog('DATA NYA : ${controller.dataList.length}');
+      // logger.safeLog('DATA NYA : ${controller.dataList.length}');
       return Column(
         children: [
           Container(
@@ -140,27 +141,33 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ),
           ),
           Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: layoutStyle.defaultMargin,
-              ),
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await controller.doRefresh();
-                },
-                child: SingleChildScrollView(
-                  controller: controller.scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    children: controller.dataList
-                        .map(
-                          (e) => dataTableCustom(e),
-                        )
-                        .toList(),
-                  ),
-                ),
-              ),
+            child: Obx(
+              () => controller.isLoading.value
+                  ? Center(
+                      child: loading.simpleLoading(),
+                    )
+                  : Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                      ),
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          await controller.doRefresh();
+                        },
+                        child: SingleChildScrollView(
+                          controller: controller.scrollController,
+                          // physics: const AlwaysScrollableScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            children: controller.dataList
+                                .map(
+                                  (e) => dataTableCustom(e),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                    ),
             ),
           ),
         ],
@@ -169,29 +176,27 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
 
     Widget contentTableSection(PrintTicketPageController controller) {
       return Expanded(
-        child: controller.isLoading.value
-            ? loading.simpleLoading()
-            : Container(
-                width: layoutStyle.screenWidth,
-                decoration: BoxDecoration(
-                  border: Border.all(width: 1, color: colorStyle.black),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(layoutStyle.defaultMargin / 5),
-                  ),
-                  color: colorStyle.white,
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: EdgeInsets.all(layoutStyle.defaultMargin),
-                        child: tableCustom(),
-                      ),
-                    ),
-                  ],
+        child: Container(
+          width: layoutStyle.screenWidth,
+          decoration: BoxDecoration(
+            border: Border.all(width: 1, color: colorStyle.black),
+            borderRadius: BorderRadius.all(
+              Radius.circular(layoutStyle.defaultMargin / 5),
+            ),
+            color: colorStyle.white,
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.all(layoutStyle.defaultMargin),
+                  child: tableCustom(),
                 ),
               ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -206,54 +211,146 @@ class PrintTicketPage extends GetView<PrintTicketPageController> {
             ),
           ),
           SizedBox(height: layoutStyle.defaultMargin),
-          CustomTextBox(
-            height: layoutStyle.blockVertical * 6.5,
-            margin: EdgeInsets.symmetric(
-              vertical: layoutStyle.defaultMargin / 4,
-            ),
-            obscureText: false,
-            border: Border.all(
-              color: colorStyle.grey,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(
-              layoutStyle.defaultMargin / 2,
-            ),
-            controller: controller.searchController,
-            onChanged: (val) {
-              controller.searchController.text = val;
-              controller.searchController.selection =
-                  TextSelection.fromPosition(
-                TextPosition(offset: controller.searchController.text.length),
-              );
-              controller.update();
-            },
-            decoration: InputDecoration(
-              hintText: 'Masukan nomor ID Order atau ID Ticket',
-              hintStyle: textStyle.greyText,
-              border: InputBorder.none,
-              suffixIcon: IconButton(
-                onPressed: () async {
-                  await controller.doSearch();
-                  logger.safeLog(
-                      'LENGHT DATA CEK ORDER SEARCH : ${controller.dataList.length}');
-                },
-                icon: const Icon(
-                  Icons.search,
+          Padding(
+            padding: EdgeInsets.zero,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Container(
+                    height: layoutStyle.blockVertical * 6,
+                    margin: EdgeInsets.symmetric(
+                      vertical: layoutStyle.defaultMargin / 4,
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: layoutStyle.defaultMargin / 2,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: controller.searchController,
+                      obscureText: false,
+                      decoration: InputDecoration(
+                        hintText: 'Masukan nomor ID Order atau ID Ticket',
+                        hintStyle: textStyle.greyText,
+                        border: InputBorder.none,
+                      ),
+                      keyboardType: TextInputType.text,
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(
+                  width: layoutStyle.defaultMargin,
+                ),
+                CustomButton(
+                  height: layoutStyle.blockVertical * 6,
+                  width: layoutStyle.blockHorizontal * 5,
+                  margin: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 2,
+                    // horizontal: layoutStyle.defaultMargin,
+                  ),
+                  onPressed: () async {
+                    // FocusScope.of(context).unfocus();
+                    await controller.doSearch();
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.resolveWith(
+                      (states) => colorStyle.blue,
+                    ),
+                    overlayColor: MaterialStateProperty.resolveWith(
+                      (states) => colorStyle.black.withOpacity(0.1),
+                    ),
+                    shape: MaterialStateProperty.resolveWith(
+                      (states) => RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          layoutStyle.defaultMargin / 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  label: Icon(
+                    Icons.search,
+                    color: colorStyle.white,
+                  ),
+                ),
+              ],
             ),
-            keyboardType: TextInputType.text,
           ),
+          // CustomTextBox(
+          //   height: layoutStyle.blockVertical * 6.5,
+          //   margin: EdgeInsets.symmetric(
+          //     vertical: layoutStyle.defaultMargin / 4,
+          //   ),
+          //   obscureText: false,
+          //   border: Border.all(
+          //     color: colorStyle.grey,
+          //     width: 1,
+          //   ),
+          //   borderRadius: BorderRadius.circular(
+          //     layoutStyle.defaultMargin / 2,
+          //   ),
+          //   controller: controller.searchController,
+          //   // onChanged: (val) {
+          //   //   controller.searchController.text = val;
+          //   //   controller.searchController.selection =
+          //   //       TextSelection.fromPosition(
+          //   //     TextPosition(
+          //   //       offset: controller.searchController.text.length,
+          //   //     ),
+          //   //   );
+          //   //   controller.update();
+          //   // },
+          //   decoration: InputDecoration(
+          //     hintText: 'Masukan nomor ID Order atau ID Ticket',
+          //     hintStyle: textStyle.greyText,
+          //     border: InputBorder.none,
+          //     suffixIcon: IconButton(
+          //       onPressed: () async {
+          //         FocusScope.of(context).unfocus();
+          //         await controller.doSearch();
+          //       },
+          //       icon: const Icon(
+          //         Icons.search,
+          //       ),
+          //     ),
+          //   ),
+          //   keyboardType: TextInputType.text,
+          // ),
           SizedBox(height: layoutStyle.defaultMargin),
           contentTableSection(controller),
         ],
       );
     }
 
+    // return GetBuilder(
+    //   init: controller,
+    //   tag: 'BuktiPembayaranPage',
+    //   initState: (state) async {
+    //     await controller.setListHeaderColumn();
+    //     await controller.doRefresh();
+    //   },
+    //   builder: (controller) {
+    //     return controller.openDetail.value
+    //         ? PrintTicketDetailPage(
+    //             parentController: controller,
+    //           )
+    //         : Container(
+    //             padding: EdgeInsets.all(layoutStyle.defaultMargin),
+    //             child: ticketSection(),
+    //           );
+    //   },
+    // );
+
     return Obx(
       () {
-        logger.safeLog('OPEN DETAIL IS : ${controller.openDetail.value}');
         return controller.openDetail.value
             ? PrintTicketDetailPage(
                 parentController: controller,
