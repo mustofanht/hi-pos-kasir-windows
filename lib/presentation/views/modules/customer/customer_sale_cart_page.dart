@@ -61,7 +61,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
           Text(
             'Rp.${common.currencyFormat(controller.paymentFee.value)}',
             style: TextStyle(
-              fontSize: fontSize.title ,
+              fontSize: fontSize.title,
             ),
           ),
         ],

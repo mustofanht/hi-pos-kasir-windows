@@ -49,6 +49,17 @@ class OrderController extends GetxController {
       logger.safeLog('QR CODE : ${body.qrCode}');
       logger.safeLog('DISPLAY L : ${displayUtil.displays.length}');
       if (displayUtil.displays.length == 1) {
+        await displayUtil.updateSecondDisplay(
+          CustomerDisplay(
+            key: CustomerDisplayAction.PAYMENT,
+            value: CustomerPayment(
+              orderNo: orderNo?.value,
+              type: PaymentMethod.QRIS,
+              isSuccess: false,
+            ).toJson(),
+          ).toJson(),
+        );
+
         dialog.waitingPaymentWithQr(
           title: 'Menunggu Pembayaran',
           qrCode: body.qrCode,
@@ -191,9 +202,22 @@ class OrderPaymentController extends GetxController {
           // logger.safeLog('val : $val');
           if (val != '') {
             body.orderReffno = val;
-            bool isSuccess =
-                await _doCreateOrderPayment(body: body, orderNo: orderNo);
+            bool isSuccess = await _doCreateOrderPayment(
+              body: body,
+              orderNo: orderNo,
+            );
             if (isSuccess) {
+              await displayUtil.updateSecondDisplay(
+                CustomerDisplay(
+                  key: CustomerDisplayAction.PAYMENT,
+                  value: CustomerPayment(
+                    orderNo: orderNo?.value,
+                    type: PaymentMethod.QRIS,
+                    isSuccess: false,
+                  ).toJson(),
+                ).toJson(),
+              );
+
               Get.back();
               loading.popUpLoading();
               await Future.delayed(const Duration(seconds: 1), () {});
@@ -403,12 +427,8 @@ class OrderUtil {
     }
   }
 
-  Future<void> _createTicket(
-    AuthToken authToken,
-    OrderModel body,
-    Rxn<String>? orderNo,
-    String status
-  ) async {
+  Future<void> _createTicket(AuthToken authToken, OrderModel body,
+      Rxn<String>? orderNo, String status) async {
     if (orderNo?.value != null) {
       List<ResponseCreateTicketNoEntity> listCreateTicket =
           await createTicketNo(
@@ -423,17 +443,11 @@ class OrderUtil {
   }
 
   Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
-    AuthToken authToken,
-    String orderNo,
-    String status
-  ) async {
+      AuthToken authToken, String orderNo, String status) async {
     try {
       List<ResponseCreateTicketNoEntity> dataList = [];
       var result = await _service.order.orderService.createTicketNo(
-        authToken: authToken,
-        reffNo: orderNo,
-        status: status
-      );
+          authToken: authToken, reffNo: orderNo, status: status);
 
       result.fold(
         (l) {

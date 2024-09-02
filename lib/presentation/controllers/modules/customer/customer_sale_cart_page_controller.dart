@@ -20,7 +20,7 @@ class CustomerSaleCartPageController extends GetxController {
 
   var totalOrder = RxDouble(0);
   var paymentFee = RxDouble(0);
-  var reffNo = RxString('10108274389324');
+  var reffNo = RxString('');
 
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
@@ -52,7 +52,6 @@ class CustomerSaleCartPageController extends GetxController {
     await loadImages();
 
     logger.safeLog('IMAGE PROMO : ${images.length}');
-;
     update();
   }
 
@@ -94,6 +93,9 @@ class CustomerSaleCartPageController extends GetxController {
         showPaymentSuccess.value = true;
       } else if (customerPayment.qrCode != null) {
         qrCode.value = customerPayment.qrCode;
+      }
+      if (customerPayment.orderNo != null) {
+        reffNo.value = customerPayment.orderNo ?? '';
       }
     } catch (e) {
       logger.safeLog(e);
