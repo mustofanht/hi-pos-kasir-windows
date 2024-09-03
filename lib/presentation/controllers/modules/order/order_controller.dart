@@ -39,8 +39,8 @@ class OrderController extends GetxController {
       loading.popUpLoading();
       String? msg = await _doCreateOrderQr(body: body, orderNo: orderNo);
       Get.back();
-      logger.safeLog('message : $msg');
-      if (msg.isNotEmpty) {
+      if (msg != null && msg.isNotEmpty) {
+        logger.safeLog('message : $msg');
         alert.error('Error', msg);
         return;
       }
@@ -148,7 +148,7 @@ class OrderController extends GetxController {
     }
   }
 
-  Future<String> _doCreateOrderQr(
+  Future<String?> _doCreateOrderQr(
       {required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       var result = await _service.order.orderService.createOrder(
@@ -157,7 +157,7 @@ class OrderController extends GetxController {
         // reffNo: orderNo?.value,
       );
 
-      String? msg = null;
+      String? msg;
 
       result.fold(
         (l) {
