@@ -19,10 +19,12 @@ import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
@@ -271,6 +273,13 @@ class BuktiPembayaranPageController extends GetxController
           locationName = user.locationName!;
         }
 
+        await _createTicket(
+          _authToken,
+          null,
+          selectedData.value.orderNumber,
+          'C',
+        );
+
         List<OrderTicketModel> ticketList =
             detailModel.value.trnOrderTicket == null
                 ? []
@@ -363,6 +372,54 @@ class BuktiPembayaranPageController extends GetxController
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+    }
+  }
+
+  Future<void> _createTicket(
+    AuthToken authToken,
+    OrderModel? body,
+    String? orderNo,
+    String status,
+  ) async {
+    if (orderNo != null) {
+      List<ResponseCreateTicketNoEntity> listCreateTicket =
+          await createTicketNo(
+        authToken,
+        orderNo,
+        status,
+      );
+      if (body != null) {
+        body.paymentDate = DateTime.now();
+        body.orderNumber = orderNo;
+        body.listCreateTicket = listCreateTicket;
+      }
+    }
+  }
+
+  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
+      AuthToken authToken, String orderNo, String status) async {
+    try {
+      List<ResponseCreateTicketNoEntity> dataList = [];
+      var result = await _service.order.orderService.createTicketNo(
+          authToken: authToken, reffNo: orderNo, status: status);
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Create Ticket No Error 1');
+          alert.error('Error', 'Terjadi Kesalahan!');
+        },
+        (r) {
+          logger.safeLog('Create Ticket No Success');
+          logger.safeLog(r);
+          dataList = r;
+        },
+      );
+      return dataList;
+    } catch (e) {
+      logger.safeLog('Create Ticket No Error 2');
+      logger.safeLog(e.toString());
+      return [];
     }
   }
 
