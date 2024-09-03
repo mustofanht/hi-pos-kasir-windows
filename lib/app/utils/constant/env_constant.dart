@@ -13,7 +13,7 @@ extension EnvironmentExt on Environment {
         return "http://194.238.23.222:8080/syspos-service/api/v1";
         break;
       case Environment.production:
-        return "https://prod.com/api/";
+        return "http://103.150.92.131:8080/syspos-service/api/v1";
         break;
       case Environment.chatbot:
         return "https://chatbot.com/";
