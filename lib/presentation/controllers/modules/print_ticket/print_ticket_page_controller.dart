@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 
 class PrintTicketPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -214,6 +215,10 @@ class PrintTicketPageController extends GetxController
   doToDetail(VwOrderEntity? val) {
     selectedData.value = val!;
     openDetail.value = true;
+    if (Get.isRegistered<PrintTicketDetailPageController>()) {
+      final detailController = Get.find<PrintTicketDetailPageController>();
+      detailController.doPrepared();
+    }
     update();
   }
 }
