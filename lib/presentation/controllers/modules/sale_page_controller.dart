@@ -168,7 +168,7 @@ class SalePageController extends GetxController
       isLoadingPayment.value = false;
       logger.safeLog(e);
     }
-    selectedPaymentType.value = paymentType.first;
+    // selectedPaymentType.value = paymentType.first;
     update();
   }
 
