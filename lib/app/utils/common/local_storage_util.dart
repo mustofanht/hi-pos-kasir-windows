@@ -64,18 +64,42 @@ class LocalStorage {
   }
 
   Future<void> deleteDirectory(Directory dir) async {
-  if (await dir.exists()) {
-    final List<FileSystemEntity> entities = dir.listSync();
-    for (FileSystemEntity entity in entities) {
-      if (entity is File) {
-        await entity.delete();
-      } else if (entity is Directory) {
-        await deleteDirectory(entity);
+    try {
+      if (await dir.exists()) {
+        final List<FileSystemEntity> entities = dir.listSync();
+        for (FileSystemEntity entity in entities) {
+          if (entity is File) {
+            if (await entity.exists()) {
+              await entity.delete();
+            }
+          } else if (entity is Directory) {
+            await deleteDirectory(entity);
+          }
+        }
+        await dir.delete();
+      } else {
+        print('Directory does not exist: ${dir.path}');
       }
+    } catch (e) {
+      print('Error deleting directory: ${e.toString()}');
     }
-    await dir.delete();
   }
-}
+
+  // Future<void> deleteDirectory(Directory dir) async {
+  //   if (await dir.exists()) {
+  //     final List<FileSystemEntity> entities = dir.listSync();
+  //     for (FileSystemEntity entity in entities) {
+  //       if (entity is File) {
+  //         if (await entity.exists()) {
+  //           await entity.delete();
+  //         }
+  //       } else if (entity is Directory) {
+  //         await deleteDirectory(entity);
+  //       }
+  //     }
+  //     await dir.delete();
+  //   }
+  // }
 
   Future<void> downloadAndSaveImagePromo(String imageUrl) async {
     if (imageUrl.isNotEmpty) {

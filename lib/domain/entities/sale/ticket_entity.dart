@@ -1,4 +1,6 @@
 // import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/domain/entities/common/ticket_days_entity.dart';
 
 class TicketEntity {
@@ -27,23 +29,31 @@ class TicketEntity {
   });
 
   TicketEntity.fromJson(Map<String, dynamic> json) {
-    // try {
+    try {
       ticketId = json['ticketId'];
       ticketName = json['ticketName'];
       ticketType = json['ticketType'];
       ticketLocation = json['ticketLocation'];
       ticketLocationName = json['ticketLocationName'];
-      ticketPrice =
-          json['ticketPrice'] != null ? (json['ticketPrice'] as num).toDouble() : null;
+      ticketPrice = json['ticketPrice'] != null
+          ? (json['ticketPrice'] as num).toDouble()
+          : null;
       ticketState = json['ticketState'];
       ticketMinimum = json['ticketMinimum'];
       pathImg = json['pathImg'];
-      ticketDays = json['ticketDays'] != null
-          ? TicketDaysEntity.fromJson(json['ticketDays'])
-          : null;
-    // } catch (e) {
-    //   logger.safeLog('error $e');
-    // }
+
+      if (json['ticketDays'] != null) {
+        if (json['ticketDays'] is Map<Object?, Object?>) {
+          Map<String, dynamic> result =
+              common.convertToMapStringDynamic(json['ticketDays']);
+          ticketDays = TicketDaysEntity.fromJson(result);
+        } else {
+          ticketDays = TicketDaysEntity.fromJson(json['ticketDays']);
+        }
+      }
+    } catch (e) {
+      logger.safeLog('error $e');
+    }
   }
   Map<String, dynamic> toJson() {
     return {
