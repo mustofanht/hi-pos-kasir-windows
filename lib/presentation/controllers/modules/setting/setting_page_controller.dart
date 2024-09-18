@@ -1,8 +1,10 @@
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
@@ -25,6 +27,7 @@ class SettingPageController extends GetxController
   final _authToken = Get.arguments[argConstant.authToken];
   final isLoading = false.obs;
   final isLoadingPrinter = false.obs;
+  final isLoadingConnectPrinter = false.obs;
 
   TabController? tabController;
   var tabIndex = 0.obs;
@@ -39,6 +42,7 @@ class SettingPageController extends GetxController
   final model = UserEntity().obs;
 
   final listPrinter = <CustomIdNameEntity>[].obs;
+  final printers = <PrinterModel>[].obs;
   final selectedCurrPrinter = CustomIdNameEntity().obs;
   final listScreens = <CustomIdNameEntity>[].obs;
   final selectedScreens = CustomIdNameEntity().obs;
@@ -99,6 +103,7 @@ class SettingPageController extends GetxController
   }
 
   doInitializePrinter() async {
+    isLoadingConnectPrinter.value = false;
     isLoadingPrinter.value = true;
     var noneSelectedPrint = CustomIdNameEntity(
       id: null,
@@ -107,21 +112,24 @@ class SettingPageController extends GetxController
     selectedCurrPrinter.value = noneSelectedPrint;
     listPrinter.clear();
     listPrinter.insert(0, noneSelectedPrint);
-    update();
-    List<PrinterModel> printers = await printerUtil.getListDevices();
-    int count = 0;
+
+    // List<PrinterModel> printers = await printerUtil.getListDevices();
+    printers.value = await printerUtil.getListDevices();
+    logger.safeLog('PRINTERS : ${printers.length}');
+
     for (var element in printers) {
-      logger.safeLog('PRINTER : ${element.deviceName}');
-      listPrinter.insert(
-        count,
+      logger.safeLog('PRINTER : ${element.toJson()}');
+      // logger.safeLog('PRINTER : ${element.deviceName}');
+      listPrinter.add(
         CustomIdNameEntity(
-          id: element.vendorId,
+          id: element.vendorId ?? element.address,
           name: element.deviceName,
         ),
       );
-      count++;
     }
-    logger.safeLog('SELECT PRINTER : ${printerUtil.currPrinter?.toJson()}');
+
+    // logger.safeLog('SELECT PRINTER : ${printerUtil.currPrinter?.toJson()}');
+
     if (printerUtil.currPrinter != null) {
       selectedCurrPrinter.value = listPrinter.firstWhere(
         (element) =>
@@ -129,8 +137,10 @@ class SettingPageController extends GetxController
             printerUtil.currPrinter?.vendorId.toString(),
       );
     }
-    logger.safeLog('LIST PRINTER : ${listPrinter.length}');
+    // logger.safeLog('LIST PRINTER : ${listPrinter.length}');
+
     isLoadingPrinter.value = false;
+
     update();
   }
 
@@ -158,27 +168,38 @@ class SettingPageController extends GetxController
 
   doUpdateConnectedPrinter(CustomIdNameEntity? val) async {
     if (val != null && val.id != null) {
-      List<PrinterModel> printers = await printerUtil.getListDevices();
+      isLoadingConnectPrinter.value = true;
+      // List<PrinterModel> printers = await printerUtil.getListDevices();
       if (printers.isNotEmpty) {
         PrinterModel selected = printers.firstWhere(
-          (element) => element.vendorId == val.id,
+          (element) => (element.vendorId ?? element.address) == val.id,
         );
-        await printerUtil.disconnect(selected);
+        // await printerUtil.init();
+        // await printerUtil.disconnect(selected);
+        await printerUtil.disconnectAll();
         await printerUtil.connect(selected);
         await printerUtil.stopSubscription();
+        // logger.safeLog("CONNECTED CURR : ${printerUtil.currPrinter?.toJson()}");
+        // logger.safeLog("listPrinter : ${listPrinter.length}");
         selectedCurrPrinter.value = listPrinter.firstWhere(
           (element) =>
-              element.id.toString() == printerUtil.currPrinter?.id.toString(),
+              element.id.toString() ==
+              (printerUtil.currPrinter?.vendorId ??
+                      printerUtil.currPrinter?.address)
+                  .toString(),
           orElse: () => CustomIdNameEntity(
             id: null,
             name: '--- Select Printer ---',
           ),
         );
-        alert.error('Success', 'Set Printer Active');
+        alert.success('Success', 'Set Printer ${val.name} Active');
+        isLoadingConnectPrinter.value = false;
       }
     } else {
       alert.error('Error', 'please select active printer');
+      isLoadingConnectPrinter.value = false;
     }
+    update();
   }
 
   doRefreshCustomerPage() async {
@@ -186,5 +207,26 @@ class SettingPageController extends GetxController
     await common.getImagePromo(_authToken);
     await displayUtil.displayCustomer(null);
     await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+  }
+
+  testPrint() async {
+    try {
+      logger.safeLog('TEST PRINT TO : ${printerUtil.currPrinter?.toJson()}');
+      if (printerUtil.currPrinter != null) {
+        List<int> data = [];
+        data = await generatePrintUtil.testPrint(
+          paperSize: PaperSize.mm80,
+        );
+        // await printerUtil.init();
+        await printerUtil.print(printerUtil.currPrinter!, data);
+        Get.back();
+      } else {
+        alert.error('Error', 'please check connection printer');
+        printerUtil.connectPrinter();
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+    }
   }
 }

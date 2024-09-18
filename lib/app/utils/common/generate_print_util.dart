@@ -457,6 +457,38 @@ class GeneratePrintUtil {
 
     return bytes;
   }
+
+  testPrint({
+    required PaperSize paperSize,
+  }) async {
+    List<int> bytes = [];
+    // Using default profile
+    final profile = await CapabilityProfile.load();
+    final generator = Generator(paperSize, profile);
+    bytes += generator.setGlobalFont(PosFontType.fontA);
+    bytes += generator.reset();
+    
+    bytes += generator.text(
+      'Ready',
+      styles: const PosStyles(
+        align: PosAlign.center,
+        bold: true,
+      ),
+    );
+
+    bytes += generator.text(
+      'At ${dateTimeUtil.now()}',
+      styles: const PosStyles(
+        align: PosAlign.center,
+        bold: true,
+      ),
+    );
+
+
+    bytes += generator.cut();
+
+    return bytes;
+  }
 }
 
 GeneratePrintUtil generatePrintUtil = GeneratePrintUtil();

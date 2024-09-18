@@ -377,38 +377,137 @@ class SettingPage extends GetView<SettingPageController> {
                             ),
                           ),
                         ),
-                        label: Text(
-                          'Refresh Customer Page',
-                          style: textStyle.whiteText,
+                        prefixIcon: const Icon(Icons.refresh_outlined),
+                        label: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin,
+                          ),
+                          child: Text(
+                            'Refresh Customer Page',
+                            style: textStyle.whiteText,
+                          ),
                         ),
                         height: layoutStyle.blockVertical * 6.5,
                       ),
-                      CustomDropdownButton<CustomIdNameEntity>(
-                        height: layoutStyle.blockVertical * 6.5,
-                        items: controller.listPrinter
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text("${e.name}"),
+                      // controller.isLoadingPrinter.value
+                      //     ? Center(
+                      //         child: SizedBox(
+                      //           width: layoutStyle.blockVertical * 6.5,
+                      //           height: layoutStyle.blockVertical * 6.5,
+                      //           child: loading.simpleLoading(),
+                      //         ),
+                      //       )
+                      //     :
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Obx(
+                              () => CustomDropdownButton<CustomIdNameEntity>(
+                                isLoading: controller.isLoadingPrinter.value,
+                                height: layoutStyle.blockVertical * 6.5,
+                                items: controller.listPrinter
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text("${e.name}"),
+                                      ),
+                                    )
+                                    .toList(),
+                                value: controller.selectedCurrPrinter.value,
+                                label: Text(
+                                  'Pilih Printer',
+                                  style: textStyle.greyText.copyWith(
+                                    fontSize: fontSize.small,
+                                  ),
+                                ),
+                                border: Border.all(
+                                  color: colorStyle.lightGrey,
+                                  width: 1,
+                                ),
+                                margin: EdgeInsets.symmetric(
+                                  vertical: layoutStyle.defaultMargin / 4,
+                                  horizontal: layoutStyle.defaultMargin,
+                                ),
+                                onChanged:
+                                    controller.isLoadingConnectPrinter.value
+                                        ? null
+                                        : controller.doUpdateConnectedPrinter,
                               ),
-                            )
-                            .toList(),
-                        value: controller.selectedCurrPrinter.value,
-                        label: Text(
-                          'Pilih Printer',
-                          style: textStyle.greyText.copyWith(
-                            fontSize: fontSize.small,
+                            ),
                           ),
-                        ),
-                        border: Border.all(
-                          color: colorStyle.lightGrey,
-                          width: 1,
-                        ),
-                        margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 4,
-                          horizontal: layoutStyle.defaultMargin,
-                        ),
-                        onChanged: controller.doUpdateConnectedPrinter,
+                          CustomButton(
+                            width: layoutStyle.blockHorizontal * 5,
+                            height: layoutStyle.blockVertical * 6.5,
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 2,
+                              horizontal: layoutStyle.defaultMargin / 5,
+                            ),
+                            onPressed: () {
+                              controller.doInitializePrinter();
+                            },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.blue,
+                              ),
+                              overlayColor: MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.black.withOpacity(0.1),
+                              ),
+                              shape: MaterialStateProperty.resolveWith(
+                                (states) => RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            label: const Icon(Icons.refresh),
+                          ),
+                          CustomButton(
+                            width: layoutStyle.blockHorizontal * 5,
+                            height: layoutStyle.blockVertical * 6.5,
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 2,
+                              horizontal: layoutStyle.defaultMargin / 5,
+                              // horizontal: layoutStyle.defaultMargin,
+                            ),
+                            onPressed: () {
+                              controller.testPrint();
+                            },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.blue,
+                              ),
+                              overlayColor: MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.black.withOpacity(0.1),
+                              ),
+                              shape: MaterialStateProperty.resolveWith(
+                                (states) => RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            label: const Icon(Icons.print),
+                            // suffixIcon: const Icon(Icons.print),
+                            // prefixIcon: const Icon(Icons.print),
+                            // label: controller.isLoading.value
+                            //     ? loading.buttonLoading()
+                            //     : Padding(
+                            //         padding: EdgeInsets.symmetric(
+                            //           horizontal: layoutStyle.defaultMargin,
+                            //         ),
+                            //         child: Text(
+                            //           'Test',
+                            //           style: textStyle.whiteText,
+                            //         ),
+                            //       ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

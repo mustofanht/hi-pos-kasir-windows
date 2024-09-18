@@ -13,6 +13,7 @@ class PrinterModel {
   bool? state;
 
   PrinterModel({
+    this.id,
     this.deviceName,
     this.address,
     this.port,

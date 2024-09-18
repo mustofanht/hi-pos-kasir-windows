@@ -16,7 +16,7 @@ class PrinterUtil {
   var defaultPrinterType = PrinterType.usb;
   PrinterModel? currPrinter;
   bool _isConnected = false;
-  final _isBle = true;
+  final _isBle = false;
   final _reconnect = true;
 
   Future<void> init() async {
@@ -70,8 +70,8 @@ class PrinterUtil {
     });
   }
 
-
   Future<void> connect(PrinterModel selectedPrinter) async {
+    logger.safeLog('CONNECT TO : ${selectedPrinter.toJson()}');
     switch (selectedPrinter.typePrinter) {
       case PrinterType.usb:
         await printerManager.connect(
@@ -80,10 +80,11 @@ class PrinterUtil {
                 name: selectedPrinter.deviceName,
                 productId: selectedPrinter.productId,
                 vendorId: selectedPrinter.vendorId));
+        currPrinter = selectedPrinter;
         _isConnected = true;
         break;
       case PrinterType.bluetooth:
-        await printerManager.connect(
+        var isConnected = await printerManager.connect(
           type: selectedPrinter.typePrinter,
           model: BluetoothPrinterInput(
             name: selectedPrinter.deviceName,
@@ -92,6 +93,8 @@ class PrinterUtil {
             autoConnect: _reconnect,
           ),
         );
+        currPrinter = selectedPrinter;
+        if (isConnected) _currentStatus = BTStatus.connected;
         break;
       case PrinterType.network:
         await printerManager.connect(
@@ -110,13 +113,24 @@ class PrinterUtil {
     _currentStatus = BTStatus.none;
   }
 
+  Future<void> disconnectAll() async {
+    var listPrinter = await getListDevices();
+    for (var element in listPrinter) {
+      var isDisconnect =
+          await printerManager.disconnect(type: element.typePrinter);
+      logger.safeLog('${element.deviceName} : $isDisconnect');
+    }
+    _isConnected = false;
+    pendingTask = null;
+    _currentStatus = BTStatus.none;
+  }
+
   Future<List<PrinterModel>> getListDevices() async {
     List<PrinterModel> deviceList = [];
     _subscription = printerManager
         .discovery(type: defaultPrinterType, isBle: _isBle)
         .listen((device) {
-      logger.safeLog('DEVICE NAME : ${device} ');
-      logger.safeLog('DEVICE NAME : ${device.name} ');
+      // logger.safeLog('DEVICE NAME : ${device.name} ');
       deviceList.add(PrinterModel(
         deviceName: device.name,
         address: device.address,
@@ -129,13 +143,13 @@ class PrinterUtil {
     await _subscription?.asFuture();
     await _subscription?.cancel();
     _subscription = printerManager
-        .discovery(type: PrinterType.bluetooth, isBle: true)
+        .discovery(type: PrinterType.bluetooth, isBle: _isBle)
         .listen((device) {
-      logger.safeLog('DEVICE NAME : ${device.name} ');
+      // logger.safeLog('DEVICE NAME : ${device.name} ');
       deviceList.add(PrinterModel(
         deviceName: device.name,
         address: device.address,
-        isBle: true,
+        isBle: _isBle,
         vendorId: device.vendorId,
         productId: device.productId,
         typePrinter: PrinterType.bluetooth,
@@ -175,14 +189,31 @@ class PrinterUtil {
   }
 
   Future<void> print(PrinterModel selectedPrinter, List<int> bytes) async {
+    // logger.safeLog('_currentStatus : $_currentStatus');
+    // logger.safeLog('selectedPrinter : ${selectedPrinter.typePrinter}');
+    // logger.safeLog('Platform.isAndroid : ${Platform.isAndroid}');
+    // logger.safeLog('printerManager : ${printerManager.currentStatusUSB}');
+    // logger.safeLog('printerManager : ${printerManager.currentStatusBT}');
+    // logger.safeLog('printerManager : ${printerManager.currentStatusTCP}');
     if (selectedPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
+      // logger.safeLog('PRINT USB 1 ----- ');
+      // logger.safeLog(
+      //     'TO PRINT READY : ${(_currentStatus == BTStatus.connected)}');
+      // logger.safeLog('_currentStatus BT : $_currentStatus');
       if (_currentStatus == BTStatus.connected) {
-        printerManager.send(type: selectedPrinter.typePrinter, bytes: bytes);
+        // logger.safeLog('PRINT USB 2 ----- ');
+        var isPrinted = await printerManager.send(
+            type: selectedPrinter.typePrinter, bytes: bytes);
         pendingTask = null;
+        if (Platform.isAndroid) pendingTask = bytes;
+        logger.safeLog('IS PRINT : $isPrinted ');
       }
     } else {
-      printerManager.send(type: selectedPrinter.typePrinter, bytes: bytes);
+      // logger.safeLog('PRINT ${selectedPrinter.typePrinter} ----- ');
+      var isPrinted = await printerManager.send(
+          type: selectedPrinter.typePrinter, bytes: bytes);
+      logger.safeLog('IS PRINT : $isPrinted ');
     }
   }
 }
