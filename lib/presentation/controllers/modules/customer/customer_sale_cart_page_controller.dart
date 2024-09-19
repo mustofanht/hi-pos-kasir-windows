@@ -145,6 +145,7 @@ class CustomerSaleCartPageController extends GetxController {
     //   images.add('https://picsum.photos/1000/1000');
     // }
     var listImage = await localStorage.getImagesPromoLocal();
+    logger.safeLog('LIST IMAGE ADS : ${listImage.length}');
     images.clear();
     images.addAll(listImage);
     update();

@@ -377,15 +377,19 @@ class SettingPage extends GetView<SettingPageController> {
                             ),
                           ),
                         ),
-                        prefixIcon: const Icon(Icons.refresh_outlined),
+                        prefixIcon: controller.isLoadingRefreshCustScreeen.value
+                            ? Container()
+                            : const Icon(Icons.refresh_outlined),
                         label: Padding(
                           padding: EdgeInsets.symmetric(
                             horizontal: layoutStyle.defaultMargin,
                           ),
-                          child: Text(
-                            'Refresh Customer Page',
-                            style: textStyle.whiteText,
-                          ),
+                          child: controller.isLoadingRefreshCustScreeen.value
+                              ? loading.buttonLoading()
+                              : Text(
+                                  'Refresh Customer Page',
+                                  style: textStyle.whiteText,
+                                ),
                         ),
                         height: layoutStyle.blockVertical * 6.5,
                       ),

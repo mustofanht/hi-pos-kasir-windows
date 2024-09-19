@@ -14,6 +14,7 @@ class AppStringConstant {
   final String pathIconsSvg = "assets/icons/svg/";
   final String pathTranslations = "assets/translations/";
   final bool testingMode = true;
+  final String refreshAds = 'REFRESH_ADS';
 }
 
 class ArgumentsConstant {

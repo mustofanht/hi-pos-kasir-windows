@@ -15,7 +15,6 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
 import 'package:presentation_displays/display.dart';
 
 class SettingPageController extends GetxController
@@ -28,6 +27,7 @@ class SettingPageController extends GetxController
   final isLoading = false.obs;
   final isLoadingPrinter = false.obs;
   final isLoadingConnectPrinter = false.obs;
+  final isLoadingRefreshCustScreeen = false.obs;
 
   TabController? tabController;
   var tabIndex = 0.obs;
@@ -203,10 +203,14 @@ class SettingPageController extends GetxController
   }
 
   doRefreshCustomerPage() async {
+    isLoadingRefreshCustScreeen.value = true;
     // displayUtil.showDisplay(selectedScreens.value.id);
-    await common.getImagePromo(_authToken);
-    await displayUtil.displayCustomer(null);
-    await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    await common.doRefreshAds(_authToken);
+    // await common.getImagePromo(_authToken);
+    // await displayUtil.updateSecondDisplay(constant.refreshAds);
+    // await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+    isLoadingRefreshCustScreeen.value = false;
+    update();
   }
 
   testPrint() async {

@@ -101,7 +101,24 @@ class LocalStorage {
   //   }
   // }
 
-  Future<void> downloadAndSaveImagePromo(String imageUrl) async {
+  Future<String> deleteDirPromo() async {
+    final directory = await _getAppDirectory();
+    logger.safeLog('DIR : $directory');
+    final finalDir = path.join(directory.path, promoDir);
+    logger.safeLog('finalDir : $finalDir');
+
+    final dir = Directory(finalDir);
+
+    if (await dir.exists()) await deleteDirectory(dir);
+
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return finalDir;
+  }
+
+  Future<void> downloadAndSaveImagePromo(
+      String imageUrl, String finalDir) async {
     if (imageUrl.isNotEmpty) {
       logger.safeLog('URL : $imageUrl');
       Uri? uri = Uri.tryParse(imageUrl);
@@ -112,44 +129,43 @@ class LocalStorage {
         logger.safeLog('Invalid URL: $imageUrl');
       }
 
-      final response = await http.get(
-        uri!,
-        headers: {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, seperti Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        },
-      );
-
-      logger.safeLog('STATUS CODE : ${response.statusCode}');
-      if (response.statusCode == 200) {
-        final imageBytes = response.bodyBytes;
-        final directory = await _getAppDirectory();
-        final finalDir = path.join(directory.path, promoDir);
-
-        final dir = Directory(finalDir);
-
-        if (await dir.exists()) await deleteDirectory(dir);
-
-        if (!await dir.exists()) {
-          await dir.create(recursive: true);
-        }
-
-        final imagePath = path.join(
-          finalDir,
-          getFileNameFromUrl(imageUrl),
+      var response;
+      try {
+        response = await http.get(
+          uri!,
+          headers: {
+            'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, seperti Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          },
         );
-        logger.safeLog('finalDir : $finalDir');
-        logger.safeLog('DIR : $directory');
-        logger.safeLog('PATH : $imagePath');
-        final file = File(imagePath);
+      } catch (e) {
+        logger.safeLog('imageUrl : $imageUrl');
+        logger.safeLog(e);
+      }
 
-        if (await file.exists()) {
-          await file.delete();
+      if (response != null) {
+        logger.safeLog('STATUS CODE : ${response.statusCode}');
+        if (response.statusCode == 200) {
+          final imageBytes = response.bodyBytes;
+
+          final imagePath = path.join(
+            finalDir,
+            getFileNameFromUrl(imageUrl),
+          );
+          logger.safeLog('PATH : $imagePath');
+          final file = File(imagePath);
+
+          if (await file.exists()) {
+            await file.delete();
+          }
+
+          await file.writeAsBytes(imageBytes);
+        } else {
+          logger.safeLog('Failed to download image ');
+          // throw Exception('Failed to download image');
         }
-
-        await file.writeAsBytes(imageBytes);
       } else {
-        throw Exception('Failed to download image');
+        logger.safeLog('Error URL ');
       }
     }
   }

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
-import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
@@ -69,8 +68,10 @@ class LoginPageController extends GetxController {
           }
           sessionUtil.updateToken(r);
           // await notificationEngine.getPermission();
-          await common.getImagePromo(r);
-          displayUtil.displayCustomer(null);
+          await common.doRefreshAds(r);
+          // await common.getImagePromo(r);
+          // displayUtil.displayCustomer(null);
+          // displayUtil.updateSecondDisplay(constant.refreshAds);
           Get.offAllNamed(
             RouteName.homePage,
             arguments: {

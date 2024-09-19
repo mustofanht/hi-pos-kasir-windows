@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_sale_cart_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer/customer_sale_cart_page.dart';
@@ -32,44 +33,50 @@ class _CustomerPageState extends State<CustomerPage> {
         Get.put(CustomerSaleCartPageController());
 
     Widget addsSection() {
-      return Expanded(
-        child: Container(
-          height: layoutStyle.screenHeight,
-          padding: EdgeInsets.all(layoutStyle.defaultMargin),
-          // child: Image.network('https://picsum.photos/1000/1000'),
-          child: FlutterCarousel(
-            options: CarouselOptions(
-              height: layoutStyle.screenHeight,
-              viewportFraction: 1.0,
-              enlargeCenterPage: false,
-              autoPlay: true,
-              enableInfiniteScroll: true,
-              autoPlayInterval: const Duration(seconds: 5),
-              slideIndicator: CircularWaveSlideIndicator(),
-            ),
-            items: customerSaleCartPageController.images.map((e) {
-              logger.safeLog('PATH : ${e.path}');
-              return Padding(
-                // padding: EdgeInsets.symmetric(
-                //   horizontal: layoutStyle.defaultMargin / 5,
-                // ),
-                padding: EdgeInsets.all(
-                  layoutStyle.defaultMargin / 20,
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                  child: Container(
-                    width: double.infinity,
-                    child: Image.file(
-                      e,
-                      fit: BoxFit.fill,
-                      // width: layoutStyle.screenWidth,
-                      // height: layoutStyle.screenHeight,
+      return Obx(
+        () => Expanded(
+          child: Container(
+            height: layoutStyle.screenHeight,
+            padding: EdgeInsets.all(layoutStyle.defaultMargin),
+            // child: Image.network('https://picsum.photos/1000/1000'),
+            child: FlutterCarousel(
+              options: CarouselOptions(
+                height: layoutStyle.screenHeight,
+                viewportFraction: 1.0,
+                enlargeCenterPage: false,
+                autoPlay: true,
+                enableInfiniteScroll: true,
+                autoPlayInterval: const Duration(seconds: 5),
+                slideIndicator: CircularWaveSlideIndicator(),
+              ),
+              items: customerSaleCartPageController.images.map((e) {
+                logger.safeLog('PATH : ${e.path}');
+                return Padding(
+                  // padding: EdgeInsets.symmetric(
+                  //   horizontal: layoutStyle.defaultMargin / 5,
+                  // ),
+                  padding: EdgeInsets.all(
+                    layoutStyle.defaultMargin / 20,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                    child: Container(
+                      width: double.infinity,
+                      child: Image.file(
+                        e,
+                        fit: BoxFit.fill,
+                        // width: layoutStyle.screenWidth,
+                        // height: layoutStyle.screenHeight,
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          return const Text('Img Not Found');
+                        },
+                      ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ),
       );
@@ -177,9 +184,15 @@ class _CustomerPageState extends State<CustomerPage> {
       ),
       body: Obx(
         () => SecondaryDisplay(
-          callback: (dynamic argument) {
+          callback: (dynamic argument) async {
             logger.safeLog('Data From main display : ${argument}');
-            customerSaleCartPageController.updateDataCustomer(argument);
+            if (argument != null &&
+                argument.toString() == constant.refreshAds) {
+              await customerSaleCartPageController.loadImages();
+            }
+            if (argument != null) {
+              customerSaleCartPageController.updateDataCustomer(argument);
+            }
           },
           child: Container(
             width: layoutStyle.screenWidth,
