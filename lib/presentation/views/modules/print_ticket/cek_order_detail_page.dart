@@ -41,221 +41,234 @@ class CekOrderDetailPage extends StatelessWidget {
     }
 
     Widget leftSection(TrnDetailOrderEntity model) {
-      return Container(
-        height: layoutStyle.screenHeight,
-        width: layoutStyle.screenWidth / 3,
-        padding: EdgeInsets.all(layoutStyle.defaultMargin),
-        decoration: BoxDecoration(
-          color: colorStyle.white,
-          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
-                ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Order ID',
-                      value: Text(
-                        model.orderNumber ?? '',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+      return Obx(
+        () => Container(
+          height: layoutStyle.screenHeight,
+          width: layoutStyle.screenWidth / 3,
+          padding: EdgeInsets.all(layoutStyle.defaultMargin),
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Order ID',
+                        value: Text(
+                          model.orderNumber ?? '',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    leftColum(
-                      column: 'Nama',
-                      value: Text(
-                        model.orderName ?? '',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                      leftColum(
+                        column: 'Nama',
+                        value: Text(
+                          model.orderName ?? '',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
-                ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Order Date',
-                      value: Text(
-                        model.orderDate == null
-                            ? ''
-                            : dateTimeUtil.getFormattedDate(
-                                date: model.orderDate!,
-                                format: dateFormat.withoutSecond,
-                              ),
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Order Date',
+                        value: Text(
+                          model.orderDate == null
+                              ? ''
+                              : dateTimeUtil.getFormattedDate(
+                                  date: model.orderDate!,
+                                  format: dateFormat.withoutSecond,
+                                ),
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    leftColum(
-                      column: 'Source Order',
-                      value: Text(
-                        model.orderSource ?? '',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                      leftColum(
+                        column: 'Source Order',
+                        value: Text(
+                          model.orderSource ?? '',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: layoutStyle.defaultMargin / 2,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
+                SizedBox(
+                  height: layoutStyle.defaultMargin / 2,
                 ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Jumlah Tiket',
-                      value: Text(
-                        model.orderTotalItem == null
-                            ? ''
-                            : model.orderTotalItem.toString(),
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Jumlah Tiket',
+                        value: Text(
+                          model.orderTotalItem == null
+                              ? ''
+                              : model.orderTotalItem.toString(),
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    // leftColum(
-                    //   column: 'Jenis Tiket',
-                    //   value: Text(
-                    //     'Perorang',
-                    //     style: TextStyle(
-                    //       fontWeight: fontWeight.bold,
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
+                      // leftColum(
+                      //   column: 'Jenis Tiket',
+                      //   value: Text(
+                      //     'Perorang',
+                      //     style: TextStyle(
+                      //       fontWeight: fontWeight.bold,
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
-                ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Status Pembayaran',
-                      value: CustomBadge(
-                        label: model.paymentDetail?.pymntStatus == 'P'
-                            ? 'Paid'
-                            : 'Not Paid/Waiting',
-                        colorLabel: model.paymentDetail?.pymntStatus == 'P'
-                            ? colorStyle.white
-                            : colorStyle.black,
-                        colorBox: model.paymentDetail?.pymntStatus == 'P'
-                            ? colorStyle.green
-                            : colorStyle.creamy,
-                        margin: EdgeInsets.zero,
-                      ),
-                    ),
-                    leftColum(
-                      column: 'Status Cetak',
-                      value: CustomBadge(
-                        label:
-                            model.orderStatus == 'C' ? 'Cetak' : 'Belum Cetak',
-                        colorLabel: colorStyle.white,
-                        colorBox: model.orderStatus == 'C'
-                            ? colorStyle.green
-                            : colorStyle.yellow,
-                        margin: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: layoutStyle.defaultMargin / 2,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
-                ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Diskon',
-                      value: Text(
-                        'Rp.${common.currencyFormat(model.orderDiskon ?? 0)}',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Status Pembayaran',
+                        value: CustomBadge(
+                          label: controller.statusPembayaran.value == 'P'
+                              ? 'Paid'
+                              : 'Not Paid/Waiting',
+                          colorLabel: controller.statusPembayaran.value == 'P'
+                              ? colorStyle.white
+                              : colorStyle.black,
+                          colorBox: controller.statusPembayaran.value == 'P'
+                              ? colorStyle.green
+                              : colorStyle.creamy,
+                          margin: EdgeInsets.zero,
+                          // label: model.paymentDetail?.pymntStatus == 'P'
+                          //     ? 'Paid'
+                          //     : 'Not Paid/Waiting',
+                          // colorLabel: model.paymentDetail?.pymntStatus == 'P'
+                          //     ? colorStyle.white
+                          //     : colorStyle.black,
+                          // colorBox: model.paymentDetail?.pymntStatus == 'P'
+                          //     ? colorStyle.green
+                          //     : colorStyle.creamy,
+                          // margin: EdgeInsets.zero,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
-                ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Biaya Admin',
-                      value: Text(
-                        'Rp.${common.currencyFormat(model.paymentDetail?.pymntAdminFee ?? 0)}',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                      leftColum(
+                        column: 'Status Cetak',
+                        value: CustomBadge(
+                          label: controller.statusCetak.value == 'Y'
+                              ? 'Cetak'
+                              : 'Belum Cetak',
+                          colorLabel: colorStyle.white,
+                          colorBox: controller.statusCetak.value == 'Y'
+                              ? colorStyle.green
+                              : colorStyle.yellow,
+                          margin: EdgeInsets.zero,
                         ),
                       ),
-                    ),
-                    leftColum(
-                      column: 'Biaya Ppn',
-                      value: Text(
-                        'Rp.${model.ppn != null ? (common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn) : 0}',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: layoutStyle.defaultMargin / 2,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Diskon',
+                        value: Text(
+                          'Rp.${common.currencyFormat(model.orderDiskon ?? 0)}',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
-                ),
-                child: Row(
-                  children: [
-                    leftColum(
-                      column: 'Total',
-                      value: Text(
-                        'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Biaya Admin',
+                        value: Text(
+                          'Rp.${common.currencyFormat(model.paymentDetail?.pymntAdminFee ?? 0)}',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    leftColum(
-                      column: 'Total Tagihan',
-                      value: Text(
-                        'Rp.${common.currencyFormat((model.orderTotalAmt ?? 0) + (model.orderDiskon ?? 0))}',
-                        style: TextStyle(
-                          fontWeight: fontWeight.bold,
+                      leftColum(
+                        column: 'Biaya Ppn',
+                        value: Text(
+                          'Rp.${model.ppn != null ? (common.isNumeric(model.ppn) ? common.currencyFormat(double.parse(model.ppn ?? '0')) : model.ppn) : 0}',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                  ),
+                  child: Row(
+                    children: [
+                      leftColum(
+                        column: 'Total',
+                        value: Text(
+                          'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      leftColum(
+                        column: 'Total Tagihan',
+                        value: Text(
+                          'Rp.${common.currencyFormat((model.orderTotalAmt ?? 0) + (model.orderDiskon ?? 0))}',
+                          style: TextStyle(
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

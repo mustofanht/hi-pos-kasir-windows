@@ -26,6 +26,9 @@ class PrintTicketDetailPageController extends GetxController {
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
+  final statusPembayaran = RxString('N');
+  final statusCetak = RxString('N');
+
   // final parentController = Get.find<PrintTicketPageController>();
 
   final detailListColumnHeader = <CustomTableData>[].obs;
@@ -50,6 +53,13 @@ class PrintTicketDetailPageController extends GetxController {
     parentModel.value = parentController.selectedData.value;
     await getDetail();
     isLoading.value = false;
+
+    statusPembayaran.value = parentModel.value.pymntStatus ?? 'N';
+    statusCetak.value = parentModel.value.statusCetak ?? 'N';
+
+    logger.safeLog('ORD NO : ${parentModel.value.orderNumber}');
+    logger.safeLog('STS PAYMENT : ${statusPembayaran.value}');
+    logger.safeLog('STS PRINT : ${statusCetak.value}');
     update();
   }
 

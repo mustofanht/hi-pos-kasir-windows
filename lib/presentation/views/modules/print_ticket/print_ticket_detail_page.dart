@@ -161,33 +161,44 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
                 ),
                 child: Row(
                   children: [
-                    leftColum(
-                      column: 'Status Pembayaran',
-                      value: CustomBadge(
-                        label: model.paymentDetail?.pymntStatus == 'P'
-                            ? 'Paid'
-                            : 'Not Paid/Waiting',
-                        colorLabel: model.paymentDetail?.pymntStatus == 'P'
-                            ? colorStyle.white
-                            : colorStyle.black,
-                        colorBox: model.paymentDetail?.pymntStatus == 'P'
-                            ? colorStyle.green
-                            : colorStyle.creamy,
-                        margin: EdgeInsets.zero,
+                      leftColum(
+                        column: 'Status Pembayaran',
+                        value: CustomBadge(
+                          label: controller.statusPembayaran.value == 'P'
+                              ? 'Paid'
+                              : 'Not Paid/Waiting',
+                          colorLabel: controller.statusPembayaran.value == 'P'
+                              ? colorStyle.white
+                              : colorStyle.black,
+                          colorBox: controller.statusPembayaran.value == 'P'
+                              ? colorStyle.green
+                              : colorStyle.creamy,
+                          margin: EdgeInsets.zero,
+                          // label: model.paymentDetail?.pymntStatus == 'P'
+                          //     ? 'Paid'
+                          //     : 'Not Paid/Waiting',
+                          // colorLabel: model.paymentDetail?.pymntStatus == 'P'
+                          //     ? colorStyle.white
+                          //     : colorStyle.black,
+                          // colorBox: model.paymentDetail?.pymntStatus == 'P'
+                          //     ? colorStyle.green
+                          //     : colorStyle.creamy,
+                          // margin: EdgeInsets.zero,
+                        ),
                       ),
-                    ),
-                    leftColum(
-                      column: 'Status Cetak',
-                      value: CustomBadge(
-                        label:
-                            model.orderStatus == 'C' ? 'Cetak' : 'Belum Cetak',
-                        colorLabel: colorStyle.white,
-                        colorBox: model.orderStatus == 'C'
-                            ? colorStyle.green
-                            : colorStyle.yellow,
-                        margin: EdgeInsets.zero,
+                      leftColum(
+                        column: 'Status Cetak',
+                        value: CustomBadge(
+                          label: controller.statusCetak.value == 'Y'
+                              ? 'Cetak'
+                              : 'Belum Cetak',
+                          colorLabel: colorStyle.white,
+                          colorBox: controller.statusCetak.value == 'Y'
+                              ? colorStyle.green
+                              : colorStyle.yellow,
+                          margin: EdgeInsets.zero,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
