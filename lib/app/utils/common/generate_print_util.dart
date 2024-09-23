@@ -245,28 +245,6 @@ class GeneratePrintUtil {
       }
     }
     bytes += generator.hr();
-    // Print Total
-    int totalPak =
-        body.listCreateTicket == null ? 0 : body.listCreateTicket!.length;
-    bytes += generator.row(
-      [
-        PosColumn(
-          text: 'TOTAL',
-          width: 4,
-        ),
-        PosColumn(
-          text: '$totalPak PAK',
-          width: 2,
-        ),
-        PosColumn(
-          text: common.currencyFormat(body.orderTotalAmt),
-          width: 6,
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
-        ),
-      ],
-    );
     if (body.adminFeeAmt > 0) {
       bytes += generator.row(
         [
@@ -304,8 +282,31 @@ class GeneratePrintUtil {
     bytes += generator.row(
       [
         PosColumn(
-          text: MapPaymentMethod[body.orderPaidBy] ?? '',
+          // text: MapPaymentMethod[body.orderPaidBy] ?? '',
+          text: body.orderPaidByName,
           width: 6,
+        ),
+        PosColumn(
+          text: common.currencyFormat(body.orderTotalAmt),
+          width: 6,
+          styles: const PosStyles(
+            align: PosAlign.right,
+          ),
+        ),
+      ],
+    );
+    // Print Total
+    int totalPak =
+        body.listCreateTicket == null ? 0 : body.listCreateTicket!.length;
+    bytes += generator.row(
+      [
+        PosColumn(
+          text: 'TOTAL',
+          width: 4,
+        ),
+        PosColumn(
+          text: '$totalPak PAK',
+          width: 2,
         ),
         PosColumn(
           text: common.currencyFormat(body.orderTotalAmt),

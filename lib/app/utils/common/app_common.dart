@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
@@ -22,6 +24,21 @@ class AppCommon {
     await printerUtil.init();
     await printerUtil.connectPrinter();
     logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');
+  }
+
+  Future<bool> isDeviceTablet() async {
+    final deviceInfoPlugin = DeviceInfoPlugin();
+
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
+      return androidInfo.systemFeatures
+          .contains('android.hardware.screen.large');
+    } else if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
+      return iosInfo.model.contains('iPad');
+    }
+
+    return false; // default ke handphone
   }
 
   Future<UserEntity?> getUser({required AuthToken authToken}) async {

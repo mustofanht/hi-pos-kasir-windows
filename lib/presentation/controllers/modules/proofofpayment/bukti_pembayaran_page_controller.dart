@@ -339,6 +339,7 @@ class BuktiPembayaranPageController extends GetxController
           orderUnitId: 0,
           orderLoacationId: 0,
           orderPaidBy: detailModel.value.orderPaidBy!,
+          orderPaidByName: detailModel.value.orderPaidByName!,
           orderStatus: detailModel.value.orderStatus!,
           paymentDate: detailModel.value.orderDate ??
               detailModel.value.paymentDetail?.pymntDate ??

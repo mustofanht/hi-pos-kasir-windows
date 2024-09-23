@@ -16,6 +16,7 @@ class OrderModel {
   int orderUnitId;
   int orderLoacationId;
   String orderPaidBy;
+  String orderPaidByName;
   String orderStatus;
   DateTime? paymentDate;
   String? orderVoucherDesc;
@@ -41,6 +42,7 @@ class OrderModel {
     required this.orderUnitId,
     required this.orderLoacationId,
     required this.orderPaidBy,
+    required this.orderPaidByName,
     required this.orderStatus,
     required this.listTicket,
     required this.listProduct,
@@ -62,6 +64,7 @@ class OrderModel {
       orderUnitId: json['orderUnitId'],
       orderLoacationId: json['orderLoacationId'],
       orderPaidBy: json['orderPaidBy'],
+      orderPaidByName: json['orderPaidByName'],
       orderStatus: json['orderStatus'],
       listTicket:
           json['listTicket'].map((e) => OrderTicketModel.fromJson(e)).toList(),
@@ -90,6 +93,7 @@ class OrderModel {
       "orderUnitId": orderUnitId,
       "orderLoacationId": orderLoacationId,
       "orderPaidBy": orderPaidBy,
+      "orderPaidByName": orderPaidByName,
       "orderStatus": orderStatus,
       "orderVoucherDesc": orderVoucherDesc,
       "custAddres": custAddres,

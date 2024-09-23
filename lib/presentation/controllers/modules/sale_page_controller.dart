@@ -207,14 +207,14 @@ class SalePageController extends GetxController
         (e) => e.pymntCode == selectedPaymentType.value.id,
       );
       if (mstPayment.pymntCategory == PaymentMethod.QRIS) {
-        OrderModel body = getBodyOrder(mstPayment.pymntCode!);
+        OrderModel body = getBodyOrder(mstPayment.pymntCode!, mstPayment.pymntName!);
         logger.safeLog('ORDER BODY : ${body.toJson()}');
         orderController.doPaymentQris(
           body: body,
           orderNo: orderNo,
         );
       } else if (mstPayment.pymntCategory != PaymentMethod.QRIS) {
-        OrderModel body = getBodyOrder(mstPayment.pymntCode!);
+        OrderModel body = getBodyOrder(mstPayment.pymntCode!, mstPayment.pymntName!);
         logger.safeLog('ORDER BODY : ${body.toJson()}');
         orderPayment.doOrderPayment(
           body: body,
@@ -253,7 +253,7 @@ class SalePageController extends GetxController
     }
   }
 
-  OrderModel getBodyOrder(String paymentMethod) {
+  OrderModel getBodyOrder(String paymentMethod, String paymentMethodName) {
     List<OrderTicketModel> listTicket = [];
     List<OrderAddonModel> listProduct = [];
     List<OrderVoucherModel> listVoucher = [];
@@ -333,6 +333,7 @@ class SalePageController extends GetxController
       orderUnitId: sessionUtil.getUnitId()!,
       orderLoacationId: 1,
       orderPaidBy: paymentMethod,
+      orderPaidByName: paymentMethodName,
       orderStatus: 'N',
       listTicket: listTicket,
       listProduct: listProduct,
