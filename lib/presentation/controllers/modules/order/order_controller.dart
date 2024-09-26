@@ -201,6 +201,7 @@ class OrderPaymentController extends GetxController {
   OrderPaymentController();
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
+  var isProcessing = false.obs;
 
   doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) {
     try {
@@ -209,6 +210,9 @@ class OrderPaymentController extends GetxController {
         title: 'Menunggu Proses Transaksi',
         msg: 'Silahkan mengisi reference',
         onNext: (val) async {
+          logger.safeLog('isProcessing : $isProcessing');
+          if (isProcessing.value) return;
+          isProcessing.value = true;
           // create Order and waiting the prosess of payment
           // logger.safeLog('val : $val');
           if (val != '') {
@@ -237,6 +241,8 @@ class OrderPaymentController extends GetxController {
               await orderUtil.showPaymentSuccessAlert(
                   _authToken, body, orderNo);
               // alert.success('Success', 'Payment Success');
+
+              isProcessing.value = false;
             }
           } else {
             alert.error(
