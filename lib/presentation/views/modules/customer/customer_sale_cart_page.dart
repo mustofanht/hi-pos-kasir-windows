@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_sale_cart_page_controller.dart';
 
@@ -215,7 +216,10 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                     Container(
                       alignment: Alignment.topRight,
                       child: Text(
-                        '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        e.voucher!.voucherUnitType == UnitType.PERCENT
+                            ? ('${e.voucher!.voucherUnitValue} %')
+                            : ('Rp${common.currencyFormat(e.voucher!.voucherUnitValue ?? 0)}'),
+                        // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
                         style: TextStyle(
                           fontSize: fontSize.title,
                         ),
