@@ -361,7 +361,9 @@ class BuktiPembayaranPageController extends GetxController
           locationName: locationName,
           paperSize: PaperSize.mm80,
           body: orderModel,
-          kasirName: detailModel.value.orderPaidBy,
+          kasirName: detailModel.value.paymentDetail == null
+              ? ''
+              : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
         );
 
         await printerUtil.print(printerUtil.currPrinter!, data);
