@@ -17,11 +17,32 @@ class PrinterUtil {
   PrinterModel? currPrinter;
   bool _isConnected = false;
   final _isBle = false;
-  final _reconnect = true;
+  final _reconnect = false;
 
   Future<void> init() async {
     logger.safeLog(' ---- PRINTER ---- ');
+    //  PrinterManager.instance.stateUSB is only supports on Android
+    _subscriptionUsbStatus = PrinterManager.instance.stateUSB.listen((status) {
+      logger.safeLog(
+        ' ----------------- status usb $status ------------------ ',
+      );
+      // _currentUsbStatus = status;
+      if (Platform.isAndroid) {
+        if (status == USBStatus.connected && pendingTask != null) {
+          Future.delayed(const Duration(milliseconds: 1000), () {
+            PrinterManager.instance.send(
+              type: PrinterType.usb,
+              bytes: pendingTask!,
+            );
+            pendingTask = null;
+          });
+        }
+      }
+    });
+  }
 
+  Future<void> initBt() async {
+    logger.safeLog(' ---- PRINTER BT ---- ');
     // subscription to listen change status of bluetooth connection
     _subscriptionBtStatus =
         PrinterManager.instance.stateBluetooth.listen((status) {
@@ -46,25 +67,6 @@ class PrinterUtil {
           PrinterManager.instance
               .send(type: PrinterType.bluetooth, bytes: pendingTask!);
           pendingTask = null;
-        }
-      }
-    });
-
-    //  PrinterManager.instance.stateUSB is only supports on Android
-    _subscriptionUsbStatus = PrinterManager.instance.stateUSB.listen((status) {
-      logger.safeLog(
-        ' ----------------- status usb $status ------------------ ',
-      );
-      // _currentUsbStatus = status;
-      if (Platform.isAndroid) {
-        if (status == USBStatus.connected && pendingTask != null) {
-          Future.delayed(const Duration(milliseconds: 1000), () {
-            PrinterManager.instance.send(
-              type: PrinterType.usb,
-              bytes: pendingTask!,
-            );
-            pendingTask = null;
-          });
         }
       }
     });
@@ -114,6 +116,7 @@ class PrinterUtil {
   }
 
   Future<void> disconnectAll() async {
+    currPrinter = null;
     var listPrinter = await getListDevices();
     for (var element in listPrinter) {
       var isDisconnect =

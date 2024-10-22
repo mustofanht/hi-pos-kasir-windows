@@ -26,6 +26,7 @@ class SettingPageController extends GetxController
   final _authToken = Get.arguments[argConstant.authToken];
   final isLoading = false.obs;
   final isLoadingPrinter = false.obs;
+  final isLoadingPrinterDiconect = false.obs;
   final isLoadingConnectPrinter = false.obs;
   final isLoadingRefreshCustScreeen = false.obs;
 
@@ -47,6 +48,8 @@ class SettingPageController extends GetxController
   final listScreens = <CustomIdNameEntity>[].obs;
   final selectedScreens = CustomIdNameEntity().obs;
 
+  final currentPrinterConnect = RxString('');
+
   @override
   Future<void> onInit() async {
     doPrepared();
@@ -55,6 +58,7 @@ class SettingPageController extends GetxController
     super.onInit();
     tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
+    currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
   }
 
   @override
@@ -114,6 +118,8 @@ class SettingPageController extends GetxController
     listPrinter.insert(0, noneSelectedPrint);
 
     // List<PrinterModel> printers = await printerUtil.getListDevices();
+    await printerUtil.init();
+    await printerUtil.initBt();
     printers.value = await printerUtil.getListDevices();
     logger.safeLog('PRINTERS : ${printers.length}');
 
@@ -140,6 +146,8 @@ class SettingPageController extends GetxController
     // logger.safeLog('LIST PRINTER : ${listPrinter.length}');
 
     isLoadingPrinter.value = false;
+
+    currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
 
     update();
   }
@@ -199,6 +207,9 @@ class SettingPageController extends GetxController
       alert.error('Error', 'please select active printer');
       isLoadingConnectPrinter.value = false;
     }
+
+    currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
+
     update();
   }
 
@@ -232,5 +243,19 @@ class SettingPageController extends GetxController
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
     }
+  }
+
+  doDisconnectPrinter() async {
+    isLoadingPrinterDiconect.value = true;
+    await printerUtil.disconnectAll();
+    await printerUtil.stopSubscription();
+    currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
+    var noneSelectedScreen = CustomIdNameEntity(
+      id: null,
+      name: '--- None ---',
+    );
+    selectedScreens.value = noneSelectedScreen;
+    isLoadingPrinterDiconect.value = false;
+    update();
   }
 }
