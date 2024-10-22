@@ -80,7 +80,12 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                         padding: EdgeInsets.all(layoutStyle.defaultMargin),
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
-                        crossAxisCount: 4,
+                        // crossAxisCount: 4,
+                        crossAxisCount: layoutStyle.screenWidth > 1200
+                            ? 4
+                            : layoutStyle.screenWidth > 800
+                                ? 3
+                                : 2,
                         children: controller.addonList
                             .map(
                               (e) => InkWell(

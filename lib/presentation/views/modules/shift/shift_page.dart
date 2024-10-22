@@ -466,8 +466,8 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   ),
                                   label: const Text(
                                       'Akhiri Shift & Mulai Settlement'),
-                                  width: layoutStyle.blockHorizontal * 20,
-                                  height: layoutStyle.blockVertical * 5,
+                                  width: layoutStyle.screenWidth,
+                                  height: layoutStyle.blockVertical * 7,
                                 )
                               : Container(),
                         ],

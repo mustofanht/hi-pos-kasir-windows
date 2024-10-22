@@ -12,6 +12,8 @@ class LoginPage extends GetView<LoginPageController> {
 
   @override
   Widget build(BuildContext context) {
+    layoutStyle.init(context);
+
     // title builder
     Widget titleBuilder() {
       return Column(
@@ -28,14 +30,6 @@ class LoginPage extends GetView<LoginPageController> {
               assetsConstant.imgLogo,
               fit: BoxFit.fill,
             ),
-            // child: Text(
-            //   'Sign In',
-            //   textAlign: TextAlign.center,
-            //   style: textStyle.blackText.copyWith(
-            //     fontSize: fontSize.title,
-            //     fontWeight: fontWeight.bold,
-            //   ),
-            // ),
           ),
         ],
       );
@@ -65,6 +59,10 @@ class LoginPage extends GetView<LoginPageController> {
             controller: controller.inpUsername,
             decoration: InputDecoration(
               isCollapsed: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: layoutStyle.blockVertical * 1.5,
+                horizontal: layoutStyle.blockHorizontal * 2,
+              ),
               prefix: SizedBox(
                 width: layoutStyle.defaultMargin / 2,
               ),
@@ -119,46 +117,6 @@ class LoginPage extends GetView<LoginPageController> {
               border: InputBorder.none,
             ),
           ),
-          // Padding(
-          //   padding: EdgeInsets.symmetric(
-          //     horizontal: layoutStyle.defaultMargin,
-          //   ),
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //     children: [
-          //       Row(
-          //         crossAxisAlignment: CrossAxisAlignment.center,
-          //         mainAxisAlignment: MainAxisAlignment.start,
-          //         children: [
-          //           Checkbox(
-          //             shape: RoundedRectangleBorder(
-          //               borderRadius: BorderRadius.circular(5),
-          //             ),
-          //             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          //             visualDensity: VisualDensity.compact,
-          //             value: controller.isSaved.value,
-          //             checkColor: colorStyle.white,
-          //             fillColor: MaterialStateProperty.resolveWith(
-          //               (states) => colorStyle.checkboxColor(
-          //                 states: states,
-          //                 c: colorStyle.blue,
-          //               ),
-          //             ),
-          //             onChanged: (bool? value) {
-          //               controller.isSaved.value = value!;
-          //             },
-          //           ),
-          //           Text(
-          //             'Remember me',
-          //             style: textStyle.blackText.copyWith(
-          //                 fontWeight: fontWeight.medium,
-          //                 fontSize: fontSize.small),
-          //           ),
-          //         ],
-          //       ),
-          //     ],
-          //   ),
-          // ),
           CustomButton(
             margin: EdgeInsets.symmetric(
               vertical: layoutStyle.defaultMargin / 2,
@@ -191,46 +149,10 @@ class LoginPage extends GetView<LoginPageController> {
                   ),
             height: layoutStyle.blockVertical * 6.5,
           ),
-          // Padding(
-          //   padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
-          //   child: InkWell(
-          //     onTap: () {},
-          //     child: Text(
-          //       'Forgot password?',
-          //       style: textStyle.blueText.copyWith(
-          //           fontWeight: fontWeight.medium, fontSize: fontSize.small),
-          //     ),
-          //   ),
-          // ),
         ],
       );
     }
     // end builder
-
-    // footer builder
-    // Widget footerBuilder(LoginPageController controller) {
-    //   return Column(
-    //     children: [
-    //       Text(
-    //         'Don\'t have account?',
-    //         style: textStyle.greyText,
-    //       ),
-    //       InkWell(
-    //         onTap: () {},
-    //         child: Text(
-    //           'Register',
-    //           style: textStyle.blueText.copyWith(
-    //             fontWeight: fontWeight.medium,
-    //             fontSize: fontSize.title,
-    //           ),
-    //         ),
-    //       ),
-    //       SizedBox(
-    //         height: layoutStyle.defaultMargin,
-    //       ),
-    //     ],
-    //   );
-    // }
 
     // end builder
     return GetX(
@@ -247,7 +169,7 @@ class LoginPage extends GetView<LoginPageController> {
                   height: layoutStyle.screenHeight,
                   decoration: const BoxDecoration(),
                   padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.defaultMargin * 20,
+                    horizontal: layoutStyle.screenWidth / 3,
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -268,7 +190,6 @@ class LoginPage extends GetView<LoginPageController> {
                                   ],
                                 ),
                               ),
-                              // footerBuilder(context),
                             ],
                           ),
                         ),

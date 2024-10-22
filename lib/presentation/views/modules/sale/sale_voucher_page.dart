@@ -80,8 +80,17 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                         padding: EdgeInsets.all(layoutStyle.defaultMargin),
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
-                        crossAxisCount: 4,
-                        childAspectRatio: (150 / 230),
+                        // crossAxisCount: 4,
+                        // childAspectRatio: (150 / 230),
+                        childAspectRatio: layoutStyle.screenWidth > 800
+                            ? (150 / 230)
+                            : (layoutStyle.blockHorizontal * 10) /
+                                (layoutStyle.blockVertical * 15),
+                        crossAxisCount: layoutStyle.screenWidth > 1200
+                            ? 4
+                            : layoutStyle.screenWidth > 800
+                                ? 3
+                                : 2,
                         children: controller.voucherList
                             .map(
                               (e) => InkWell(
@@ -106,8 +115,6 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                                     children: [
                                       Image.asset(
                                         'assets/images/coupon.png',
-                                        // width: 150,
-                                        // height: 150,
                                         fit: BoxFit.fill,
                                         errorBuilder: (BuildContext context,
                                             Object exception,
@@ -124,6 +131,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                                           fontSize: fontSize.body,
                                           fontWeight: FontWeight.bold,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       SizedBox(
                                         height: layoutStyle.defaultMargin,
@@ -134,6 +142,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                                           fontSize: fontSize.body,
                                           // fontWeight: FontWeight.bold,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       SizedBox(
                                         height: layoutStyle.defaultMargin,
@@ -144,6 +153,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                                           fontSize: fontSize.body,
                                           // fontWeight: FontWeight.bold,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),

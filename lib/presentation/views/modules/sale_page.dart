@@ -32,7 +32,7 @@ class SalePage extends GetView<SalePageController> {
               color: colorStyle.lightGrey,
               child: Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.screenWidth / 6),
+                    horizontal: layoutStyle.screenWidth / 7),
                 child: TabBar(
                   controller: controller.tabController,
                   indicator: BoxDecoration(
@@ -87,7 +87,10 @@ class SalePage extends GetView<SalePageController> {
           // margin: EdgeInsets.symmetric(
           //   horizontal: layoutStyle.defaultMargin,
           // ),
-          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+          padding: EdgeInsets.symmetric(
+            horizontal: layoutStyle.defaultMargin / 2,
+            vertical: layoutStyle.defaultMargin / 5,
+          ),
           decoration: BoxDecoration(
             border: Border.all(
               color: colorStyle.grey,
@@ -122,9 +125,10 @@ class SalePage extends GetView<SalePageController> {
                   child: Text(
                     label,
                     style: textStyle.blackText.copyWith(
-                      color: controller.selectedPaymentType.value.id == element.id
-                          ? colorStyle.white
-                          : colorStyle.black,
+                      color:
+                          controller.selectedPaymentType.value.id == element.id
+                              ? colorStyle.white
+                              : colorStyle.black,
                     ),
                     softWrap: true,
                     overflow: TextOverflow.visible,
@@ -443,10 +447,14 @@ class SalePage extends GetView<SalePageController> {
                             child: GridView.builder(
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
                                 crossAxisSpacing: layoutStyle.defaultMargin / 2,
                                 mainAxisSpacing: layoutStyle.defaultMargin / 2,
-                                childAspectRatio: 3,
+                                crossAxisCount: 3,
+                                childAspectRatio: 2,
+                                // childAspectRatio: layoutStyle.screenWidth > 800
+                                //     ? (400 / 200)
+                                //     : (layoutStyle.blockHorizontal * 2) /
+                                //         (layoutStyle.blockVertical * 7),
                               ),
                               itemCount: controller.paymentType.length,
                               itemBuilder: (context, index) {

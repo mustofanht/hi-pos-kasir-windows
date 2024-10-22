@@ -219,7 +219,7 @@ class PrintTicketPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Container(
-                    height: layoutStyle.blockVertical * 6,
+                    height: layoutStyle.blockVertical * 6.5,
                     margin: EdgeInsets.symmetric(
                       vertical: layoutStyle.defaultMargin / 4,
                     ),
@@ -239,6 +239,11 @@ class PrintTicketPage extends StatelessWidget {
                       controller: controller.searchController,
                       obscureText: false,
                       decoration: InputDecoration(
+                        isCollapsed: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: layoutStyle.blockVertical * 1.5,
+                          horizontal: layoutStyle.blockHorizontal * 2,
+                        ),
                         hintText: 'Masukan nomor ID Order atau ID Ticket',
                         hintStyle: textStyle.greyText,
                         border: InputBorder.none,
@@ -252,7 +257,7 @@ class PrintTicketPage extends StatelessWidget {
                 ),
                 CustomButton(
                   height: layoutStyle.blockVertical * 6,
-                  width: layoutStyle.blockHorizontal * 5,
+                  width: layoutStyle.blockHorizontal * 6,
                   margin: EdgeInsets.symmetric(
                     vertical: layoutStyle.defaultMargin / 2,
                     // horizontal: layoutStyle.defaultMargin,

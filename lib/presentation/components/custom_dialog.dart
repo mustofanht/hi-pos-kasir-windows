@@ -836,7 +836,7 @@ class CustomDialog {
       AlertDialog(
         contentPadding: EdgeInsets.zero,
         content: Container(
-          width: layoutStyle.screenWidth / 2,
+          width: layoutStyle.screenWidth / 2 + 50,
           height: layoutStyle.blockVertical * 50,
           decoration: BoxDecoration(
             color: colorStyle.white,
@@ -1012,7 +1012,7 @@ class CustomDialog {
         contentPadding: EdgeInsets.zero,
         content: Container(
           width: layoutStyle.screenWidth / 2,
-          height: layoutStyle.blockVertical * 63,
+          height: layoutStyle.blockVertical * 68,
           decoration: BoxDecoration(
             color: colorStyle.white,
             borderRadius: const BorderRadius.all(
@@ -1404,7 +1404,7 @@ class CustomDialog {
         contentPadding: EdgeInsets.zero,
         content: Container(
           width: layoutStyle.screenWidth / 2,
-          height: layoutStyle.blockVertical * 45,
+          height: layoutStyle.blockVertical * 50,
           decoration: BoxDecoration(
             color: colorStyle.white,
             borderRadius: const BorderRadius.all(
@@ -1484,7 +1484,7 @@ class CustomDialog {
               Container(
                 width: layoutStyle.screenWidth,
                 padding: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 5,
+                  // vertical: layoutStyle.defaultMargin / 5,
                   horizontal: layoutStyle.defaultMargin,
                 ),
                 child: Row(
@@ -1525,7 +1525,7 @@ class CustomDialog {
                     Expanded(
                       child: CustomButton(
                         margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 2,
+                          vertical: layoutStyle.defaultMargin / 5,
                           horizontal: layoutStyle.defaultMargin,
                         ),
                         onPressed: () => onNext(reasonController.text),

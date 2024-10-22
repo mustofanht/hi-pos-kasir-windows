@@ -21,6 +21,118 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
   Widget build(BuildContext context) {
     layoutStyle.init(context);
 
+    Widget actionSection() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (controller.selectedData.value.paymentDetail?.pymntStatus ==
+                  'P')
+                CustomButton(
+                  onPressed: () {
+                    controller.doVoidPayment();
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      colorStyle.primary,
+                    ),
+                    foregroundColor: MaterialStateProperty.all<Color>(
+                      colorStyle.white,
+                    ),
+                    overlayColor: MaterialStateProperty.all<Color>(
+                      colorStyle.white.withOpacity(0.1),
+                    ),
+                    elevation: MaterialStateProperty.all<double>(0),
+                  ),
+                  label: Row(
+                    children: [
+                      const Icon(Icons.block_outlined),
+                      SizedBox(
+                        width: layoutStyle.defaultMargin / 5,
+                      ),
+                      Text(
+                        'Void',
+                        style: textStyle.whiteText,
+                      ),
+                    ],
+                  ),
+                  width: layoutStyle.blockHorizontal * 12,
+                  height: layoutStyle.blockVertical * 5,
+                ),
+              SizedBox(
+                width: layoutStyle.defaultMargin / 2,
+              ),
+              CustomButton(
+                onPressed: () {
+                  controller.doPrintTicket();
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                    colorStyle.primary,
+                  ),
+                  foregroundColor: MaterialStateProperty.all<Color>(
+                    colorStyle.white,
+                  ),
+                  overlayColor: MaterialStateProperty.all<Color>(
+                    colorStyle.white.withOpacity(0.1),
+                  ),
+                  elevation: MaterialStateProperty.all<double>(0),
+                ),
+                label: Row(
+                  children: [
+                    Icon(Icons.print),
+                    SizedBox(
+                      width: layoutStyle.defaultMargin / 5,
+                    ),
+                    Text(
+                      'Cetak',
+                      style: textStyle.whiteText,
+                    ),
+                  ],
+                ),
+                width: layoutStyle.blockHorizontal * 12,
+                height: layoutStyle.blockVertical * 5,
+              ),
+            ],
+          ),
+          SizedBox(
+            height: layoutStyle.defaultMargin,
+          ),
+          CustomButton(
+            onPressed: () {
+              controller.doSendMessage();
+            },
+            style: ButtonStyle(
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(colorStyle.primary),
+              foregroundColor:
+                  MaterialStateProperty.all<Color>(colorStyle.white),
+              overlayColor: MaterialStateProperty.all<Color>(
+                  colorStyle.white.withOpacity(0.1)),
+              elevation: MaterialStateProperty.all<double>(0),
+            ),
+            label: Row(
+              children: [
+                Icon(Icons.send),
+                SizedBox(
+                  width: layoutStyle.defaultMargin / 5,
+                ),
+                Text(
+                  'Kirim Bukti Pembayaran',
+                  style: textStyle.whiteText,
+                ),
+              ],
+            ),
+            width: layoutStyle.blockHorizontal * 25,
+            height: layoutStyle.blockVertical * 5,
+          ),
+        ],
+      );
+    }
+
     Widget rightSection(TrnDetailOrderEntity model) {
       return Obx(
         () => controller.isLoadingDetail.value
@@ -32,32 +144,34 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             : model.orderNumber == null
                 ? Expanded(
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            assetsConstant.imgEmptyBox,
-                            fit: BoxFit.fill,
-                            errorBuilder: (BuildContext context,
-                                Object exception, StackTrace? stackTrace) {
-                              return const Text('Img Not Found');
-                            },
-                          ),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin,
-                          ),
-                          Text(
-                            'Data Empty',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: fontSize.title,
-                              fontWeight: fontWeight.bold,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              assetsConstant.imgEmptyBox,
+                              fit: BoxFit.fill,
+                              errorBuilder: (BuildContext context,
+                                  Object exception, StackTrace? stackTrace) {
+                                return const Text('Img Not Found');
+                              },
                             ),
-                          ),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin,
-                          ),
-                        ],
+                            SizedBox(
+                              height: layoutStyle.defaultMargin,
+                            ),
+                            Text(
+                              'Data Empty',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontSize.title,
+                                fontWeight: fontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                              height: layoutStyle.defaultMargin,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   )
@@ -106,143 +220,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                 ),
                                 controller.detailModel.value.orderStatus == 'V'
                                     ? Container()
-                                    : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          controller
-                                                      .selectedData
-                                                      .value
-                                                      .paymentDetail
-                                                      ?.pymntStatus ==
-                                                  'P'
-                                              ? CustomButton(
-                                                  onPressed: () {
-                                                    controller.doVoidPayment();
-                                                  },
-                                                  style: ButtonStyle(
-                                                    backgroundColor:
-                                                        MaterialStateProperty
-                                                            .all<Color>(
-                                                      colorStyle.primary,
-                                                    ),
-                                                    foregroundColor:
-                                                        MaterialStateProperty
-                                                            .all<Color>(
-                                                      colorStyle.white,
-                                                    ),
-                                                    overlayColor:
-                                                        MaterialStateProperty
-                                                            .all<Color>(
-                                                      colorStyle.white
-                                                          .withOpacity(0.1),
-                                                    ),
-                                                    elevation:
-                                                        MaterialStateProperty
-                                                            .all<double>(0),
-                                                  ),
-                                                  label: Row(
-                                                    children: [
-                                                      const Icon(
-                                                          Icons.block_outlined),
-                                                      SizedBox(
-                                                        width: layoutStyle
-                                                                .defaultMargin /
-                                                            5,
-                                                      ),
-                                                      const Text('Void'),
-                                                    ],
-                                                  ),
-                                                  width: layoutStyle
-                                                          .blockHorizontal *
-                                                      8,
-                                                  height: layoutStyle
-                                                          .blockVertical *
-                                                      5,
-                                                )
-                                              : Container(),
-                                          SizedBox(
-                                            width: layoutStyle.defaultMargin,
-                                          ),
-                                          CustomButton(
-                                            onPressed: () {
-                                              controller.doPrintTicket();
-                                            },
-                                            style: ButtonStyle(
-                                              backgroundColor:
-                                                  MaterialStateProperty.all<
-                                                          Color>(
-                                                      colorStyle.primary),
-                                              foregroundColor:
-                                                  MaterialStateProperty.all<
-                                                      Color>(colorStyle.white),
-                                              overlayColor:
-                                                  MaterialStateProperty.all<
-                                                          Color>(
-                                                      colorStyle.white
-                                                          .withOpacity(0.1)),
-                                              elevation: MaterialStateProperty
-                                                  .all<double>(0),
-                                            ),
-                                            label: Row(
-                                              children: [
-                                                Icon(Icons.print),
-                                                SizedBox(
-                                                  width: layoutStyle
-                                                          .defaultMargin /
-                                                      5,
-                                                ),
-                                                Text('Cetak'),
-                                              ],
-                                            ),
-                                            width:
-                                                layoutStyle.blockHorizontal * 8,
-                                            height:
-                                                layoutStyle.blockVertical * 5,
-                                          ),
-                                          SizedBox(
-                                            width: layoutStyle.defaultMargin,
-                                          ),
-                                          CustomButton(
-                                            onPressed: () {
-                                              controller.doSendMessage();
-                                            },
-                                            style: ButtonStyle(
-                                              backgroundColor:
-                                                  MaterialStateProperty.all<
-                                                          Color>(
-                                                      colorStyle.primary),
-                                              foregroundColor:
-                                                  MaterialStateProperty.all<
-                                                      Color>(colorStyle.white),
-                                              overlayColor:
-                                                  MaterialStateProperty.all<
-                                                          Color>(
-                                                      colorStyle.white
-                                                          .withOpacity(0.1)),
-                                              elevation: MaterialStateProperty
-                                                  .all<double>(0),
-                                            ),
-                                            label: Row(
-                                              children: [
-                                                Icon(Icons.send),
-                                                SizedBox(
-                                                  width: layoutStyle
-                                                          .defaultMargin /
-                                                      5,
-                                                ),
-                                                Text('Kirim Bukti Pembayaran'),
-                                              ],
-                                            ),
-                                            width: layoutStyle.blockHorizontal *
-                                                18,
-                                            height:
-                                                layoutStyle.blockVertical * 5,
-                                          ),
-                                        ],
-                                      )
+                                    : actionSection()
                               ],
                             ),
                           ),
@@ -752,7 +730,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
           padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
           color: selectedCard ? colorStyle.lightGrey : colorStyle.white,
           width: layoutStyle.screenWidth,
-          height: layoutStyle.blockVertical * 25,
+          height: layoutStyle.blockVertical * 30,
           child: Column(
             children: [
               Container(
@@ -917,32 +895,34 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             ? loading.simpleLoading()
             : controller.dataList.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          assetsConstant.imgEmptyBox,
-                          fit: BoxFit.fill,
-                          errorBuilder: (BuildContext context, Object exception,
-                              StackTrace? stackTrace) {
-                            return const Text('Img Not Found');
-                          },
-                        ),
-                        SizedBox(
-                          height: layoutStyle.defaultMargin,
-                        ),
-                        Text(
-                          'Data Empty',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: fontSize.title,
-                            fontWeight: fontWeight.bold,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            assetsConstant.imgEmptyBox,
+                            fit: BoxFit.fill,
+                            errorBuilder: (BuildContext context, Object exception,
+                                StackTrace? stackTrace) {
+                              return const Text('Img Not Found');
+                            },
                           ),
-                        ),
-                        SizedBox(
-                          height: layoutStyle.defaultMargin,
-                        ),
-                      ],
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                          Text(
+                            'Data Empty',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                              fontWeight: fontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 : RefreshIndicator(

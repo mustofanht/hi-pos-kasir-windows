@@ -44,6 +44,53 @@ class SaleCartPage extends GetView<SaleCartPageController> {
     );
   }
 
+  Widget notOrder() {
+    return Container(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              assetsConstant.imgEmptyBox,
+              width: layoutStyle.safeBlockHorizontal * 12,
+              height: layoutStyle.safeBlockVertical * 12,
+              // width: layoutStyle.,
+              fit: BoxFit.contain,
+              errorBuilder: (
+                BuildContext context,
+                Object exception,
+                StackTrace? stackTrace,
+              ) {
+                return const Text('Img Not Found');
+              },
+            ),
+            SizedBox(
+              height: layoutStyle.defaultMargin,
+            ),
+            Text(
+              'Belum Ada Pesanan',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: fontSize.title,
+                fontWeight: fontWeight.bold,
+              ),
+            ),
+            SizedBox(
+              height: layoutStyle.defaultMargin,
+            ),
+            Text(
+              'Kamu belum melakukan pesanan',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: fontSize.subtitle,
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget contentCart(SaleCartPageController controller) {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
@@ -532,47 +579,6 @@ class SaleCartPage extends GetView<SaleCartPageController> {
     );
   }
 
-  Widget notOrder() {
-    return Container(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              assetsConstant.imgEmptyBox,
-              fit: BoxFit.fill,
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace? stackTrace) {
-                return const Text('Img Not Found');
-              },
-            ),
-            SizedBox(
-              height: layoutStyle.defaultMargin,
-            ),
-            Text(
-              'Belum Ada Pesanan',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize.title,
-                fontWeight: fontWeight.bold,
-              ),
-            ),
-            SizedBox(
-              height: layoutStyle.defaultMargin,
-            ),
-            Text(
-              'Kamu belum melakukan pesanan',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize.subtitle,
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget footerCart(BuildContext context) {
     return Container(
         padding: EdgeInsets.all(layoutStyle.defaultMargin),
@@ -659,69 +665,71 @@ class SaleCartPage extends GetView<SaleCartPageController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CustomButton(
-                  onPressed: () {
-                    dialog.dialogDelete(
-                      title: 'Warning',
-                      msg:
-                          'Apakah anda yakin akan membatalkan proses order di atas?',
-                      onYes: () {
-                        controller.clearCartOrder();
-                      },
-                    );
-                  },
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(colorStyle.white),
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(colorStyle.red),
-                    overlayColor: MaterialStateProperty.all<Color>(
-                        colorStyle.red.withOpacity(0.1)),
-                    side: MaterialStateProperty.all<BorderSide>(
-                        BorderSide(color: colorStyle.red, width: 1)),
-                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                        EdgeInsets.symmetric(vertical: 10, horizontal: 20)),
-                    elevation: MaterialStateProperty.all<double>(
-                        0), // Menghilangkan shadow dengan elevation 0
+                Expanded(
+                  child: CustomButton(
+                    onPressed: () {
+                      dialog.dialogDelete(
+                        title: 'Warning',
+                        msg:
+                            'Apakah anda yakin akan membatalkan proses order di atas?',
+                        onYes: () {
+                          controller.clearCartOrder();
+                        },
+                      );
+                    },
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(colorStyle.white),
+                      foregroundColor:
+                          MaterialStateProperty.all<Color>(colorStyle.red),
+                      overlayColor: MaterialStateProperty.all<Color>(
+                          colorStyle.red.withOpacity(0.1)),
+                      side: MaterialStateProperty.all<BorderSide>(
+                          BorderSide(color: colorStyle.red, width: 1)),
+                      padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 20)),
+                      elevation: MaterialStateProperty.all<double>(
+                          0), // Menghilangkan shadow dengan elevation 0
+                    ),
+                    label: const Text('Batal'),
+                    height: layoutStyle.blockVertical * 6.5,
                   ),
-                  label: const Text('Batal'),
-                  width: layoutStyle.blockHorizontal * 14,
-                  height: layoutStyle.blockVertical * 6,
                 ),
                 SizedBox(
                   width: layoutStyle.defaultMargin,
                 ),
-                CustomButton(
-                  onPressed: () {
-                    FocusScope.of(context).unfocus();
-                    controller.onPayment();
-                  },
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(colorStyle.primary),
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(colorStyle.white),
-                    overlayColor: MaterialStateProperty.all<Color>(
-                      colorStyle.white.withOpacity(0.1),
-                    ),
-                    side: MaterialStateProperty.all<BorderSide>(
-                      BorderSide(
-                        color: colorStyle.primary,
-                        width: 1,
+                Expanded(
+                  child: CustomButton(
+                    onPressed: () {
+                      FocusScope.of(context).unfocus();
+                      controller.onPayment();
+                    },
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(colorStyle.primary),
+                      foregroundColor:
+                          MaterialStateProperty.all<Color>(colorStyle.white),
+                      overlayColor: MaterialStateProperty.all<Color>(
+                        colorStyle.white.withOpacity(0.1),
                       ),
-                    ),
-                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                      EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 2,
-                        horizontal: layoutStyle.defaultMargin / 2,
+                      side: MaterialStateProperty.all<BorderSide>(
+                        BorderSide(
+                          color: colorStyle.primary,
+                          width: 1,
+                        ),
                       ),
+                      padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                        EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          horizontal: layoutStyle.defaultMargin / 2,
+                        ),
+                      ),
+                      elevation: MaterialStateProperty.all<double>(
+                          0), // Menghilangkan shadow dengan elevation 0
                     ),
-                    elevation: MaterialStateProperty.all<double>(
-                        0), // Menghilangkan shadow dengan elevation 0
+                    label: const Text('Bayar'),
+                    height: layoutStyle.blockVertical * 6.5,
                   ),
-                  label: const Text('Bayar'),
-                  width: layoutStyle.blockHorizontal * 14,
-                  height: layoutStyle.blockVertical * 6,
                 ),
               ],
             )

@@ -104,7 +104,7 @@ class SettingPage extends GetView<SettingPageController> {
                               children: [
                                 Expanded(
                                   child: CustomTextBox(
-                                    height: layoutStyle.blockVertical * 5,
+                                    height: layoutStyle.blockVertical * 6.5,
                                     obscureText: false,
                                     margin: EdgeInsets.symmetric(
                                       horizontal: layoutStyle.defaultMargin,
@@ -134,7 +134,7 @@ class SettingPage extends GetView<SettingPageController> {
                                 ),
                                 Expanded(
                                   child: CustomTextBox(
-                                    height: layoutStyle.blockVertical * 5,
+                                    height: layoutStyle.blockVertical * 6.5,
                                     obscureText: false,
                                     margin: EdgeInsets.symmetric(
                                       horizontal: layoutStyle.defaultMargin,
@@ -169,7 +169,7 @@ class SettingPage extends GetView<SettingPageController> {
                               children: [
                                 Expanded(
                                   child: CustomTextBox(
-                                    height: layoutStyle.blockVertical * 5,
+                                    height: layoutStyle.blockVertical * 6.5,
                                     obscureText: false,
                                     margin: EdgeInsets.symmetric(
                                       horizontal: layoutStyle.defaultMargin,
@@ -199,7 +199,7 @@ class SettingPage extends GetView<SettingPageController> {
                                 ),
                                 Expanded(
                                   child: CustomTextBox(
-                                    height: layoutStyle.blockVertical * 5,
+                                    height: layoutStyle.blockVertical * 6.5,
                                     obscureText: false,
                                     margin: EdgeInsets.symmetric(
                                       horizontal: layoutStyle.defaultMargin,
@@ -234,7 +234,7 @@ class SettingPage extends GetView<SettingPageController> {
                               children: [
                                 Expanded(
                                   child: CustomTextBox(
-                                    height: layoutStyle.blockVertical * 5,
+                                    height: layoutStyle.blockVertical * 6.5,
                                     obscureText: false,
                                     margin: EdgeInsets.symmetric(
                                       horizontal: layoutStyle.defaultMargin,
@@ -264,7 +264,7 @@ class SettingPage extends GetView<SettingPageController> {
                                 ),
                                 Expanded(
                                   child: CustomTextBox(
-                                    height: layoutStyle.blockVertical * 5,
+                                    height: layoutStyle.blockVertical * 6.5,
                                     obscureText: false,
                                     margin: EdgeInsets.symmetric(
                                       horizontal: layoutStyle.defaultMargin,
@@ -442,7 +442,7 @@ class SettingPage extends GetView<SettingPageController> {
                             ),
                           ),
                           CustomButton(
-                            width: layoutStyle.blockHorizontal * 5,
+                            width: layoutStyle.blockHorizontal * 6.5,
                             height: layoutStyle.blockVertical * 6.5,
                             margin: EdgeInsets.symmetric(
                               vertical: layoutStyle.defaultMargin / 2,
@@ -470,7 +470,7 @@ class SettingPage extends GetView<SettingPageController> {
                             label: const Icon(Icons.refresh),
                           ),
                           CustomButton(
-                            width: layoutStyle.blockHorizontal * 5,
+                            width: layoutStyle.blockHorizontal * 6.5,
                             height: layoutStyle.blockVertical * 6.5,
                             margin: EdgeInsets.symmetric(
                               vertical: layoutStyle.defaultMargin / 2,
