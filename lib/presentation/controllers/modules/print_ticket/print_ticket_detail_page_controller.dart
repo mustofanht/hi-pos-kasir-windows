@@ -303,7 +303,11 @@ class PrintTicketDetailPageController extends GetxController {
                 pakOf: count,
                 pakTotal: totalPak,
                 qrCode: element.ticketNo!,
-                expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+                // expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+                expiredAt: dateTimeUtil.getFormattedDate(
+                  date: element.ticketActiveDate!,
+                  format: dateFormat.dateDDMMMMYYYY,
+                ),
                 ticketName: element.ticketName,
                 paymentDate: parentModel.value.orderDate ?? DateTime.now(),
               );
