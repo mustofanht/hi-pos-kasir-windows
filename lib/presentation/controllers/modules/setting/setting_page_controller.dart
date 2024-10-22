@@ -121,6 +121,7 @@ class SettingPageController extends GetxController
     await printerUtil.init();
     await printerUtil.initBt();
     printers.value = await printerUtil.getListDevices();
+    printerUtil.printerList = printers;
     logger.safeLog('PRINTERS : ${printers.length}');
 
     for (var element in printers) {

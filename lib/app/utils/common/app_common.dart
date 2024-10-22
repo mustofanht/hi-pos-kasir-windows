@@ -22,7 +22,7 @@ class AppCommon {
   globalInitialize() async {
     // await GetStorage.init("sessions");
     await printerUtil.init();
-    await printerUtil.connectPrinter();
+    await printerUtil.connectPrinterFirst();
     logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');
   }
 

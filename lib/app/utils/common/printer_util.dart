@@ -18,6 +18,7 @@ class PrinterUtil {
   bool _isConnected = false;
   final _isBle = false;
   final _reconnect = false;
+  List<PrinterModel> printerList = [];
 
   Future<void> init() async {
     logger.safeLog(' ---- PRINTER ---- ');
@@ -171,20 +172,51 @@ class PrinterUtil {
   }
 
   Future<bool> connectPrinter() async {
+    logger.safeLog('printerList.length : ${printerList.length}');
+    // // List<PrinterModel> printers = await getListDevices();
+    // if (printerList.length == 1) {
+    //   currPrinter = printerList.first;
+    //   logger.safeLog('NAME : ${currPrinter?.deviceName}');
+    //   await disconnect(currPrinter!);
+    //   await connect(currPrinter!);
+
+    //   // stoped subsciption
+    //   _subscription?.cancel();
+    //   _subscriptionUsbStatus?.cancel();
+    //   _subscriptionBtStatus?.cancel();
+
+    //   logger.safeLog('IS CONNECTED : $_isConnected');
+    //   return Future.value(_isConnected);
+    // } else {
+    //   currPrinter = null;
+    //   return Future.value(false);
+    // }
+    currPrinter = null;
+    return Future.value(false);
+  }
+
+  Future<bool> connectPrinterFirst() async {
     List<PrinterModel> printers = await getListDevices();
+    logger.safeLog('printerList.length : ${printerList.length}');
+    printerList = printers;
     if (printers.length == 1) {
       currPrinter = printers.first;
-      logger.safeLog('NAME : ${currPrinter?.deviceName}');
-      await disconnect(currPrinter!);
-      await connect(currPrinter!);
+      if (currPrinter?.typePrinter == PrinterType.usb) {
+        logger.safeLog('NAME : ${currPrinter?.deviceName}');
+        await disconnect(currPrinter!);
+        await connect(currPrinter!);
 
-      // stoped subsciption
-      _subscription?.cancel();
-      _subscriptionUsbStatus?.cancel();
-      _subscriptionBtStatus?.cancel();
+        // stoped subsciption
+        _subscription?.cancel();
+        _subscriptionUsbStatus?.cancel();
+        _subscriptionBtStatus?.cancel();
 
-      logger.safeLog('IS CONNECTED : $_isConnected');
-      return Future.value(_isConnected);
+        logger.safeLog('IS CONNECTED : $_isConnected');
+        return Future.value(_isConnected);
+      } else {
+        currPrinter = null;
+        return Future.value(false);
+      }
     } else {
       currPrinter = null;
       return Future.value(false);
