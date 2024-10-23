@@ -165,6 +165,27 @@ class PrinterUtil {
     return deviceList;
   }
 
+  Future<List<PrinterModel>> getListDevicesUsb() async {
+    List<PrinterModel> deviceList = [];
+    _subscription = printerManager
+        .discovery(type: defaultPrinterType, isBle: _isBle)
+        .listen((device) {
+      // logger.safeLog('DEVICE NAME : ${device.name} ');
+      deviceList.add(PrinterModel(
+        deviceName: device.name,
+        address: device.address,
+        isBle: _isBle,
+        vendorId: device.vendorId,
+        productId: device.productId,
+        typePrinter: defaultPrinterType,
+      ));
+    });
+    await _subscription?.asFuture();
+    await _subscription?.cancel();
+    logger.safeLog('deviceList : $deviceList');
+    return deviceList;
+  }
+
   Future<void> stopSubscription() async {
     _subscription?.cancel();
     _subscriptionUsbStatus?.cancel();
@@ -195,8 +216,9 @@ class PrinterUtil {
     return Future.value(false);
   }
 
+  // connect default is usb
   Future<bool> connectPrinterFirst() async {
-    List<PrinterModel> printers = await getListDevices();
+    List<PrinterModel> printers = await getListDevicesUsb();
     logger.safeLog('printerList.length : ${printerList.length}');
     printerList = printers;
     if (printers.length == 1) {
@@ -218,6 +240,24 @@ class PrinterUtil {
         return Future.value(false);
       }
     } else {
+      for (var element in printers) {
+        if (element.typePrinter == PrinterType.usb) {
+          logger.safeLog('NAME : ${element.deviceName}');
+          await disconnect(element);
+          await connect(element);
+
+          // stoped subsciption
+          _subscription?.cancel();
+          _subscriptionUsbStatus?.cancel();
+          _subscriptionBtStatus?.cancel();
+
+          logger.safeLog('IS CONNECTED : $_isConnected');
+          return Future.value(_isConnected);
+        } else {
+          currPrinter = null;
+          return Future.value(false);
+        }
+      }
       currPrinter = null;
       return Future.value(false);
     }
