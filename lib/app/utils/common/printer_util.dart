@@ -222,8 +222,8 @@ class PrinterUtil {
     logger.safeLog('printerList.length : ${printerList.length}');
     printerList = printers;
     if (printers.length == 1) {
-      currPrinter = printers.first;
       if (currPrinter?.typePrinter == PrinterType.usb) {
+        currPrinter = printers.first;
         logger.safeLog('NAME : ${currPrinter?.deviceName}');
         await disconnect(currPrinter!);
         await connect(currPrinter!);
@@ -242,6 +242,7 @@ class PrinterUtil {
     } else {
       for (var element in printers) {
         if (element.typePrinter == PrinterType.usb) {
+          currPrinter = element;
           logger.safeLog('NAME : ${element.deviceName}');
           await disconnect(element);
           await connect(element);
