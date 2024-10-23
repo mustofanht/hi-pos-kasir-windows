@@ -221,47 +221,63 @@ class PrinterUtil {
     List<PrinterModel> printers = await getListDevicesUsb();
     logger.safeLog('printerList.length : ${printerList.length}');
     printerList = printers;
-    if (printers.length == 1) {
-      if (currPrinter?.typePrinter == PrinterType.usb) {
-        currPrinter = printers.first;
-        logger.safeLog('NAME : ${currPrinter?.deviceName}');
-        await disconnect(currPrinter!);
-        await connect(currPrinter!);
+    // if (printers.length == 1) {
+    //   if (currPrinter?.typePrinter == PrinterType.usb) {
+    //     currPrinter = printers.first;
+    //     logger.safeLog('NAME : ${currPrinter?.deviceName}');
+    //     await disconnect(currPrinter!);
+    //     await connect(currPrinter!);
 
-        // stoped subsciption
-        _subscription?.cancel();
-        _subscriptionUsbStatus?.cancel();
-        _subscriptionBtStatus?.cancel();
+    //     // stoped subsciption
+    //     _subscription?.cancel();
+    //     _subscriptionUsbStatus?.cancel();
+    //     _subscriptionBtStatus?.cancel();
 
-        logger.safeLog('IS CONNECTED : $_isConnected');
-        return Future.value(_isConnected);
-      } else {
-        currPrinter = null;
-        return Future.value(false);
-      }
-    } else {
+    //     logger.safeLog('IS CONNECTED : $_isConnected');
+    //     return Future.value(_isConnected);
+    //   } else {
+    //     currPrinter = null;
+    //     return Future.value(false);
+    //   }
+    // } else {
+    //   for (var element in printers) {
+    //     if (element.typePrinter == PrinterType.usb) {
+    //       currPrinter = element;
+    //       logger.safeLog('NAME : ${element.deviceName}');
+    //       await disconnect(element);
+    //       await connect(element);
+
+    //       // stoped subsciption
+    //       _subscription?.cancel();
+    //       _subscriptionUsbStatus?.cancel();
+    //       _subscriptionBtStatus?.cancel();
+
+    //       logger.safeLog('IS CONNECTED : $_isConnected');
+    //       return Future.value(_isConnected);
+    //     }
+    //   }
+    //   currPrinter = null;
+    //   return Future.value(false);
+    // }
+
+    if (printers.isNotEmpty) {
       for (var element in printers) {
         if (element.typePrinter == PrinterType.usb) {
           currPrinter = element;
           logger.safeLog('NAME : ${element.deviceName}');
           await disconnect(element);
           await connect(element);
-
-          // stoped subsciption
-          _subscription?.cancel();
-          _subscriptionUsbStatus?.cancel();
-          _subscriptionBtStatus?.cancel();
-
-          logger.safeLog('IS CONNECTED : $_isConnected');
-          return Future.value(_isConnected);
-        } else {
-          currPrinter = null;
-          return Future.value(false);
+          break;
         }
       }
-      currPrinter = null;
-      return Future.value(false);
     }
+
+    // stoped subsciption
+    _subscription?.cancel();
+    _subscriptionUsbStatus?.cancel();
+    _subscriptionBtStatus?.cancel();
+    logger.safeLog('IS CONNECTED : $_isConnected');
+    return Future.value(_isConnected);
   }
 
   Future<void> print(PrinterModel selectedPrinter, List<int> bytes) async {
