@@ -388,7 +388,7 @@ class OrderUtil {
     logger.safeLog('TEST : ${body.toJson()}');
 
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
-    // printerUtil.connectPrinter();
+    printerUtil.connectPrinter();
     if (printerUtil.currPrinter != null) {
       String locationName = "";
       String kasirName = "";

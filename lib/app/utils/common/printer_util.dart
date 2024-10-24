@@ -212,8 +212,13 @@ class PrinterUtil {
     //   currPrinter = null;
     //   return Future.value(false);
     // }
-    currPrinter = null;
-    return Future.value(false);
+    // currPrinter = null;
+    // return Future.value(false);
+    if (currPrinter == null) {
+      return connectPrinterFirst();
+    } else {
+      return Future.value(_isConnected);
+    }
   }
 
   // connect default is usb
