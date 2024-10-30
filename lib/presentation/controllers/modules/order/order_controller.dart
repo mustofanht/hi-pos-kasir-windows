@@ -423,7 +423,7 @@ class OrderUtil {
             qrCode: element.ticketNo!,
             // expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
             expiredAt: dateTimeUtil.getFormattedDate(
-              date: element.ticketActiveDate!,
+              date: element.ticketActiveDate!.toLocal(),
               format: dateFormat.dateDDMMMMYYYY,
             ),
             ticketName: element.ticketName,
