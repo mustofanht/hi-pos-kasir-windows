@@ -7,6 +7,7 @@ class AppAssetConstant {
 
   // Icons
   final String icUser = "${constant.pathIcons}ic-user.png";
+  final String icInfo = "${constant.pathIcons}ic-info.png";
   final String icEmail = "${constant.pathIcons}ic-user.png";
   final String icInputCalendar = "${constant.pathIcons}ic-input-calendar.png";
   final String icInformationDialog =

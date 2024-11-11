@@ -25,6 +25,7 @@ class ArgumentsConstant {
 enum DateTimePickerType {
   Default,
   OnlyYear,
+  OnlyTime,
 }
 
 enum DocumentSource {

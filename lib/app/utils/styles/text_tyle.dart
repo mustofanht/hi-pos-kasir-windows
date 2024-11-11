@@ -37,6 +37,12 @@ class AppTextStyle {
     fontWeight: fontWeight.regular,
     fontStyle: fontStyle.normal,
   );
+  TextStyle primaryColor = GoogleFonts.poppins(
+    color: colorStyle.primary,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.regular,
+    fontStyle: fontStyle.normal,
+  );
   TextStyle noColor = GoogleFonts.poppins(
     fontSize: fontSize.body,
     fontWeight: fontWeight.regular,

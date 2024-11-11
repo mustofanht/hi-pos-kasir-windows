@@ -8,6 +8,8 @@ import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
+import 'package:jaya_propertiy/presentation/components/custom_list_transaction.dart';
+import 'package:jaya_propertiy/presentation/components/custom_select_hours_rent.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
 class CustomDialog {
@@ -1897,6 +1899,52 @@ class CustomDialog {
   //     barrierDismissible: false,
   //   );
   // }
+
+  selectHourRent({
+    required Function() onNext,
+  }) async {
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: layoutStyle.screenWidth / 2,
+          height: layoutStyle.blockVertical * 70,
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(50),
+            ),
+          ),
+          child: CustomSelectHoursRent(),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  selectListTransaction({
+    required Function() onNext,
+  }) async {
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: layoutStyle.screenWidth / 3,
+          height: layoutStyle.blockVertical * 70,
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(50),
+            ),
+          ),
+          child: CustomListTransaction(
+            onNext: onNext,
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
 }
 
 CustomDialog dialog = CustomDialog();

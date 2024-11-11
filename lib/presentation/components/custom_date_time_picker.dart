@@ -59,6 +59,17 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
     }
   }
 
+  @override
+  void didUpdateWidget(covariant CustomDateTimePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.newDate != oldWidget.newDate) {
+      setState(() {
+        date = widget.newDate ?? DateTime.now();
+        selectedYear = widget.newDate ?? DateTime.now();
+      });
+    }
+  }
+
   // select year method
   _selectYear() {
     Get.defaultDialog(
@@ -165,7 +176,7 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
       );
     });
     widget.onDateChanged!(date);
-    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +202,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
               if (widget.enable) {
                 if (widget.type == DateTimePickerType.OnlyYear) {
                   _selectYear();
+                } else if (widget.type == DateTimePickerType.OnlyTime) {
+                  _selectTime(date);
                 } else {
                   _selectDate(context);
                 }
@@ -202,7 +215,9 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                 horizontal: layoutStyle.defaultMargin / 2,
               ),
               decoration: BoxDecoration(
-                color: widget.backgroundColor ?? colorStyle.white,
+                color: widget.enable
+                    ? widget.backgroundColor ?? colorStyle.white
+                    : colorStyle.lightGrey,
                 borderRadius: widget.borderRadius,
                 border: widget.border,
                 boxShadow: widget.boxShadow,
@@ -216,15 +231,19 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                           ? 'Select  Date'
                           : (widget.type == DateTimePickerType.OnlyYear)
                               ? dateTimeUtil.onlyYear(selectedYear)
-                              : widget.dateFormat != null
-                                  ? dateTimeUtil.getFormattedDate(
-                                      date: date,
-                                      format: DateFormat(
-                                        widget.dateFormat ?? "dd-MM-yyyy",
-                                        Get.locale.toString(),
-                                      ),
-                                    )
-                                  : dateTimeUtil.dateWithDay(date),
+                              : widget.type == DateTimePickerType.OnlyTime
+                                  ? (widget.newDate == null
+                                      ? ''
+                                      : dateTimeUtil.onlyTime(date))
+                                  : widget.dateFormat != null
+                                      ? dateTimeUtil.getFormattedDate(
+                                          date: date,
+                                          format: DateFormat(
+                                            widget.dateFormat ?? "dd-MM-yyyy",
+                                            Get.locale.toString(),
+                                          ),
+                                        )
+                                      : dateTimeUtil.dateWithDay(date),
                       style: widget.firstState
                           ? textStyle.greyText.copyWith(
                               fontWeight: fontWeight.medium,
@@ -234,11 +253,16 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                             ),
                     ),
                   ),
-                  Image.asset(
-                    assetsConstant.icInputCalendar,
-                    width: 24,
-                    height: 24,
-                  ),
+                  widget.type == DateTimePickerType.OnlyTime
+                      ? Icon(
+                          Icons.access_time,
+                          color: colorStyle.grey,
+                        )
+                      : Image.asset(
+                          assetsConstant.icInputCalendar,
+                          width: 24,
+                          height: 24,
+                        ),
                 ],
               ),
             ),
