@@ -249,12 +249,14 @@ class OrderPaymentController extends GetxController {
               'Error',
               messagesConstant.requiredField('Nomor Refference'),
             );
+            isProcessing.value = false;
           }
         },
       );
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Unexpected Error');
+      isProcessing.value = false;
     }
   }
 
