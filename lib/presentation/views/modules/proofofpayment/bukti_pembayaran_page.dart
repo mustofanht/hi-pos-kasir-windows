@@ -893,59 +893,64 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
         ),
         child: controller.isLoading.value
             ? loading.simpleLoading()
-            : controller.dataList.isEmpty
-                ? Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            assetsConstant.imgEmptyBox,
-                            fit: BoxFit.fill,
-                            errorBuilder: (BuildContext context, Object exception,
-                                StackTrace? stackTrace) {
-                              return const Text('Img Not Found');
-                            },
+            : RefreshIndicator(
+                onRefresh: () async {
+                  await controller.doRefresh();
+                },
+                child: SingleChildScrollView(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: controller.dataList.isEmpty
+                      ? Container(
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.only(
+                            top: layoutStyle.defaultMargin * 4,
                           ),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin,
-                          ),
-                          Text(
-                            'Data Empty',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: fontSize.title,
-                              fontWeight: fontWeight.bold,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  assetsConstant.imgEmptyBox,
+                                  fit: BoxFit.fill,
+                                  errorBuilder: (BuildContext context,
+                                      Object exception,
+                                      StackTrace? stackTrace) {
+                                    return const Text('Img Not Found');
+                                  },
+                                ),
+                                SizedBox(
+                                  height: layoutStyle.defaultMargin,
+                                ),
+                                Text(
+                                  'Data Empty',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: fontSize.title,
+                                    fontWeight: fontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: layoutStyle.defaultMargin,
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      await controller.doRefresh();
-                    },
-                    child: SingleChildScrollView(
-                      controller: controller.scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        children: controller.dataList
-                            .map((e) => cardSection(
-                                model: e,
-                                selectedCard:
-                                    controller.selectedData.value.orderNumber !=
-                                            null &&
-                                        e.orderNumber ==
-                                            controller.selectedData.value
-                                                .orderNumber))
-                            .toList(),
-                      ),
-                    ),
-                  ),
+                        )
+                      : Column(
+                          children: controller.dataList
+                              .map((e) => cardSection(
+                                  model: e,
+                                  selectedCard: controller
+                                              .selectedData.value.orderNumber !=
+                                          null &&
+                                      e.orderNumber ==
+                                          controller
+                                              .selectedData.value.orderNumber))
+                              .toList(),
+                        ),
+                ),
+              ),
       );
     }
 
