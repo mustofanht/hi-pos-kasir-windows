@@ -3,9 +3,12 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
@@ -350,6 +353,155 @@ class SaleCartPage extends GetView<SaleCartPageController> {
     );
   }
 
+  Widget rentProductCart(CartAddon e) {
+    return Container(
+      margin: EdgeInsets.symmetric(
+        vertical: layoutStyle.defaultMargin / 10,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Text('${e.qtyOrder} X '),
+                    Expanded(
+                      child: Text(
+                        '${e.addon!.productName ?? ''} (${e.rentModel!.startDate != null && e.rentModel!.endDate != null ? '${dateTimeUtil.getFormattedDate(date: e.rentModel!.startDate!, format: dateFormat.hourMinutes)} - ${dateTimeUtil.getFormattedDate(date: e.rentModel!.endDate!, format: dateFormat.hourMinutes)}' : ''})',
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+                if (e.rentModel?.newBuyPrice != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Pembelian Baru ',
+                          softWrap: true,
+                          style: textStyle.greyText,
+                        ),
+                      ),
+                      Text(
+                        'Rp.${common.currencyFormat(e.rentModel!.newBuyPrice!)}',
+                        style: textStyle.blackText,
+                      ),
+                    ],
+                  ),
+                if (e.rentModel?.extraTimeBuyPrice != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Pembelian Extra Time',
+                          softWrap: true,
+                          style: textStyle.greyText,
+                        ),
+                      ),
+                      Text(
+                        'Rp.${common.currencyFormat(e.rentModel!.extraTimeBuyPrice!)}',
+                        style: textStyle.blackText,
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: layoutStyle.defaultMargin,
+                ),
+                CustomButton(
+                  onPressed: () {
+                    controller.doUpdateRent(e);
+                  },
+                  margin: EdgeInsets.symmetric(
+                    horizontal: layoutStyle.defaultMargin / 10,
+                  ),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        colorStyle.transparent),
+                    foregroundColor: MaterialStateProperty.all<Color>(
+                        colorStyle.transparent),
+                    overlayColor: MaterialStateProperty.all<Color>(
+                        colorStyle.transparent),
+                    side: MaterialStateProperty.all<BorderSide>(
+                      BorderSide(
+                        color: colorStyle.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      const EdgeInsets.all(0),
+                    ),
+                    elevation: MaterialStateProperty.all<double>(0),
+                  ),
+                  label: Container(
+                    padding: EdgeInsets.all(
+                      layoutStyle.defaultMargin / 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorStyle.primary,
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 5,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.edit,
+                      color: colorStyle.white,
+                      size: fontSize.title,
+                    ),
+                  ),
+                  width: layoutStyle.blockHorizontal * 3,
+                  height: layoutStyle.blockVertical * 5,
+                ),
+                CustomButton(
+                  onPressed: () {
+                    controller.removeListAddon(e);
+                  },
+                  margin: EdgeInsets.symmetric(
+                    horizontal: layoutStyle.defaultMargin / 10,
+                  ),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        colorStyle.transparent),
+                    foregroundColor: MaterialStateProperty.all<Color>(
+                        colorStyle.transparent),
+                    overlayColor: MaterialStateProperty.all<Color>(
+                        colorStyle.transparent),
+                    side: MaterialStateProperty.all<BorderSide>(
+                      BorderSide(
+                        color: colorStyle.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      const EdgeInsets.all(0),
+                    ),
+                    elevation: MaterialStateProperty.all<double>(0),
+                  ),
+                  label: Image.asset(
+                    assetsConstant.icDelete,
+                    fit: BoxFit.contain,
+                  ),
+                  width: layoutStyle.blockHorizontal * 3,
+                  height: layoutStyle.blockVertical * 5,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget addonListComponent(SaleCartPageController controller) {
     return Container(
       alignment: Alignment.topCenter,
@@ -358,166 +510,154 @@ class SaleCartPage extends GetView<SaleCartPageController> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: controller.addonList
             .map(
-              (e) => Container(
-                margin: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 10,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Text('${e.qtyOrder} X '),
-                          Expanded(
-                            child: Text(
-                              e.addon!.productName ?? '',
-                              softWrap: true,
-                            ),
-                          ),
-                        ],
+              (e) => e.rentModel != null
+                  ? rentProductCart(e)
+                  : Container(
+                      margin: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 10,
                       ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
                       child: Row(
                         children: [
-                          if (e.rentModel == null)
-                            Text(
-                              'Rp.${e.addon?.productPrice != null ? common.currencyFormat(e.addon!.productPrice!) : ''}',
-                            ),
-                          SizedBox(
-                            width: layoutStyle.defaultMargin,
-                          ),
-                          if (e.rentModel == null)
-                            CustomButton(
-                              onPressed: () {
-                                controller.removeAddon(e);
-                              },
-                              margin: EdgeInsets.symmetric(
-                                horizontal: layoutStyle.defaultMargin / 10,
-                              ),
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        colorStyle.transparent),
-                                foregroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        colorStyle.transparent),
-                                overlayColor: MaterialStateProperty.all<Color>(
-                                    colorStyle.transparent),
-                                side: MaterialStateProperty.all<BorderSide>(
-                                  BorderSide(
-                                    color: colorStyle.transparent,
-                                    width: 1,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Text('${e.qtyOrder} X '),
+                                Expanded(
+                                  child: Text(
+                                    e.addon!.productName ?? '',
+                                    softWrap: true,
                                   ),
                                 ),
-                                padding: MaterialStateProperty.all<
-                                    EdgeInsetsGeometry>(
-                                  const EdgeInsets.all(0),
+                              ],
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Rp.${e.addon?.productPrice != null ? common.currencyFormat(e.addon!.productPrice!) : ''}',
                                 ),
-                                elevation: MaterialStateProperty.all<double>(0),
-                              ),
-                              label: Image.asset(
-                                assetsConstant.icMinus,
-                                fit: BoxFit.contain,
-                              ),
-                              width: layoutStyle.blockHorizontal * 3,
-                              height: layoutStyle.blockVertical * 5,
-                            ),
-                          CustomButton(
-                            onPressed: () {
-                              if (e.rentModel != null) {
-                                controller.doUpdateRent(e);
-                              } else {
-                                controller.addAddonCart(e);
-                              }
-                            },
-                            margin: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 10,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
+                                SizedBox(
+                                  width: layoutStyle.defaultMargin,
                                 ),
-                              ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
-                              ),
-                              elevation: MaterialStateProperty.all<double>(0),
-                            ),
-                            label: e.rentModel != null
-                                ? Container(
-                                    padding: EdgeInsets.all(
-                                      layoutStyle.defaultMargin / 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colorStyle.primary,
-                                      borderRadius: BorderRadius.circular(
-                                        layoutStyle.defaultMargin / 5,
+                                CustomButton(
+                                  onPressed: () {
+                                    controller.removeAddon(e);
+                                  },
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 10,
+                                  ),
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    overlayColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.transparent,
+                                        width: 1,
                                       ),
                                     ),
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: colorStyle.white,
-                                      size: fontSize.title,
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      const EdgeInsets.all(0),
                                     ),
-                                  )
-                                : Image.asset(
+                                    elevation:
+                                        MaterialStateProperty.all<double>(0),
+                                  ),
+                                  label: Image.asset(
+                                    assetsConstant.icMinus,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 5,
+                                ),
+                                CustomButton(
+                                  onPressed: () {
+                                    controller.addAddonCart(e);
+                                  },
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 10,
+                                  ),
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    overlayColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      const EdgeInsets.all(0),
+                                    ),
+                                    elevation:
+                                        MaterialStateProperty.all<double>(0),
+                                  ),
+                                  label: Image.asset(
                                     assetsConstant.icPlus,
                                     fit: BoxFit.contain,
                                   ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
-                          ),
-                          CustomButton(
-                            onPressed: () {
-                              controller.removeListAddon(e);
-                            },
-                            margin: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 10,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 5,
                                 ),
-                              ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
-                              ),
-                              elevation: MaterialStateProperty.all<double>(0),
+                                CustomButton(
+                                  onPressed: () {
+                                    controller.removeListAddon(e);
+                                  },
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 10,
+                                  ),
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    overlayColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      const EdgeInsets.all(0),
+                                    ),
+                                    elevation:
+                                        MaterialStateProperty.all<double>(0),
+                                  ),
+                                  label: Image.asset(
+                                    assetsConstant.icDelete,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 5,
+                                ),
+                              ],
                             ),
-                            label: Image.asset(
-                              assetsConstant.icDelete,
-                              fit: BoxFit.contain,
-                            ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
             )
             .toList(),
       ),

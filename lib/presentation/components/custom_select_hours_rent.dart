@@ -4,6 +4,7 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/controller/custom_select_hours_rent_controller.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
@@ -12,10 +13,14 @@ import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.d
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
 class CustomSelectHoursRent extends StatefulWidget {
-  final Function(double val) onNext;
+  final Function(CartRentModel cartRentModel) onNext;
   final AddonEntity entitiy;
+  final CartRentModel? detailModel;
   const CustomSelectHoursRent(
-      {super.key, required this.onNext, required this.entitiy});
+      {super.key,
+      required this.onNext,
+      required this.entitiy,
+      this.detailModel});
 
   @override
   State<CustomSelectHoursRent> createState() => _CustomSelectHoursRentState();
@@ -24,8 +29,8 @@ class CustomSelectHoursRent extends StatefulWidget {
 class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
   @override
   Widget build(BuildContext context) {
-    final controller =
-        Get.put(CustomSelectHoursRentController(entitiy: widget.entitiy));
+    final controller = Get.put(CustomSelectHoursRentController(
+        entitiy: widget.entitiy, detailModel: widget.detailModel));
 
     List<Widget> headerSection() {
       return [
@@ -123,7 +128,16 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                 ),
                 onPressed: () {
                   double rentPrice = 1000000;
-                  widget.onNext(rentPrice);
+                  CartRentModel cartRentModel = CartRentModel(
+                    newBuyPrice: rentPrice,
+                    // extraTimeBuyPrice: rentPrice,
+                    startDate: controller.startTime.value,
+                    endDate: controller.endTime.value,
+                    totalHours: controller.totalHoursController.text.isNotEmpty
+                        ? int.parse(controller.totalHoursController.text)
+                        : 0,
+                  );
+                  widget.onNext(cartRentModel);
                   Get.back();
                 },
                 style: ButtonStyle(
@@ -361,7 +375,8 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                         child: Container(
                           width: layoutStyle.blockVertical * 6.5,
                           height: layoutStyle.blockVertical * 6.5,
-                          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                          padding:
+                              EdgeInsets.all(layoutStyle.defaultMargin / 2),
                           decoration: BoxDecoration(
                             color: colorStyle.black,
                             borderRadius: BorderRadius.circular(
@@ -411,7 +426,8 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                         child: Container(
                           width: layoutStyle.blockVertical * 6.5,
                           height: layoutStyle.blockVertical * 6.5,
-                          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                          padding:
+                              EdgeInsets.all(layoutStyle.defaultMargin / 2),
                           decoration: BoxDecoration(
                             color: colorStyle.black,
                             borderRadius: BorderRadius.circular(

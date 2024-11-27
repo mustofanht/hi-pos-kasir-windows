@@ -5,7 +5,6 @@ import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
-import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
@@ -114,25 +113,22 @@ class SaleAddonPageController extends GetxController {
     }
 
     if (selectedTypeItemList.value.id == 'S') {
+      CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
+        (e) => e.addon!.productId == val.productId,
+      );
+
       await dialog.selectHourRent(
         entitiy: val,
-        onNext: (priceRent) {
+        detailModel: exists?.rentModel,
+        onNext: (cartRentModel) {
           val.productPrice = 0;
-          logger.safeLog('TOTAL RENT PRICE : $priceRent');
-
-          CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
-            (e) => e.addon!.productId == val.productId,
-          );
 
           if (exists != null) {
             saleCartPageController.addonList.remove(exists);
           }
           saleCartPageController.addAddonRent(
             val,
-            CartRentModel(
-              newBuyPrice: priceRent,
-              extraTimeBuyPrice: 0,
-            ),
+            cartRentModel,
           );
 
           logger.safeLog(

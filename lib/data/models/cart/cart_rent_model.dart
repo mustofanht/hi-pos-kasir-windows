@@ -3,12 +3,14 @@ class CartRentModel {
   DateTime? endDate;
   double? newBuyPrice;
   double? extraTimeBuyPrice;
+  int? totalHours;
 
   CartRentModel({
     this.startDate,
     this.endDate,
     this.newBuyPrice,
     this.extraTimeBuyPrice,
+    this.totalHours,
   });
 
   CartRentModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +18,7 @@ class CartRentModel {
     endDate = json['endDate'] != null ? DateTime.parse(json['endDate']) : null;
     newBuyPrice = json['newBuyPrice'] != null ? (json['newBuyPrice'] as num).toDouble() : null;
     extraTimeBuyPrice = json['extraTimeBuyPrice'] != null ? (json['extraTimeBuyPrice'] as num).toDouble() : null;
+    totalHours = json['totalHours'];
   }
 
   Map<String, dynamic> toJson() {
@@ -24,6 +27,7 @@ class CartRentModel {
       'endDate': endDate?.toIso8601String(),
       'newBuyPrice': newBuyPrice,
       'extraTimeBuyPrice': extraTimeBuyPrice,
+      'totalHours': totalHours,
     };
   }
 }

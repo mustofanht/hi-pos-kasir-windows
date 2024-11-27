@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
 class CustomSelectHoursRentController extends GetxController {
   final AddonEntity entitiy;
-  CustomSelectHoursRentController({required this.entitiy});
+  final CartRentModel? detailModel;
+  CustomSelectHoursRentController({required this.entitiy, this.detailModel});
 
   final totalHoursController = TextEditingController();
   final isExtraTime = RxBool(false);
@@ -38,6 +40,12 @@ class CustomSelectHoursRentController extends GetxController {
       minHours.value = hours;
       totalHoursController.text = hours.toString();
     }
+
+    if (detailModel != null) {
+      startTime.value = detailModel?.startDate;
+      totalHoursController.text = detailModel!.totalHours.toString();
+    }
+
     setEndDateTime();
   }
 

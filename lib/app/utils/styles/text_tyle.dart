@@ -25,6 +25,12 @@ class AppTextStyle {
     fontWeight: fontWeight.regular,
     fontStyle: fontStyle.normal,
   );
+  TextStyle lisghtGreyText = GoogleFonts.poppins(
+    color: colorStyle.lightGrey,
+    fontSize: fontSize.body,
+    fontWeight: fontWeight.regular,
+    fontStyle: fontStyle.normal,
+  );
   TextStyle greenText = GoogleFonts.poppins(
     color: colorStyle.green,
     fontSize: fontSize.body,

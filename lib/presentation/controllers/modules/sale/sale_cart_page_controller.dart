@@ -270,9 +270,9 @@ class SaleCartPageController extends GetxController {
   doUpdateRent(CartAddon cartAddOn) async {
     await dialog.selectHourRent(
       entitiy: cartAddOn.addon!,
-      onNext: (priceRent) {
+      detailModel: cartAddOn.rentModel,
+      onNext: (cartRentModel) {
         cartAddOn.addon?.productPrice = 0;
-        logger.safeLog('TOTAL RENT PRICE : $priceRent');
 
         CartAddon? exists = addonList.firstWhereOrNull(
           (e) => e.addon!.productId == cartAddOn.addon?.productId,
@@ -283,10 +283,7 @@ class SaleCartPageController extends GetxController {
         }
         addAddonRent(
           cartAddOn.addon!,
-          CartRentModel(
-            newBuyPrice: priceRent,
-            extraTimeBuyPrice: 0,
-          ),
+          cartRentModel,
         );
 
         update();
