@@ -13,7 +13,6 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
 
   @override
   Widget build(BuildContext context) {
-    
     Widget cardItem(AddonEntity e) {
       return InkWell(
         onTap: () {
@@ -116,8 +115,9 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
       tag: 'SaleTicketPage',
       initState: (state) {
         controller.scrollController.addListener(controller.scrollHandler);
-        controller.doPrepareList(page: 0);
+        controller.doPrepareList(page: 0, typeProduct: 'S');
         controller.doInitializeItemTypeList();
+        controller.selectedTypeItemList.value.id = 'S';
       },
       builder: (controller) {
         return Container(
@@ -138,6 +138,7 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                           (element) => GestureDetector(
                             onTap: () {
                               controller.selectedTypeItemList.value = element;
+                              controller.doPrepareList(page: 0, typeProduct: element.id!);
                               controller.update();
                             },
                             child: Container(
@@ -147,10 +148,11 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                               padding:
                                   EdgeInsets.all(layoutStyle.defaultMargin),
                               decoration: BoxDecoration(
-                                color: controller.selectedTypeItemList.value ==
-                                        element
-                                    ? colorStyle.primary
-                                    : colorStyle.lightGrey,
+                                color:
+                                    controller.selectedTypeItemList.value.id ==
+                                            element.id
+                                        ? colorStyle.primary
+                                        : colorStyle.lightGrey,
                                 borderRadius: BorderRadius.circular(
                                   layoutStyle.defaultMargin,
                                 ),
@@ -161,12 +163,12 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                               ),
                               child: Center(
                                 child: Text(
-                                  element,
-                                  style:
-                                      controller.selectedTypeItemList.value ==
-                                              element
-                                          ? textStyle.whiteText
-                                          : textStyle.greyText,
+                                  element.name ?? '',
+                                  style: controller
+                                              .selectedTypeItemList.value.id ==
+                                          element.id
+                                      ? textStyle.whiteText
+                                      : textStyle.greyText,
                                 ),
                               ),
                             ),
@@ -181,7 +183,7 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                 // height: layoutStyle.screenHeight,
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    await controller.doPrepareList(page: 0);
+                    await controller.doPrepareList(page: 0, typeProduct: controller.selectedTypeItemList.value.id!);
                   },
                   child: controller.isLoading.value
                       ? loading.simpleLoading()

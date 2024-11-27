@@ -4,6 +4,7 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/controller/custom_select_hours_rent_controller.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_transaction.dart';
@@ -11,7 +12,10 @@ import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.d
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
 class CustomSelectHoursRent extends StatefulWidget {
-  const CustomSelectHoursRent({super.key});
+  final Function(double val) onNext;
+  final AddonEntity entitiy;
+  const CustomSelectHoursRent(
+      {super.key, required this.onNext, required this.entitiy});
 
   @override
   State<CustomSelectHoursRent> createState() => _CustomSelectHoursRentState();
@@ -20,7 +24,8 @@ class CustomSelectHoursRent extends StatefulWidget {
 class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CustomSelectHoursRentController());
+    final controller =
+        Get.put(CustomSelectHoursRentController(entitiy: widget.entitiy));
 
     List<Widget> headerSection() {
       return [
@@ -116,7 +121,11 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                   vertical: layoutStyle.defaultMargin / 2,
                   horizontal: layoutStyle.defaultMargin,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  double rentPrice = 1000000;
+                  widget.onNext(rentPrice);
+                  Get.back();
+                },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
                     (states) => colorStyle.primary,
@@ -236,11 +245,12 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                     ),
                   ),
                   Obx(
-                    () => controller.selectedExtraTime.isNotEmpty
+                    () => controller.selectedTransactionExtraTime.value != null
                         ? Column(
                             children: [
                               CustomCardTransaction(
-                                isSelected: false,
+                                data: controller
+                                    .selectedTransactionExtraTime.value,
                               ),
                             ],
                           )
@@ -346,48 +356,34 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                   ),
                   Row(
                     children: [
-                      CustomButton(
-                        width: layoutStyle.blockVertical * 6.5,
-                        height: layoutStyle.blockVertical * 4.5,
-                        margin: EdgeInsets.all(
-                          layoutStyle.defaultMargin / 2,
-                        ),
-                        onPressed: controller.doMinHours,
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black,
-                          ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
+                      GestureDetector(
+                        onTap: controller.doMinHours,
+                        child: Container(
+                          width: layoutStyle.blockVertical * 6.5,
+                          height: layoutStyle.blockVertical * 6.5,
+                          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                          decoration: BoxDecoration(
+                            color: colorStyle.black,
+                            borderRadius: BorderRadius.circular(
+                              layoutStyle.defaultMargin / 2,
                             ),
                           ),
-                          elevation: const MaterialStatePropertyAll(0),
-                        ),
-                        label: Container(
-                          width: layoutStyle.blockHorizontal * 1.5,
-                          height: layoutStyle.blockHorizontal * 1.5,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            color: colorStyle.white,
-                          ),
-                          child: Align(
-                            alignment: Alignment.center,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: colorStyle.white,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
                             child: Icon(
                               Icons.remove,
                               color: colorStyle.black,
+                              size: fontSize.body,
                             ),
                           ),
                         ),
                       ),
                       Expanded(
                         child: CustomTextBox(
-                          height: layoutStyle.blockVertical * 4.5,
+                          height: layoutStyle.blockVertical * 6.5,
                           margin: EdgeInsets.symmetric(
                             horizontal: layoutStyle.defaultMargin,
                             vertical: layoutStyle.defaultMargin / 4,
@@ -410,41 +406,27 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                           isDisabled: true,
                         ),
                       ),
-                      CustomButton(
-                        width: layoutStyle.blockVertical * 6.5,
-                        height: layoutStyle.blockVertical * 4.5,
-                        margin: EdgeInsets.all(
-                          layoutStyle.defaultMargin / 2,
-                        ),
-                        onPressed: controller.doAddHours,
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black,
-                          ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
+                      GestureDetector(
+                        onTap: controller.doAddHours,
+                        child: Container(
+                          width: layoutStyle.blockVertical * 6.5,
+                          height: layoutStyle.blockVertical * 6.5,
+                          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                          decoration: BoxDecoration(
+                            color: colorStyle.black,
+                            borderRadius: BorderRadius.circular(
+                              layoutStyle.defaultMargin / 2,
                             ),
                           ),
-                          elevation: const MaterialStatePropertyAll(0),
-                        ),
-                        label: Container(
-                          width: layoutStyle.blockHorizontal * 1.5,
-                          height: layoutStyle.blockHorizontal * 1.5,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            color: colorStyle.white,
-                          ),
-                          child: Align(
-                            alignment: Alignment.center,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: colorStyle.white,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
                             child: Icon(
                               Icons.add,
                               color: colorStyle.black,
+                              size: fontSize.body,
                             ),
                           ),
                         ),

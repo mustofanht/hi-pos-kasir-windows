@@ -16,6 +16,7 @@ class AppAssetConstant {
   final String icMinus = "${constant.pathIcons}ic-minus.png";
   final String icDelete = "${constant.pathIcons}ic-delete.png";
   final String icQris = "${constant.pathIcons}ic-qris.png";
+  final String icBelt = "${constant.pathIcons}ic-belt.svg";
   final String icQrisSVg = "${constant.pathIconsSvg}ic-qris.svg";
   final String icPaymentSuccess =
       "${constant.pathIconsSvg}ic-payment-success.svg";

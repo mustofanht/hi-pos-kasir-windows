@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/controller/custom_list_transaction_controller.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_transaction.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
 class CustomListTransaction extends StatefulWidget {
-  final Function onNext;
+  final Function(TransactionEntity selected) onNext;
   const CustomListTransaction({super.key, required this.onNext});
 
   @override
@@ -150,7 +152,13 @@ class _CustomListTransactionState extends State<CustomListTransaction> {
                   vertical: layoutStyle.defaultMargin / 2,
                   horizontal: layoutStyle.defaultMargin,
                 ),
-                onPressed: widget.onNext,
+                onPressed: () {
+                  if (controller.selectedTransaction.value != null) {
+                    widget.onNext(controller.selectedTransaction.value!);
+                  }else{
+                    alert.warning('Warning', 'Please selected trnsation');
+                  }
+                },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
                     (states) => colorStyle.primary,
@@ -186,29 +194,18 @@ class _CustomListTransactionState extends State<CustomListTransaction> {
           child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.all(layoutStyle.defaultMargin),
-              child: Column(
-                children: [
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                  CustomCardTransaction(),
-                ],
+              child: Obx(
+                () => Column(
+                  children: controller.listData
+                      .map(
+                        (e) => CustomCardTransaction(
+                          data: e,
+                          onSelect: controller.doSelected,
+                          selectedData: controller.selectedTransaction.value,
+                        ),
+                      )
+                      .toList(),
+                ),
               ),
             ),
           ),

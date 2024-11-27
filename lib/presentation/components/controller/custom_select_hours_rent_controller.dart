@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
 class CustomSelectHoursRentController extends GetxController {
-  CustomSelectHoursRentController();
+  final AddonEntity entitiy;
+  CustomSelectHoursRentController({required this.entitiy});
 
   final totalHoursController = TextEditingController();
-  final isExtraTime = RxBool(true);
-  
-  final selectedExtraTime = RxString('');
+  final isExtraTime = RxBool(false);
+
+  final selectedTransactionExtraTime = Rxn<TransactionEntity>(null);
 
   final startTime = Rxn<DateTime>(
     DateTime(
@@ -22,12 +25,20 @@ class CustomSelectHoursRentController extends GetxController {
     ),
   );
   final endTime = Rxn<DateTime>(null);
+  final minHours = RxInt(0);
 
   @override
   void onInit() {
     // TODO: implement onInit
     super.onInit();
     totalHoursController.text = '0';
+    logger.safeLog('PRODUCT ENTITY : ${entitiy.toJson()}');
+    if (entitiy.minRentPrd != null) {
+      int hours = entitiy.minRentPrd! ~/ 60;
+      minHours.value = hours;
+      totalHoursController.text = hours.toString();
+    }
+    setEndDateTime();
   }
 
   @override
@@ -38,10 +49,12 @@ class CustomSelectHoursRentController extends GetxController {
 
   doMinHours() {
     int totalHours = int.tryParse(totalHoursController.text) ?? 0;
-    if (totalHours > 0) {
-      totalHours--;
-      totalHoursController.text = totalHours.toString();
-      setEndDateTime();
+    if (totalHours > minHours.value) {
+      if (totalHours > 0) {
+        totalHours--;
+        totalHoursController.text = totalHours.toString();
+        setEndDateTime();
+      }
     }
   }
 
@@ -56,6 +69,7 @@ class CustomSelectHoursRentController extends GetxController {
     int totalHours = int.tryParse(totalHoursController.text) ?? 0;
     logger.safeLog('totalHours : $totalHours');
     if (startTime.value != null) {
+      endTime.value = startTime.value;
       DateTime calculatedEndTime =
           startTime.value!.add(Duration(hours: totalHours));
 
@@ -80,9 +94,9 @@ class CustomSelectHoursRentController extends GetxController {
   doSelectTransactionBefore() {
     if (isExtraTime.value) {
       dialog.selectListTransaction(
-        onNext: () {
+        onNext: (TransactionEntity selected) {
           Get.back();
-          selectedExtraTime.value = '1';
+          selectedTransactionExtraTime.value = selected;
         },
       );
     }

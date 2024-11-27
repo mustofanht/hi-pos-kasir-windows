@@ -5,8 +5,10 @@ import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
@@ -26,25 +28,26 @@ class SaleAddonPageController extends GetxController {
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
 
-  final typeItemList = <String>[].obs;
-  final selectedTypeItemList = RxString('Sewa');
+  final typeItemList = <CustomIdNameEntity>[].obs;
+  final selectedTypeItemList = CustomIdNameEntity().obs;
 
   @override
   void onInit() {
     super.onInit();
     scrollController.addListener(scrollHandler);
-    doPrepareList(page: 0);
+    doPrepareList(page: 0, typeProduct: 'S');
     doInitializeItemTypeList();
   }
 
   doInitializeItemTypeList() {
     typeItemList.clear();
-    typeItemList.add('Sewa');
-    typeItemList.add('Jual');
+    typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa'));
+    typeItemList.add(CustomIdNameEntity(id: 'J', name: 'Jual'));
     update();
   }
 
-  Future<void> doPrepareList({required int page}) async {
+  Future<void> doPrepareList(
+      {required int page, required String typeProduct}) async {
     if (page > 0) {
       isLoadMore.value = true;
     } else {
@@ -59,15 +62,8 @@ class SaleAddonPageController extends GetxController {
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'flMobile': 'Y',
         'locationId': sessionUtil.getLocationId().toString(),
+        'typeProduct': typeProduct,
       };
-
-      // dataFilter.add(
-      //   apiFilterUtil.addSearch(
-      //     'productLoc',
-      //     OPERATOR_CONSTANTS.EQUALS,
-      //     sessionUtil.getUnitId(),
-      //   )!,
-      // );
 
       result = await _service.sale.addonService.getAll(
         authToken: _authToken,
@@ -102,32 +98,68 @@ class SaleAddonPageController extends GetxController {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
       if (pagination.value.currentPage! < pagination.value.totalPage!) {
-        doPrepareList(page: pagination.value.currentPage! + 1);
+        doPrepareList(
+            page: pagination.value.currentPage! + 1,
+            typeProduct: selectedTypeItemList.value.id!);
       }
     }
   }
 
-  addAddonToCart({required AddonEntity val}) {
-    // final SaleCartPageController saleCartPageController =
-    //     Get.find<SaleCartPageController>();
+  addAddonToCart({required AddonEntity val}) async {
+    final SaleCartPageController saleCartPageController;
+    if (Get.isRegistered<SaleCartPageController>()) {
+      saleCartPageController = Get.find<SaleCartPageController>();
+    } else {
+      saleCartPageController = Get.put(SaleCartPageController());
+    }
 
-    // if (saleCartPageController.addonList.isEmpty) {
-    //   saleCartPageController.addAddon(val);
-    // } else {
-    //   CartAddon? exists = saleCartPageController.addonList
-    //       .firstWhereOrNull((e) => e.addon!.productId == val.productId);
+    if (selectedTypeItemList.value.id == 'S') {
+      await dialog.selectHourRent(
+        entitiy: val,
+        onNext: (priceRent) {
+          val.productPrice = 0;
+          logger.safeLog('TOTAL RENT PRICE : $priceRent');
 
-    //   if (exists != null) {
-    //     exists.qtyOrder = (exists.qtyOrder ?? 0) + 1;
-    //     exists.totalPrice = (exists.totalPrice ?? 0) + (val.productPrice ?? 0);
-    //     saleCartPageController.calculateTotalOrder();
-    //   } else {
-    //     saleCartPageController.addAddon(val);
-    //   }
-    // }
-    // saleCartPageController.update();
-    // update();
+          CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
+            (e) => e.addon!.productId == val.productId,
+          );
 
-    dialog.selectHourRent(onNext: () {});
+          if (exists != null) {
+            saleCartPageController.addonList.remove(exists);
+          }
+          saleCartPageController.addAddonRent(
+            val,
+            CartRentModel(
+              newBuyPrice: priceRent,
+              extraTimeBuyPrice: 0,
+            ),
+          );
+
+          logger.safeLog(
+            'TOTAL PRODUCT ON CART : ${saleCartPageController.addonList.length}',
+          );
+          saleCartPageController.update();
+          update();
+        },
+      );
+    } else {
+      if (saleCartPageController.addonList.isEmpty) {
+        saleCartPageController.addAddon(val);
+      } else {
+        CartAddon? exists = saleCartPageController.addonList
+            .firstWhereOrNull((e) => e.addon!.productId == val.productId);
+
+        if (exists != null) {
+          exists.qtyOrder = (exists.qtyOrder ?? 0) + 1;
+          exists.totalPrice =
+              (exists.totalPrice ?? 0) + (val.productPrice ?? 0);
+          saleCartPageController.calculateTotalOrder();
+        } else {
+          saleCartPageController.addAddon(val);
+        }
+      }
+      saleCartPageController.update();
+      update();
+    }
   }
 }

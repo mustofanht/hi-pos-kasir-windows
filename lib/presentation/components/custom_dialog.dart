@@ -5,6 +5,8 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
@@ -1900,9 +1902,9 @@ class CustomDialog {
   //   );
   // }
 
-  selectHourRent({
-    required Function() onNext,
-  }) async {
+  selectHourRent(
+      {required Function(double val) onNext,
+      required AddonEntity entitiy}) async {
     Get.dialog(
       AlertDialog(
         contentPadding: EdgeInsets.zero,
@@ -1915,7 +1917,10 @@ class CustomDialog {
               Radius.circular(50),
             ),
           ),
-          child: CustomSelectHoursRent(),
+          child: CustomSelectHoursRent(
+            onNext: onNext,
+            entitiy: entitiy,
+          ),
         ),
       ),
       barrierDismissible: false,
@@ -1923,7 +1928,7 @@ class CustomDialog {
   }
 
   selectListTransaction({
-    required Function() onNext,
+    required Function(TransactionEntity selected) onNext,
   }) async {
     Get.dialog(
       AlertDialog(

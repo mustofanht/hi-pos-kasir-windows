@@ -381,15 +381,56 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       alignment: Alignment.centerRight,
                       child: Row(
                         children: [
-                          Text(
-                            'Rp.${e.addon?.productPrice != null ? common.currencyFormat(e.addon!.productPrice!) : ''}',
-                          ),
+                          if (e.rentModel == null)
+                            Text(
+                              'Rp.${e.addon?.productPrice != null ? common.currencyFormat(e.addon!.productPrice!) : ''}',
+                            ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),
+                          if (e.rentModel == null)
+                            CustomButton(
+                              onPressed: () {
+                                controller.removeAddon(e);
+                              },
+                              margin: EdgeInsets.symmetric(
+                                horizontal: layoutStyle.defaultMargin / 10,
+                              ),
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.transparent),
+                                foregroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.transparent),
+                                overlayColor: MaterialStateProperty.all<Color>(
+                                    colorStyle.transparent),
+                                side: MaterialStateProperty.all<BorderSide>(
+                                  BorderSide(
+                                    color: colorStyle.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                padding: MaterialStateProperty.all<
+                                    EdgeInsetsGeometry>(
+                                  const EdgeInsets.all(0),
+                                ),
+                                elevation: MaterialStateProperty.all<double>(0),
+                              ),
+                              label: Image.asset(
+                                assetsConstant.icMinus,
+                                fit: BoxFit.contain,
+                              ),
+                              width: layoutStyle.blockHorizontal * 3,
+                              height: layoutStyle.blockVertical * 5,
+                            ),
                           CustomButton(
                             onPressed: () {
-                              controller.removeAddon(e);
+                              if (e.rentModel != null) {
+                                controller.doUpdateRent(e);
+                              } else {
+                                controller.addAddonCart(e);
+                              }
                             },
                             margin: EdgeInsets.symmetric(
                               horizontal: layoutStyle.defaultMargin / 10,
@@ -413,43 +454,28 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                               ),
                               elevation: MaterialStateProperty.all<double>(0),
                             ),
-                            label: Image.asset(
-                              assetsConstant.icMinus,
-                              fit: BoxFit.contain,
-                            ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
-                          ),
-                          CustomButton(
-                            onPressed: () {
-                              controller.addAddonCart(e);
-                            },
-                            margin: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 10,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
-                                ),
-                              ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
-                              ),
-                              elevation: MaterialStateProperty.all<double>(0),
-                            ),
-                            label: Image.asset(
-                              assetsConstant.icPlus,
-                              fit: BoxFit.contain,
-                            ),
+                            label: e.rentModel != null
+                                ? Container(
+                                    padding: EdgeInsets.all(
+                                      layoutStyle.defaultMargin / 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colorStyle.primary,
+                                      borderRadius: BorderRadius.circular(
+                                        layoutStyle.defaultMargin / 5,
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: colorStyle.white,
+                                      size: fontSize.title,
+                                    ),
+                                  )
+                                : Image.asset(
+                                    assetsConstant.icPlus,
+                                    fit: BoxFit.contain,
+                                  ),
                             width: layoutStyle.blockHorizontal * 3,
                             height: layoutStyle.blockVertical * 5,
                           ),

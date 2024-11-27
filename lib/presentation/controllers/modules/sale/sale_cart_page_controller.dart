@@ -4,6 +4,7 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
@@ -13,6 +14,7 @@ import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 
 class SaleCartPageController extends GetxController {
@@ -79,10 +81,25 @@ class SaleCartPageController extends GetxController {
     calculateTotalOrder();
   }
 
-  addAddonCart(CartAddon val) {
-    val.qtyOrder = (val.qtyOrder ?? 0) + 1;
-    val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
+  addAddonRent(AddonEntity val, CartRentModel rentModel) {
+    addonList.add(
+      CartAddon(
+        qtyOrder: 1,
+        totalPrice: val.productPrice!,
+        addon: val,
+        rentModel: rentModel,
+      ),
+    );
     calculateTotalOrder();
+  }
+
+  addAddonCart(CartAddon val) {
+    if (val.rentModel != null) {
+    } else {
+      val.qtyOrder = (val.qtyOrder ?? 0) + 1;
+      val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
+      calculateTotalOrder();
+    }
   }
 
   removeAddon(CartAddon val) {
@@ -248,5 +265,32 @@ class SaleCartPageController extends GetxController {
     } else {
       return 0;
     }
+  }
+
+  doUpdateRent(CartAddon cartAddOn) async {
+    await dialog.selectHourRent(
+      entitiy: cartAddOn.addon!,
+      onNext: (priceRent) {
+        cartAddOn.addon?.productPrice = 0;
+        logger.safeLog('TOTAL RENT PRICE : $priceRent');
+
+        CartAddon? exists = addonList.firstWhereOrNull(
+          (e) => e.addon!.productId == cartAddOn.addon?.productId,
+        );
+
+        if (exists != null) {
+          addonList.remove(exists);
+        }
+        addAddonRent(
+          cartAddOn.addon!,
+          CartRentModel(
+            newBuyPrice: priceRent,
+            extraTimeBuyPrice: 0,
+          ),
+        );
+
+        update();
+      },
+    );
   }
 }

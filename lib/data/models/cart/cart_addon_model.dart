@@ -1,15 +1,18 @@
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 
 class CartAddon {
   int? qtyOrder;
   double? totalPrice;
+  CartRentModel? rentModel;
   AddonEntity? addon;
 
   CartAddon({
     this.qtyOrder,
     this.totalPrice,
+    this.rentModel,
     this.addon,
   });
 
@@ -17,6 +20,7 @@ class CartAddon {
     return {
       "qtyOrder": qtyOrder,
       "totalPrice": totalPrice,
+      "rentModel": rentModel,
       "addon": addon != null ? addon!.toJson() : [],
     };
   }
@@ -25,6 +29,7 @@ class CartAddon {
     try {
       qtyOrder = json['qtyOrder'];
       totalPrice = json['totalPrice'];
+      rentModel = json['rentModel'];
 
       if (json['addon'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
