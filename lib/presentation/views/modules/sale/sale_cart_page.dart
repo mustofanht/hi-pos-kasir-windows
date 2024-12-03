@@ -375,23 +375,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                     ),
                   ],
                 ),
-                if (e.rentModel?.newBuyPrice != null)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Pembelian Baru ',
-                          softWrap: true,
-                          style: textStyle.greyText,
-                        ),
-                      ),
-                      Text(
-                        'Rp.${common.currencyFormat(e.rentModel!.newBuyPrice!)}',
-                        style: textStyle.blackText,
-                      ),
-                    ],
-                  ),
-                if (e.rentModel?.extraTimeBuyPrice != null)
+                if (e.rentModel != null && e.rentModel!.isExtraTime!) ...[
                   Row(
                     children: [
                       Expanded(
@@ -407,6 +391,23 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       ),
                     ],
                   ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Pembelian Baru ',
+                          softWrap: true,
+                          style: textStyle.greyText,
+                        ),
+                      ),
+                      Text(
+                        'Rp.${common.currencyFormat(e.rentModel!.newBuyPrice!)}',
+                        style: textStyle.blackText,
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

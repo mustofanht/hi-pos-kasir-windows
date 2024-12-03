@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -207,14 +208,16 @@ class SalePageController extends GetxController
         (e) => e.pymntCode == selectedPaymentType.value.id,
       );
       if (mstPayment.pymntCategory == PaymentMethod.QRIS) {
-        OrderModel body = getBodyOrder(mstPayment.pymntCode!, mstPayment.pymntName!);
+        OrderModel body =
+            getBodyOrder(mstPayment.pymntCode!, mstPayment.pymntName!);
         logger.safeLog('ORDER BODY : ${body.toJson()}');
         orderController.doPaymentQris(
           body: body,
           orderNo: orderNo,
         );
       } else if (mstPayment.pymntCategory != PaymentMethod.QRIS) {
-        OrderModel body = getBodyOrder(mstPayment.pymntCode!, mstPayment.pymntName!);
+        OrderModel body =
+            getBodyOrder(mstPayment.pymntCode!, mstPayment.pymntName!);
         logger.safeLog('ORDER BODY : ${body.toJson()}');
         orderPayment.doOrderPayment(
           body: body,
@@ -288,6 +291,14 @@ class SalePageController extends GetxController
               ordadAddonId: element.addon?.productId,
               ordadTotalAddon: element.qtyOrder!,
               ordadTotalAmount: element.totalPrice!,
+              rentHdrDtl: element.rentModel == null
+                  ? null
+                  : OrderRentalModel(
+                      hour: element.rentModel!.totalHours!,
+                      amount: element.rentModel!.newBuyPrice!,
+                      startDate: element.rentModel!.startDate,
+                      endDate: element.rentModel!.endDate,
+                    ),
             );
           },
         ),

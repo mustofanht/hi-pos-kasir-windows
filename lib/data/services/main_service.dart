@@ -43,6 +43,7 @@ part 'order/order_ticket_service.dart';
 part 'payment/payment_order_service.dart';
 part 'master_data_service.dart';
 part 'reason_void_service.dart';
+part 'rental_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -54,4 +55,5 @@ class MainService {
   final promo = PromoService();
   final masterData = MasterDataService();
   final reasonVoid = ReasonVoidService();
+  final rental = RentalService();
 }

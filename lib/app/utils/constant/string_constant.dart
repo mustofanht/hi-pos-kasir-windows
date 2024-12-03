@@ -84,6 +84,11 @@ class PaymentStatus {
   static String Success = '02';
 }
 
+class ProductRentalType {
+  static String HOUR = 'H';
+  static String DAYS = 'D';
+}
+
 AppStringConstant constant = new AppStringConstant();
 ArgumentsConstant argConstant = new ArgumentsConstant();
 AppRequestContentType contentType = new AppRequestContentType();

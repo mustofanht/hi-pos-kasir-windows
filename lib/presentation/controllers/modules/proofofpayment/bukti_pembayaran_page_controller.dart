@@ -16,6 +16,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -306,6 +307,12 @@ class BuktiPembayaranPageController extends GetxController
                         addOn: AddonEntity(
                           productName: e.prodName,
                           productPrice: e.prodPrice,
+                        ),
+                        rentHdrDtl: OrderRentalModel(
+                          amount: e.prodTtlAmount,
+                          hour: e.hour,
+                          startDate: e.startDate,
+                          endDate: e.endDate,
                         ),
                       ),
                     )

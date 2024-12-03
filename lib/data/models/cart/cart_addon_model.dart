@@ -20,7 +20,7 @@ class CartAddon {
     return {
       "qtyOrder": qtyOrder,
       "totalPrice": totalPrice,
-      "rentModel": rentModel,
+      "rentModel": rentModel != null ? rentModel!.toJson() : {},
       "addon": addon != null ? addon!.toJson() : [],
     };
   }
@@ -29,8 +29,15 @@ class CartAddon {
     try {
       qtyOrder = json['qtyOrder'];
       totalPrice = json['totalPrice'];
-      rentModel = json['rentModel'];
+      // rentModel = json['rentModel'];
 
+      if (json['rentModel'] is Map<Object?, Object?>) {
+        Map<String, dynamic> result =
+            common.convertToMapStringDynamic(json['rentModel']);
+        rentModel = CartRentModel.fromJson(result);
+      } else {
+        rentModel = CartRentModel.fromJson(json['addon']);
+      }
       if (json['addon'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
             common.convertToMapStringDynamic(json['addon']);

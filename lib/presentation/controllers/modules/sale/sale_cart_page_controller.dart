@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
@@ -21,6 +22,8 @@ class SaleCartPageController extends GetxController {
   SaleCartPageController();
   final SalePageController salePageController = Get.find<SalePageController>();
   DisplayUtil displayUtil = DisplayUtil();
+  final _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
 
   var totalOrderAmnt = RxDouble(0);
   var finalTotalOrderAmt = RxDouble(0);
@@ -74,7 +77,7 @@ class SaleCartPageController extends GetxController {
     addonList.add(
       CartAddon(
         qtyOrder: 1,
-        totalPrice: val.productPrice!,
+        totalPrice: val.productPrice ?? 0,
         addon: val,
       ),
     );
@@ -267,27 +270,61 @@ class SaleCartPageController extends GetxController {
     }
   }
 
+  onNextRental(
+    CartRentModel cartRentModel,
+    AddonEntity val,
+    CartAddon? exists,
+  ) async {
+    Get.back();
+
+    var result;
+    val.productPrice = 0;
+
+    if (exists != null) {
+      addonList.remove(exists);
+    }
+
+    result = await _service.rental.getPriceRental(
+      authToken: _authToken,
+      hours: cartRentModel.totalHours!,
+      productId: val.productId!,
+    );
+
+    CartRentModel cartRentModelAdded = cartRentModel;
+
+    result.fold(
+      (l) {
+        logger.safeLog(l);
+      },
+      (r) {
+        logger.safeLog(r.data);
+        if (ProductRentalType.HOUR == val.productRentType) {
+          if (cartRentModelAdded.isExtraTime!) {
+            cartRentModelAdded.extraTimeBuyPrice = r.data;
+          } else {
+            cartRentModelAdded.newBuyPrice = r.data;
+          }
+        } else {}
+        val.productPrice = r.data;
+
+        addAddonRent(
+          val,
+          cartRentModelAdded,
+        );
+        update();
+      },
+    );
+  }
+
   doUpdateRent(CartAddon cartAddOn) async {
     await dialog.selectHourRent(
       entitiy: cartAddOn.addon!,
       detailModel: cartAddOn.rentModel,
-      onNext: (cartRentModel) {
-        cartAddOn.addon?.productPrice = 0;
-
-        CartAddon? exists = addonList.firstWhereOrNull(
-          (e) => e.addon!.productId == cartAddOn.addon?.productId,
-        );
-
-        if (exists != null) {
-          addonList.remove(exists);
-        }
-        addAddonRent(
-          cartAddOn.addon!,
-          cartRentModel,
-        );
-
-        update();
-      },
+      onNext: (cartRentModel) => onNextRental(
+        cartRentModel,
+        cartAddOn.addon!,
+        cartAddOn,
+      ),
     );
   }
 }

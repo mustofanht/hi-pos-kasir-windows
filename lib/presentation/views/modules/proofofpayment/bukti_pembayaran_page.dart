@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
@@ -130,6 +131,73 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
             height: layoutStyle.blockVertical * 5,
           ),
         ],
+      );
+    }
+
+    Widget rentProductCart(TrnDetailOrder val) {
+      return Container(
+        margin: EdgeInsets.symmetric(
+          vertical: layoutStyle.defaultMargin / 10,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      // Text('${e.qtyOrder} X '),
+                      Expanded(
+                        child: Text(
+                          '${val.productName} (${val.startDate != null && val.endDate != null ? '${dateTimeUtil.getFormattedDate(date: val.startDate!, format: dateFormat.hourMinutes)} - ${dateTimeUtil.getFormattedDate(date: val.endDate!, format: dateFormat.hourMinutes)}' : ''})',
+                          softWrap: true,
+                        ),
+                      ),
+                      Text(
+                        'Rp.${common.currencyFormat(val.price ?? 0)}',
+                        style: textStyle.blackText,
+                      ),
+                    ],
+                  ),
+                  // if (false) ...[
+                  //   Row(
+                  //     children: [
+                  //       Expanded(
+                  //         child: Text(
+                  //           'Pembelian Extra Time',
+                  //           softWrap: true,
+                  //           style: textStyle.greyText,
+                  //         ),
+                  //       ),
+                  //       Text(
+                  //         'Rp.${common.currencyFormat(200000)}',
+                  //         style: textStyle.blackText,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ] else ...[
+                  //   Row(
+                  //     children: [
+                  //       Expanded(
+                  //         child: Text(
+                  //           'Pembelian Baru ',
+                  //           softWrap: true,
+                  //           style: textStyle.greyText,
+                  //         ),
+                  //       ),
+                  //       Text(
+                  //         'Rp.${common.currencyFormat(100000)}',
+                  //         style: textStyle.blackText,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ],
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -364,76 +432,78 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                               MainAxisAlignment.start,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          children: model.detailOrderModels ==
-                                                  null
-                                              ? []
-                                              : model.detailOrderModels!
-                                                  .map(
-                                                    (e) => Padding(
-                                                      padding: EdgeInsets.symmetric(
-                                                          vertical: layoutStyle
-                                                                  .defaultMargin /
-                                                              5),
-                                                      child: Row(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .start,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                e.productName ??
-                                                                    '',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: fontSize
-                                                                      .subtitle,
-                                                                  fontWeight:
-                                                                      fontWeight
-                                                                          .bold,
+                                          children:
+                                              model.detailOrderModels == null
+                                                  ? []
+                                                  : model.detailOrderModels!
+                                                      .map(
+                                                        (e) => e.hour != null
+                                                            ? rentProductCart(e)
+                                                            : Padding(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        vertical:
+                                                                            layoutStyle.defaultMargin /
+                                                                                5),
+                                                                child: Row(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Column(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .start,
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          e.productName ??
+                                                                              '',
+                                                                          style:
+                                                                              TextStyle(
+                                                                            fontSize:
+                                                                                fontSize.subtitle,
+                                                                            fontWeight:
+                                                                                fontWeight.bold,
+                                                                          ),
+                                                                        ),
+                                                                        Text(
+                                                                          'X ${e.quantity ?? 0}',
+                                                                          style:
+                                                                              TextStyle(
+                                                                            fontSize:
+                                                                                fontSize.subtitle,
+                                                                            fontWeight:
+                                                                                fontWeight.bold,
+                                                                          ),
+                                                                        ),
+                                                                        // Text(
+                                                                        //   'Not Set Yet',
+                                                                        //   style: TextStyle(
+                                                                        //     fontSize:
+                                                                        //         fontSize.body,
+                                                                        //   ),
+                                                                        // ),
+                                                                      ],
+                                                                    ),
+                                                                    Text(
+                                                                      'Rp.${common.currencyFormat(e.price ?? 0)}',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            fontSize.body,
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                               ),
-                                                              Text(
-                                                                'X ${e.quantity ?? 0}',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: fontSize
-                                                                      .subtitle,
-                                                                  fontWeight:
-                                                                      fontWeight
-                                                                          .bold,
-                                                                ),
-                                                              ),
-                                                              // Text(
-                                                              //   'Not Set Yet',
-                                                              //   style: TextStyle(
-                                                              //     fontSize:
-                                                              //         fontSize.body,
-                                                              //   ),
-                                                              // ),
-                                                            ],
-                                                          ),
-                                                          Text(
-                                                            'Rp.${common.currencyFormat(e.price ?? 0)}',
-                                                            style: TextStyle(
-                                                              fontSize:
-                                                                  fontSize.body,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )
-                                                  .toList(),
+                                                      )
+                                                      .toList(),
                                         ),
                                         Column(
                                           mainAxisAlignment:

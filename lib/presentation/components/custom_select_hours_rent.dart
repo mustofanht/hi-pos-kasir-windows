@@ -127,18 +127,15 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                   horizontal: layoutStyle.defaultMargin,
                 ),
                 onPressed: () {
-                  double rentPrice = 1000000;
                   CartRentModel cartRentModel = CartRentModel(
-                    newBuyPrice: rentPrice,
-                    // extraTimeBuyPrice: rentPrice,
                     startDate: controller.startTime.value,
                     endDate: controller.endTime.value,
                     totalHours: controller.totalHoursController.text.isNotEmpty
                         ? int.parse(controller.totalHoursController.text)
                         : 0,
+                    isExtraTime: controller.isExtraTime.value,
                   );
                   widget.onNext(cartRentModel);
-                  Get.back();
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
@@ -203,7 +200,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                           width: layoutStyle.defaultMargin / 2,
                         ),
                         Text(
-                          'Minimal sewa 3 jam',
+                          'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! ~/ 60 : 0)} Jam',
                           style: textStyle.blackText.copyWith(
                               // fontSize: fontSize.small,
                               ),
@@ -285,7 +282,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                     height: layoutStyle.defaultMargin,
                   ),
                   Text(
-                    'Durasi ewa kamu : ',
+                    'Durasi sewa kamu : ',
                     style: textStyle.blackText.copyWith(
                       fontWeight: fontWeight.bold,
                     ),

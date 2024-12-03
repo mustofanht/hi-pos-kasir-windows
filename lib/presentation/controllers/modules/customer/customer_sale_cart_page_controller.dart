@@ -43,6 +43,25 @@ class CustomerSaleCartPageController extends GetxController {
     // TODO: implement onInit
     super.onInit();
     doPrepared();
+
+    // dummy test product list
+    // addonList.add(CartAddon(
+    //   qtyOrder: 1,
+    //   addon: AddonEntity(
+    //     minRentPrd: 1,
+    //     productId: 1,
+    //     productLoc: 1,
+    //     productLocName: 'Loc',
+    //     productName: 'Gabezo',
+    //     productType: 'S',
+    //   ),
+    //   rentModel: CartRentModel(
+    //     startDate: DateTime.now(),
+    //     endDate: DateTime.now().add(const Duration(hours: 5)),
+    //     newBuyPrice: 1000000,
+    //     totalHours: 5,
+    //   ),
+    // ));
   }
 
   doPrepared() async {
