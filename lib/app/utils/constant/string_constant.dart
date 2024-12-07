@@ -85,7 +85,8 @@ class PaymentStatus {
 }
 
 class ProductRentalType {
-  static String HOUR = 'H';
+  static String SALE = 'J';
+  static String HOURS = 'H';
   static String DAYS = 'D';
 }
 

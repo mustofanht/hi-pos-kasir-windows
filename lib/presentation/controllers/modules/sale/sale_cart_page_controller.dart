@@ -298,7 +298,7 @@ class SaleCartPageController extends GetxController {
       },
       (r) {
         logger.safeLog(r.data);
-        if (ProductRentalType.HOUR == val.productRentType) {
+        if (ProductRentalType.HOURS == val.productType) {
           if (cartRentModelAdded.isExtraTime!) {
             cartRentModelAdded.extraTimeBuyPrice = r.data;
           } else {

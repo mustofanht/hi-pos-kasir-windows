@@ -133,7 +133,7 @@ class SaleAddonPageController extends GetxController {
       },
       (r) {
         logger.safeLog(r.data);
-        if (ProductRentalType.HOUR == val.productRentType) {
+        if (ProductRentalType.HOURS == val.productType) {
           if (cartRentModelAdded.isExtraTime!) {
             cartRentModelAdded.extraTimeBuyPrice = r.data;
           } else {
@@ -161,7 +161,7 @@ class SaleAddonPageController extends GetxController {
       saleCartPageController = Get.put(SaleCartPageController());
     }
 
-    if (selectedTypeItemList.value.id == 'S' && val.productRentType == ProductRentalType.HOUR) {
+    if (selectedTypeItemList.value.id == 'S' && val.productType == ProductRentalType.HOURS) {
       CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
         (e) => e.addon!.productId == val.productId,
       );
