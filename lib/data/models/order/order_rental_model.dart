@@ -10,8 +10,8 @@ class OrderRentalModel {
     return OrderRentalModel(
       hour: json['hour'],
       amount: json['amount'],
-      startDate: DateTime.parse(json['startDate']),
-      endDate: DateTime.parse(json['endDate']),
+      startDate: DateTime.parse(json['startDate']).toLocal(),
+      endDate: DateTime.parse(json['endDate']).toLocal(),
     );
   }
 

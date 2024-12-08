@@ -24,8 +24,8 @@ class TrnDetailOrder {
       price: json['price'] != null ? double.parse(json['price']) : null,
       total: json['total'] != null ? double.parse(json['total']) : null,
       hour: json['hour'] != null ? (json['hour'] as num).toInt() : null,
-      startDate: json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
+      startDate: json['startDate'] != null ? DateTime.parse(json['startDate']).toLocal() : null,
+      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']).toLocal() : null,
     );
   }
 

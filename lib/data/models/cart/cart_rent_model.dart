@@ -18,8 +18,8 @@ class CartRentModel {
   });
 
   CartRentModel.fromJson(Map<String, dynamic> json) {
-    startDate = json['startDate'] != null ? DateTime.parse(json['startDate']) : null;
-    endDate = json['endDate'] != null ? DateTime.parse(json['endDate']) : null;
+    startDate = json['startDate'] != null ? DateTime.parse(json['startDate']).toLocal() : null;
+    endDate = json['endDate'] != null ? DateTime.parse(json['endDate']).toLocal() : null;
     newBuyPrice = json['newBuyPrice'] != null ? (json['newBuyPrice'] as num).toDouble() : null;
     extraTimeBuyPrice = json['extraTimeBuyPrice'] != null ? (json['extraTimeBuyPrice'] as num).toDouble() : null;
     totalHours = json['totalHours'];
