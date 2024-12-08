@@ -86,8 +86,10 @@ class PaymentStatus {
 
 class ProductRentalType {
   static String SALE = 'J';
-  static String HOURS = 'H';
-  static String DAYS = 'D';
+  static String HOURS = 'Sewa Perjam';
+  static String DAYS = 'Sewa Harian';
+  // static String HOURS = 'H';
+  // static String DAYS = 'D';
 }
 
 AppStringConstant constant = new AppStringConstant();

@@ -161,7 +161,8 @@ class SaleAddonPageController extends GetxController {
       saleCartPageController = Get.put(SaleCartPageController());
     }
 
-    if (selectedTypeItemList.value.id == 'S' && val.productType == ProductRentalType.HOURS) {
+    if (selectedTypeItemList.value.id == 'S' &&
+        val.productType == ProductRentalType.HOURS) {
       CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
         (e) => e.addon!.productId == val.productId,
       );
