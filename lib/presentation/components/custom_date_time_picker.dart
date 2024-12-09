@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 
 class CustomDateTimePicker extends StatefulWidget {
@@ -22,6 +23,7 @@ class CustomDateTimePicker extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final bool enable;
   final bool useTimePicker;
+  final DateTime? minDateTime;
 
   const CustomDateTimePicker({
     Key? key,
@@ -39,6 +41,7 @@ class CustomDateTimePicker extends StatefulWidget {
     this.margin,
     this.enable = true,
     this.useTimePicker = false,
+    this.minDateTime,
   }) : super(key: key);
 
   @override
@@ -165,16 +168,29 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
         ) ??
         const TimeOfDay(hour: 0, minute: 0);
 
+    // Buat DateTime berdasarkan waktu yang dipilih
+    final selectedDateTime = DateTime(
+      newDate.year,
+      newDate.month,
+      newDate.day,
+      newTime.hour,
+      newTime.minute,
+    );
+
+    // Validasi minDate
+    if (widget.minDateTime != null) {
+      if (selectedDateTime.isBefore(widget.minDateTime!)) {
+        // Tampilkan pesan error jika tidak valid
+        alert.warning('Warning', 'Waktu yang dipilih harus setelah ${dateTimeUtil.dateFormat(widget.minDateTime!, 'hh:mm:ss')}');
+        return;
+      }
+    }
+
     setState(() {
       _time = newTime;
-      date = DateTime(
-        newDate.year,
-        newDate.month,
-        newDate.day,
-        newTime.hour,
-        newTime.minute,
-      );
+      date = selectedDateTime;
     });
+
     widget.onDateChanged!(date);
   }
 

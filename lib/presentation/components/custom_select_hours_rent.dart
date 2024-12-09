@@ -317,6 +317,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                   controller.startTime.value = val;
                                   controller.setEndDateTime();
                                 },
+                                minDateTime: DateTime.now().toLocal(),
                               ),
                             ),
                           ],
