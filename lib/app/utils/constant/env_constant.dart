@@ -1,6 +1,7 @@
 // ignore_for_file: dead_code
 
 enum Environment {
+  local,
   dev,
   production,
   chatbot,
@@ -9,6 +10,9 @@ enum Environment {
 extension EnvironmentExt on Environment {
   String get url {
     switch (this) {
+      case Environment.local:
+        return "http://192.168.18.195:8080/syspos-service/api/v1";
+        break;
       case Environment.dev:
         return "http://194.238.23.222:8080/syspos-service/api/v1";
         break;

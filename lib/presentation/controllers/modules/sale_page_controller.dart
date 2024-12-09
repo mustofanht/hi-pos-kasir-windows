@@ -295,9 +295,10 @@ class SalePageController extends GetxController
                   ? null
                   : OrderRentalModel(
                       hour: element.rentModel!.totalHours!,
-                      amount: element.rentModel!.newBuyPrice!,
+                      amount: element.rentModel!.newBuyPrice,
                       startDate: element.rentModel!.startDate,
                       endDate: element.rentModel!.endDate,
+                      orderNumberExtra: element.rentModel!.transactionExtra?.orderNumber,
                     ),
             );
           },

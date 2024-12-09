@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
+import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/controller/custom_select_hours_rent_controller.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
@@ -16,10 +17,12 @@ class CustomSelectHoursRent extends StatefulWidget {
   final Function(CartRentModel cartRentModel) onNext;
   final AddonEntity entitiy;
   final CartRentModel? detailModel;
+  final AuthToken authToken;
   const CustomSelectHoursRent(
       {super.key,
       required this.onNext,
       required this.entitiy,
+      required this.authToken,
       this.detailModel});
 
   @override
@@ -30,7 +33,10 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(CustomSelectHoursRentController(
-        entitiy: widget.entitiy, detailModel: widget.detailModel));
+      entitiy: widget.entitiy,
+      detailModel: widget.detailModel,
+      authToken: widget.authToken,
+    ));
 
     List<Widget> headerSection() {
       return [
@@ -134,6 +140,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                         ? int.parse(controller.totalHoursController.text)
                         : 0,
                     isExtraTime: controller.isExtraTime.value,
+                    transactionExtra: controller.selectedTransactionExtraTime.value
                   );
                   widget.onNext(cartRentModel);
                 },
@@ -200,7 +207,8 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                           width: layoutStyle.defaultMargin / 2,
                         ),
                         Text(
-                          'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! ~/ 60 : 0)} Jam',
+                          // 'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! ~/ 60 : 0)} Jam',
+                          'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! : 0)} Jam',
                           style: textStyle.blackText.copyWith(
                               // fontSize: fontSize.small,
                               ),

@@ -5,10 +5,14 @@ class RentalService {
     required AuthToken authToken,
     required int hours,
     required int productId,
+    String? orderNoExtra,
   }) async {
     var path = "mst_product_time/range?";
     path += "productId=$productId&";
-    path += "hour=$hours";
+    path += "hour=$hours&";
+    if (orderNoExtra != null) {
+      path += "orderNoExtra=$orderNoExtra";
+    }
 
     final uri = source.baseUri(
       path: path,

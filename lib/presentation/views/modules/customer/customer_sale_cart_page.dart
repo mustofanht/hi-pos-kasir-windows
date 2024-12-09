@@ -275,22 +275,22 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                       ),
                     ],
                   ),
-                if (e.rentModel?.extraTimeBuyPrice != null)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Pembelian Extra Time',
-                          softWrap: true,
-                          style: textStyle.greyText,
-                        ),
-                      ),
-                      Text(
-                        'Rp.${common.currencyFormat(e.rentModel!.extraTimeBuyPrice!)}',
-                        style: textStyle.blackText,
-                      ),
-                    ],
-                  ),
+                // if (e.rentModel?.extraTimeBuyPrice != null)
+                //   Row(
+                //     children: [
+                //       Expanded(
+                //         child: Text(
+                //           'Pembelian Extra Time',
+                //           softWrap: true,
+                //           style: textStyle.greyText,
+                //         ),
+                //       ),
+                //       Text(
+                //         'Rp.${common.currencyFormat(e.rentModel!.extraTimeBuyPrice!)}',
+                //         style: textStyle.blackText,
+                //       ),
+                //     ],
+                //   ),
               ],
             ),
           ),

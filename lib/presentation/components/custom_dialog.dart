@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
+import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
@@ -1906,6 +1907,7 @@ class CustomDialog {
   selectHourRent({
     required Function(CartRentModel cartRentModel) onNext,
     required AddonEntity entitiy,
+    required AuthToken authToken,
     CartRentModel? detailModel,
   }) async {
     Get.dialog(
@@ -1924,6 +1926,7 @@ class CustomDialog {
             onNext: onNext,
             entitiy: entitiy,
             detailModel: detailModel,
+            authToken: authToken,
           ),
         ),
       ),
@@ -1933,6 +1936,8 @@ class CustomDialog {
 
   selectListTransaction({
     required Function(TransactionEntity selected) onNext,
+    required AddonEntity entitiy,
+    required AuthToken authToken,
   }) async {
     Get.dialog(
       AlertDialog(
@@ -1948,6 +1953,8 @@ class CustomDialog {
           ),
           child: CustomListTransaction(
             onNext: onNext,
+            entitiy: entitiy,
+            authToken: authToken,
           ),
         ),
       ),

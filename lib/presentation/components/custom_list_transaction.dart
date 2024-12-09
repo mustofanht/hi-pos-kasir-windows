@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/controller/custom_list_transaction_controller.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_transaction.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
 class CustomListTransaction extends StatefulWidget {
   final Function(TransactionEntity selected) onNext;
-  const CustomListTransaction({super.key, required this.onNext});
+  final AddonEntity entitiy;
+  final AuthToken authToken;
+  const CustomListTransaction({
+    super.key,
+    required this.onNext,
+    required this.entitiy,
+    required this.authToken,
+  });
 
   @override
   State<CustomListTransaction> createState() => _CustomListTransactionState();
@@ -19,7 +29,10 @@ class CustomListTransaction extends StatefulWidget {
 class _CustomListTransactionState extends State<CustomListTransaction> {
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CustomListTransactionController());
+    final controller = Get.put(CustomListTransactionController(
+      entitiy: widget.entitiy,
+      authToken: widget.authToken,
+    ));
 
     List<Widget> headerSection() {
       return [
@@ -87,6 +100,9 @@ class _CustomListTransactionState extends State<CustomListTransaction> {
               color: colorStyle.grey,
             ),
           ),
+          onChanged: (val) {
+            controller.doPrepered(page: 0, search: val);
+          },
         ),
         Container(
           width: layoutStyle.screenWidth,
@@ -155,7 +171,7 @@ class _CustomListTransactionState extends State<CustomListTransaction> {
                 onPressed: () {
                   if (controller.selectedTransaction.value != null) {
                     widget.onNext(controller.selectedTransaction.value!);
-                  }else{
+                  } else {
                     alert.warning('Warning', 'Please selected trnsation');
                   }
                 },
@@ -191,22 +207,27 @@ class _CustomListTransactionState extends State<CustomListTransaction> {
       children: [
         ...headerSection(),
         Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(layoutStyle.defaultMargin),
-              child: Obx(
-                () => Column(
-                  children: controller.listData
-                      .map(
-                        (e) => CustomCardTransaction(
-                          data: e,
-                          onSelect: controller.doSelected,
-                          selectedData: controller.selectedTransaction.value,
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
+          child: Padding(
+            padding: EdgeInsets.all(layoutStyle.defaultMargin),
+            child: Obx(
+              () => controller.isLoading.value
+                  ? loading.simpleLoading()
+                  : SingleChildScrollView(
+                      controller: controller.scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: controller.listData
+                            .map(
+                              (e) => CustomCardTransaction(
+                                data: e,
+                                onSelect: controller.doSelected,
+                                selectedData:
+                                    controller.selectedTransaction.value,
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
             ),
           ),
         ),

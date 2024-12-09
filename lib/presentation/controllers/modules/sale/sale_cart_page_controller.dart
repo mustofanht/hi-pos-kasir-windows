@@ -288,6 +288,7 @@ class SaleCartPageController extends GetxController {
       authToken: _authToken,
       hours: cartRentModel.totalHours!,
       productId: val.productId!,
+      orderNoExtra: cartRentModel.transactionExtra?.orderNumber,
     );
 
     CartRentModel cartRentModelAdded = cartRentModel;
@@ -299,11 +300,12 @@ class SaleCartPageController extends GetxController {
       (r) {
         logger.safeLog(r.data);
         if (ProductRentalType.HOURS == val.productType) {
-          if (cartRentModelAdded.isExtraTime!) {
-            cartRentModelAdded.extraTimeBuyPrice = r.data;
-          } else {
-            cartRentModelAdded.newBuyPrice = r.data;
-          }
+          // if (cartRentModelAdded.isExtraTime!) {
+          //   cartRentModelAdded.extraTimeBuyPrice = r.data;
+          // } else {
+          //   cartRentModelAdded.newBuyPrice = r.data;
+          // }
+          cartRentModelAdded.newBuyPrice = r.data;
         } else {}
         val.productPrice = r.data;
 
@@ -318,6 +320,7 @@ class SaleCartPageController extends GetxController {
 
   doUpdateRent(CartAddon cartAddOn) async {
     await dialog.selectHourRent(
+      authToken: _authToken,
       entitiy: cartAddOn.addon!,
       detailModel: cartAddOn.rentModel,
       onNext: (cartRentModel) => onNextRental(

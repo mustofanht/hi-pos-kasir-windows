@@ -1,31 +1,43 @@
 class TransactionEntity {
-  int? id;
-  String? name;
+  String? orderNumber;
   String? location;
-  String? duration;
+  String? product;
+  DateTime? startDate;
+  DateTime? endDate;
+  int? totalHours;
 
   TransactionEntity({
-    this.id,
-    this.name,
+    this.orderNumber,
     this.location,
-    this.duration,
+    this.product,
+    this.startDate,
+    this.endDate,
+    this.totalHours,
   });
 
   factory TransactionEntity.fromJson(Map<String, dynamic> json) {
     return TransactionEntity(
-      id: json['id'],
-      name: json['name'],
+      orderNumber: json['orderNumber'],
       location: json['location'],
-      duration: json['duration'],
+      product: json['product'],
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate']).toLocal()
+          : null,
+      endDate: json['endDate'] != null
+          ? DateTime.parse(json['endDate']).toLocal()
+          : null,
+      totalHours: json['totalHours'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'name': name,
+      'orderNumber': orderNumber,
       'location': location,
-      'duration': duration,
+      'product': product,
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
+      'totalHours': totalHours,
     };
   }
 }

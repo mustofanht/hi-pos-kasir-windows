@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 
@@ -42,7 +44,7 @@ class CustomCardTransaction extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data?.name ?? '',
+                    data?.orderNumber ?? '',
                     style: textStyle.blackText.copyWith(
                       fontSize: fontSize.header,
                       fontWeight: fontWeight.bold,
@@ -55,7 +57,7 @@ class CustomCardTransaction extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Product : ${data?.location}',
+                    'Product : ${data?.product}',
                     style: textStyle.blackText.copyWith(
                       color: colorStyle.grey,
                     ),
@@ -64,14 +66,14 @@ class CustomCardTransaction extends StatelessWidget {
                     height: layoutStyle.defaultMargin,
                   ),
                   Text(
-                    'Durasi Sewa : 3 Jam, 12:00 - 15:00',
+                    'Durasi Sewa : ${data?.totalHours} Jam, ${dateTimeUtil.getFormattedDate(date: data!.startDate!, format: dateFormat.hourMinutes)} - ${dateTimeUtil.getFormattedDate(date: data!.endDate!, format: dateFormat.hourMinutes)}',
                     style: textStyle.blackText,
                   ),
                 ],
               ),
             ),
             if (onSelect != null)
-              selectedData?.id == data?.id
+              selectedData?.orderNumber == data?.orderNumber
                   ? Icon(
                       Icons.check,
                       color: colorStyle.primary,

@@ -386,7 +386,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                         ),
                       ),
                       Text(
-                        'Rp.${common.currencyFormat(e.rentModel!.extraTimeBuyPrice!)}',
+                        'Rp.${common.currencyFormat(e.rentModel!.newBuyPrice!)}',
                         style: textStyle.blackText,
                       ),
                     ],
