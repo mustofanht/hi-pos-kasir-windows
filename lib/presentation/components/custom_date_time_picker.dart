@@ -181,7 +181,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
     if (widget.minDateTime != null) {
       if (selectedDateTime.isBefore(widget.minDateTime!)) {
         // Tampilkan pesan error jika tidak valid
-        alert.warning('Warning', 'Waktu yang dipilih harus setelah ${dateTimeUtil.dateFormat(widget.minDateTime!, 'hh:mm:ss')}');
+        alert.warning('Warning',
+            'Waktu yang dipilih harus setelah ${dateTimeUtil.dateFormat(widget.minDateTime!, 'hh:mm:ss')}');
         return;
       }
     }
@@ -250,7 +251,16 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                               : widget.type == DateTimePickerType.OnlyTime
                                   ? (widget.newDate == null
                                       ? ''
-                                      : dateTimeUtil.onlyTime(date))
+                                      : widget.dateFormat != null
+                                          ? dateTimeUtil.getFormattedDate(
+                                              date: date,
+                                              format: DateFormat(
+                                                widget.dateFormat ??
+                                                    "dd-MM-yyyy",
+                                                Get.locale.toString(),
+                                              ),
+                                            )
+                                          : dateTimeUtil.onlyTime(date))
                                   : widget.dateFormat != null
                                       ? dateTimeUtil.getFormattedDate(
                                           date: date,

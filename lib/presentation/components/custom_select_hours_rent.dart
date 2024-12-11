@@ -134,14 +134,15 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                 ),
                 onPressed: () {
                   CartRentModel cartRentModel = CartRentModel(
-                    startDate: controller.startTime.value,
-                    endDate: controller.endTime.value,
-                    totalHours: controller.totalHoursController.text.isNotEmpty
-                        ? int.parse(controller.totalHoursController.text)
-                        : 0,
-                    isExtraTime: controller.isExtraTime.value,
-                    transactionExtra: controller.selectedTransactionExtraTime.value
-                  );
+                      startDate: controller.startTime.value,
+                      endDate: controller.endTime.value,
+                      totalHours:
+                          controller.totalHoursController.text.isNotEmpty
+                              ? int.parse(controller.totalHoursController.text)
+                              : 0,
+                      isExtraTime: controller.isExtraTime.value,
+                      transactionExtra:
+                          controller.selectedTransactionExtraTime.value);
                   widget.onNext(cartRentModel);
                 },
                 style: ButtonStyle(
@@ -313,6 +314,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                 margin: EdgeInsets.zero,
                                 firstState: false,
                                 newDate: controller.startTime.value,
+                                dateFormat: 'HH:mm',
                                 type: DateTimePickerType.OnlyTime,
                                 borderRadius: BorderRadius.circular(
                                   layoutStyle.defaultMargin,
@@ -346,6 +348,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                 margin: EdgeInsets.zero,
                                 firstState: false,
                                 newDate: controller.endTime.value,
+                                dateFormat: 'HH:mm',
                                 type: DateTimePickerType.OnlyTime,
                                 borderRadius: BorderRadius.circular(
                                   layoutStyle.defaultMargin,
