@@ -35,6 +35,7 @@ class CustomSelectHoursRentController extends GetxController {
       0,
     ),
   );
+  final minStartTime = Rxn<DateTime>(null);
   final endTime = Rxn<DateTime>(null);
   final minHours = RxInt(0);
 
@@ -44,7 +45,7 @@ class CustomSelectHoursRentController extends GetxController {
     super.onInit();
     totalHoursController.text = '0';
     logger.safeLog('PRODUCT ENTITY : ${entitiy.toJson()}');
-    
+
     await getLastDateTransactionProduct();
 
     if (entitiy.minRentPrd != null) {
@@ -57,8 +58,12 @@ class CustomSelectHoursRentController extends GetxController {
     if (detailModel != null) {
       isExtraTime.value = detailModel!.isExtraTime!;
       selectedTransactionExtraTime.value = detailModel?.transactionExtra;
+      logger.safeLog(
+          'selectedTransactionExtraTime.value?.startDate : ${selectedTransactionExtraTime.value?.startDate}');
+      logger.safeLog('detailModel?.startDate : ${detailModel?.startDate}');
       if (selectedTransactionExtraTime.value?.startDate != null) {
         startTime.value = selectedTransactionExtraTime.value?.startDate!;
+        minHours.value = 0;
       } else {
         startTime.value = detailModel?.startDate;
       }
@@ -90,7 +95,12 @@ class CustomSelectHoursRentController extends GetxController {
         (r) {
           logger.safeLog(r.data);
           if (r.data != null) {
-            startTime.value = r.data;
+            DateTime lastTransactionDate = r.data;
+            if (lastTransactionDate.isAfter(DateTime.now())) {
+              logger.safeLog('LAST TRANSACTION DATE : $lastTransactionDate');
+              startTime.value = r.data;
+            }
+            minStartTime.value = lastTransactionDate;
           }
         },
       );

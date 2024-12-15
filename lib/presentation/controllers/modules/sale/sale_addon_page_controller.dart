@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
@@ -110,6 +111,11 @@ class SaleAddonPageController extends GetxController {
     AddonEntity val,
     CartAddon? exists,
   ) async {
+    if (cartRentModel.totalHours == 0) {
+      alert.error('Error', 'Total Jam tidak boleh kosong!');
+      return;
+    }
+    
     Get.back();
 
     var result;

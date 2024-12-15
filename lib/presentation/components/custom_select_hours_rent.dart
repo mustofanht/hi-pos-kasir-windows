@@ -8,6 +8,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/controller/custom_select_hours_rent_controller.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_transaction.dart';
 import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.dart';
@@ -134,16 +135,27 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                 ),
                 onPressed: () {
                   CartRentModel cartRentModel = CartRentModel(
-                      startDate: controller.startTime.value,
-                      endDate: controller.endTime.value,
-                      totalHours:
-                          controller.totalHoursController.text.isNotEmpty
-                              ? int.parse(controller.totalHoursController.text)
-                              : 0,
-                      isExtraTime: controller.isExtraTime.value,
-                      transactionExtra:
-                          controller.selectedTransactionExtraTime.value);
-                  widget.onNext(cartRentModel);
+                    startDate: controller.startTime.value,
+                    endDate: controller.endTime.value,
+                    totalHours: controller.totalHoursController.text.isNotEmpty
+                        ? int.parse(controller.totalHoursController.text)
+                        : 0,
+                    isExtraTime: controller.isExtraTime.value,
+                    transactionExtra:
+                        controller.selectedTransactionExtraTime.value,
+                  );
+                  if (controller.isExtraTime.value) {
+                    if (controller.selectedTransactionExtraTime.value == null) {
+                      alert.error(
+                        'Error',
+                        'Silahkan pilih trnsaksi sebelumnya untuk melakukan Extra Time',
+                      );
+                    } else {
+                      widget.onNext(cartRentModel);
+                    }
+                  } else {
+                    widget.onNext(cartRentModel);
+                  }
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
