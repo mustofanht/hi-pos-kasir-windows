@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_transaction.dart';
 import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
 class CustomSelectHoursRent extends StatefulWidget {
@@ -185,298 +186,307 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
       );
     }
 
-    return Column(
-      children: [
-        ...headerSection(),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(
-              layoutStyle.defaultMargin,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: colorStyle.lightGrey,
-                      borderRadius: BorderRadius.circular(
-                        layoutStyle.defaultMargin,
-                      ),
+    return Obx(
+      () => Column(
+        children: [
+          ...headerSection(),
+          controller.isLoading.value
+              ? Expanded(
+                  child: loading.simpleLoading(),
+                )
+              : Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(
+                      layoutStyle.defaultMargin,
                     ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin / 5,
-                      vertical: layoutStyle.defaultMargin / 2,
-                    ),
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          assetsConstant.icInfo,
-                          color: colorStyle.blue,
-                          width: layoutStyle.blockHorizontal * 3,
-                          height: layoutStyle.blockVertical * 3,
-                        ),
-                        SizedBox(
-                          width: layoutStyle.defaultMargin / 2,
-                        ),
-                        Text(
-                          // 'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! ~/ 60 : 0)} Jam',
-                          'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! : 0)} Jam',
-                          style: textStyle.blackText.copyWith(
-                              // fontSize: fontSize.small,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Obx(
-                    () => Container(
-                      margin: EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin,
-                      ),
-                      child: Row(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                controller.doCheckIsExtraTime();
-                              },
+                          Container(
+                            decoration: BoxDecoration(
+                              color: colorStyle.lightGrey,
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin,
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 5,
+                              vertical: layoutStyle.defaultMargin / 2,
+                            ),
+                            child: Row(
+                              children: [
+                                Image.asset(
+                                  assetsConstant.icInfo,
+                                  color: colorStyle.blue,
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 3,
+                                ),
+                                SizedBox(
+                                  width: layoutStyle.defaultMargin / 2,
+                                ),
+                                Text(
+                                  // 'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! ~/ 60 : 0)} Jam',
+                                  'Minimal sewa ${(widget.entitiy.minRentPrd != null ? widget.entitiy.minRentPrd! : 0)} Jam',
+                                  style: textStyle.blackText.copyWith(
+                                      // fontSize: fontSize.small,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Obx(
+                            () => Container(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin,
+                              ),
                               child: Row(
                                 children: [
-                                  Checkbox(
-                                    value: controller.isExtraTime.value,
-                                    onChanged: (v) {
-                                      controller.doCheckIsExtraTime();
-                                    },
-                                    activeColor: colorStyle.blue,
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        controller.doCheckIsExtraTime();
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Checkbox(
+                                            value: controller.isExtraTime.value,
+                                            onChanged: (v) {
+                                              controller.doCheckIsExtraTime();
+                                            },
+                                            activeColor: colorStyle.blue,
+                                          ),
+                                          Text(
+                                            'Extra Time',
+                                            style: textStyle.blackText,
+                                          )
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                  Text(
-                                    'Extra Time',
-                                    style: textStyle.blackText,
-                                  )
+                                  GestureDetector(
+                                    onTap: () {
+                                      controller.doSelectTransactionBefore();
+                                    },
+                                    child: Text(
+                                      'Transaksi Sebelumnya',
+                                      style: (controller.isExtraTime.value
+                                              ? textStyle.blueText
+                                              : textStyle.greyText)
+                                          .copyWith(
+                                        fontWeight: fontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              controller.doSelectTransactionBefore();
-                            },
-                            child: Text(
-                              'Transaksi Sebelumnya',
-                              style: (controller.isExtraTime.value
-                                      ? textStyle.blueText
-                                      : textStyle.greyText)
-                                  .copyWith(
-                                fontWeight: fontWeight.bold,
+                          Obx(
+                            () =>
+                                controller.selectedTransactionExtraTime.value !=
+                                        null
+                                    ? Column(
+                                        children: [
+                                          CustomCardTransaction(
+                                            data: controller
+                                                .selectedTransactionExtraTime
+                                                .value,
+                                          ),
+                                        ],
+                                      )
+                                    : Container(),
+                          ),
+                          Container(
+                            width: layoutStyle.screenWidth,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: colorStyle.lightGrey,
+                                  width: 1,
+                                ),
                               ),
                             ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                          Text(
+                            'Durasi sewa kamu : ',
+                            style: textStyle.blackText.copyWith(
+                              fontWeight: fontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Start Time:',
+                                      style: textStyle.blackText,
+                                    ),
+                                    Obx(
+                                      () => CustomDateTimePicker(
+                                        margin: EdgeInsets.zero,
+                                        firstState: false,
+                                        newDate: controller.startTime.value,
+                                        dateFormat: 'HH:mm',
+                                        type: DateTimePickerType.OnlyTime,
+                                        borderRadius: BorderRadius.circular(
+                                          layoutStyle.defaultMargin,
+                                        ),
+                                        border: Border.all(
+                                          color: colorStyle.lightGrey,
+                                          width: 1,
+                                        ),
+                                        onDateChanged: (val) {
+                                          controller.startTime.value = val;
+                                          controller.setEndDateTime();
+                                        },
+                                        minDateTime: DateTime.now().toLocal(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'End Time:',
+                                      style: textStyle.blackText,
+                                    ),
+                                    Obx(() {
+                                      logger.safeLog(
+                                          'END TIMEEE : ${controller.endTime.value}');
+                                      return CustomDateTimePicker(
+                                        margin: EdgeInsets.zero,
+                                        firstState: false,
+                                        newDate: controller.endTime.value,
+                                        dateFormat: 'HH:mm',
+                                        type: DateTimePickerType.OnlyTime,
+                                        borderRadius: BorderRadius.circular(
+                                          layoutStyle.defaultMargin,
+                                        ),
+                                        border: Border.all(
+                                          color: colorStyle.lightGrey,
+                                          width: 1,
+                                        ),
+                                        enable: false,
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                          Text(
+                            'Jumlah Jam : ',
+                            style: textStyle.blackText.copyWith(
+                              fontWeight: fontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin,
+                          ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: controller.doMinHours,
+                                child: Container(
+                                  width: layoutStyle.blockVertical * 6.5,
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  padding: EdgeInsets.all(
+                                      layoutStyle.defaultMargin / 2),
+                                  decoration: BoxDecoration(
+                                    color: colorStyle.black,
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: colorStyle.white,
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: Icon(
+                                      Icons.remove,
+                                      color: colorStyle.black,
+                                      size: fontSize.body,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: CustomTextBox(
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin,
+                                    vertical: layoutStyle.defaultMargin / 4,
+                                  ),
+                                  obscureText: false,
+                                  border: Border.all(
+                                    color: colorStyle.black,
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  controller: controller.totalHoursController,
+                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                    hintStyle: textStyle.greyText,
+                                    border: InputBorder.none,
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  isDisabled: true,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: controller.doAddHours,
+                                child: Container(
+                                  width: layoutStyle.blockVertical * 6.5,
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  padding: EdgeInsets.all(
+                                      layoutStyle.defaultMargin / 2),
+                                  decoration: BoxDecoration(
+                                    color: colorStyle.black,
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: colorStyle.white,
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: colorStyle.black,
+                                      size: fontSize.body,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Obx(
-                    () => controller.selectedTransactionExtraTime.value != null
-                        ? Column(
-                            children: [
-                              CustomCardTransaction(
-                                data: controller
-                                    .selectedTransactionExtraTime.value,
-                              ),
-                            ],
-                          )
-                        : Container(),
-                  ),
-                  Container(
-                    width: layoutStyle.screenWidth,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: colorStyle.lightGrey,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: layoutStyle.defaultMargin,
-                  ),
-                  Text(
-                    'Durasi sewa kamu : ',
-                    style: textStyle.blackText.copyWith(
-                      fontWeight: fontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(
-                    height: layoutStyle.defaultMargin,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Start Time:',
-                              style: textStyle.blackText,
-                            ),
-                            Obx(
-                              () => CustomDateTimePicker(
-                                margin: EdgeInsets.zero,
-                                firstState: false,
-                                newDate: controller.startTime.value,
-                                dateFormat: 'HH:mm',
-                                type: DateTimePickerType.OnlyTime,
-                                borderRadius: BorderRadius.circular(
-                                  layoutStyle.defaultMargin,
-                                ),
-                                border: Border.all(
-                                  color: colorStyle.lightGrey,
-                                  width: 1,
-                                ),
-                                onDateChanged: (val) {
-                                  controller.startTime.value = val;
-                                  controller.setEndDateTime();
-                                },
-                                minDateTime: DateTime.now().toLocal(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'End Time:',
-                              style: textStyle.blackText,
-                            ),
-                            Obx(() {
-                              logger.safeLog(
-                                  'END TIMEEE : ${controller.endTime.value}');
-                              return CustomDateTimePicker(
-                                margin: EdgeInsets.zero,
-                                firstState: false,
-                                newDate: controller.endTime.value,
-                                dateFormat: 'HH:mm',
-                                type: DateTimePickerType.OnlyTime,
-                                borderRadius: BorderRadius.circular(
-                                  layoutStyle.defaultMargin,
-                                ),
-                                border: Border.all(
-                                  color: colorStyle.lightGrey,
-                                  width: 1,
-                                ),
-                                enable: false,
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: layoutStyle.defaultMargin,
-                  ),
-                  Text(
-                    'Jumlah Jam : ',
-                    style: textStyle.blackText.copyWith(
-                      fontWeight: fontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(
-                    height: layoutStyle.defaultMargin,
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: controller.doMinHours,
-                        child: Container(
-                          width: layoutStyle.blockVertical * 6.5,
-                          height: layoutStyle.blockVertical * 6.5,
-                          padding:
-                              EdgeInsets.all(layoutStyle.defaultMargin / 2),
-                          decoration: BoxDecoration(
-                            color: colorStyle.black,
-                            borderRadius: BorderRadius.circular(
-                              layoutStyle.defaultMargin / 2,
-                            ),
-                          ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: colorStyle.white,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            child: Icon(
-                              Icons.remove,
-                              color: colorStyle.black,
-                              size: fontSize.body,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: CustomTextBox(
-                          height: layoutStyle.blockVertical * 6.5,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                            vertical: layoutStyle.defaultMargin / 4,
-                          ),
-                          obscureText: false,
-                          border: Border.all(
-                            color: colorStyle.black,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            layoutStyle.defaultMargin / 2,
-                          ),
-                          controller: controller.totalHoursController,
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                            hintStyle: textStyle.greyText,
-                            border: InputBorder.none,
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          isDisabled: true,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: controller.doAddHours,
-                        child: Container(
-                          width: layoutStyle.blockVertical * 6.5,
-                          height: layoutStyle.blockVertical * 6.5,
-                          padding:
-                              EdgeInsets.all(layoutStyle.defaultMargin / 2),
-                          decoration: BoxDecoration(
-                            color: colorStyle.black,
-                            borderRadius: BorderRadius.circular(
-                              layoutStyle.defaultMargin / 2,
-                            ),
-                          ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: colorStyle.white,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              color: colorStyle.black,
-                              size: fontSize.body,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        actionSection(),
-      ],
+                ),
+          actionSection(),
+        ],
+      ),
     );
   }
 }

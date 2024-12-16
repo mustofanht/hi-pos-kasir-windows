@@ -39,10 +39,13 @@ class CustomSelectHoursRentController extends GetxController {
   final endTime = Rxn<DateTime>(null);
   final minHours = RxInt(0);
 
+  final isLoading = false.obs;
+
   @override
   Future<void> onInit() async {
     // TODO: implement onInit
     super.onInit();
+    isLoading.value = true;
     totalHoursController.text = '0';
     logger.safeLog('PRODUCT ENTITY : ${entitiy.toJson()}');
 
@@ -58,11 +61,8 @@ class CustomSelectHoursRentController extends GetxController {
     if (detailModel != null) {
       isExtraTime.value = detailModel!.isExtraTime!;
       selectedTransactionExtraTime.value = detailModel?.transactionExtra;
-      logger.safeLog(
-          'selectedTransactionExtraTime.value?.startDate : ${selectedTransactionExtraTime.value?.startDate}');
-      logger.safeLog('detailModel?.startDate : ${detailModel?.startDate}');
-      if (selectedTransactionExtraTime.value?.startDate != null) {
-        startTime.value = selectedTransactionExtraTime.value?.startDate!;
+      if (selectedTransactionExtraTime.value?.endDate != null) {
+        startTime.value = selectedTransactionExtraTime.value?.endDate!;
         minHours.value = 0;
       } else {
         startTime.value = detailModel?.startDate;
@@ -71,6 +71,8 @@ class CustomSelectHoursRentController extends GetxController {
     }
 
     setEndDateTime();
+
+    isLoading.value = false;
     update();
   }
 
@@ -166,6 +168,7 @@ class CustomSelectHoursRentController extends GetxController {
           if (selected.startDate != null) {
             startTime.value = selected.endDate!;
             totalHoursController.text = '0';
+            minHours.value = 0;
             setEndDateTime();
           }
           update();
