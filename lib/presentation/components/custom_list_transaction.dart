@@ -172,7 +172,7 @@ class _CustomListTransactionState extends State<CustomListTransaction> {
                   if (controller.selectedTransaction.value != null) {
                     widget.onNext(controller.selectedTransaction.value!);
                   } else {
-                    alert.warning('Warning', 'Please selected trnsation');
+                    alert.warning('Warning', 'Silahkan pilih transaksi');
                   }
                 },
                 style: ButtonStyle(
