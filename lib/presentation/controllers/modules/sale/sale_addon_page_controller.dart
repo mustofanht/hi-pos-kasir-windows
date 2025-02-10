@@ -24,7 +24,6 @@ class SaleAddonPageController extends GetxController {
   final pagination = Pagination().obs;
 
   final addonList = <AddonEntity>[].obs;
-  final isLoadMore = false.obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
 
@@ -48,11 +47,8 @@ class SaleAddonPageController extends GetxController {
 
   Future<void> doPrepareList(
       {required int page, required String typeProduct}) async {
-    if (page > 0) {
-      isLoadMore.value = true;
-    } else {
-      isLoading.value = true;
-    }
+    if (isLoading.value) return;
+    isLoading.value = true;
 
     try {
       var result;
@@ -74,7 +70,6 @@ class SaleAddonPageController extends GetxController {
       result.fold((l) {
         logger.safeLog(l);
         isLoading.value = false;
-        isLoadMore.value = false;
       }, (r) {
         if (page == 0) {
           addonList.value = r.data!;
@@ -83,22 +78,20 @@ class SaleAddonPageController extends GetxController {
         }
         pagination.value = r.pagination!;
         isLoading.value = false;
-        isLoadMore.value = false;
         visibleLoadMore.value = false;
       });
     } catch (e) {
       logger.safeLog(e);
       isLoading.value = false;
-      isLoadMore.value = false;
     }
     update();
   }
 
-  void scrollHandler() {
+  Future<void> scrollHandler() async {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
       if (pagination.value.currentPage! < pagination.value.totalPage!) {
-        doPrepareList(
+        await doPrepareList(
             page: pagination.value.currentPage! + 1,
             typeProduct: selectedTypeItemList.value.id!);
       }
@@ -115,7 +108,7 @@ class SaleAddonPageController extends GetxController {
       alert.error('Error', 'Total Jam tidak boleh kosong!');
       return;
     }
-    
+
     Get.back();
 
     var result;

@@ -21,25 +21,21 @@ class SaleVoucherPageController extends GetxController {
   final pagination = Pagination().obs;
 
   final voucherList = <VoucherEntity>[].obs;
-  final isLoadMore = false.obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
     scrollController.addListener(scrollHandler);
-    doPrepareList(page: 0);
+    await doPrepareList(page: 0);
   }
 
   doPrepareList({
     required int page,
   }) async {
-    if (page > 0) {
-      isLoadMore.value = true;
-    } else {
-      isLoading.value = true;
-    }
+    if (isLoading.value) return;
+    isLoading.value = true;
 
     try {
       var result;
@@ -51,14 +47,6 @@ class SaleVoucherPageController extends GetxController {
         'locationId': sessionUtil.getLocationId().toString(),
       };
 
-      // dataFilter.add(
-      //   apiFilterUtil.addSearch(
-      //     'voucherLocId',
-      //     OPERATOR_CONSTANTS.EQUALS,
-      //     sessionUtil.getUnitId(),
-      //   )!,
-      // );
-
       result = await _service.sale.voucherService.getAll(
         authToken: _authToken,
         dataFilter: dataFilter,
@@ -68,7 +56,6 @@ class SaleVoucherPageController extends GetxController {
       result.fold((l) {
         logger.safeLog(l);
         isLoading.value = false;
-        isLoadMore.value = false;
       }, (r) {
         if (page == 0) {
           voucherList.value = r.data!;
@@ -77,22 +64,20 @@ class SaleVoucherPageController extends GetxController {
         }
         pagination.value = r.pagination!;
         isLoading.value = false;
-        isLoadMore.value = false;
         visibleLoadMore.value = false;
       });
     } catch (e) {
       logger.safeLog(e);
       isLoading.value = false;
-      isLoadMore.value = false;
     }
     update();
   }
 
-  void scrollHandler() {
+  Future<void> scrollHandler() async {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
       if (pagination.value.currentPage! < pagination.value.totalPage!) {
-        doPrepareList(page: pagination.value.currentPage! + 1);
+        await doPrepareList(page: pagination.value.currentPage! + 1);
       }
     }
   }
