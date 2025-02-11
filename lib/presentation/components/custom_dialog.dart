@@ -1310,6 +1310,7 @@ class CustomDialog {
                           hintStyle: textStyle.greyText,
                           border: InputBorder.none,
                         ),
+                        maxLength: 30,
                       ),
                     ],
                   ),
