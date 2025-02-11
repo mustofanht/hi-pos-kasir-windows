@@ -40,7 +40,8 @@ class SaleAddonPageController extends GetxController {
 
   doInitializeItemTypeList() {
     typeItemList.clear();
-    typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa'));
+    typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa Per Jam'));
+    typeItemList.add(CustomIdNameEntity(id: 'H', name: 'Sewa Harian'));
     typeItemList.add(CustomIdNameEntity(id: 'J', name: 'Jual'));
     update();
   }
