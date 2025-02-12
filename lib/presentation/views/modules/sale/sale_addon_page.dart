@@ -21,11 +21,17 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
         child: Container(
           height: 20,
           decoration: BoxDecoration(
-            border: Border.all(
-              color: colorStyle.primary,
-            ),
+            border: e.isBooked == 'Y'
+                ? Border.all(
+                    color: colorStyle.red,
+                  )
+                : Border.all(
+                    color: colorStyle.primary,
+                  ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
-            color: colorStyle.white,
+            color: e.isBooked == 'Y'
+                ? colorStyle.red.withOpacity(0.20)
+                : colorStyle.white,
           ),
           padding: const EdgeInsets.all(2),
           child: Container(
@@ -115,9 +121,9 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
       tag: 'SaleTicketPage',
       initState: (state) {
         controller.scrollController.addListener(controller.scrollHandler);
-        controller.doPrepareList(page: 0, typeProduct: 'S');
+        controller.doPrepareList(page: 0, typeProduct: 'H');
         controller.doInitializeItemTypeList();
-        controller.selectedTypeItemList.value.id = 'S';
+        controller.selectedTypeItemList.value.id = 'H';
       },
       builder: (controller) {
         return Container(
@@ -138,7 +144,8 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                           (element) => GestureDetector(
                             onTap: () {
                               controller.selectedTypeItemList.value = element;
-                              controller.doPrepareList(page: 0, typeProduct: element.id!);
+                              controller.doPrepareList(
+                                  page: 0, typeProduct: element.id!);
                               controller.update();
                             },
                             child: Container(
@@ -183,7 +190,9 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                 // height: layoutStyle.screenHeight,
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    await controller.doPrepareList(page: 0, typeProduct: controller.selectedTypeItemList.value.id!);
+                    await controller.doPrepareList(
+                        page: 0,
+                        typeProduct: controller.selectedTypeItemList.value.id!);
                   },
                   child: controller.isLoading.value
                       ? loading.simpleLoading()

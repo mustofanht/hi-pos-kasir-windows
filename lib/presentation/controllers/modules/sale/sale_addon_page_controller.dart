@@ -34,23 +34,38 @@ class SaleAddonPageController extends GetxController {
   void onInit() {
     super.onInit();
     scrollController.addListener(scrollHandler);
-    doPrepareList(page: 0, typeProduct: 'S');
+    doPrepareList(page: 0, typeProduct: 'H');
     doInitializeItemTypeList();
   }
 
   doInitializeItemTypeList() {
     typeItemList.clear();
-    typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa Per Jam'));
-    typeItemList.add(CustomIdNameEntity(id: 'H', name: 'Sewa Harian'));
+    typeItemList.add(CustomIdNameEntity(id: 'H', name: 'Sewa Per Jam'));
+    typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa Harian'));
     typeItemList.add(CustomIdNameEntity(id: 'J', name: 'Jual'));
     update();
   }
 
-  Future<void> doPrepareList(
-      {required int page, required String typeProduct}) async {
+  Future<void> doPrepareList({
+    required int page,
+    required String typeProduct,
+  }) async {
     if (isLoading.value) return;
     isLoading.value = true;
 
+    if (typeProduct == 'H') {
+      await prepareItemHourly(page);
+    } else {
+      await prepareItem(page: page, typeProduct: typeProduct);
+    }
+    logger.safeLog('IS LOADING >>> ${isLoading.value}');
+    update();
+  }
+
+  Future<void> prepareItem({
+    required int page,
+    required String typeProduct,
+  }) async {
     try {
       var result;
       List<FilterQuery> dataFilter = [];
@@ -85,7 +100,34 @@ class SaleAddonPageController extends GetxController {
       logger.safeLog(e);
       isLoading.value = false;
     }
-    update();
+  }
+
+  Future<void> prepareItemHourly(int page) async {
+    try {
+      var result;
+      result = await _service.sale.addonService.getHourly(
+        authToken: _authToken,
+        locationId: sessionUtil.getLocationId(),
+        page: page,
+      );
+
+      result.fold((l) {
+        logger.safeLog(l);
+        isLoading.value = false;
+      }, (r) {
+        if (page == 0) {
+          addonList.value = r.data!;
+        } else {
+          addonList.addAll(r.data!);
+        }
+        pagination.value = r.pagination!;
+        isLoading.value = false;
+        visibleLoadMore.value = false;
+      });
+    } catch (e) {
+      logger.safeLog(e);
+      isLoading.value = false;
+    }
   }
 
   Future<void> scrollHandler() async {
@@ -162,12 +204,23 @@ class SaleAddonPageController extends GetxController {
     } else {
       saleCartPageController = Get.put(SaleCartPageController());
     }
+    CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
+      (e) => e.addon!.productId == val.productId,
+    );
 
-    if (selectedTypeItemList.value.id == 'S' &&
-        val.productType == ProductRentalType.HOURS) {
-      CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
-        (e) => e.addon!.productId == val.productId,
+    if (val.isBooked == 'Y') {
+      closedRental(
+        addonEntity: val,
+        saleCartPageController: saleCartPageController,
+        exists: exists,
       );
+      return;
+    }
+
+    if (val.productType == ProductRentalType.HOURS) {
+      // CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
+      //   (e) => e.addon!.productId == val.productId,
+      // );
 
       await dialog.selectHourRent(
         authToken: _authToken,
@@ -184,8 +237,9 @@ class SaleAddonPageController extends GetxController {
       if (saleCartPageController.addonList.isEmpty) {
         saleCartPageController.addAddon(val);
       } else {
-        CartAddon? exists = saleCartPageController.addonList
-            .firstWhereOrNull((e) => e.addon!.productId == val.productId);
+        // CartAddon? exists = saleCartPageController.addonList.firstWhereOrNull(
+        //   (e) => e.addon!.productId == val.productId,
+        // );
 
         if (exists != null) {
           exists.qtyOrder = (exists.qtyOrder ?? 0) + 1;
@@ -199,5 +253,52 @@ class SaleAddonPageController extends GetxController {
       saleCartPageController.update();
       update();
     }
+  }
+
+  Future<void> closedRental({
+    required SaleCartPageController saleCartPageController,
+    required AddonEntity addonEntity,
+    CartAddon? exists,
+  }) async {
+    await dialog.dialodExtraTimeOrClosedRent(
+      onExtraTime: () async {
+        await dialog.selectHourRent(
+          authToken: _authToken,
+          entitiy: addonEntity,
+          detailModel: exists?.rentModel,
+          onNext: (cartRentModel) => onNextRental(
+            saleCartPageController,
+            cartRentModel,
+            addonEntity,
+            exists,
+          ),
+        );
+      },
+      onClosed: () async {
+        await dialog.closedRent(
+          onNext: () async {
+            try {
+              var result;
+              result = await _service.sale.addonService.closedRent(
+                authToken: _authToken,
+                orderAddId: addonEntity.productId,
+              );
+
+              result.fold((l) {
+                logger.safeLog(l);
+              }, (r) {
+                logger.safeLog('r: $r');
+              });
+            } catch (e) {
+              logger.safeLog(e);
+            }
+            Get.back();
+            doPrepareList(page: 0, typeProduct: 'H');
+          },
+          entitiy: addonEntity,
+          authToken: _authToken,
+        );
+      },
+    );
   }
 }

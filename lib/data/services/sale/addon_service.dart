@@ -21,7 +21,7 @@ class AddOnService {
     );
 
     logger.responseLog(uri, response);
-    
+
     if (response.statusCode == 200) {
       BaseResponse<List<AddonEntity>> result =
           BaseResponse<List<AddonEntity>>.fromJson(
@@ -30,6 +30,73 @@ class AddOnService {
             common.fromJsonList(data, (item) => AddonEntity.fromJson(item)),
       );
       return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
+  Future<Either<String, BaseResponse<List<AddonEntity>>>> getHourly({
+    required AuthToken authToken,
+    int? locationId,
+    int page = 0,
+    String? search,
+    String? orderBy,
+  }) async {
+    var path =
+        "mst_product/hourly?page=$page&size=${PAGINATIONS_CONSTANT.LIMIT_PAGE.toString()}&";
+
+    if (locationId != null) {
+      path += "locationId=$locationId&";
+    }
+    if (search != null) {
+      path += "search=$search&";
+    }
+
+    final uri = source.baseUri(path: path);
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<List<AddonEntity>> result =
+          BaseResponse<List<AddonEntity>>.fromJson(
+        json.decode(response.body),
+        (data) =>
+            common.fromJsonList(data, (item) => AddonEntity.fromJson(item)),
+      );
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
+  Future<Either<String, BaseResponse<Object>>> closedRent({
+    required AuthToken authToken,
+    int? orderAddId,
+  }) async {
+    var path =
+        "trn_order_addon/$orderAddId";
+
+
+    final uri = source.baseUri(path: path);
+
+    final response = await http.post(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      return Right(json.decode(response.body));
     } else {
       return Left(common.getMetadataMessages(response.body));
     }

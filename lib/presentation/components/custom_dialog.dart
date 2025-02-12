@@ -1577,9 +1577,6 @@ class CustomDialog {
     required Rxn<CustomIdNameEntity> selectReason,
     required Function(String reffNo) onNext,
   }) {
-    // final selectReason = Rxn<CustomIdNameEntity>(null);
-    // final reasonController = TextEditingController();
-    // String reason = '';
     Get.dialog(
       AlertDialog(
         contentPadding: EdgeInsets.zero,
@@ -1663,32 +1660,6 @@ class CustomDialog {
                           },
                         ),
                       ),
-                      // CustomTextBox(
-                      //   // width: layoutStyle.blockHorizontal * 25,
-                      //   height: layoutStyle.blockVertical * 12,
-                      //   margin: EdgeInsets.symmetric(
-                      //     vertical: layoutStyle.defaultMargin / 2,
-                      //     horizontal: layoutStyle.defaultMargin,
-                      //   ),
-                      //   obscureText: false,
-                      //   border: Border.all(
-                      //     color: colorStyle.grey,
-                      //     width: 1,
-                      //   ),
-                      //   borderRadius: BorderRadius.circular(
-                      //     layoutStyle.defaultMargin / 2,
-                      //   ),
-                      //   controller: reasonController,
-                      //   decoration: InputDecoration(
-                      //     hintText: 'Tulis Alasan',
-                      //     hintStyle: textStyle.greyText,
-                      //     border: InputBorder.none,
-                      //     contentPadding: EdgeInsets.all(
-                      //       layoutStyle.defaultMargin * 4,
-                      //     ),
-                      //   ),
-                      //   maxLine: 5,
-                      // ),
                     ],
                   ),
                 ),
@@ -1781,130 +1752,6 @@ class CustomDialog {
     );
   }
 
-  // selectPrint({
-  //   required PrintController printController,
-  //   required String title,
-  //   required String msg,
-  //   required Function() onPrint,
-  // }) async {
-  //   await printController.getBluetoots();
-  //   final listPrinter = [
-  //     CustomIdNameEntity(id: null, name: '--- Select Printer ---')
-  //   ];
-  //   listPrinter.addAll(printController.listBluetooth
-  //       .map((element) =>
-  //           CustomIdNameEntity(id: element.macAdress, name: element.name))
-  //       .toList());
-  //   printController.selectedPrinter.value = listPrinter.first;
-  //   printController.update();
-
-  //   Get.dialog(
-  //     AlertDialog(
-  //       contentPadding: EdgeInsets.zero,
-  //       content: Container(
-  //         width: layoutStyle.screenWidth / 2,
-  //         height: layoutStyle.blockVertical * 40,
-  //         decoration: BoxDecoration(
-  //           color: colorStyle.white,
-  //           borderRadius: const BorderRadius.all(
-  //             Radius.circular(50),
-  //           ),
-  //         ),
-  //         child: Column(
-  //           children: [
-  //             Expanded(
-  //               child: Container(
-  //                 alignment: Alignment.center,
-  //                 padding: EdgeInsets.symmetric(
-  //                   vertical: layoutStyle.defaultMargin / 5,
-  //                   horizontal: layoutStyle.defaultMargin,
-  //                 ),
-  //                 child: Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.center,
-  //                   mainAxisAlignment: MainAxisAlignment.center,
-  //                   children: [
-  //                     Image.asset(
-  //                       assetsConstant.icInformationDialog,
-  //                       alignment: Alignment.topCenter,
-  //                       fit: BoxFit.fill,
-  //                     ),
-  //                     Text(
-  //                       title,
-  //                       style: TextStyle(
-  //                         fontSize: fontSize.title,
-  //                         fontWeight: fontWeight.bold,
-  //                       ),
-  //                     ),
-  //                     SizedBox(
-  //                       height: layoutStyle.defaultMargin / 5,
-  //                     ),
-  //                     Flexible(
-  //                       child: Text(
-  //                         msg,
-  //                         textAlign: TextAlign.center,
-  //                         style: TextStyle(
-  //                           fontSize: fontSize.body,
-  //                         ),
-  //                       ),
-  //                     ),
-  //                     SizedBox(
-  //                       height: layoutStyle.defaultMargin / 5,
-  //                     ),
-  //                     CustomDropdownButton<CustomIdNameEntity>(
-  //                       height: layoutStyle.blockVertical * 6.5,
-  //                       items: listPrinter
-  //                           .map(
-  //                             (e) => DropdownMenuItem(
-  //                               value: e,
-  //                               child: Text("${e.name}"),
-  //                             ),
-  //                           )
-  //                           .toList(),
-  //                       value: printController.selectedPrinter.value,
-  //                       // label: Text(
-  //                       //   'Pilih Printer',
-  //                       //   style: textStyle.greyText.copyWith(
-  //                       //     fontSize: fontSize.small,
-  //                       //   ),
-  //                       // ),
-  //                       border: Border.all(
-  //                         color: colorStyle.lightGrey,
-  //                         width: 1,
-  //                       ),
-  //                       margin: EdgeInsets.symmetric(
-  //                         vertical: layoutStyle.defaultMargin / 4,
-  //                         horizontal: layoutStyle.defaultMargin,
-  //                       ),
-  //                       onChanged: (val) async {
-  //                         printController.selectedPrinter.value = val;
-  //                         printController.update();
-  //                         if (val != null) {
-  //                           bool result =
-  //                               await printController.connect(val.id!);
-  //                           if (result) {
-  //                             Get.back();
-  //                             await onPrint();
-  //                           } else {
-  //                             alert.error('Connect Failed',
-  //                                 'Please Check bluetooth and printer is Active and pairing');
-  //                           }
-  //                         } else {
-  //                           alert.error('Print', 'Please selected printer');
-  //                         }
-  //                       },
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //     barrierDismissible: false,
-  //   );
-  // }
-
   selectHourRent({
     required Function(CartRentModel cartRentModel) onNext,
     required AddonEntity entitiy,
@@ -1956,6 +1803,428 @@ class CustomDialog {
             onNext: onNext,
             entitiy: entitiy,
             authToken: authToken,
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  dialodExtraTimeOrClosedRent({
+    required Function() onExtraTime,
+    required Function() onClosed,
+  }) {
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: layoutStyle.screenWidth / 2.5,
+          height: layoutStyle.blockVertical * 35,
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(50),
+            ),
+          ),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 5,
+                        horizontal: layoutStyle.defaultMargin,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            assetsConstant.icInformationDialog,
+                            alignment: Alignment.topCenter,
+                            fit: BoxFit.fill,
+                          ),
+                          Text(
+                            'Extra Time / Akhiri Sewa',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                              fontWeight: fontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Flexible(
+                            child: Text(
+                              'Apakah anda akan melakukan Extra Time Atau Mengakhiri Sewa ?',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontSize.body,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: layoutStyle.screenWidth,
+                    padding: EdgeInsets.symmetric(
+                      vertical: layoutStyle.defaultMargin / 5,
+                      horizontal: layoutStyle.defaultMargin,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: CustomButton(
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 2,
+                              horizontal: layoutStyle.defaultMargin,
+                            ),
+                            onPressed: () {
+                              Get.back();
+                              onExtraTime();
+                            },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.primary,
+                              ),
+                              overlayColor: MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.black.withOpacity(0.1),
+                              ),
+                              shape: MaterialStateProperty.resolveWith(
+                                (states) => RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                              ),
+                              elevation: const MaterialStatePropertyAll(0),
+                            ),
+                            label: Text(
+                              'Extra Time',
+                              style: textStyle.whiteText,
+                            ),
+                            height: layoutStyle.blockVertical * 6.5,
+                          ),
+                        ),
+                        Expanded(
+                          child: CustomButton(
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 2,
+                              horizontal: layoutStyle.defaultMargin,
+                            ),
+                            onPressed: () {
+                              Get.back();
+                              onClosed();
+                            },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.primary,
+                              ),
+                              overlayColor: MaterialStateProperty.resolveWith(
+                                (states) => colorStyle.black.withOpacity(0.1),
+                              ),
+                              shape: MaterialStateProperty.resolveWith(
+                                (states) => RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                              ),
+                              elevation: const MaterialStatePropertyAll(0),
+                            ),
+                            label: Text(
+                              'Akhiri Sewa',
+                              style: textStyle.whiteText,
+                            ),
+                            height: layoutStyle.blockVertical * 6.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  icon: Icon(
+                    Icons.close,
+                    color: colorStyle.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  closedRent({
+    required Function() onNext,
+    required AddonEntity entitiy,
+    required AuthToken authToken,
+    CartRentModel? detailModel,
+  }) async {
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: layoutStyle.screenWidth / 2.5,
+          height: layoutStyle.blockVertical * 30,
+          decoration: BoxDecoration(
+            color: colorStyle.white,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(50),
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(
+                    vertical: layoutStyle.defaultMargin / 5,
+                    horizontal: layoutStyle.defaultMargin,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        assetsConstant.icInformationDialog,
+                        alignment: Alignment.topCenter,
+                        fit: BoxFit.fill,
+                      ),
+                      Text(
+                        'Akhiri Sewa',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                          fontWeight: fontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin / 5,
+                      ),
+                      Flexible(
+                        child: Text.rich(
+                          TextSpan(
+                            text:
+                                'Apakah anda yakin akan mengakhiri sesi sewa item ',
+                            style: TextStyle(
+                              fontSize: fontSize.body,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: '${entitiy.productName}',
+                                style: TextStyle(
+                                  fontWeight: fontWeight.bold,
+                                  fontSize: fontSize.body,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' ?',
+                                style: textStyle.blackText,
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin / 5,
+                      ),
+                      // Container(
+                      //   width: layoutStyle.safeBlockHorizontal * 30,
+                      //   padding: EdgeInsets.symmetric(
+                      //       vertical: layoutStyle.defaultMargin),
+                      //   child: Column(
+                      //     children: [
+                      //       Row(
+                      //         children: [
+                      //           Expanded(
+                      //             child: Text(
+                      //               'Item Name',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //           Text(
+                      //             ' : ',
+                      //             style: textStyle.blackText,
+                      //           ),
+                      //           Expanded(
+                      //             child: Text(
+                      //               entitiy.productName ?? '',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //       SizedBox(
+                      //         height: layoutStyle.defaultMargin / 5,
+                      //       ),
+                      //       Row(
+                      //         children: [
+                      //           Expanded(
+                      //             child: Text(
+                      //               'Jumlah Sewa',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //           Text(
+                      //             ' : ',
+                      //             style: textStyle.blackText,
+                      //           ),
+                      //           Expanded(
+                      //             child: Text(
+                      //               detailModel?.totalHours.toString() ?? '',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //       SizedBox(
+                      //         height: layoutStyle.defaultMargin / 5,
+                      //       ),
+                      //       Row(
+                      //         children: [
+                      //           Expanded(
+                      //             child: Text(
+                      //               'Waktu Mulai',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //           Text(
+                      //             ' : ',
+                      //             style: textStyle.blackText,
+                      //           ),
+                      //           Expanded(
+                      //             child: Text(
+                      //               detailModel?.startDate.toString() ?? '',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //       SizedBox(
+                      //         height: layoutStyle.defaultMargin / 5,
+                      //       ),
+                      //       Row(
+                      //         children: [
+                      //           Expanded(
+                      //             child: Text(
+                      //               'Waktu Berakhir',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //           Text(
+                      //             ' : ',
+                      //             style: textStyle.blackText,
+                      //           ),
+                      //           Expanded(
+                      //             child: Text(
+                      //               detailModel?.endDate.toString() ?? '',
+                      //               style: textStyle.blackText,
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                width: layoutStyle.screenWidth,
+                padding: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 5,
+                  horizontal: layoutStyle.defaultMargin,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.red,
+                          ),
+                          overlayColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.resolveWith(
+                            (states) => RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin / 2,
+                              ),
+                            ),
+                          ),
+                          elevation: const MaterialStatePropertyAll(0),
+                        ),
+                        label: Text(
+                          'Batal',
+                          style: textStyle.whiteText,
+                        ),
+                        height: layoutStyle.blockVertical * 6.5,
+                      ),
+                    ),
+                    Expanded(
+                      child: CustomButton(
+                        margin: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2,
+                          horizontal: layoutStyle.defaultMargin,
+                        ),
+                        onPressed: () => onNext(),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.primary,
+                          ),
+                          overlayColor: MaterialStateProperty.resolveWith(
+                            (states) => colorStyle.black.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.resolveWith(
+                            (states) => RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                layoutStyle.defaultMargin / 2,
+                              ),
+                            ),
+                          ),
+                          elevation: const MaterialStatePropertyAll(0),
+                        ),
+                        label: Text(
+                          'Akhiri',
+                          style: textStyle.whiteText,
+                        ),
+                        height: layoutStyle.blockVertical * 6.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

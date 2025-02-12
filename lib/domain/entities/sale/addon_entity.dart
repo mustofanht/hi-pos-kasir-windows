@@ -10,7 +10,8 @@ class AddonEntity {
   String? productState;
   String? pathImg;
   int? minRentPrd;
-  // String? productRentType;
+  String? isBooked;
+  String? productRentType;
 
   AddonEntity({
     this.productId,
@@ -22,7 +23,8 @@ class AddonEntity {
     this.productState,
     this.pathImg,
     this.minRentPrd,
-    // this.productRentType,
+    this.isBooked,
+    this.productRentType,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -30,14 +32,16 @@ class AddonEntity {
       productId = json['productId'];
       productName = json['productName'];
       productType = json['productType'];
-      productPrice =
-          json['productPrice'] != null ? (json['productPrice'] as num).toDouble() : null;
+      productPrice = json['productPrice'] != null
+          ? (json['productPrice'] as num).toDouble()
+          : null;
       productLoc = json['productLoc'];
       productLocName = json['productLocName'];
       productState = json['productState'];
       pathImg = json['pathImg'];
       minRentPrd = json['minRentPrd'];
-      // productRentType = json['productRentType'];
+      isBooked = json['isBooked'];
+      productRentType = json['productRentType'];
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -54,7 +58,8 @@ class AddonEntity {
       'productState': productState,
       'pathImg': pathImg,
       'minRentPrd': minRentPrd,
-      // 'productRentType': productRentType,
+      'isBooked': isBooked,
+      'productRentType': productRentType,
     };
   }
 }
