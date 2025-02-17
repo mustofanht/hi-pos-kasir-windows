@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -205,150 +206,172 @@ class SaleCartPage extends GetView<SaleCartPageController> {
       margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        children: controller.ticketList
-            .map(
-              (e) => Container(
-                margin: EdgeInsets.symmetric(
-                  vertical: layoutStyle.defaultMargin / 10,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Text('${e.qtyOrder} X '),
-                          Expanded(
-                            child: Text(
-                              e.ticket!.ticketName ?? '',
-                              softWrap: true,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Row(
-                        children: [
-                          Text(
-                            'Rp.${e.ticket?.ticketPrice != null ? common.currencyFormat(e.ticket!.ticketPrice!) : ''}',
-                          ),
-                          SizedBox(
-                            width: layoutStyle.defaultMargin,
-                          ),
-                          (e.qtyOrder ?? 0) > (e.ticket!.ticketMinimum ?? 0)
-                              ? CustomButton(
-                                  onPressed: () {
-                                    controller.removeTicket(e);
-                                  },
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: layoutStyle.defaultMargin / 10,
-                                  ),
-                                  style: ButtonStyle(
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            colorStyle.transparent),
-                                    foregroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            colorStyle.transparent),
-                                    overlayColor:
-                                        MaterialStateProperty.all<Color>(
-                                            colorStyle.transparent),
-                                    side: MaterialStateProperty.all<BorderSide>(
-                                      BorderSide(
-                                        color: colorStyle.transparent,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    padding: MaterialStateProperty.all<
-                                        EdgeInsetsGeometry>(
-                                      const EdgeInsets.all(0),
-                                    ),
-                                    elevation:
-                                        MaterialStateProperty.all<double>(0),
-                                  ),
-                                  label: Image.asset(
-                                    assetsConstant.icMinus,
-                                    fit: BoxFit.contain,
-                                  ),
-                                  width: layoutStyle.blockHorizontal * 3,
-                                  height: layoutStyle.blockVertical * 5,
+        children: controller.ticketList.map((e) {
+          TextEditingController qtyController = controller.getTicketController(
+            e.ticket!.ticketId!,
+            e.qtyOrder ?? e.ticket!.ticketMinimum!,
+          );
+
+          return Container(
+            margin: EdgeInsets.symmetric(
+              vertical: layoutStyle.defaultMargin / 10,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Text('${e.qtyOrder} X '),
+                      Container(
+                        width: layoutStyle.safeBlockHorizontal * 2.5,
+                        child: TextField(
+                          controller: qtyController,
+                          onChanged: (val) => val.isNotEmpty
+                              ? controller.onChangeQtyTicketCart(
+                                  e,
+                                  int.parse(val),
                                 )
-                              : Container(),
-                          CustomButton(
-                            onPressed: () {
-                              controller.addTicketCart(e);
-                            },
-                            margin: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 10,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
-                                ),
-                              ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
-                              ),
-                              elevation: MaterialStateProperty.all<double>(0),
-                            ),
-                            label: Image.asset(
-                              assetsConstant.icPlus,
-                              fit: BoxFit.contain,
-                            ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
-                          ),
-                          CustomButton(
-                            onPressed: () {
-                              controller.removeListTicket(e);
-                            },
-                            margin: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 10,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
-                                ),
-                              ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
-                              ),
-                              elevation: MaterialStateProperty.all<double>(0),
-                            ),
-                            label: Image.asset(
-                              assetsConstant.icDelete,
-                              fit: BoxFit.contain,
-                            ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
-                          ),
-                        ],
+                              : null,
+                          onEditingComplete: () =>
+                              controller.onCompleteQtyTicketCart(e),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        'X ',
+                        style: textStyle.blackText,
+                      ),
+                      Expanded(
+                        child: Text(
+                          e.ticket!.ticketName ?? '',
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            )
-            .toList(),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    children: [
+                      Text(
+                        'Rp.${e.ticket?.ticketPrice != null ? common.currencyFormat(e.ticket!.ticketPrice!) : ''}',
+                      ),
+                      SizedBox(
+                        width: layoutStyle.defaultMargin,
+                      ),
+                      (e.qtyOrder ?? 0) > (e.ticket!.ticketMinimum ?? 0)
+                          ? CustomButton(
+                              onPressed: () {
+                                controller.removeTicket(e);
+                              },
+                              margin: EdgeInsets.symmetric(
+                                horizontal: layoutStyle.defaultMargin / 10,
+                              ),
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.transparent),
+                                foregroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.transparent),
+                                overlayColor: MaterialStateProperty.all<Color>(
+                                    colorStyle.transparent),
+                                side: MaterialStateProperty.all<BorderSide>(
+                                  BorderSide(
+                                    color: colorStyle.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                padding: MaterialStateProperty.all<
+                                    EdgeInsetsGeometry>(
+                                  const EdgeInsets.all(0),
+                                ),
+                                elevation: MaterialStateProperty.all<double>(0),
+                              ),
+                              label: Image.asset(
+                                assetsConstant.icMinus,
+                                fit: BoxFit.contain,
+                              ),
+                              width: layoutStyle.blockHorizontal * 3,
+                              height: layoutStyle.blockVertical * 5,
+                            )
+                          : Container(),
+                      CustomButton(
+                        onPressed: () {
+                          controller.addTicketCart(e);
+                        },
+                        margin: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin / 10,
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              colorStyle.transparent),
+                          foregroundColor: MaterialStateProperty.all<Color>(
+                              colorStyle.transparent),
+                          overlayColor: MaterialStateProperty.all<Color>(
+                              colorStyle.transparent),
+                          side: MaterialStateProperty.all<BorderSide>(
+                            BorderSide(
+                              color: colorStyle.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.all(0),
+                          ),
+                          elevation: MaterialStateProperty.all<double>(0),
+                        ),
+                        label: Image.asset(
+                          assetsConstant.icPlus,
+                          fit: BoxFit.contain,
+                        ),
+                        width: layoutStyle.blockHorizontal * 3,
+                        height: layoutStyle.blockVertical * 5,
+                      ),
+                      CustomButton(
+                        onPressed: () {
+                          controller.removeListTicket(e);
+                        },
+                        margin: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin / 10,
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              colorStyle.transparent),
+                          foregroundColor: MaterialStateProperty.all<Color>(
+                              colorStyle.transparent),
+                          overlayColor: MaterialStateProperty.all<Color>(
+                              colorStyle.transparent),
+                          side: MaterialStateProperty.all<BorderSide>(
+                            BorderSide(
+                              color: colorStyle.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.all(0),
+                          ),
+                          elevation: MaterialStateProperty.all<double>(0),
+                        ),
+                        label: Image.asset(
+                          assetsConstant.icDelete,
+                          fit: BoxFit.contain,
+                        ),
+                        width: layoutStyle.blockHorizontal * 3,
+                        height: layoutStyle.blockVertical * 5,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }

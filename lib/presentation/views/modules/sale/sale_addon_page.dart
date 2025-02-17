@@ -1,4 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
@@ -21,19 +23,25 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
         child: Container(
           height: 20,
           decoration: BoxDecoration(
-            border: e.isBooked == 'Y'
+            border: e.isBooked == null
                 ? Border.all(
-                    color: colorStyle.red,
-                  )
-                : Border.all(
                     color: colorStyle.primary,
-                  ),
+                  )
+                : e.isBooked == 'Y'
+                    ? Border.all(
+                        color: colorStyle.red,
+                      )
+                    : Border.all(
+                        color: colorStyle.green,
+                      ),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
-            color: e.isBooked == 'Y'
-                ? colorStyle.red.withOpacity(0.20)
-                : colorStyle.white,
+            color: e.isBooked == null
+                ? colorStyle.white
+                : e.isBooked == 'Y'
+                    ? colorStyle.red.withOpacity(0.20)
+                    : colorStyle.green.withOpacity(0.20),
           ),
-          padding: const EdgeInsets.all(2),
+          // padding: const EdgeInsets.all(2),
           child: Container(
             padding: EdgeInsets.all(layoutStyle.defaultMargin),
             child: Column(
@@ -66,14 +74,89 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                 SizedBox(
                   height: layoutStyle.defaultMargin,
                 ),
-                Text(
-                  e.productName!,
-                  style: TextStyle(
-                    fontSize: fontSize.title,
-                    // fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                // Text(
+                //   e.productName!,
+                //   style: TextStyle(
+                //     fontSize: fontSize.title,
+                //     // fontWeight: FontWeight.bold,
+                //   ),
+                //   overflow: TextOverflow.ellipsis,
+                //   maxLines: 1,
+                // ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Column(
+                      children: [
+                        Container(
+                          width: constraints.maxWidth,
+                          child: AutoSizeText(
+                            e.productName!,
+                            style: TextStyle(
+                              fontSize: fontSize.body,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            minFontSize: 8,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        SizedBox(
+                          height: layoutStyle.defaultMargin / 2,
+                        ),
+                        e.isBooked == 'Y'
+                            ? Column(
+                                children: [
+                                  // Row(
+                                  //   children: [
+                                  //     AutoSizeText(
+                                  //       'Durasi: ',
+                                  //       style: textStyle.blackText
+                                  //           .copyWith(fontSize: fontSize.small),
+                                  //     ),
+                                  //     AutoSizeText(
+                                  //       '${e.endDate!.difference(e.startDate!).inHours} (Jam)',
+                                  //       style: textStyle.blackText
+                                  //           .copyWith(fontSize: fontSize.small),
+                                  //     ),
+                                  //   ],
+                                  // ),
+                                  Row(
+                                    children: [
+                                      AutoSizeText(
+                                        'Check In: ',
+                                        style: textStyle.blackText
+                                            .copyWith(fontSize: fontSize.small),
+                                      ),
+                                      AutoSizeText(
+                                        dateTimeUtil.dateFormat(
+                                            e.startDate!, 'HH:mm'),
+                                        style: textStyle.blackText
+                                            .copyWith(fontSize: fontSize.small),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      AutoSizeText(
+                                        'Check Out: ',
+                                        style: textStyle.blackText
+                                            .copyWith(fontSize: fontSize.small),
+                                      ),
+                                      AutoSizeText(
+                                        dateTimeUtil.dateFormat(
+                                            e.endDate!, 'HH:mm'),
+                                        style: textStyle.blackText
+                                            .copyWith(fontSize: fontSize.small),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : Container()
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

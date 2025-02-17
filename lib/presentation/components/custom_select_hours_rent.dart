@@ -20,12 +20,15 @@ class CustomSelectHoursRent extends StatefulWidget {
   final AddonEntity entitiy;
   final CartRentModel? detailModel;
   final AuthToken authToken;
-  const CustomSelectHoursRent(
-      {super.key,
-      required this.onNext,
-      required this.entitiy,
-      required this.authToken,
-      this.detailModel});
+  final bool isExtraTime;
+  const CustomSelectHoursRent({
+    super.key,
+    required this.onNext,
+    required this.entitiy,
+    required this.authToken,
+    this.detailModel,
+    this.isExtraTime = false,
+  });
 
   @override
   State<CustomSelectHoursRent> createState() => _CustomSelectHoursRentState();
@@ -39,6 +42,9 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
       detailModel: widget.detailModel,
       authToken: widget.authToken,
     ));
+
+    controller.isExtraTime.value = widget.isExtraTime;
+    controller.update();
 
     List<Widget> headerSection() {
       return [
@@ -186,6 +192,58 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
       );
     }
 
+    Widget extraTimeSection() {
+      return Obx(
+        () => Container(
+          margin: EdgeInsets.symmetric(
+            vertical: layoutStyle.defaultMargin,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    controller.doCheckIsExtraTime();
+                  },
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: controller.isExtraTime.value,
+                        onChanged: widget.isExtraTime
+                            ? null
+                            : (v) {
+                                controller.doCheckIsExtraTime();
+                              },
+                        activeColor: colorStyle.blue,
+                      ),
+                      Text(
+                        'Extra Time',
+                        style: textStyle.blackText,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  controller.doSelectTransactionBefore();
+                },
+                child: Text(
+                  'Transaksi Sebelumnya',
+                  style: (controller.isExtraTime.value
+                          ? textStyle.blueText
+                          : textStyle.greyText)
+                      .copyWith(
+                    fontWeight: fontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Obx(
       () => Column(
         children: [
@@ -235,53 +293,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                               ],
                             ),
                           ),
-                          Obx(
-                            () => Container(
-                              margin: EdgeInsets.symmetric(
-                                vertical: layoutStyle.defaultMargin,
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        controller.doCheckIsExtraTime();
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            value: controller.isExtraTime.value,
-                                            onChanged: (v) {
-                                              controller.doCheckIsExtraTime();
-                                            },
-                                            activeColor: colorStyle.blue,
-                                          ),
-                                          Text(
-                                            'Extra Time',
-                                            style: textStyle.blackText,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      controller.doSelectTransactionBefore();
-                                    },
-                                    child: Text(
-                                      'Transaksi Sebelumnya',
-                                      style: (controller.isExtraTime.value
-                                              ? textStyle.blueText
-                                              : textStyle.greyText)
-                                          .copyWith(
-                                        fontWeight: fontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          extraTimeSection(),
                           Obx(
                             () =>
                                 controller.selectedTransactionExtraTime.value !=
@@ -349,6 +361,12 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                           controller.setEndDateTime();
                                         },
                                         minDateTime: DateTime.now().toLocal(),
+                                        enable: widget.isExtraTime
+                                            ? false
+                                            : (controller
+                                                    .selectedTransactionExtraTime
+                                                    .value ==
+                                                null),
                                       ),
                                     ),
                                   ],

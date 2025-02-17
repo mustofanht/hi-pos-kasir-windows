@@ -1756,6 +1756,7 @@ class CustomDialog {
     required Function(CartRentModel cartRentModel) onNext,
     required AddonEntity entitiy,
     required AuthToken authToken,
+    bool isExtraTime = false,
     CartRentModel? detailModel,
   }) async {
     Get.dialog(
@@ -1775,6 +1776,7 @@ class CustomDialog {
             entitiy: entitiy,
             detailModel: detailModel,
             authToken: authToken,
+            isExtraTime: isExtraTime,
           ),
         ),
       ),

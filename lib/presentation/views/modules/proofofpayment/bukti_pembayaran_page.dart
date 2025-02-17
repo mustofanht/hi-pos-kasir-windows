@@ -432,12 +432,15 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                               MainAxisAlignment.start,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          children:
-                                              model.detailOrderModels == null
-                                                  ? []
-                                                  : model.detailOrderModels!
-                                                      .map(
-                                                        (e) => e.hour != null
+                                          children: model.detailOrderModels ==
+                                                  null
+                                              ? []
+                                              : model.detailOrderModels!
+                                                  .map(
+                                                    (e) =>
+                                                        (e.startDate != null &&
+                                                                e.endDate !=
+                                                                    null)
                                                             ? rentProductCart(e)
                                                             : Padding(
                                                                 padding: EdgeInsets
@@ -502,8 +505,8 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                                                   ],
                                                                 ),
                                                               ),
-                                                      )
-                                                      .toList(),
+                                                  )
+                                                  .toList(),
                                         ),
                                         Column(
                                           mainAxisAlignment:

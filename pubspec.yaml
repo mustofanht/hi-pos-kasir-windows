@@ -42,6 +42,7 @@ dependencies:
     path: ./plugin/presentation_displays
   table_sticky_headers: ^2.0.5
   device_info_plus: ^9.1.2
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:

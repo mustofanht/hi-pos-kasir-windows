@@ -12,6 +12,9 @@ class AddonEntity {
   int? minRentPrd;
   String? isBooked;
   String? productRentType;
+  DateTime? startDate;
+  DateTime? endDate;
+  DateTime? closeDate;
 
   AddonEntity({
     this.productId,
@@ -25,6 +28,9 @@ class AddonEntity {
     this.minRentPrd,
     this.isBooked,
     this.productRentType,
+    this.startDate,
+    this.endDate,
+    this.closeDate,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -42,6 +48,15 @@ class AddonEntity {
       minRentPrd = json['minRentPrd'];
       isBooked = json['isBooked'];
       productRentType = json['productRentType'];
+      startDate = json['startDate'] != null
+          ? DateTime.parse(json['startDate']).toLocal()
+          : null;
+      endDate = json['endDate'] != null
+          ? DateTime.parse(json['endDate']).toLocal()
+          : null;
+      closeDate = json['closeDate'] != null
+          ? DateTime.parse(json['closeDate']).toLocal()
+          : null;
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -60,6 +75,9 @@ class AddonEntity {
       'minRentPrd': minRentPrd,
       'isBooked': isBooked,
       'productRentType': productRentType,
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
+      'closeDate': closeDate?.toIso8601String(),
     };
   }
 }

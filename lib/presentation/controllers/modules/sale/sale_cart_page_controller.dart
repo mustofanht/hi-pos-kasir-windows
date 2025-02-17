@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -40,6 +41,15 @@ class SaleCartPageController extends GetxController {
 
   final selectedMstPayment = MstPayment().obs;
 
+  final Map<int, TextEditingController> ticketControllers = {};
+
+  TextEditingController getTicketController(int id, int qtyOrder) {
+    if (!ticketControllers.containsKey(id)) {
+      ticketControllers[id] = TextEditingController(text: qtyOrder.toString());
+    }
+    return ticketControllers[id]!;
+  }
+
   addTicket(TicketEntity ticket) {
     ticketList.add(
       CartTicket(
@@ -48,6 +58,29 @@ class SaleCartPageController extends GetxController {
         totalPrice: (ticket.ticketMinimum ?? 0) * ticket.ticketPrice!,
       ),
     );
+    ticketControllers[ticket.ticketId]?.text = ticket.ticketMinimum.toString();
+    calculateTotalOrder();
+  }
+
+  onCompleteQtyTicketCart(CartTicket ticket) {
+    logger.safeLog('QTY: ${ticketControllers[ticket.ticket?.ticketId]?.text}');
+    logger.safeLog('MINIMUM: ${ticket.ticket?.ticketMinimum}');
+    int qty = int.parse(ticketControllers[ticket.ticket?.ticketId]!.text);
+    if (qty < (ticket.ticket?.ticketMinimum ?? 0)) {
+      ticketControllers[ticket.ticket?.ticketId]?.text =
+          ticket.ticket!.ticketMinimum.toString();
+    }
+    calculateTotalOrder();
+  }
+
+  onChangeQtyTicketCart(CartTicket ticket, int qty) {
+    logger.safeLog('QTY: ${qty}');
+    logger.safeLog('MINIMUM: ${ticket.ticket?.ticketMinimum}');
+    if (qty < (ticket.ticket?.ticketMinimum ?? 0)) {
+      return;
+    }
+    ticket.qtyOrder = qty;
+    ticket.totalPrice = ((ticket.ticket!.ticketPrice ?? 0) * qty);
     calculateTotalOrder();
   }
 
@@ -55,6 +88,8 @@ class SaleCartPageController extends GetxController {
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
     ticket.totalPrice =
         ((ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0));
+    ticketControllers[ticket.ticket?.ticketId]?.text =
+        ticket.qtyOrder.toString();
     calculateTotalOrder();
   }
 
@@ -65,10 +100,13 @@ class SaleCartPageController extends GetxController {
     if (ticket.qtyOrder == 0) {
       removeListTicket(ticket);
     }
+    ticketControllers[ticket.ticket?.ticketId]?.text =
+        ticket.qtyOrder.toString();
     calculateTotalOrder();
   }
 
   removeListTicket(CartTicket ticket) {
+    ticketControllers[ticket.ticket?.ticketId]?.clear();
     ticketList.remove(ticket);
     calculateTotalOrder();
   }
@@ -323,6 +361,7 @@ class SaleCartPageController extends GetxController {
       authToken: _authToken,
       entitiy: cartAddOn.addon!,
       detailModel: cartAddOn.rentModel,
+      isExtraTime: cartAddOn.rentModel!.isExtraTime!,
       onNext: (cartRentModel) => onNextRental(
         cartRentModel,
         cartAddOn.addon!,

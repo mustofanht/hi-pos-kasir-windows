@@ -62,7 +62,7 @@ class CustomListTransactionController extends GetxController {
       result = await _service.transaction.getTransactionRentalHistory(
         authToken: authToken,
         locId: sessionUtil.getLocationId()!,
-        prodId: entitiy.productId!,
+        // prodId: entitiy.productId!,
         page: page,
         search: search,
       );

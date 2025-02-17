@@ -266,6 +266,7 @@ class SaleAddonPageController extends GetxController {
           authToken: _authToken,
           entitiy: addonEntity,
           detailModel: exists?.rentModel,
+          isExtraTime: true,
           onNext: (cartRentModel) => onNextRental(
             saleCartPageController,
             cartRentModel,

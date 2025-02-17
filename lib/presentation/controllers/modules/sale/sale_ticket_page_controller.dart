@@ -93,10 +93,11 @@ class SaleTicketPageController extends GetxController {
           .firstWhereOrNull((e) => e.ticket!.ticketId == ticket.ticketId);
 
       if (existingTicket != null) {
-        existingTicket.qtyOrder = (existingTicket.qtyOrder ?? 0) + 1;
-        existingTicket.totalPrice =
-            (existingTicket.totalPrice ?? 0) + (ticket.ticketPrice ?? 0);
-        saleCartPageController.calculateTotalOrder();
+        // existingTicket.qtyOrder = (existingTicket.qtyOrder ?? 0) + 1;
+        // existingTicket.totalPrice =
+        //     (existingTicket.totalPrice ?? 0) + (ticket.ticketPrice ?? 0);
+        // saleCartPageController.calculateTotalOrder();
+        saleCartPageController.addTicketCart(existingTicket);
       } else {
         saleCartPageController.addTicket(ticket);
       }

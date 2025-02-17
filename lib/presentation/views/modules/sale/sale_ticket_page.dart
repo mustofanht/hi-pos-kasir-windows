@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -142,14 +143,32 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                         SizedBox(
                                           height: layoutStyle.defaultMargin,
                                         ),
-                                        Text(
-                                          e.ticketName!,
-                                          style: TextStyle(
-                                            fontSize: fontSize.subtitle,
-                                            // fontWeight: FontWeight.bold,
-                                          ),
-                                          softWrap: true,
-                                          // overflow: TextOverflow.ellipsis,
+                                        // Text(
+                                        //   e.ticketName!,
+                                        //   style: TextStyle(
+                                        //     fontSize: fontSize.subtitle,
+                                        //     // fontWeight: FontWeight.bold,
+                                        //   ),
+                                        //   softWrap: true,
+                                        //   // overflow: TextOverflow.ellipsis,
+                                        // ),
+                                        LayoutBuilder(
+                                          builder: (context, constraints) {
+                                            return Container(
+                                              width: constraints.maxWidth,
+                                              child: AutoSizeText(
+                                                e.ticketName!,
+                                                style: TextStyle(
+                                                  fontSize: fontSize.body,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                                maxLines: 3,
+                                                minFontSize: 8,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),

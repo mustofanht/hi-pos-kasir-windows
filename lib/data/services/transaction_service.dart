@@ -6,15 +6,17 @@ class TransactionService {
     required AuthToken authToken,
     String? search,
     required int locId,
-    required int prodId,
+    int? prodId,
     required int page,
   }) async {
     var path = "trn_order_addon/transaction-rental-history?";
     if (search != null && search.isNotEmpty) {
       path += "search=$search&";
     }
+    if (prodId != null) {
+      path += "prodId=$prodId&";
+    }
     path += "locId=$locId&";
-    path += "prodId=$prodId&";
     path += "page=$page&size=${PAGINATIONS_CONSTANT.LIMIT_PAGE.toString()}";
 
     final uri = source.baseUri(
