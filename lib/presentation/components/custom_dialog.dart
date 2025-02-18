@@ -1911,7 +1911,7 @@ class CustomDialog {
                               elevation: const MaterialStatePropertyAll(0),
                             ),
                             label: Text(
-                              'Extra Time',
+                              'Tambah Sesi',
                               style: textStyle.whiteText,
                             ),
                             height: layoutStyle.blockVertical * 6.5,

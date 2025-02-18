@@ -140,7 +140,7 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                   vertical: layoutStyle.defaultMargin / 2,
                   horizontal: layoutStyle.defaultMargin,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   CartRentModel cartRentModel = CartRentModel(
                     startDate: controller.startTime.value,
                     endDate: controller.endTime.value,
@@ -151,17 +151,20 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                     transactionExtra:
                         controller.selectedTransactionExtraTime.value,
                   );
-                  if (controller.isExtraTime.value) {
-                    if (controller.selectedTransactionExtraTime.value == null) {
-                      alert.error(
-                        'Error',
-                        'Silahkan pilih trnsaksi sebelumnya untuk melakukan Extra Time',
-                      );
+                  if (await controller.checkhour()) {
+                    if (controller.isExtraTime.value) {
+                      if (controller.selectedTransactionExtraTime.value ==
+                          null) {
+                        alert.error(
+                          'Error',
+                          'Silahkan pilih trnsaksi sebelumnya untuk melakukan Extra Time',
+                        );
+                      } else {
+                        widget.onNext(cartRentModel);
+                      }
                     } else {
                       widget.onNext(cartRentModel);
                     }
-                  } else {
-                    widget.onNext(cartRentModel);
                   }
                 },
                 style: ButtonStyle(
@@ -361,12 +364,13 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                           controller.setEndDateTime();
                                         },
                                         minDateTime: DateTime.now().toLocal(),
-                                        enable: widget.isExtraTime
-                                            ? false
-                                            : (controller
-                                                    .selectedTransactionExtraTime
-                                                    .value ==
-                                                null),
+                                        // enable: widget.isExtraTime
+                                        //     ? false
+                                        //     : (controller
+                                        //             .selectedTransactionExtraTime
+                                        //             .value ==
+                                        //         null),
+                                        enable: !controller.isExtraTime.value,
                                       ),
                                     ),
                                   ],

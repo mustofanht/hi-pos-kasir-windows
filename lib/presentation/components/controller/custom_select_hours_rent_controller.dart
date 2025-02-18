@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
 class CustomSelectHoursRentController extends GetxController {
@@ -175,5 +177,33 @@ class CustomSelectHoursRentController extends GetxController {
         },
       );
     }
+  }
+
+  Future<bool> checkhour() async {
+    bool isValid = false;
+    try {
+      var result;
+      result = await _service.sale.addonService.cekhour(
+        authToken: authToken,
+        orderAddId: entitiy.productId!,
+        startDate: startTime.value!.toIso8601String(),
+        endDate: endTime.value!.toIso8601String(),
+      );
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          alert.warning('Warning', l);
+          isValid = false;
+        },
+        (r) {
+          logger.safeLog(r.data);
+          isValid = true;
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    return isValid;
   }
 }

@@ -242,8 +242,9 @@ class OrderPaymentController extends GetxController {
                   _authToken, body, orderNo);
               // alert.success('Success', 'Payment Success');
 
-              isProcessing.value = false;
+              // isProcessing.value = false;
             }
+            isProcessing.value = false;
           } else {
             alert.error(
               'Error',
@@ -277,7 +278,8 @@ class OrderPaymentController extends GetxController {
         (l) {
           logger.safeLog(l);
           logger.safeLog('Create Order Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
+          // alert.error('Error', 'Terjadi Kesalahan!');
+          alert.error('Error', l);
           isSuccess = false;
         },
         (r) {

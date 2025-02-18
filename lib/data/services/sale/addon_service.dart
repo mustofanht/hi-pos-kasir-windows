@@ -80,9 +80,7 @@ class AddOnService {
     required AuthToken authToken,
     int? orderAddId,
   }) async {
-    var path =
-        "trn_order_addon/$orderAddId";
-
+    var path = "trn_order_addon/$orderAddId";
 
     final uri = source.baseUri(path: path);
 
@@ -97,6 +95,43 @@ class AddOnService {
 
     if (response.statusCode == 200) {
       return Right(json.decode(response.body));
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
+  Future<Either<String, BaseResponse<Object>>> cekhour({
+    required AuthToken authToken,
+    required int orderAddId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    var path = "trn_order_addon/cekhour?";
+
+    path += "ordad_addon_id=$orderAddId";
+    path += "&startDate=$startDate";
+    path += "&endDate=$endDate";
+
+    final uri = source.baseUri(path: path);
+
+    final response = await http.post(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      final parsedResponse = BaseResponse<Object>.fromJson(
+        jsonResponse,
+        (data) => data,
+      );
+
+      return Right(parsedResponse);
     } else {
       return Left(common.getMetadataMessages(response.body));
     }
