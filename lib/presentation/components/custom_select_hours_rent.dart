@@ -212,11 +212,9 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                     children: [
                       Checkbox(
                         value: controller.isExtraTime.value,
-                        onChanged: widget.isExtraTime
-                            ? null
-                            : (v) {
-                                controller.doCheckIsExtraTime();
-                              },
+                        onChanged: (v) {
+                          controller.doCheckIsExtraTime();
+                        },
                         activeColor: colorStyle.blue,
                       ),
                       Text(
@@ -370,7 +368,8 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                         //             .selectedTransactionExtraTime
                                         //             .value ==
                                         //         null),
-                                        enable: !controller.isExtraTime.value,
+                                        // enable: !controller.isExtraTime.value,
+                                        // enable: true,
                                       ),
                                     ),
                                   ],
