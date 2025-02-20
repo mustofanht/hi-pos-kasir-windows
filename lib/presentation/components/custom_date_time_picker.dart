@@ -165,6 +165,14 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
     final newTime = await showTimePicker(
           context: context,
           initialTime: _time,
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                alwaysUse24HourFormat: true, // Mengaktifkan format 24 jam
+              ),
+              child: child!,
+            );
+          },
         ) ??
         const TimeOfDay(hour: 0, minute: 0);
 
