@@ -35,24 +35,53 @@ class InqMemberPage extends GetView<InqMemberPageController> {
               borderRadius: BorderRadius.circular(
                 layoutStyle.defaultMargin / 2,
               ),
-              controller: null,
+              controller: controller.searchController,
               onChanged: (val) {},
               decoration: InputDecoration(
                 hintText: 'Masukan nomor Member',
                 hintStyle: textStyle.greyText,
                 border: InputBorder.none,
-                suffixIcon: IconButton(
-                  onPressed: () async {},
-                  icon: const Icon(
-                    Icons.search,
-                  ),
-                ),
               ),
               keyboardType: TextInputType.text,
             ),
           ),
+          SizedBox(
+            width: layoutStyle.defaultMargin,
+          ),
           CustomButton(
             width: layoutStyle.safeBlockHorizontal * 5,
+            height: layoutStyle.blockVertical * 6.5,
+            margin: EdgeInsets.symmetric(
+              vertical: layoutStyle.defaultMargin / 2,
+              // horizontal: layoutStyle.defaultMargin,
+            ),
+            onPressed: () async {
+              // FocusScope.of(context).unfocus();
+              await controller.doSearch();
+            },
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.resolveWith(
+                (states) => colorStyle.blue,
+              ),
+              overlayColor: MaterialStateProperty.resolveWith(
+                (states) => colorStyle.black.withOpacity(0.1),
+              ),
+              shape: MaterialStateProperty.resolveWith(
+                (states) => RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    layoutStyle.defaultMargin / 2,
+                  ),
+                ),
+              ),
+            ),
+            label: Icon(
+              Icons.search,
+              color: colorStyle.white,
+            ),
+          ),
+          CustomButton(
+            width: layoutStyle.safeBlockHorizontal * 5,
+            height: layoutStyle.blockVertical * 6.5,
             margin: EdgeInsets.symmetric(
               vertical: layoutStyle.defaultMargin / 2,
               horizontal: layoutStyle.defaultMargin,
@@ -76,7 +105,6 @@ class InqMemberPage extends GetView<InqMemberPageController> {
               ),
             ),
             label: Icon(Icons.add, color: colorStyle.white),
-            height: layoutStyle.blockVertical * 6.5,
           ),
         ],
       );

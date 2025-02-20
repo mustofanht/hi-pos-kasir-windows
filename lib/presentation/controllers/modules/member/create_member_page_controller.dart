@@ -26,6 +26,12 @@ class CreateMemberPageController extends GetxController {
   final isLoadingPayment = false.obs;
   final mstPayments = <MstPayment>[].obs;
 
+  var anggotaList = <int>[].obs;
+  var anggotaNamaControllers = <TextEditingController>[].obs;
+  var anggotaSelectedRelations = <CustomIdNameEntity>[].obs;
+
+  var listRelation = <CustomIdNameEntity>[].obs;
+
   @override
   void onInit() {
     // TODO: implement onInit
@@ -99,5 +105,20 @@ class CreateMemberPageController extends GetxController {
       logger.safeLog(e);
     }
     update();
+  }
+
+  void addAnggota() {
+    int index = anggotaList.length;
+    anggotaList.add(index);
+    anggotaNamaControllers.add(TextEditingController());
+    anggotaSelectedRelations.add(CustomIdNameEntity(id: '', name: 'Pilih Printer'));
+  }
+
+  void removeAnggota(int index) {
+    if (index < anggotaList.length) {
+      anggotaList.removeAt(index);
+      anggotaNamaControllers.removeAt(index);
+      anggotaSelectedRelations.removeAt(index);
+    }
   }
 }
