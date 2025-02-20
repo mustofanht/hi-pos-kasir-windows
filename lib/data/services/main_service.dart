@@ -16,6 +16,8 @@ import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/base_response.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/member.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';

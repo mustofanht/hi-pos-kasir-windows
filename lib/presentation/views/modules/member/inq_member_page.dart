@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
-import 'package:jaya_propertiy/domain/entities/member/member.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
@@ -83,7 +84,7 @@ class InqMemberPage extends GetView<InqMemberPageController> {
 
     Widget _dataValueCustom({
       required CustomTableData element,
-      required Member entity,
+      required MemberCard entity,
     }) {
       String id = element.id!;
       String val = entity.toJson()[id].toString();
@@ -117,13 +118,17 @@ class InqMemberPage extends GetView<InqMemberPageController> {
       //     // colorLabel: (val == 'C' ? colorStyle.black : colorStyle.white),
       //     // colorBox: (val == 'C' ? colorStyle.green : colorStyle.grey),
       //   );
-      // } else {
-      //   return Text(element.defaultValue ?? val);
-      // }
+      if (id == 'expiredDate') {
+        return val.isNotEmpty
+            ? Text(dateTimeUtil.dateFormat(DateTime.parse(val), 'yyyy-MM-dd'))
+            : const Text('');
+      } else {
+        return Text(element.defaultValue ?? val);
+      }
       return Text(element.defaultValue ?? val);
     }
 
-    Widget _dataTableCustom(Member e) {
+    Widget _dataTableCustom(MemberCard e) {
       return GestureDetector(
         onTap: () {
           controller.doToDetail(e);

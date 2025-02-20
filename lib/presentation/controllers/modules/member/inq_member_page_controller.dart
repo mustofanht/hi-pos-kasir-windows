@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
-import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
-import 'package:jaya_propertiy/domain/entities/member/member.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 
 class InqMemberPageController extends GetxController
@@ -27,7 +25,7 @@ class InqMemberPageController extends GetxController
 
   final pagination = Pagination().obs;
 
-  final dataList = <Member>[].obs;
+  final dataList = <MemberCard>[].obs;
   final isLoading = false.obs;
 
   @override
@@ -79,7 +77,7 @@ class InqMemberPageController extends GetxController
     listColumnHeader.clear();
     listColumnHeader.add(
       CustomTableData(
-        id: 'number',
+        id: 'cardNo',
         columnName: 'Nomer',
         width: layoutStyle.blockHorizontal * 20,
         alignment: Alignment.centerLeft,
@@ -87,14 +85,14 @@ class InqMemberPageController extends GetxController
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'name',
+        id: 'cardName',
         columnName: 'Nama',
         alignment: Alignment.centerLeft,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'membership',
+        id: 'membName',
         columnName: 'Membership',
         alignment: Alignment.center,
         defaultValue: 'Onsite',
@@ -102,21 +100,21 @@ class InqMemberPageController extends GetxController
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'expire',
+        id: 'expiredDate',
         columnName: 'Masa Berlaku',
         alignment: Alignment.center,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'state',
+        id: 'status',
         columnName: 'Status',
         alignment: Alignment.center,
       ),
     );
     listColumnHeader.add(
       CustomTableData(
-        id: 'extend',
+        id: 'resetPeriodName',
         columnName: 'Perpanjang',
         alignment: Alignment.center,
       ),
@@ -142,20 +140,11 @@ class InqMemberPageController extends GetxController
     logger.safeLog("PAGE : $page");
     logger.safeLog("SEARCH : $search");
     isLoading.value = true;
-
     try {
       var result;
-      List<FilterQuery> dataFilter = [];
-      Map<String, dynamic> param = {
-        'page': page.toString(),
-        'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
-        // 'desc': 'orderDate',
-      };
-
-      result = await _service.member.getMember(
+      result = await _service.member.getMemberCardInq(
         authToken: _authToken,
-        dataFilter: dataFilter,
-        paramsFilter: param,
+        search: search,
       );
       result.fold(
         (l) {
@@ -181,7 +170,7 @@ class InqMemberPageController extends GetxController
     update();
   }
 
-  doToDetail(Member? val) {
+  doToDetail(MemberCard? val) {
     // selectedData.value = val!;
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();

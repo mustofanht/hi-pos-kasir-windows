@@ -17,11 +17,8 @@ class MemberPage extends GetView<MemberPageController> {
         controller;
       },
       builder: (controller) {
-        return Container(
-          padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
-          child: FocusScope(
-            child: controller.memberContent ?? Container(),
-          ),
+        return FocusScope(
+          child: controller.memberContent ?? Container(),
         );
       },
     );

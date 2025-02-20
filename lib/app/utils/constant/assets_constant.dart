@@ -35,6 +35,8 @@ class AppAssetConstant {
   final String icPaymentTraveloka = "${constant.pathIcons}ic-payment-traveloka.png";
   final String icPaymentTiket = "${constant.pathIcons}ic-payment-tiket.png";
 
+  // Member
+  final String membership = "${constant.pathImages}membership.png";
 }
 
 AppAssetConstant assetsConstant = new AppAssetConstant();
