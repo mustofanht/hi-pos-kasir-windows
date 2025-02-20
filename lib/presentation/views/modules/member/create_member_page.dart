@@ -93,202 +93,205 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
 
     Widget _leftFormSection() {
       return Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            CustomTextBox(
-              height: layoutStyle.blockVertical * 6.5,
-              margin: EdgeInsets.symmetric(
-                horizontal: layoutStyle.defaultMargin,
-                vertical: layoutStyle.defaultMargin / 4,
-              ),
-              obscureText: false,
-              border: Border.all(
-                color: colorStyle.grey,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(
-                layoutStyle.defaultMargin / 2,
-              ),
-              label: Text(
-                'No Member',
-                style: textStyle.greyText.copyWith(
-                  fontSize: fontSize.small,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              CustomTextBox(
+                height: layoutStyle.blockVertical * 6.5,
+                margin: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin,
+                  vertical: layoutStyle.defaultMargin / 4,
                 ),
-              ),
-              controller: controller.noMemberController,
-              decoration: InputDecoration(
-                hintText: 'Nomor Member',
-                hintStyle: textStyle.greyText,
-                border: InputBorder.none,
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextBox(
-                    height: layoutStyle.blockVertical * 6.5,
-                    margin: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin,
-                      vertical: layoutStyle.defaultMargin / 4,
-                    ),
-                    obscureText: false,
-                    border: Border.all(
-                      color: colorStyle.grey,
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      layoutStyle.defaultMargin / 2,
-                    ),
-                    label: Text(
-                      'No KTP',
-                      style: textStyle.greyText.copyWith(
-                        fontSize: fontSize.small,
-                      ),
-                    ),
-                    controller: controller.noKtpController,
-                    decoration: InputDecoration(
-                      hintText: 'Nomor KTP',
-                      hintStyle: textStyle.greyText,
-                      border: InputBorder.none,
-                    ),
+                obscureText: false,
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                label: Text(
+                  'No Member',
+                  style: textStyle.greyText.copyWith(
+                    fontSize: fontSize.small,
                   ),
                 ),
-                Expanded(
-                  child: CustomTextBox(
-                    height: layoutStyle.blockVertical * 6.5,
-                    margin: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin,
-                      vertical: layoutStyle.defaultMargin / 4,
-                    ),
-                    obscureText: false,
-                    border: Border.all(
-                      color: colorStyle.grey,
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      layoutStyle.defaultMargin / 2,
-                    ),
-                    label: Text(
-                      'Nama',
-                      style: textStyle.greyText.copyWith(
-                        fontSize: fontSize.small,
-                      ),
-                    ),
-                    controller: controller.nameController,
-                    decoration: InputDecoration(
-                      hintText: 'Nama',
-                      hintStyle: textStyle.greyText,
-                      border: InputBorder.none,
-                    ),
-                  ),
+                controller: controller.noMemberController,
+                decoration: InputDecoration(
+                  hintText: 'Nomor Member',
+                  hintStyle: textStyle.greyText,
+                  border: InputBorder.none,
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextBox(
-                    height: layoutStyle.blockVertical * 6.5,
-                    margin: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin,
-                      vertical: layoutStyle.defaultMargin / 4,
-                    ),
-                    obscureText: false,
-                    border: Border.all(
-                      color: colorStyle.grey,
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      layoutStyle.defaultMargin / 2,
-                    ),
-                    label: Text(
-                      'Alamat',
-                      style: textStyle.greyText.copyWith(
-                        fontSize: fontSize.small,
-                      ),
-                    ),
-                    controller: controller.addressController,
-                    decoration: InputDecoration(
-                      hintText: 'Alamat',
-                      hintStyle: textStyle.greyText,
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: CustomTextBox(
-                    height: layoutStyle.blockVertical * 6.5,
-                    margin: EdgeInsets.symmetric(
-                      horizontal: layoutStyle.defaultMargin,
-                      vertical: layoutStyle.defaultMargin / 4,
-                    ),
-                    obscureText: false,
-                    border: Border.all(
-                      color: colorStyle.grey,
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      layoutStyle.defaultMargin / 2,
-                    ),
-                    label: Text(
-                      'Nomor Hp',
-                      style: textStyle.greyText.copyWith(
-                        fontSize: fontSize.small,
-                      ),
-                    ),
-                    controller: controller.noPhoneController,
-                    decoration: InputDecoration(
-                      hintText: 'Nama',
-                      hintStyle: textStyle.greyText,
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            CustomButton(
-              width: layoutStyle.blockHorizontal * 10,
-              height: layoutStyle.blockVertical * 6.5,
-              margin: EdgeInsets.symmetric(
-                horizontal: layoutStyle.defaultMargin,
-                vertical: layoutStyle.defaultMargin / 2,
               ),
-              onPressed: () {
-                // controller.doBack();
-              },
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all<Color>(colorStyle.primary),
-                foregroundColor:
-                    MaterialStateProperty.all<Color>(colorStyle.primary),
-                overlayColor: MaterialStateProperty.all<Color>(
-                    colorStyle.primary.withOpacity(0.1)),
-                side: MaterialStateProperty.all<BorderSide>(
-                    BorderSide(color: colorStyle.primary, width: 1)),
-                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 5,
-                        horizontal: layoutStyle.defaultMargin / 5)),
-                elevation: MaterialStateProperty.all<double>(0),
-                alignment: Alignment.center,
-              ),
-              label: Row(
+              Row(
                 children: [
-                  Icon(
-                    Icons.add,
-                    size: fontSize.body,
-                    color: colorStyle.white,
+                  Expanded(
+                    child: CustomTextBox(
+                      height: layoutStyle.blockVertical * 6.5,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                        vertical: layoutStyle.defaultMargin / 4,
+                      ),
+                      obscureText: false,
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                      label: Text(
+                        'No KTP',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      controller: controller.noKtpController,
+                      decoration: InputDecoration(
+                        hintText: 'Nomor KTP',
+                        hintStyle: textStyle.greyText,
+                        border: InputBorder.none,
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Anggota',
-                    style: textStyle.whiteText,
+                  Expanded(
+                    child: CustomTextBox(
+                      height: layoutStyle.blockVertical * 6.5,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                        vertical: layoutStyle.defaultMargin / 4,
+                      ),
+                      obscureText: false,
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                      label: Text(
+                        'Nama',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      controller: controller.nameController,
+                      decoration: InputDecoration(
+                        hintText: 'Nama',
+                        hintStyle: textStyle.greyText,
+                        border: InputBorder.none,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            _leftFormPaymentMethod(),
-          ],
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextBox(
+                      height: layoutStyle.blockVertical * 6.5,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                        vertical: layoutStyle.defaultMargin / 4,
+                      ),
+                      obscureText: false,
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                      label: Text(
+                        'Alamat',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      controller: controller.addressController,
+                      decoration: InputDecoration(
+                        hintText: 'Alamat',
+                        hintStyle: textStyle.greyText,
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextBox(
+                      height: layoutStyle.blockVertical * 6.5,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                        vertical: layoutStyle.defaultMargin / 4,
+                      ),
+                      obscureText: false,
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                      label: Text(
+                        'Nomor Hp',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      controller: controller.noPhoneController,
+                      decoration: InputDecoration(
+                        hintText: 'Nama',
+                        hintStyle: textStyle.greyText,
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              CustomButton(
+                width: layoutStyle.blockHorizontal * 10,
+                height: layoutStyle.blockVertical * 6.5,
+                margin: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin,
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                onPressed: () {
+                  // controller.doBack();
+                },
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(colorStyle.primary),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(colorStyle.primary),
+                  overlayColor: MaterialStateProperty.all<Color>(
+                      colorStyle.primary.withOpacity(0.1)),
+                  side: MaterialStateProperty.all<BorderSide>(
+                      BorderSide(color: colorStyle.primary, width: 1)),
+                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 5,
+                          horizontal: layoutStyle.defaultMargin / 5)),
+                  elevation: MaterialStateProperty.all<double>(0),
+                  alignment: Alignment.center,
+                ),
+                label: Row(
+                  children: [
+                    Icon(
+                      Icons.add,
+                      size: fontSize.body,
+                      color: colorStyle.white,
+                    ),
+                    Text(
+                      'Anggota',
+                      style: textStyle.whiteText,
+                    ),
+                  ],
+                ),
+              ),
+              _leftFormPaymentMethod(),
+            ],
+          ),
         ),
       );
     }
