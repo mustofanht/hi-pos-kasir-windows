@@ -7,10 +7,11 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/member/new_member_page_controller.dart';
 
 class CreateMemberPageController extends GetxController {
   CreateMemberPageController();
-  
+
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
@@ -20,7 +21,6 @@ class CreateMemberPageController extends GetxController {
   final addressController = TextEditingController();
   final noPhoneController = TextEditingController();
 
-  
   final paymentType = <CustomIdNameEntity>[].obs;
   final selectedPaymentType = CustomIdNameEntity().obs;
   final isLoadingPayment = false.obs;
@@ -38,7 +38,6 @@ class CreateMemberPageController extends GetxController {
     super.dispose();
   }
 
-
   doBack() {
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
@@ -47,7 +46,6 @@ class CreateMemberPageController extends GetxController {
     update();
   }
 
-  
   doSelectPaymentType(CustomIdNameEntity value) {
     logger.safeLog('doSelectPaymentType');
     selectedPaymentType.value = value;

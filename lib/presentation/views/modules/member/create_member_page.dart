@@ -3,6 +3,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_payment.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
@@ -10,7 +11,11 @@ import 'package:jaya_propertiy/presentation/controllers/modules/member/create_me
 import 'package:jaya_propertiy/presentation/views/modules/member/cart_member.dart';
 
 class CreateMemberPage extends GetView<CreateMemberPageController> {
-  const CreateMemberPage({super.key});
+  final Membership membership;
+  const CreateMemberPage({
+    super.key,
+    required this.membership,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,27 +71,30 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
 
     Widget _leftFormPaymentMethod() {
       return Obx(
-        () => GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisSpacing: layoutStyle.defaultMargin / 2,
-            mainAxisSpacing: layoutStyle.defaultMargin / 2,
-            crossAxisCount: 3,
-            childAspectRatio: 2,
+        () => Padding(
+          padding: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisSpacing: layoutStyle.defaultMargin / 2,
+              mainAxisSpacing: layoutStyle.defaultMargin / 2,
+              crossAxisCount: 3,
+              childAspectRatio: 2,
+            ),
+            itemCount: controller.paymentType.length,
+            itemBuilder: (context, index) {
+              return SizedBox(
+                height: layoutStyle.blockVertical * 2,
+                child: CustomCardPayment(
+                  element: controller.paymentType[index],
+                  doSelectPaymentType: controller.doSelectPaymentType,
+                  mstPayments: controller.mstPayments,
+                  selectedPaymentType: controller.selectedPaymentType,
+                ),
+              );
+            },
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
           ),
-          itemCount: controller.paymentType.length,
-          itemBuilder: (context, index) {
-            return SizedBox(
-              height: layoutStyle.blockVertical * 2,
-              child: CustomCardPayment(
-                element: controller.paymentType[index],
-                doSelectPaymentType: controller.doSelectPaymentType,
-                mstPayments: controller.mstPayments,
-                selectedPaymentType: controller.selectedPaymentType,
-              ),
-            );
-          },
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
         ),
       );
     }
@@ -249,46 +257,50 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                   ),
                 ],
               ),
-              CustomButton(
-                width: layoutStyle.blockHorizontal * 10,
-                height: layoutStyle.blockVertical * 6.5,
-                margin: EdgeInsets.symmetric(
-                  horizontal: layoutStyle.defaultMargin,
-                  vertical: layoutStyle.defaultMargin / 2,
-                ),
-                onPressed: () {
-                  // controller.doBack();
-                },
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(colorStyle.primary),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(colorStyle.primary),
-                  overlayColor: MaterialStateProperty.all<Color>(
-                      colorStyle.primary.withOpacity(0.1)),
-                  side: MaterialStateProperty.all<BorderSide>(
-                      BorderSide(color: colorStyle.primary, width: 1)),
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                      EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 5,
-                          horizontal: layoutStyle.defaultMargin / 5)),
-                  elevation: MaterialStateProperty.all<double>(0),
-                  alignment: Alignment.center,
-                ),
-                label: Row(
-                  children: [
-                    Icon(
-                      Icons.add,
-                      size: fontSize.body,
-                      color: colorStyle.white,
+              membership.membCheckName != 'Y'
+                  ? Container(
+                      margin: EdgeInsets.all(layoutStyle.defaultMargin),
+                    )
+                  : CustomButton(
+                      width: layoutStyle.blockHorizontal * 10,
+                      height: layoutStyle.blockVertical * 6.5,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                        vertical: layoutStyle.defaultMargin / 2,
+                      ),
+                      onPressed: () {
+                        // controller.doBack();
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            colorStyle.primary),
+                        foregroundColor: MaterialStateProperty.all<Color>(
+                            colorStyle.primary),
+                        overlayColor: MaterialStateProperty.all<Color>(
+                            colorStyle.primary.withOpacity(0.1)),
+                        side: MaterialStateProperty.all<BorderSide>(
+                            BorderSide(color: colorStyle.primary, width: 1)),
+                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 5,
+                                horizontal: layoutStyle.defaultMargin / 5)),
+                        elevation: MaterialStateProperty.all<double>(0),
+                        alignment: Alignment.center,
+                      ),
+                      label: Row(
+                        children: [
+                          Icon(
+                            Icons.add,
+                            size: fontSize.body,
+                            color: colorStyle.white,
+                          ),
+                          Text(
+                            'Anggota',
+                            style: textStyle.whiteText,
+                          ),
+                        ],
+                      ),
                     ),
-                    Text(
-                      'Anggota',
-                      style: textStyle.whiteText,
-                    ),
-                  ],
-                ),
-              ),
               _leftFormPaymentMethod(),
             ],
           ),

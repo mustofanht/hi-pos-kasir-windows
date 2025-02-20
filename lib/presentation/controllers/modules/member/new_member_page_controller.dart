@@ -21,6 +21,7 @@ class NewMemberPageController extends GetxController {
   final pagination = Pagination().obs;
 
   final dataList = <Membership>[].obs;
+  final selectedMembership = Membership().obs;
   final isLoading = false.obs;
 
   @override
@@ -95,6 +96,7 @@ class NewMemberPageController extends GetxController {
   }
 
   doSelectMembership(Membership membership) {
+    selectedMembership.value = membership;
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
       headerController.gotTo(MemberRouteName.createMember);
