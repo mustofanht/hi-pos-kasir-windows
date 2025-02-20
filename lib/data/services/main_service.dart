@@ -15,6 +15,7 @@ import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/base_response.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
@@ -46,6 +47,7 @@ part 'master_data_service.dart';
 part 'reason_void_service.dart';
 part 'rental_service.dart';
 part 'transaction_service.dart';
+part 'member_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -59,4 +61,5 @@ class MainService {
   final reasonVoid = ReasonVoidService();
   final rental = RentalService();
   final transaction = TransactionService();
+  final member = MemberService();
 }

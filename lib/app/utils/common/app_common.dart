@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -331,6 +332,35 @@ class AppCommon {
       },
     );
     return isActive;
+  }
+
+  Widget underConstruction() {
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            assetsConstant.imgUnderConstruction,
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            width: layoutStyle.blockHorizontal * 50,
+            height: layoutStyle.blockVertical * 50,
+          ),
+          SizedBox(
+            height: layoutStyle.defaultMargin,
+          ),
+          Text(
+            'Under Construction',
+            style: TextStyle(
+              fontSize: fontSize.header * 2,
+              fontWeight: fontWeight.bold,
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
 
