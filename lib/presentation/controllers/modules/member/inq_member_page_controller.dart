@@ -7,6 +7,8 @@ import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 
 class InqMemberPageController extends GetxController
@@ -170,12 +172,50 @@ class InqMemberPageController extends GetxController
     update();
   }
 
-  doToDetail(MemberCard? val) {
+  doToDetail(MemberCard? val) async {
     // selectedData.value = val!;
+    bool isExists = await checkMemberValidation(val);
+    if (isExists) return;
+
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
       headerController.gotTo(MemberRouteName.newMember);
     }
     update();
+  }
+
+  Future<bool> checkMemberValidation(MemberCard? val) async {
+    bool isExists = false;
+    if (val != null && val.cardKuota != null) {
+      try {
+        var result;
+        result = await _service.member.memberValid(
+          authToken: _authToken,
+          cardNo: val.cardNo!,
+        );
+        result.fold(
+          (l) {
+            logger.safeLog(l);
+          },
+          (r) {
+            Membership membership = Membership();
+            logger.safeLog(r);
+            if (Get.isRegistered<MemberPageController>()) {
+              final headerController = Get.find<MemberPageController>();
+              headerController.gotTo(MemberRouteName.createMember);
+            }
+
+            if (Get.isRegistered<CartMemberController>()) {
+              final cartController = Get.find<CartMemberController>();
+              cartController.addCartMembership(membership);
+            }
+            isExists = true;
+          },
+        );
+      } catch (e) {
+        logger.safeLog(e);
+      }
+    }
+    return isExists;
   }
 }

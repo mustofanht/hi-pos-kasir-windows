@@ -13,19 +13,33 @@ import 'package:jaya_propertiy/presentation/views/modules/member/new_member_page
 class MemberPageController extends GetxController {
   MemberPageController();
 
+  final RxList<String> pageHistory = <String>[MemberRouteName.inqMember].obs;
   final menuMember = RxString('inq-member');
-  Membership membership = Membership();
+  Membership selectedMembership = Membership();
 
-  gotTo(String pageName) {
-    menuMember.value = pageName;
-    update();
+  gotTo(
+    String pageName,
+  ) {
+    if (menuMember.value != pageName) {
+      pageHistory.add(pageName);
+      menuMember.value = pageName;
+      update();
+    }
+  }
+
+  void goBack() {
+    if (pageHistory.length > 1) {
+      pageHistory.removeLast();
+      menuMember.value = pageHistory.last;
+      update();
+    }
   }
 
   Widget? get memberContent {
     if (!Get.isRegistered<CartMemberController>()) {
       Get.lazyPut(() => CartMemberController());
     }
-    
+
     callNewMembership();
 
     Get.delete<InqMemberPageController>();
@@ -39,9 +53,11 @@ class MemberPageController extends GetxController {
         Get.lazyPut(() => NewMemberPageController());
         return const NewMemberPage();
       case MemberRouteName.createMember:
-        Get.lazyPut(() => CreateMemberPageController());
+        Get.lazyPut(() => CreateMemberPageController(
+              membership: selectedMembership,
+            ));
         return CreateMemberPage(
-          membership: membership,
+          membership: selectedMembership,
         );
       default:
         return common.underConstruction();
@@ -51,7 +67,7 @@ class MemberPageController extends GetxController {
   callNewMembership() {
     if (Get.isRegistered<NewMemberPageController>()) {
       final newMemberController = Get.find<NewMemberPageController>();
-      membership = newMemberController.selectedMembership.value;
+      selectedMembership = newMemberController.selectedMembership.value;
     }
   }
 }

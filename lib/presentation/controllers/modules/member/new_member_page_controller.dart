@@ -91,7 +91,7 @@ class NewMemberPageController extends GetxController {
   doBack() {
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
-      headerController.gotTo(MemberRouteName.inqMember);
+      headerController.goBack();
     }
     update();
   }

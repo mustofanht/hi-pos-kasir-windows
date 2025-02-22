@@ -111,4 +111,34 @@ class MemberService {
       return Left(common.getMetadataMessages(response.body));
     }
   }
+
+  Future<Either<String, BaseResponse<MemberValid>>> memberValid({
+    required AuthToken authToken,
+    required String cardNo,
+  }) async {
+    var path = "member_card/valid/$cardNo";
+
+    final uri = source.baseUri(
+      path: path,
+    );
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<MemberValid> result = BaseResponse<MemberValid>.fromJson(
+        json.decode(response.body),
+        (data) => MemberValid.fromJson(data),
+      );
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
 }

@@ -6,12 +6,17 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/new_member_page_controller.dart';
 
 class CreateMemberPageController extends GetxController {
-  CreateMemberPageController();
+  final Membership membership;
+  CreateMemberPageController({
+    required this.membership,
+  });
 
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
@@ -62,19 +67,19 @@ class CreateMemberPageController extends GetxController {
     update();
   }
 
-  bool isValidValueRelation(CustomIdNameEntity? value, List<CustomIdNameEntity> items) {
+  bool isValidValueRelation(
+      CustomIdNameEntity? value, List<CustomIdNameEntity> items) {
     return value == null || items.any((item) => item.id == value.id);
   }
 
   doBack() {
-    if (Get.isRegistered<MemberPageController>()) {
-      final headerController = Get.find<MemberPageController>();
-      headerController.gotTo(MemberRouteName.newMember);
-    }
-
     if (Get.isRegistered<CartMemberController>()) {
       final cartController = Get.find<CartMemberController>();
       cartController.cancelOrder();
+    }
+    if (Get.isRegistered<MemberPageController>()) {
+      final headerController = Get.find<MemberPageController>();
+      headerController.goBack();
     }
     update();
   }
@@ -136,10 +141,14 @@ class CreateMemberPageController extends GetxController {
 
   void addAnggota() {
     int index = anggotaList.length;
-    anggotaList.add(index);
-    anggotaNamaControllers.add(TextEditingController());
-    anggotaSelectedRelations
-        .add(CustomIdNameEntity(id: '', name: 'Pilih Printer'));
+    if (index < (membership.membMaxKuota ?? 0)) {
+      anggotaList.add(index);
+      anggotaNamaControllers.add(TextEditingController());
+      anggotaSelectedRelations
+          .add(CustomIdNameEntity(id: '', name: 'Pilih Printer'));
+    } else {
+      alert.warning('Warning', 'Maximal 2 anggota');
+    }
   }
 
   void removeAnggota(int index) {
