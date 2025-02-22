@@ -92,6 +92,22 @@ class ProductRentalType {
   // static String DAYS = 'D';
 }
 
+class MemberRelation {
+  static const String ANAK = 'A';
+  static const String SAUDARA = 'S';
+
+  static String getName(String relation) {
+    switch (relation) {
+      case ANAK:
+        return "Anak";
+      case SAUDARA:
+        return "Saudara";
+      default:
+        return "";
+    }
+  }
+}
+
 AppStringConstant constant = new AppStringConstant();
 ArgumentsConstant argConstant = new ArgumentsConstant();
 AppRequestContentType contentType = new AppRequestContentType();

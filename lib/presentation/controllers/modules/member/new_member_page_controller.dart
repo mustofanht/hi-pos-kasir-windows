@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 
 class NewMemberPageController extends GetxController {
@@ -100,6 +101,11 @@ class NewMemberPageController extends GetxController {
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
       headerController.gotTo(MemberRouteName.createMember);
+    }
+
+    if (Get.isRegistered<CartMemberController>()) {
+      final cartController = Get.find<CartMemberController>();
+      cartController.addCartMembership(selectedMembership.value);
     }
     update();
   }

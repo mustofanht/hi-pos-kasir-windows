@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/new_member_page_controller.dart';
 
@@ -37,6 +38,7 @@ class CreateMemberPageController extends GetxController {
     // TODO: implement onInit
     super.onInit();
     preparePaymentMethod();
+    doInitializeMemberRelation();
   }
 
   @override
@@ -44,10 +46,35 @@ class CreateMemberPageController extends GetxController {
     super.dispose();
   }
 
+  doInitializeMemberRelation() {
+    listRelation.add(
+      CustomIdNameEntity(
+        id: MemberRelation.ANAK,
+        name: MemberRelation.getName(MemberRelation.ANAK),
+      ),
+    );
+    listRelation.add(
+      CustomIdNameEntity(
+        id: MemberRelation.SAUDARA,
+        name: MemberRelation.getName(MemberRelation.SAUDARA),
+      ),
+    );
+    update();
+  }
+
+  bool isValidValueRelation(CustomIdNameEntity? value, List<CustomIdNameEntity> items) {
+    return value == null || items.any((item) => item.id == value.id);
+  }
+
   doBack() {
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
       headerController.gotTo(MemberRouteName.newMember);
+    }
+
+    if (Get.isRegistered<CartMemberController>()) {
+      final cartController = Get.find<CartMemberController>();
+      cartController.cancelOrder();
     }
     update();
   }
@@ -55,13 +82,13 @@ class CreateMemberPageController extends GetxController {
   doSelectPaymentType(CustomIdNameEntity value) {
     logger.safeLog('doSelectPaymentType');
     selectedPaymentType.value = value;
-    // MstPayment mstPayment = mstPayments.firstWhere(
-    //   (e) => e.pymntCode == value.id,
-    // );
-    // final SaleCartPageController saleCartPageController =
-    //     Get.find<SaleCartPageController>();
-    // saleCartPageController.selectedMstPayment.value = mstPayment;
-    // saleCartPageController.calculateTotalOrder();
+    MstPayment mstPayment = mstPayments.firstWhere(
+      (e) => e.pymntCode == value.id,
+    );
+    final CartMemberController saleCartPageController =
+        Get.find<CartMemberController>();
+    saleCartPageController.selectedMstPayment.value = mstPayment;
+    saleCartPageController.calculateMemberAmount();
     update();
   }
 
@@ -111,7 +138,8 @@ class CreateMemberPageController extends GetxController {
     int index = anggotaList.length;
     anggotaList.add(index);
     anggotaNamaControllers.add(TextEditingController());
-    anggotaSelectedRelations.add(CustomIdNameEntity(id: '', name: 'Pilih Printer'));
+    anggotaSelectedRelations
+        .add(CustomIdNameEntity(id: '', name: 'Pilih Printer'));
   }
 
   void removeAnggota(int index) {

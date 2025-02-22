@@ -21,7 +21,7 @@ class Membership {
   int? membVpId;
   int? membKuota;
   int? membMaxKuota;
-  int? membRegPrice;
+  double? membRegPrice;
 
   Membership({
     this.membId,
@@ -73,7 +73,9 @@ class Membership {
       membVpId: json['membVpId'],
       membKuota: json['membKuota'],
       membMaxKuota: json['membMaxKuota'],
-      membRegPrice: json['membRegPrice'],
+      membRegPrice: json['membRegPrice'] != null
+          ? (json['membRegPrice'] as num).toDouble()
+          : null,
     );
   }
 

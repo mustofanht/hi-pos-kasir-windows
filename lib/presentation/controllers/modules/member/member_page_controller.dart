@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/create_member_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/inq_member_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/new_member_page_controller.dart';
@@ -21,6 +22,10 @@ class MemberPageController extends GetxController {
   }
 
   Widget? get memberContent {
+    if (!Get.isRegistered<CartMemberController>()) {
+      Get.lazyPut(() => CartMemberController());
+    }
+    
     callNewMembership();
 
     Get.delete<InqMemberPageController>();

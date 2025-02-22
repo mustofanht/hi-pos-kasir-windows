@@ -148,7 +148,11 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                           ),
                         )
                         .toList(),
-                    value: controller.anggotaSelectedRelations[index],
+                    value: controller.isValidValueRelation(
+                            controller.anggotaSelectedRelations[index],
+                            controller.listRelation)
+                        ? controller.anggotaSelectedRelations[index]
+                        : null,
                     label: Text(
                       'Hubungan',
                       style: textStyle.greyText.copyWith(
@@ -275,6 +279,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
             children: [
               CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
+                isDisabled: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,

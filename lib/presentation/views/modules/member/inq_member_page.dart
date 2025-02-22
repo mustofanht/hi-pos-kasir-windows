@@ -153,7 +153,6 @@ class InqMemberPage extends GetView<InqMemberPageController> {
       } else {
         return Text(element.defaultValue ?? val);
       }
-      return Text(element.defaultValue ?? val);
     }
 
     Widget _dataTableCustom(MemberCard e) {
