@@ -421,7 +421,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                       ),
                       controller: controller.noPhoneController,
                       decoration: InputDecoration(
-                        hintText: 'Nama',
+                        hintText: 'Nomor Hp',
                         hintStyle: textStyle.greyText,
                         border: InputBorder.none,
                       ),

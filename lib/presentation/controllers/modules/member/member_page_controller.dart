@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/create_member_page_controller.dart';
@@ -16,6 +17,7 @@ class MemberPageController extends GetxController {
   final RxList<String> pageHistory = <String>[MemberRouteName.inqMember].obs;
   final menuMember = RxString('inq-member');
   Membership selectedMembership = Membership();
+  MemberValid selectedMembervalid = MemberValid();
 
   gotTo(
     String pageName,
@@ -40,6 +42,7 @@ class MemberPageController extends GetxController {
       Get.lazyPut(() => CartMemberController());
     }
 
+    callInqMembership();
     callNewMembership();
 
     Get.delete<InqMemberPageController>();
@@ -54,6 +57,7 @@ class MemberPageController extends GetxController {
         return const NewMemberPage();
       case MemberRouteName.createMember:
         Get.lazyPut(() => CreateMemberPageController(
+              memberValid: selectedMembervalid,
               membership: selectedMembership,
             ));
         return CreateMemberPage(
@@ -61,6 +65,17 @@ class MemberPageController extends GetxController {
         );
       default:
         return common.underConstruction();
+    }
+  }
+
+  callInqMembership() {
+    if (Get.isRegistered<InqMemberPageController>()) {
+      final inqMemberController = Get.find<InqMemberPageController>();
+      selectedMembervalid = inqMemberController.selectedMemberValid.value;
+      if (inqMemberController.selectedMemberValid.value.mstMembership != null) {
+        selectedMembership =
+            inqMemberController.selectedMemberValid.value.mstMembership!;
+      }
     }
   }
 

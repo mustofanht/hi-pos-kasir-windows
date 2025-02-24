@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
@@ -30,6 +31,8 @@ class InqMemberPageController extends GetxController
   final dataList = <MemberCard>[].obs;
   final isLoading = false.obs;
 
+  final selectedMemberValid = MemberValid().obs;
+
   @override
   Future<void> onInit() async {
     super.onInit();
@@ -41,6 +44,7 @@ class InqMemberPageController extends GetxController
 
     await setListHeaderColumn();
     await doRefresh();
+    selectedMemberValid.value = MemberValid();
   }
 
   @override
@@ -111,6 +115,13 @@ class InqMemberPageController extends GetxController
       CustomTableData(
         id: 'status',
         columnName: 'Status',
+        alignment: Alignment.center,
+      ),
+    );
+    listColumnHeader.add(
+      CustomTableData(
+        id: 'cardKuota',
+        columnName: 'Kuota',
         alignment: Alignment.center,
       ),
     );
@@ -198,8 +209,11 @@ class InqMemberPageController extends GetxController
             logger.safeLog(l);
           },
           (r) {
-            Membership membership = Membership();
             logger.safeLog(r);
+            MemberValid memberValid = r.data;
+            Membership membership = memberValid.mstMembership ?? Membership();
+            selectedMemberValid.value = memberValid;
+
             if (Get.isRegistered<MemberPageController>()) {
               final headerController = Get.find<MemberPageController>();
               headerController.gotTo(MemberRouteName.createMember);

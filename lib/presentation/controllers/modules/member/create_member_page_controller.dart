@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
@@ -13,8 +14,10 @@ import 'package:jaya_propertiy/presentation/controllers/modules/member/member_pa
 import 'package:jaya_propertiy/presentation/controllers/modules/member/new_member_page_controller.dart';
 
 class CreateMemberPageController extends GetxController {
+  final MemberValid? memberValid;
   final Membership membership;
   CreateMemberPageController({
+    this.memberValid,
     required this.membership,
   });
 
@@ -44,11 +47,22 @@ class CreateMemberPageController extends GetxController {
     super.onInit();
     preparePaymentMethod();
     doInitializeMemberRelation();
+    prepareData();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  prepareData() {
+    if (memberValid != null) {
+      noMemberController.text = memberValid?.cardNo ?? '';
+      noKtpController.text = memberValid?.cardIdentityNo ?? '';
+      nameController.text = memberValid?.cardName ?? '';
+      // addressController.text = memberValid?. ?? '';
+      noPhoneController.text = memberValid?.cardNoHp ??'';
+    }
   }
 
   doInitializeMemberRelation() {
