@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/data/models/auth/sign_in_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/resources/network_source.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';

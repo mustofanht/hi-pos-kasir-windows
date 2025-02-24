@@ -1235,9 +1235,9 @@ class CustomDialog {
     required String title,
     required String msg,
     required Function(String reffNo) onNext,
-  }) {
+  }) async {
     final reffNoController = TextEditingController();
-    Get.dialog(
+    await Get.dialog(
       AlertDialog(
         contentPadding: EdgeInsets.zero,
         content: Container(

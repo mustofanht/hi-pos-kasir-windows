@@ -185,7 +185,7 @@ class CartMember extends GetView<CartMemberController> {
                         msg:
                             'Apakah anda yakin akan membatalkan proses order di atas?',
                         onYes: () {
-                          controller.cancelOrder();
+                          controller.clearOrder();
                           if (Get.isRegistered<MemberPageController>()) {
                             final headerController =
                                 Get.find<MemberPageController>();
@@ -219,7 +219,7 @@ class CartMember extends GetView<CartMemberController> {
                   child: CustomButton(
                     onPressed: () {
                       FocusScope.of(context).unfocus();
-                      // controller.onPayment();
+                      controller.onPayment();
                     },
                     style: ButtonStyle(
                       backgroundColor:

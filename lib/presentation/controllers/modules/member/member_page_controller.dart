@@ -85,6 +85,21 @@ class MemberPageController extends GetxController {
       selectedMembership = newMemberController.selectedMembership.value;
     }
   }
+
+  clearAndRefreshMenu() {
+    Get.delete<CartMemberController>();
+    Get.delete<InqMemberPageController>();
+    Get.delete<NewMemberPageController>();
+    Get.delete<CreateMemberPageController>();
+
+    if (!Get.isRegistered<CartMemberController>()) {
+      Get.lazyPut(() => CartMemberController());
+    }
+    Get.lazyPut(() => InqMemberPageController());
+    pageHistory.clear();
+    menuMember.value = MemberRouteName.inqMember;
+    update();
+  }
 }
 
 abstract class MemberRouteName {

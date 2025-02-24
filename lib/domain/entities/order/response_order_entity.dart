@@ -1,6 +1,7 @@
 class ResponseOrderEntity {
   String? orderNumber;
   String? orderName;
+  DateTime? orderDate;
   int? orderCustid;
   int? orderTotalItem;
   double? orderTotalAmt;
@@ -8,10 +9,16 @@ class ResponseOrderEntity {
   String? orderStatus;
   String? orderPaymentNo;
   String? qrisUrl;
+  String? orderResource;
+  String? orderVoidReason;
+  String? orderActivationReason;
+  String? orderActivationPath;
+  String? orderVoucherDesc;
 
   ResponseOrderEntity({
     this.orderNumber,
     this.orderName,
+    this.orderDate,
     this.orderCustid,
     this.orderTotalItem,
     this.orderTotalAmt,
@@ -19,19 +26,33 @@ class ResponseOrderEntity {
     this.orderStatus,
     this.orderPaymentNo,
     this.qrisUrl,
+    this.orderResource,
+    this.orderVoidReason,
+    this.orderActivationReason,
+    this.orderActivationPath,
+    this.orderVoucherDesc,
   });
 
   factory ResponseOrderEntity.fromJson(Map<String, dynamic> json) {
     return ResponseOrderEntity(
       orderNumber: json['orderNumber'],
       orderName: json['orderName'],
+      orderDate: json['orderDate'] != null
+          ? DateTime.parse(json['orderDate']).toLocal()
+          : null,
       orderCustid: json['orderCustid'],
       orderTotalItem: json['orderTotalItem'],
-      orderTotalAmt: json['orderTotalAmt'],
+      // orderTotalAmt: json['orderTotalAmt'],
+      orderTotalAmt: json['orderTotalAmt'] != null ?  (json['orderTotalAmt'] as num).toDouble() : null,
       orderPaidBy: json['orderPaidBy'],
       orderStatus: json['orderStatus'],
       orderPaymentNo: json['orderPaymentNo'],
       qrisUrl: json['qrisUrl'],
+      orderResource: json['orderResource'],
+      orderVoidReason: json['orderVoidReason'],
+      orderActivationReason: json['orderActivationReason'],
+      orderActivationPath: json['orderActivationPath'],
+      orderVoucherDesc: json['orderVoucherDesc'],
     );
   }
 
@@ -46,6 +67,11 @@ class ResponseOrderEntity {
       'orderStatus': orderStatus,
       'orderPaymentNo': orderPaymentNo,
       'qrisUrl': qrisUrl,
+      'orderResource': orderResource,
+      'orderVoidReason': orderVoidReason,
+      'orderActivationReason': orderActivationReason,
+      'orderActivationPath': orderActivationPath,
+      'orderVoucherDesc': orderVoucherDesc,
     };
   }
 }

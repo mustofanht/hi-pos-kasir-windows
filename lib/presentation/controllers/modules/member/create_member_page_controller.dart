@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -61,7 +63,7 @@ class CreateMemberPageController extends GetxController {
       noKtpController.text = memberValid?.cardIdentityNo ?? '';
       nameController.text = memberValid?.cardName ?? '';
       // addressController.text = memberValid?. ?? '';
-      noPhoneController.text = memberValid?.cardNoHp ??'';
+      noPhoneController.text = memberValid?.cardNoHp ?? '';
     }
   }
 
@@ -89,7 +91,7 @@ class CreateMemberPageController extends GetxController {
   doBack() {
     if (Get.isRegistered<CartMemberController>()) {
       final cartController = Get.find<CartMemberController>();
-      cartController.cancelOrder();
+      cartController.clearOrder();
     }
     if (Get.isRegistered<MemberPageController>()) {
       final headerController = Get.find<MemberPageController>();
@@ -171,5 +173,62 @@ class CreateMemberPageController extends GetxController {
       anggotaNamaControllers.removeAt(index);
       anggotaSelectedRelations.removeAt(index);
     }
+  }
+
+  List<MemberListResponse> getSelectedRelations() {
+    List<MemberListResponse> memberList = [];
+    if (anggotaList.isNotEmpty) {
+      for (var index in anggotaList) {
+        TextEditingController nameRelations = anggotaNamaControllers[index];
+        CustomIdNameEntity selectedRelations = anggotaSelectedRelations[index];
+        memberList.add(
+          MemberListResponse(
+            lsName: nameRelations.text,
+            lsRelCode: selectedRelations.id,
+          ),
+        );
+      }
+    }
+    return memberList;
+  }
+
+  bool validateForm() {
+    bool isValid = true;
+    if (isValid && noKtpController.text.isEmpty) {
+      isValid = false;
+      alert.warning('Warning', 'NO KTP Harus Di isi!');
+    }
+    if (isValid && nameController.text.isEmpty) {
+      isValid = false;
+      alert.warning('Warning', 'Name Harus Di isi!');
+    }
+    if (isValid && addressController.text.isEmpty) {
+      isValid = false;
+      alert.warning('Warning', 'Alamat Harus Di isi!');
+    }
+    if (isValid && noPhoneController.text.isEmpty) {
+      isValid = false;
+      alert.warning('Warning', 'No HP Harus Di isi!');
+    }
+    return isValid;
+  }
+
+  OrderMemberModel getFormBodyOrder(
+    String paymentMethod,
+    String paymentMethodName,
+  ) {
+    return OrderMemberModel(
+      custIdentityNo: noKtpController.text,
+      orderName: noKtpController.text,
+      orderPhoneNumber: noKtpController.text,
+      memberId: membership.membId,
+      custAddres: addressController.text,
+      orderMemberNo:
+          noMemberController.text.isNotEmpty ? noMemberController.text : null,
+      orderReffno: null,
+      orderPaidBy: paymentMethod,
+      listMember: getSelectedRelations(),
+      // orderEmail: '',
+    );
   }
 }

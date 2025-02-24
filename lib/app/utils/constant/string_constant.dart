@@ -93,8 +93,8 @@ class ProductRentalType {
 }
 
 class MemberRelation {
-  static const String ANAK = 'A';
-  static const String SAUDARA = 'S';
+  static const String ANAK = '1';
+  static const String SAUDARA = '2';
 
   static String getName(String relation) {
     switch (relation) {
