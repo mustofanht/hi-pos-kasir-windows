@@ -123,9 +123,9 @@ class DateTimeUtil {
   }
 
   String dateFormat(DateTime date, String format) {
-    logger.safeLog("dateeeee $date");
+    // logger.safeLog("dateeeee $date");
     String newTime = DateFormat(format).format(date);
-    logger.safeLog("newdateeeee $newTime");
+    // logger.safeLog("newdateeeee $newTime");
     return newTime;
   }
 

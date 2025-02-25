@@ -157,6 +157,7 @@ class InqMemberPageController extends GetxController
       var result;
       result = await _service.member.getMemberCardInq(
         authToken: _authToken,
+        page: page,
         search: search,
       );
       result.fold(

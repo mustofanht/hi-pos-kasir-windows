@@ -3,11 +3,14 @@ part of 'main_service.dart';
 class MemberService {
   Future<Either<String, BaseResponse<List<MemberCard>>>> getMemberCardInq({
     required AuthToken authToken,
+    required int page,
     String? search,
   }) async {
     var path = "member_card/inquiry?";
+      path += 'size=${PAGINATIONS_CONSTANT.LIMIT_PAGE}';
+      path += '&page=$page';
     if (search != null && path.isNotEmpty) {
-      path += 'search=$search';
+      path += '&search=$search';
     }
 
     final uri = source.baseUri(

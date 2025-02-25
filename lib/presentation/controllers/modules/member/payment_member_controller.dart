@@ -8,7 +8,6 @@ import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart'
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
-import 'package:jaya_propertiy/domain/entities/member/response_payment_member.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
