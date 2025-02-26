@@ -13,6 +13,8 @@ import 'package:jaya_propertiy/presentation/controllers/modules/member/payment_m
 class CartMemberController extends GetxController {
   CartMemberController();
 
+  final headerController = Get.find<MemberPageController>();
+
   var finalTotalOrderAmt = RxDouble(0);
 
   final membershipList = RxList<Membership>([]);
@@ -53,6 +55,12 @@ class CartMemberController extends GetxController {
     } else {
       return 0;
     }
+  }
+
+  cancelOrder() {
+    Get.back();
+    clearOrder();
+    headerController.goBack();
   }
 
   clearOrder() {

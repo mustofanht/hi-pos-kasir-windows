@@ -184,14 +184,7 @@ class CartMember extends GetView<CartMemberController> {
                         title: 'Warning',
                         msg:
                             'Apakah anda yakin akan membatalkan proses order di atas?',
-                        onYes: () {
-                          controller.clearOrder();
-                          if (Get.isRegistered<MemberPageController>()) {
-                            final headerController =
-                                Get.find<MemberPageController>();
-                            headerController.gotTo(MemberRouteName.newMember);
-                          }
-                        },
+                        onYes: () => controller.cancelOrder(),
                       );
                     },
                     style: ButtonStyle(

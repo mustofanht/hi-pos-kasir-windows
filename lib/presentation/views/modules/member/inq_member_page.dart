@@ -88,7 +88,7 @@ class InqMemberPage extends GetView<InqMemberPageController> {
               horizontal: layoutStyle.defaultMargin,
             ),
             onPressed: () {
-              controller.doToDetail(null);
+              controller.goToDetail(null);
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.resolveWith(
@@ -155,7 +155,9 @@ class InqMemberPage extends GetView<InqMemberPageController> {
         return CustomButton(
           width: layoutStyle.safeBlockHorizontal * 5,
           height: layoutStyle.safeBlockVertical * 7,
-          onPressed: () async {},
+          onPressed: () async {
+            controller.goToDetail(entity);
+          },
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith(
               (states) => colorStyle.blue,
@@ -185,7 +187,7 @@ class InqMemberPage extends GetView<InqMemberPageController> {
     Widget _dataTableCustom(MemberCard e) {
       return GestureDetector(
         onTap: () {
-          controller.doToDetail(e);
+          // controller.goToDetail(e);
         },
         child: Container(
           padding: EdgeInsets.symmetric(

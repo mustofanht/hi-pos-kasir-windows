@@ -77,7 +77,7 @@ class SalePage extends GetView<SalePageController> {
       );
       String img = mstPayment.pymntImgPath ?? '';
       String label = mstPayment.pymntName ?? '-';
-      logger.safeLog('IMG : $img');
+      // logger.safeLog('IMG : $img');
       return GestureDetector(
         onTap: () {
           controller.doSelectPaymentType(element);

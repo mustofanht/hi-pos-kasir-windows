@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -385,14 +386,14 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                         layoutStyle.defaultMargin / 2,
                       ),
                       label: Text(
-                        'Alamat',
+                        'Email',
                         style: textStyle.greyText.copyWith(
                           fontSize: fontSize.small,
                         ),
                       ),
-                      controller: controller.addressController,
+                      controller: controller.emailController,
                       decoration: InputDecoration(
-                        hintText: 'Alamat',
+                        hintText: 'Email',
                         hintStyle: textStyle.greyText,
                         border: InputBorder.none,
                       ),
@@ -425,9 +426,41 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                         hintStyle: textStyle.greyText,
                         border: InputBorder.none,
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(14),
+                      ],
+                      keyboardType: TextInputType.phone,
                     ),
                   ),
                 ],
+              ),
+              CustomTextBox(
+                height: layoutStyle.blockVertical * 6.5,
+                margin: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin,
+                  vertical: layoutStyle.defaultMargin / 4,
+                ),
+                obscureText: false,
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                label: Text(
+                  'Address',
+                  style: textStyle.greyText.copyWith(
+                    fontSize: fontSize.small,
+                  ),
+                ),
+                controller: controller.addressController,
+                decoration: InputDecoration(
+                  hintText: 'Address',
+                  hintStyle: textStyle.greyText,
+                  border: InputBorder.none,
+                ),
               ),
               _leftAnggotaSection(),
               _leftFormPaymentMethod(),

@@ -24,7 +24,7 @@ class MemberService {
       ),
     );
 
-    logger.responseLog(uri, response);
+    // logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<List<MemberCard>> result =
@@ -63,7 +63,7 @@ class MemberService {
       ),
     );
 
-    logger.responseLog(uri, response);
+    // logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<List<Membership>> result =
@@ -102,7 +102,7 @@ class MemberService {
       ),
     );
 
-    logger.responseLog(uri, response);
+    // logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<List<Member>> result = BaseResponse<List<Member>>.fromJson(
@@ -132,7 +132,7 @@ class MemberService {
       ),
     );
 
-    logger.responseLog(uri, response);
+    // logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<MemberValid> result = BaseResponse<MemberValid>.fromJson(
@@ -150,7 +150,7 @@ class MemberService {
     required OrderMemberModel body,
     String? reffNo,
   }) async {
-    logger.safeLog('reffNo : $reffNo');
+    // logger.safeLog('reffNo : $reffNo');
     var path = "trn_order/regmembership";
 
     if (reffNo != null) {
@@ -159,7 +159,7 @@ class MemberService {
 
     final uri = source.baseUri(path: path);
 
-    logger.safeLog('BODY : ${json.encode(body.toJson())}');
+    // logger.safeLog('BODY : ${json.encode(body.toJson())}');
 
     final response = await http.post(
       uri,
@@ -169,7 +169,7 @@ class MemberService {
       ),
     );
 
-    logger.responseLog(uri, response);
+    // logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<ResponseOrderEntity> result =
@@ -177,7 +177,7 @@ class MemberService {
         json.decode(response.body),
         (data) => ResponseOrderEntity.fromJson(data),
       );
-      logger.safeLog(result.data!.toJson());
+      // logger.safeLog(result.data!.toJson());
       return Right(result);
     } else {
       var respMsg = json.decode(response.body)['message'];

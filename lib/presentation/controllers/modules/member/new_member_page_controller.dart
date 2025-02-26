@@ -4,7 +4,6 @@ import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
-import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
@@ -16,7 +15,9 @@ class NewMemberPageController extends GetxController {
   NewMemberPageController();
 
   final _service = MainService();
-  final _authToken = Get.arguments[argConstant.authToken];
+  // final _authToken = Get.arguments[argConstant.authToken];
+
+  final headerController = Get.find<MemberPageController>();
 
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
@@ -62,7 +63,7 @@ class NewMemberPageController extends GetxController {
       );
 
       result = await _service.member.getMembership(
-        authToken: _authToken,
+        authToken: headerController.authToken,
         dataFilter: dataFilter,
         paramsFilter: param,
       );
@@ -98,10 +99,7 @@ class NewMemberPageController extends GetxController {
 
   doSelectMembership(Membership membership) {
     selectedMembership.value = membership;
-    if (Get.isRegistered<MemberPageController>()) {
-      final headerController = Get.find<MemberPageController>();
-      headerController.gotTo(MemberRouteName.createMember);
-    }
+    headerController.gotTo(MemberRouteName.createMember);
 
     if (Get.isRegistered<CartMemberController>()) {
       final cartController = Get.find<CartMemberController>();

@@ -10,7 +10,7 @@ class MasterDataService {
 
     apiFilterUtil.buildQuery(data: dataFilter, params: paramsFilter);
 
-    logger.safeLog('paramsFilter : ${paramsFilter}');
+    // logger.safeLog('paramsFilter : ${paramsFilter}');
 
     final uri = source
         .baseUri(
@@ -27,7 +27,7 @@ class MasterDataService {
       ),
     );
 
-    logger.responseLog(uri, response);
+    // logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
       BaseResponse<List<MstPayment>> result =

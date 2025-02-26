@@ -29,6 +29,7 @@ class CreateMemberPageController extends GetxController {
   final noMemberController = TextEditingController();
   final noKtpController = TextEditingController();
   final nameController = TextEditingController();
+  final emailController = TextEditingController();
   final addressController = TextEditingController();
   final noPhoneController = TextEditingController();
 
@@ -62,6 +63,7 @@ class CreateMemberPageController extends GetxController {
       noMemberController.text = memberValid?.cardNo ?? '';
       noKtpController.text = memberValid?.cardIdentityNo ?? '';
       nameController.text = memberValid?.cardName ?? '';
+      // emailController.text = memberValid?.email ?? '';
       // addressController.text = memberValid?. ?? '';
       noPhoneController.text = memberValid?.cardNoHp ?? '';
     }
@@ -194,10 +196,10 @@ class CreateMemberPageController extends GetxController {
 
   bool validateForm() {
     bool isValid = true;
-    if (isValid && noKtpController.text.isEmpty) {
-      isValid = false;
-      alert.warning('Warning', 'NO KTP Harus Di isi!');
-    }
+    // if (isValid && noKtpController.text.isEmpty) {
+    //   isValid = false;
+    //   alert.warning('Warning', 'NO KTP Harus Di isi!');
+    // }
     if (isValid && nameController.text.isEmpty) {
       isValid = false;
       alert.warning('Warning', 'Name Harus Di isi!');
@@ -209,6 +211,11 @@ class CreateMemberPageController extends GetxController {
     if (isValid && noPhoneController.text.isEmpty) {
       isValid = false;
       alert.warning('Warning', 'No HP Harus Di isi!');
+    }
+
+    if (isValid && membership.membCheckName == 'Y' && anggotaList.isEmpty) {
+      isValid = false;
+      alert.warning('Warning', 'Minimal harus memiliki 1 Anggota!');
     }
     return isValid;
   }
@@ -223,6 +230,7 @@ class CreateMemberPageController extends GetxController {
       orderPhoneNumber: noKtpController.text,
       memberId: membership.membId,
       custAddres: addressController.text,
+      orderEmail: emailController.text,
       orderMemberNo:
           noMemberController.text.isNotEmpty ? noMemberController.text : null,
       orderReffno: null,

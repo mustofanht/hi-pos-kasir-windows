@@ -100,8 +100,7 @@ class InqMemberPageController extends GetxController
       CustomTableData(
         id: 'membName',
         columnName: 'Membership',
-        alignment: Alignment.center,
-        defaultValue: 'Onsite',
+        alignment: Alignment.centerLeft,
       ),
     );
     listColumnHeader.add(
@@ -184,7 +183,7 @@ class InqMemberPageController extends GetxController
     update();
   }
 
-  doToDetail(MemberCard? val) async {
+  goToDetail(MemberCard? val) async {
     // selectedData.value = val!;
     bool isExists = await checkMemberValidation(val);
     if (isExists) return;

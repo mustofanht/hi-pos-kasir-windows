@@ -130,6 +130,7 @@ class HomePageController extends GetxController {
 
   Future<void> onSelectedMenu(MenuItem menu) async {
     logger.safeLog('CURR MENU : ${selectedMenu.value}');
+    clearMemberMenu();
     bool isValid = true;
     if (menu.id == 1) {
       bool isActiveKasir = await common.shiftActive(_authToken);
@@ -237,6 +238,13 @@ class HomePageController extends GetxController {
         return null;
       default:
         return common.underConstruction();
+    }
+  }
+
+  clearMemberMenu() {
+    if (Get.isRegistered<MemberPageController>()) {
+      final memberController = Get.find<MemberPageController>();
+      memberController.clear();
     }
   }
 }
