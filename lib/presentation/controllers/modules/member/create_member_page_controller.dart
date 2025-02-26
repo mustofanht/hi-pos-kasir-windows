@@ -226,8 +226,8 @@ class CreateMemberPageController extends GetxController {
   ) {
     return OrderMemberModel(
       custIdentityNo: noKtpController.text,
-      orderName: noKtpController.text,
-      orderPhoneNumber: noKtpController.text,
+      orderName: nameController.text,
+      orderPhoneNumber: noPhoneController.text,
       memberId: membership.membId,
       custAddres: addressController.text,
       orderEmail: emailController.text,
