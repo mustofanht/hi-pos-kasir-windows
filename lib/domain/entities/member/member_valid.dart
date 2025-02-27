@@ -8,6 +8,8 @@ class MemberValid {
   String? cardNoHp;
   int? cardLocId;
   int? cardMembId;
+  String? cardEmail;
+  String? cardAddress;
   Membership? mstMembership;
   List<MemberListResponse>? memberListResponses;
 
@@ -18,6 +20,8 @@ class MemberValid {
     this.cardNoHp,
     this.cardLocId,
     this.cardMembId,
+    this.cardEmail,
+    this.cardAddress,
     this.mstMembership,
     this.memberListResponses,
   });
@@ -30,6 +34,8 @@ class MemberValid {
       cardNoHp: json['cardNoHp'],
       cardLocId: json['cardLocId'],
       cardMembId: json['cardMembId'],
+      cardEmail: json['cardEmail'],
+      cardAddress: json['cardAddress'],
       mstMembership: json['mstMembership'] != null
           ? Membership.fromJson(json['mstMembership'])
           : null,
@@ -50,6 +56,8 @@ class MemberValid {
       'cardNoHp': cardNoHp,
       'cardLocId': cardLocId,
       'cardMembId': cardMembId,
+      'cardEmail': cardEmail,
+      'cardAddress': cardAddress,
       'mstMembership': mstMembership?.toJson(),
       'memberListResponses': memberListResponses,
     };

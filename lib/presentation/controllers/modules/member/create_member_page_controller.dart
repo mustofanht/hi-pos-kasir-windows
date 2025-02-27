@@ -63,9 +63,26 @@ class CreateMemberPageController extends GetxController {
       noMemberController.text = memberValid?.cardNo ?? '';
       noKtpController.text = memberValid?.cardIdentityNo ?? '';
       nameController.text = memberValid?.cardName ?? '';
-      // emailController.text = memberValid?.email ?? '';
-      // addressController.text = memberValid?. ?? '';
+      emailController.text = memberValid?.cardEmail ?? '';
+      addressController.text = memberValid?.cardAddress ?? '';
       noPhoneController.text = memberValid?.cardNoHp ?? '';
+
+      if (memberValid!.memberListResponses != null &&
+          memberValid!.memberListResponses!.isNotEmpty) {
+        int index = anggotaList.length;
+        for (var element in memberValid!.memberListResponses!) {
+          anggotaList.add(index);
+          TextEditingController nameValueController = TextEditingController(
+            text: element.lsName,
+          );
+          CustomIdNameEntity relationValue = listRelation.firstWhere(
+            (e) => e.id == element.lsRelCode,
+          );
+          
+          anggotaNamaControllers.add(nameValueController);
+          anggotaSelectedRelations.add(relationValue);
+        }
+      }
     }
   }
 
