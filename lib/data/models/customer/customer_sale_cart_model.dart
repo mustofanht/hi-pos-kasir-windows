@@ -3,11 +3,13 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 
 class CustomerSaleCart {
   List<CartTicket>? ticketList = [];
   List<CartVoucher>? voucherList = [];
   List<CartAddon>? addonList = [];
+  List<Membership>? memberList = [];
   double? totalOrder;
   double? paymentFee;
 
@@ -15,6 +17,7 @@ class CustomerSaleCart {
     this.ticketList,
     this.addonList,
     this.voucherList,
+    this.memberList,
     this.totalOrder,
     this.paymentFee,
   });
@@ -24,6 +27,7 @@ class CustomerSaleCart {
       'ticketList': ticketList?.map((e) => e.toJson()).toList(),
       'addonList': addonList?.map((e) => e.toJson()).toList(),
       'voucherList': voucherList?.map((e) => e.toJson2()).toList(),
+      'memberList': memberList?.map((e) => e.toJson()).toList(),
       'totalOrder': totalOrder,
       'paymentFee': paymentFee,
     };
@@ -62,6 +66,16 @@ class CustomerSaleCart {
           indexVoucher++;
         } else {
           voucherList?.add(CartVoucher.fromJson(e));
+        }
+      }
+      for (var e in json['memberList']) {
+        if (e is Map<Object?, Object?>) {
+          Map<String, dynamic> result = common.convertToMapStringDynamic(e);
+          Membership cartVoucher = Membership.fromJson(result);
+          memberList?.insert(indexVoucher, cartVoucher);
+          indexVoucher++;
+        } else {
+          memberList?.add(Membership.fromJson(e));
         }
       }
       totalOrder = json['totalOrder'] != null

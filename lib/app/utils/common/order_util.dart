@@ -4,6 +4,7 @@ import 'package:either_dart/either.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_member_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -359,12 +360,12 @@ class OrderMemberUtil {
       kasirName = sessionUtil.getUserName();
 
       List<int> data = [];
-      // data = await generatePrintUtil.dataPaymentTiketPrint(
-      //   locationName: locationName,
-      //   kasirName: kasirName,
-      //   paperSize: PaperSize.mm80,
-      //   body: body,
-      // );
+      data = await generateMemberPrintUtil.paymentPrint(
+        locationName: locationName,
+        kasirName: kasirName,
+        paperSize: PaperSize.mm80,
+        body: body,
+      );
 
       Get.back();
       loading.popUpLoading();

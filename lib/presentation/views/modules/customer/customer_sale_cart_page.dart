@@ -113,6 +113,10 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                       voucherListComponent(controller)
                     ] else
                       Container(),
+                    if (controller.memberList.isNotEmpty) ...[
+                      memberListComponent(controller)
+                    ] else
+                      Container(),
                   ],
                 ),
               ),
@@ -352,6 +356,53 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         ],
                       ),
                     ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget memberListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.memberList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.membName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                        'Rp.${common.currencyFormat(e.membRegPrice ?? 0)}',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
             .toList(),
       ),

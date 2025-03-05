@@ -12,7 +12,6 @@ import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart'
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
 
 class PaymentMemberController extends GetxController {
   PaymentMemberController();

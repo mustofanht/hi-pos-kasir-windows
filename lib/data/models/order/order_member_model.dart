@@ -1,4 +1,5 @@
 import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 
 class OrderMemberModel {
   String? qrCode;
@@ -11,6 +12,8 @@ class OrderMemberModel {
   String? custAddres;
   String? custIdentityNo;
   int? memberId;
+  double? totalPrice;
+  Membership? membership;
   List<MemberListResponse>? listMember;
 
   OrderMemberModel({
@@ -24,6 +27,8 @@ class OrderMemberModel {
     this.custAddres,
     this.custIdentityNo,
     this.memberId,
+    this.totalPrice,
+    this.membership,
     this.listMember,
   });
 
@@ -39,6 +44,10 @@ class OrderMemberModel {
       custAddres: json['custAddres'],
       custIdentityNo: json['custIdentityNo'],
       memberId: json['memberId'],
+      totalPrice: json['totalPrice'],
+      membership: json['membership'] != null
+          ? Membership.fromJson(json['membership'])
+          : null,
       listMember: (json['listMember'] as List<dynamic>?)
           ?.map((e) => MemberListResponse.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -57,6 +66,8 @@ class OrderMemberModel {
       'custAddres': custAddres,
       'custIdentityNo': custIdentityNo,
       'memberId': memberId,
+      'totalPrice': totalPrice,
+      'membership': membership?.toJson(),
       'listMember': listMember?.map((e) => e.toJson()).toList(),
     };
   }

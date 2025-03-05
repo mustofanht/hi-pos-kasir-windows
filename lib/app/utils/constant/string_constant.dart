@@ -61,6 +61,7 @@ class UnitType {
 }
 
 class CustomerDisplayAction {
+  static String MEMBER_ADD_CART = 'member-add-cart';
   static String ADD_CART = 'add-cart';
   static String PAYMENT = 'payment';
 }

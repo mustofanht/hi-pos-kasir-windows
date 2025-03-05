@@ -13,7 +13,6 @@ import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/member/new_member_page_controller.dart';
 
 class CreateMemberPageController extends GetxController {
   final MemberValid? memberValid;
@@ -78,7 +77,7 @@ class CreateMemberPageController extends GetxController {
           CustomIdNameEntity relationValue = listRelation.firstWhere(
             (e) => e.id == element.lsRelCode,
           );
-          
+
           anggotaNamaControllers.add(nameValueController);
           anggotaSelectedRelations.add(relationValue);
         }
@@ -252,6 +251,7 @@ class CreateMemberPageController extends GetxController {
           noMemberController.text.isNotEmpty ? noMemberController.text : null,
       orderReffno: null,
       orderPaidBy: paymentMethod,
+      membership: membership,
       listMember: getSelectedRelations(),
       // orderEmail: '',
     );

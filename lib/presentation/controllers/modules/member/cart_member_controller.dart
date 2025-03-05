@@ -1,7 +1,9 @@
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
-import 'package:jaya_propertiy/data/models/cart/cart_member_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
@@ -41,6 +43,7 @@ class CartMemberController extends GetxController {
       logger.safeLog('Err: $e');
     }
     update();
+    updateCustomer();
   }
 
   double getPricePayemntFee() {
@@ -61,12 +64,27 @@ class CartMemberController extends GetxController {
     Get.back();
     clearOrder();
     headerController.goBack();
+    updateCustomer();
   }
 
   clearOrder() {
     membershipList.clear();
     finalTotalOrderAmt.value = 0;
     selectedMstPayment.value = MstPayment();
+    updateCustomer();
+  }
+
+  updateCustomer() {
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.MEMBER_ADD_CART,
+        value: CustomerSaleCart(
+          memberList: membershipList,
+          totalOrder: finalTotalOrderAmt.value,
+          paymentFee: getPricePayemntFee(),
+        ).toJson(),
+      ).toJson(),
+    );
   }
 
   bool doVerifyRequest() {
@@ -90,7 +108,10 @@ class CartMemberController extends GetxController {
     if (Get.isRegistered<CreateMemberPageController>()) {
       final createMemberController = Get.find<CreateMemberPageController>();
       orderMemberModel = createMemberController.getFormBodyOrder(
-          paymentMethod, paymentMethodName);
+        paymentMethod,
+        paymentMethodName,
+      );
+      orderMemberModel.totalPrice = finalTotalOrderAmt.value;
     }
     return orderMemberModel;
   }
@@ -102,8 +123,9 @@ class CartMemberController extends GetxController {
 
       if (selectedMstPayment.value.pymntCategory == PaymentMethod.QRIS) {
         OrderMemberModel body = getBodyOrder(
-            selectedMstPayment.value.pymntCode!,
-            selectedMstPayment.value.pymntName!);
+          selectedMstPayment.value.pymntCode!,
+          selectedMstPayment.value.pymntName!,
+        );
         // logger.safeLog('ORDER BODY : ${body.toJson()}');
         await paymentController.doPaymentQris(
           body: body,
@@ -111,8 +133,9 @@ class CartMemberController extends GetxController {
         );
       } else if (selectedMstPayment.value.pymntCategory != PaymentMethod.QRIS) {
         OrderMemberModel body = getBodyOrder(
-            selectedMstPayment.value.pymntCode!,
-            selectedMstPayment.value.pymntName!);
+          selectedMstPayment.value.pymntCode!,
+          selectedMstPayment.value.pymntName!,
+        );
         // logger.safeLog('ORDER BODY : ${body.toJson()}');
         await paymentController.doOrderPaymentReffNo(
           body: body,

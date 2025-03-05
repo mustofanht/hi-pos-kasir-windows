@@ -14,6 +14,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 
 class CustomerSaleCartPageController extends GetxController {
   CustomerSaleCartPageController();
@@ -25,6 +26,7 @@ class CustomerSaleCartPageController extends GetxController {
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
   final voucherList = RxList<CartVoucher>([]);
+  final memberList = RxList<Membership>([]);
   late var orderList = Cart(
     cartTicketList: ticketList,
     cartVoucherList: voucherList,
@@ -87,7 +89,10 @@ class CustomerSaleCartPageController extends GetxController {
             CustomerDisplay.fromJson(convertedValue);
 
         if (customerDisplay.value != null) {
-          if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
+          if (customerDisplay.key == CustomerDisplayAction.MEMBER_ADD_CART) {
+            logger.safeLog('ADD CART');
+            doMemberAddCart(customerDisplay.value!);
+          } else if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
             logger.safeLog('ADD CART');
             doAddCart(customerDisplay.value!);
           } else if (customerDisplay.key == CustomerDisplayAction.PAYMENT) {
@@ -131,6 +136,19 @@ class CustomerSaleCartPageController extends GetxController {
             (BuildContext context, Object exception, StackTrace? stackTrace) {
             return const Center(child: Text('Img Not Found'));
           });
+  }
+
+  doMemberAddCart(Map<String, dynamic> val) {
+    memberList.clear();
+    CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
+
+    if (customerSaleCart.memberList != null) {
+      memberList.addAll(customerSaleCart.memberList!);
+    }
+    totalOrder.value = memberList.length.toDouble();
+    if (customerSaleCart.paymentFee != null) {
+      paymentFee.value = customerSaleCart.paymentFee ?? 0;
+    }
   }
 
   doAddCart(Map<String, dynamic> val) {
