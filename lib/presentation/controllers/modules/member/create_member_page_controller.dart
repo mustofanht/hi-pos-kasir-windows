@@ -179,7 +179,7 @@ class CreateMemberPageController extends GetxController {
       anggotaList.add(index);
       anggotaNamaControllers.add(TextEditingController());
       anggotaSelectedRelations
-          .add(CustomIdNameEntity(id: '', name: 'Pilih Printer'));
+          .add(CustomIdNameEntity(id: '', name: 'Pilih Relasi'));
     } else {
       alert.warning('Warning', 'Maximal 2 anggota');
     }

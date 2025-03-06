@@ -364,6 +364,7 @@ class OrderMemberUtil {
         locationName: locationName,
         kasirName: kasirName,
         paperSize: PaperSize.mm80,
+        paymentDate: DateTime.now(),
         body: body,
       );
 

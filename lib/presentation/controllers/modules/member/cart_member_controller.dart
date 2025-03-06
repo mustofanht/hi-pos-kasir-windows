@@ -112,6 +112,7 @@ class CartMemberController extends GetxController {
         paymentMethodName,
       );
       orderMemberModel.totalPrice = finalTotalOrderAmt.value;
+      orderMemberModel.adminFeeAmt = getPricePayemntFee();
     }
     return orderMemberModel;
   }

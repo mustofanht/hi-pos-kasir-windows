@@ -13,6 +13,7 @@ class OrderMemberModel {
   String? custIdentityNo;
   int? memberId;
   double? totalPrice;
+  double? adminFeeAmt;
   Membership? membership;
   List<MemberListResponse>? listMember;
 
@@ -28,6 +29,7 @@ class OrderMemberModel {
     this.custIdentityNo,
     this.memberId,
     this.totalPrice,
+    this.adminFeeAmt,
     this.membership,
     this.listMember,
   });
@@ -45,6 +47,7 @@ class OrderMemberModel {
       custIdentityNo: json['custIdentityNo'],
       memberId: json['memberId'],
       totalPrice: json['totalPrice'],
+      adminFeeAmt: json['adminFeeAmt'],
       membership: json['membership'] != null
           ? Membership.fromJson(json['membership'])
           : null,
@@ -67,6 +70,7 @@ class OrderMemberModel {
       'custIdentityNo': custIdentityNo,
       'memberId': memberId,
       'totalPrice': totalPrice,
+      'adminFeeAmt': adminFeeAmt,
       'membership': membership?.toJson(),
       'listMember': listMember?.map((e) => e.toJson()).toList(),
     };
