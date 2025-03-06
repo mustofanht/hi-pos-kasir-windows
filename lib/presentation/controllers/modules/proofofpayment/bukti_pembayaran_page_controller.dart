@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_member_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/message_util.dart';
@@ -15,6 +16,7 @@ import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
@@ -24,7 +26,9 @@ import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
@@ -274,6 +278,12 @@ class BuktiPembayaranPageController extends GetxController
           locationName = user.locationName!;
         }
 
+        if (detailModel.value.trnOrderMember != null) {
+          await doPrintMember(locationName);
+          Get.back();
+          return;
+        }
+
         await _createTicket(
           _authToken,
           null,
@@ -358,10 +368,10 @@ class BuktiPembayaranPageController extends GetxController
           listVoucher: voucherList,
         );
 
-        logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
-        logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
-        logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
-        logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
+        // logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
+        // logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
+        // logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
+        // logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
 
         List<int> data = [];
         data = await generatePrintUtil.dataPaymentTiketPrint(
@@ -383,6 +393,39 @@ class BuktiPembayaranPageController extends GetxController
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
     }
+  }
+
+  doPrintMember(String locationName) async {
+    OrderMemberModel orderMemberModel = OrderMemberModel(
+      orderName: detailModel.value.trnOrderMember?.memberName,
+      orderMemberNo: detailModel.value.trnOrderMember?.memberNo,
+      orderPhoneNumber: detailModel.value.trnOrderMember?.memberPhone,
+      orderEmail: detailModel.value.trnOrderMember?.memberEmail,
+      orderReffno: detailModel.value.paymentDetail?.pymntReffno,
+      orderPaidBy: detailModel.value.paymentDetail?.pymntCreatedBy,
+      totalPrice: detailModel.value.trnOrderMember?.membershipTtlAmount,
+      adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee,
+      membership: Membership(
+        membName: detailModel.value.trnOrderMember?.membershipName,
+        membRegPrice: detailModel.value.trnOrderMember?.membershipPrice,
+      ),
+      listMember: detailModel.value.trnOrderMember?.memberList,
+    );
+
+    // logger.safeLog('DATA PRINT MEMBER : ${orderMemberModel.toJson()}');
+
+    List<int> data = [];
+    data = await generateMemberPrintUtil.paymentPrint(
+      body: orderMemberModel,
+      paymentDate: detailModel.value.orderDate,
+      locationName: locationName,
+      paperSize: PaperSize.mm80,
+      kasirName: detailModel.value.paymentDetail == null
+          ? ''
+          : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
+    );
+
+    await printerUtil.print(printerUtil.currPrinter!, data);
   }
 
   Future<void> _createTicket(

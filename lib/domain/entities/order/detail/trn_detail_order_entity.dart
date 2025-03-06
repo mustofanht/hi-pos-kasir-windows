@@ -1,6 +1,7 @@
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_customer.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_item.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_payment.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ticket.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_voucher.dart';
@@ -25,6 +26,7 @@ class TrnDetailOrderEntity {
   List<TrnDetailOrderVoucher>? trnOrderVouchers;
   List<TrnDetailOrderItem>? trnOrderItem;
   TrnDetailOrderPayment? paymentDetail;
+  TrnDetailOrderMember? trnOrderMember;
 
   TrnDetailOrderEntity({
     this.orderNumber,
@@ -46,6 +48,7 @@ class TrnDetailOrderEntity {
     this.trnOrderVouchers,
     this.trnOrderItem,
     this.paymentDetail,
+    this.trnOrderMember,
   });
 
   factory TrnDetailOrderEntity.fromJson(Map<String, dynamic> json) {
@@ -97,6 +100,9 @@ class TrnDetailOrderEntity {
       paymentDetail: json['paymentDetail'] != null
           ? TrnDetailOrderPayment.fromJson(json['paymentDetail'])
           : null,
+      trnOrderMember: json['trnOrderMember'] != null
+          ? TrnDetailOrderMember.fromJson(json['trnOrderMember'])
+          : null,
     );
   }
 
@@ -121,6 +127,7 @@ class TrnDetailOrderEntity {
       'trnOrderVouchers': trnOrderVouchers?.map((e) => e.toJson()).toList(),
       'trnOrderItem': trnOrderItem?.map((e) => e.toJson()).toList(),
       'paymentDetail': paymentDetail?.toJson(),
+      'trnOrderMember': trnOrderMember?.toJson(),
     };
   }
 }
