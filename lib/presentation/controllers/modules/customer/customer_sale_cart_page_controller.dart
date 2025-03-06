@@ -142,10 +142,13 @@ class CustomerSaleCartPageController extends GetxController {
     memberList.clear();
     CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
 
-    if (customerSaleCart.memberList != null) {
+    if (customerSaleCart.memberList != null &&
+        customerSaleCart.memberList!.isNotEmpty) {
       memberList.addAll(customerSaleCart.memberList!);
     }
-    totalOrder.value = memberList.length.toDouble();
+    if (customerSaleCart.totalOrder != null) {
+      totalOrder.value = customerSaleCart.totalOrder!;
+    }
     if (customerSaleCart.paymentFee != null) {
       paymentFee.value = customerSaleCart.paymentFee ?? 0;
     }

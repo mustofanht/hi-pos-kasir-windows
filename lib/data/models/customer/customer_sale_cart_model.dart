@@ -38,6 +38,7 @@ class CustomerSaleCart {
       int indexTicket = 0;
       int indexVoucher = 0;
       int indexAddon = 0;
+      int indexMember = 0;
       for (var e in json['ticketList']) {
         if (e is Map<Object?, Object?>) {
           Map<String, dynamic> result = common.convertToMapStringDynamic(e);
@@ -71,9 +72,9 @@ class CustomerSaleCart {
       for (var e in json['memberList']) {
         if (e is Map<Object?, Object?>) {
           Map<String, dynamic> result = common.convertToMapStringDynamic(e);
-          Membership cartVoucher = Membership.fromJson(result);
-          memberList?.insert(indexVoucher, cartVoucher);
-          indexVoucher++;
+          Membership membership = Membership.fromJson(result);
+          memberList?.insert(indexMember, membership);
+          indexMember++;
         } else {
           memberList?.add(Membership.fromJson(e));
         }
