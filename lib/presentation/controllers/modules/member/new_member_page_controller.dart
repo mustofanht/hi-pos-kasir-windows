@@ -61,6 +61,13 @@ class NewMemberPageController extends GetxController {
           sessionUtil.getLocationId(),
         )!,
       );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'membState',
+          OPERATOR_CONSTANTS.EQUALS,
+          'Y',
+        )!,
+      );
 
       result = await _service.member.getMembership(
         authToken: headerController.authToken,

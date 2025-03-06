@@ -188,7 +188,7 @@ class NewMemberPage extends GetView<NewMemberPageController> {
       builder: (controller) {
         return Container(
           decoration: BoxDecoration(
-            color: colorStyle.lightGrey,
+            color: colorStyle.white,
           ),
           padding: EdgeInsets.symmetric(
             horizontal: layoutStyle.defaultMargin / 2,
