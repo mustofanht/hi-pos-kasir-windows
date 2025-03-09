@@ -29,6 +29,8 @@ import 'package:jaya_propertiy/domain/entities/payment/response_cek_payment_enti
 import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';

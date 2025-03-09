@@ -1,85 +1,77 @@
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 
 class VoucherEntity {
-  int? voucherId;
-  String? voucherName;
-  String? voucherCode;
-  String? voucherUnitType;
-  double? voucherUnitValue;
-  int? voucherLimit;
-  int? voucherLocId;
-  String? voucherLocName;
-  String? voucherState;
-  DateTime? voucherStartDate;
-  DateTime? voucherEndDate;
+  int? vpId;
+  String? vpName;
+  String? vpCode;
+  String? vpFlMember;
+  String? vpUnitType;
+  double? vpUnitValue;
+  int? vpLimit;
+  int? vpLocId;
+  DateTime? vpStartDate;
+  DateTime? vpEndDate;
+  String? vpDesc;
+  String? vpState;
+  String? locationName;
+  String? vpFlWebsite;
 
   VoucherEntity({
-    this.voucherId,
-    this.voucherName,
-    this.voucherCode,
-    this.voucherUnitType,
-    this.voucherUnitValue,
-    this.voucherLimit,
-    this.voucherLocId,
-    this.voucherLocName,
-    this.voucherState,
-    this.voucherStartDate,
-    this.voucherEndDate,
+    this.vpId,
+    this.vpName,
+    this.vpCode,
+    this.vpFlMember,
+    this.vpUnitType,
+    this.vpUnitValue,
+    this.vpLimit,
+    this.vpLocId,
+    this.vpStartDate,
+    this.vpEndDate,
+    this.vpDesc,
+    this.vpState,
+    this.locationName,
+    this.vpFlWebsite,
   });
 
   VoucherEntity.fromJson(Map<String?, dynamic> json) {
-    voucherId = json['voucherId'];
-    voucherName = json['voucherName'];
-    voucherCode = json['voucherCode'];
-    voucherUnitType = json['voucherUnitType'];
-    voucherUnitValue = json['voucherUnitValue'] != null
-        ? (json['voucherUnitValue'] as num).toDouble()
+    vpId = json['vpId'];
+    vpName = json['vpName'];
+    vpCode = json['vpCode'];
+    vpFlMember = json['vpFlMember'];
+    vpUnitType = json['vpUnitType'];
+    vpUnitValue = json['vpUnitValue'] != null
+        ? (json['vpUnitValue'] as num).toDouble()
         : null;
-    voucherLimit = json['voucherLimit'];
-    voucherLocId = json['voucherLocId'];
-    voucherLocName = json['voucherLocName'];
-    voucherState = json['voucherState'];
-    voucherStartDate = json['voucherStartDate'] != null
-        ? DateTime.parse(json['voucherStartDate']).toLocal()
+    vpLimit = json['vpLimit'];
+    vpLocId = json['vpLocId'];
+    vpStartDate = json['vpStartDate'] != null
+        ? DateTime.parse(json['vpStartDate']).toLocal()
         : null;
-    voucherEndDate = json['voucherEndDate'] != null
-        ? DateTime.parse(json['voucherEndDate']).toLocal()
+    vpEndDate = json['vpEndDate'] != null
+        ? DateTime.parse(json['vpEndDate']).toLocal()
         : null;
+    vpDesc = json['vpDesc'];
+    vpState = json['vpState'];
+    locationName = json['locationName'];
+    vpFlWebsite = json['vpFlWebsite'];
   }
 
   Map<String?, dynamic> toJson() {
     return {
-      'voucherId': voucherId,
-      'voucherName': voucherName,
-      'voucherCode': voucherCode,
-      'voucherUnitType': voucherUnitType,
-      'voucherUnitValue': voucherUnitValue,
-      'voucherLimit': voucherLimit,
-      'voucherLocId': voucherLocId,
-      'voucherLocName': voucherLocName,
-      'voucherState': voucherState,
-      'voucherStartDate': voucherStartDate?.toIso8601String(),
-      'voucherEndDate': voucherEndDate?.toIso8601String(),
-    };
-  }
-
-  Map<String?, dynamic> toJson2() {
-    return {
-      'voucherId': voucherId,
-      'voucherName': voucherName,
-      'voucherCode': voucherCode,
-      'voucherUnitType': voucherUnitType,
-      'voucherUnitValue': voucherUnitValue,
-      'voucherLimit': voucherLimit,
-      'voucherLocId': voucherLocId,
-      'voucherLocName': voucherLocName,
-      'voucherState': voucherState,
-      "voucherStartDate": voucherStartDate != null
-          ? dateTimeUtil.dateFormat(voucherStartDate!, 'yyyy-MM-dd')
-          : null,
-      "voucherEndDate": voucherEndDate != null
-          ? dateTimeUtil.dateFormat(voucherEndDate!, 'yyyy-MM-dd')
-          : null,
+      'vpId': vpId,
+      'vpName': vpName,
+      'vpCode': vpCode,
+      'vpFlMember': vpFlMember,
+      'vpUnitType': vpUnitType,
+      'vpUnitValue': vpUnitValue,
+      'vpLimit': vpLimit,
+      'vpLocId': vpLocId,
+      'vpStartDate': vpStartDate?.toIso8601String(),
+      'vpEndDate': vpEndDate?.toIso8601String(),
+      'vpDesc': vpDesc,
+      'vpState': vpState,
+      'locationName': locationName,
+      'vpFlWebsite': vpFlWebsite,
     };
   }
 }

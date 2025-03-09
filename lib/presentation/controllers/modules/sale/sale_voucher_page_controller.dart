@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -23,13 +24,26 @@ class SaleVoucherPageController extends GetxController {
   final voucherList = <VoucherEntity>[].obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
+  
+  final typeItemList = <CustomIdNameEntity>[].obs;
+  final selectedTypeItemList = CustomIdNameEntity().obs;
 
   @override
   Future<void> onInit() async {
     super.onInit();
     scrollController.addListener(scrollHandler);
     await doPrepareList(page: 0);
+    doInitializeItemTypeList();
   }
+  
+  doInitializeItemTypeList() {
+    typeItemList.clear();
+    typeItemList.add(CustomIdNameEntity(id: 'V', name: 'Voucher'));
+    typeItemList.add(CustomIdNameEntity(id: 'P', name: 'Potongan'));
+    typeItemList.add(CustomIdNameEntity(id: 'D', name: 'Deposit'));
+    update();
+  }
+
 
   doPrepareList({
     required int page,
@@ -47,7 +61,7 @@ class SaleVoucherPageController extends GetxController {
         'locationId': sessionUtil.getLocationId().toString(),
       };
 
-      result = await _service.sale.voucherService.getAll(
+      result = await _service.sale.voucherService.getAllPotongan(
         authToken: _authToken,
         dataFilter: dataFilter,
         paramsFilter: param,
