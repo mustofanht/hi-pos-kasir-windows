@@ -33,6 +33,8 @@ class SaleVoucherPageController extends GetxController {
   final typeItemList = <CustomIdNameEntity>[].obs;
   final selectedTypeItemList = Rxn<String>('V');
 
+  final searchController = TextEditingController();
+
   @override
   Future<void> onInit() async {
     super.onInit();
@@ -102,6 +104,7 @@ class SaleVoucherPageController extends GetxController {
   onSelectedType(CustomIdNameEntity element) async {
     logger.safeLog('ON SELECT TYPE : ${element.toJson()}');
     selectedTypeItemList.value = element.id;
+    searchController.clear();
     voucherList.clear();
     potonganList.clear();
     depositList.clear();
@@ -116,6 +119,7 @@ class SaleVoucherPageController extends GetxController {
 
   doPrepareList({
     required int page,
+    String? search,
   }) async {
     logger.safeLog('TYPE SELECTED : ${selectedTypeItemList.value}');
     if (selectedTypeItemList.value == 'V') {
@@ -123,7 +127,7 @@ class SaleVoucherPageController extends GetxController {
     } else if (selectedTypeItemList.value == 'P') {
       await doPreparedPotongan(page);
     } else if (selectedTypeItemList.value == 'D') {
-      await doPreparedDeposit(page);
+      await doPreparedDeposit(page, search);
     }
   }
 
@@ -220,7 +224,7 @@ class SaleVoucherPageController extends GetxController {
     update();
   }
 
-  doPreparedDeposit(int page) async {
+  doPreparedDeposit(int page, String? search) async {
     if (isLoading.value) return;
     isLoading.value = true;
 
@@ -230,6 +234,7 @@ class SaleVoucherPageController extends GetxController {
       Map<String, dynamic> param = {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+        'search': search,
         // 'flMobile': 'Y',
         // 'locationId': sessionUtil.getLocationId().toString(),
       };
@@ -273,5 +278,9 @@ class SaleVoucherPageController extends GetxController {
       isLoading.value = false;
     }
     update();
+  }
+
+  doSearch() async {
+    await doPrepareList(page: 0, search: searchController.text);
   }
 }

@@ -9,7 +9,9 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 
 class SaleVoucherPage extends GetView<SaleVoucherPageController> {
@@ -551,6 +553,72 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
       );
     }
 
+    Widget searchSection() {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+        child: Row(
+          children: [
+            Expanded(
+              child: CustomTextBox(
+                height: layoutStyle.blockVertical * 6.5,
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 4,
+                ),
+                obscureText: false,
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                controller: controller.searchController,
+                onChanged: (val) {},
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: textStyle.greyText,
+                  border: InputBorder.none,
+                ),
+                keyboardType: TextInputType.text,
+              ),
+            ),
+            SizedBox(
+              width: layoutStyle.defaultMargin,
+            ),
+            CustomButton(
+              width: layoutStyle.safeBlockHorizontal * 5,
+              height: layoutStyle.blockVertical * 6.5,
+              margin: EdgeInsets.symmetric(
+                vertical: layoutStyle.defaultMargin / 2,
+              ),
+              onPressed: () async {
+                await controller.doSearch();
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.resolveWith(
+                  (states) => colorStyle.blue,
+                ),
+                overlayColor: MaterialStateProperty.resolveWith(
+                  (states) => colorStyle.black.withOpacity(0.1),
+                ),
+                shape: MaterialStateProperty.resolveWith(
+                  (states) => RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      layoutStyle.defaultMargin / 2,
+                    ),
+                  ),
+                ),
+              ),
+              label: Icon(
+                Icons.search,
+                color: colorStyle.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GetBuilder(
       init: controller,
       tag: 'SaleVoucherPage',
@@ -569,6 +637,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
           child: Column(
             children: [
               typeVoucherSection(),
+              if (controller.selectedTypeItemList.value == 'D') searchSection(),
               contentSection(),
             ],
           ),
