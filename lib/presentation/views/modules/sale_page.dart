@@ -48,7 +48,7 @@ class SalePage extends GetView<SalePageController> {
                   unselectedLabelColor: colorStyle.black,
                   tabs: const [
                     Tab(text: 'Ticket'),
-                    Tab(text: 'Voucher'),
+                    Tab(text: 'Potongan'),
                     Tab(text: 'Item'),
                   ],
                 ),

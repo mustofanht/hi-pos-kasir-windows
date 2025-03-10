@@ -98,8 +98,11 @@ class SaleCartPage extends GetView<SaleCartPageController> {
   Widget contentCart(SaleCartPageController controller) {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
+              controller.addonList.isEmpty && 
+              controller.voucherList.isEmpty &&
               controller.potonganList.isEmpty &&
-              controller.addonList.isEmpty)
+              controller.depositList.isEmpty 
+              )
           ? notOrder()
           : SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -127,6 +130,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           'Tiket',
                           style: TextStyle(
                             fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
                           ),
                         ),
                       ),
@@ -157,6 +161,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           'Item',
                           style: TextStyle(
                             fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
                           ),
                         ),
                       ),
@@ -169,7 +174,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       ),
                     ] else
                       Container(),
-                    if (controller.potonganList.isNotEmpty) ...[
+                    if (controller.voucherList.isNotEmpty) ...[
                       Container(
                         width: layoutStyle.screenWidth,
                         margin: EdgeInsets.symmetric(
@@ -187,10 +192,61 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           'Voucher',
                           style: TextStyle(
                             fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
                           ),
                         ),
                       ),
                       voucherListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.potonganList.isNotEmpty) ...[
+                      Container(
+                        width: layoutStyle.screenWidth,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin),
+                        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: colorStyle.lightGrey,
+                              width: 1.0,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Potongan',
+                          style: TextStyle(
+                            fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      potonganListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.depositList.isNotEmpty) ...[
+                      Container(
+                        width: layoutStyle.screenWidth,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin),
+                        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: colorStyle.lightGrey,
+                              width: 1.0,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Deposit',
+                          style: TextStyle(
+                            fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      depositListComponent(controller)
                     ] else
                       Container(),
                   ],
@@ -694,6 +750,87 @@ class SaleCartPage extends GetView<SaleCartPageController> {
       margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.voucherList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 10,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(
+                            e.entity!.vpName ?? '',
+                            softWrap: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        children: [
+                          Text(
+                            e.entity!.vpUnitType == UnitType.PERCENT
+                                ? ('${e.entity!.vpUnitValue} %')
+                                : ('Rp${common.currencyFormat(e.entity!.vpUnitValue ?? 0)}'),
+                          ),
+                          SizedBox(
+                            width: layoutStyle.defaultMargin,
+                          ),
+                          CustomButton(
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 10,
+                            ),
+                            onPressed: () {
+                              controller.removeListvoucher(e);
+                            },
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              foregroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              side: MaterialStateProperty.all<BorderSide>(
+                                BorderSide(
+                                  color: colorStyle.transparent,
+                                  width: 1,
+                                ),
+                              ),
+                              padding:
+                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                const EdgeInsets.all(0),
+                              ),
+                              elevation: MaterialStateProperty.all<double>(0),
+                            ),
+                            label: Image.asset(
+                              assetsConstant.icDelete,
+                              fit: BoxFit.contain,
+                            ),
+                            width: layoutStyle.blockHorizontal * 3,
+                            height: layoutStyle.blockVertical * 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget potonganListComponent(SaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: controller.potonganList
             .map(
               (e) => Container(
@@ -730,6 +867,85 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                             ),
                             onPressed: () {
                               controller.removeListpotongan(e);
+                            },
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              foregroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              side: MaterialStateProperty.all<BorderSide>(
+                                BorderSide(
+                                  color: colorStyle.transparent,
+                                  width: 1,
+                                ),
+                              ),
+                              padding:
+                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                const EdgeInsets.all(0),
+                              ),
+                              elevation: MaterialStateProperty.all<double>(0),
+                            ),
+                            label: Image.asset(
+                              assetsConstant.icDelete,
+                              fit: BoxFit.contain,
+                            ),
+                            width: layoutStyle.blockHorizontal * 3,
+                            height: layoutStyle.blockVertical * 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget depositListComponent(SaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.depositList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 10,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(
+                            e.deposit!.dpName ?? '',
+                            softWrap: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        children: [
+                          Text(
+                            ('Rp${common.currencyFormat(e.deposit!.dpAmount ?? 0)}'),
+                          ),
+                          SizedBox(
+                            width: layoutStyle.defaultMargin,
+                          ),
+                          CustomButton(
+                            margin: EdgeInsets.symmetric(
+                              vertical: layoutStyle.defaultMargin / 10,
+                            ),
+                            onPressed: () {
+                              controller.removeListdeposit(e);
                             },
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(

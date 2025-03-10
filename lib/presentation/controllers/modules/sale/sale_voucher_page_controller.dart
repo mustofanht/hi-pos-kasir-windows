@@ -5,7 +5,9 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
@@ -66,12 +68,12 @@ class SaleVoucherPageController extends GetxController {
         Get.find<SaleCartPageController>();
 
     if (saleCartPageController.potonganList.isNotEmpty) {
-      CartPotongan? existingVoucher = saleCartPageController.potonganList
+      CartPotongan? existing = saleCartPageController.potonganList
           .firstWhereOrNull((e) => e.potongan!.voucherId == voucher.voucherId);
 
-      if (existingVoucher != null) {
+      if (existing != null) {
         alert.warning(
-            "Warning", "voucher ${voucher.voucherName} has been added!");
+            "Warning", "Potongan ${voucher.voucherName} has been added!");
         return;
       }
     }
@@ -81,25 +83,40 @@ class SaleVoucherPageController extends GetxController {
   }
 
   addVoucherToCart(VoucherEntity voucher) {
-    // final SaleCartPageController saleCartPageController =
-    //     Get.find<SaleCartPageController>();
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
 
-    // if (saleCartPageController.voucherList.isNotEmpty) {
-    //   CartPotongan? existingVoucher = saleCartPageController.potonganList
-    //       .firstWhereOrNull((e) => e.potongan!.voucherId == voucher.voucherId);
+    if (saleCartPageController.voucherList.isNotEmpty) {
+      CartVoucher? existing = saleCartPageController.voucherList
+          .firstWhereOrNull((e) => e.entity!.vpId == voucher.vpId);
 
-    //   if (existingVoucher != null) {
-    //     alert.warning(
-    //         "Warning", "voucher ${voucher.voucherName} has been added!");
-    //     return;
-    //   }
-    // }
-    // saleCartPageController.addpotongan(voucher);
-    // saleCartPageController.calculateTotalOrder();
+      if (existing != null) {
+        alert.warning("Warning", "voucher ${voucher.vpName} has been added!");
+        return;
+      }
+    }
+    saleCartPageController.addvoucher(voucher);
+    saleCartPageController.calculateTotalOrder();
     update();
   }
 
-  addDepositToCart(DepositEntity voucher) {}
+  addDepositToCart(DepositEntity entity) {
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
+    if (saleCartPageController.depositList.isNotEmpty) {
+      CartDeposit? existing = saleCartPageController.depositList
+          .firstWhereOrNull((e) => e.deposit!.dpId == entity.dpId);
+
+      if (existing != null) {
+        alert.warning("Warning", "Deposit ${entity.dpName} has been added!");
+        return;
+      }
+    }
+    saleCartPageController.adddeposit(entity);
+    saleCartPageController.calculateTotalOrder();
+    update();
+  }
 
   onSelectedType(CustomIdNameEntity element) async {
     logger.safeLog('ON SELECT TYPE : ${element.toJson()}');

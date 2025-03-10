@@ -15,8 +15,10 @@ import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dar
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
@@ -174,6 +176,38 @@ class SaleCartPageController extends GetxController {
 
   removeListpotongan(CartPotongan potongan) {
     potonganList.remove(potongan);
+    calculateTotalOrder();
+  }
+  
+  addvoucher(VoucherEntity voucher) {
+    voucherList.add(
+      CartVoucher(
+        qtyOrder: 1,
+        totalPrice: voucher.vpUnitValue!,
+        entity: voucher,
+      ),
+    );
+    calculateTotalOrder();
+  }
+
+  removeListvoucher(CartVoucher voucher) {
+    voucherList.remove(voucher);
+    calculateTotalOrder();
+  }
+  
+  adddeposit(DepositEntity deposit) {
+    depositList.add(
+      CartDeposit(
+        qtyOrder: 1,
+        totalPrice: deposit.dpAmount ?? 0,
+        deposit: deposit,
+      ),
+    );
+    calculateTotalOrder();
+  }
+
+  removeListdeposit(CartDeposit deposit) {
+    depositList.remove(deposit);
     calculateTotalOrder();
   }
 

@@ -74,4 +74,26 @@ class VoucherEntity {
       'vpFlWebsite': vpFlWebsite,
     };
   }
+  Map<String?, dynamic> toJson2() {
+    return {
+      'vpId': vpId,
+      'vpName': vpName,
+      'vpCode': vpCode,
+      'vpFlMember': vpFlMember,
+      'vpUnitType': vpUnitType,
+      'vpUnitValue': vpUnitValue,
+      'vpLimit': vpLimit,
+      'vpLocId': vpLocId,
+      "vpStartDate": vpStartDate != null
+          ? dateTimeUtil.dateFormat(vpStartDate!, 'yyyy-MM-dd')
+          : null,
+      "vpEndDate": vpEndDate != null
+          ? dateTimeUtil.dateFormat(vpEndDate!, 'yyyy-MM-dd')
+          : null,
+      'vpDesc': vpDesc,
+      'vpState': vpState,
+      'locationName': locationName,
+      'vpFlWebsite': vpFlWebsite,
+    };
+  }
 }
