@@ -178,15 +178,35 @@ class SaleCartPageController extends GetxController {
     potonganList.remove(potongan);
     calculateTotalOrder();
   }
-  
+
   addvoucher(VoucherEntity voucher) {
     voucherList.add(
       CartVoucher(
         qtyOrder: 1,
-        totalPrice: voucher.vpUnitValue!,
+        totalPrice: 1 * voucher.vpUnitValue!,
         entity: voucher,
       ),
     );
+    calculateTotalOrder();
+  }
+
+  addVoucherCart(CartVoucher voucher) {
+    if (ticketList.isNotEmpty) {
+      int qtyAllTiket = 0;
+      for (var element in ticketList) {
+        qtyAllTiket += (element.qtyOrder ?? 0);
+      }
+      logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');
+      logger.safeLog('qtyAllTiket : $qtyAllTiket');
+      if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
+        alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
+        return;
+      }
+    }
+
+    voucher.qtyOrder = (voucher.qtyOrder ?? 0) + 1;
+    voucher.totalPrice =
+        ((voucher.totalPrice ?? 0) + (voucher.entity!.vpUnitValue ?? 0));
     calculateTotalOrder();
   }
 
@@ -194,7 +214,17 @@ class SaleCartPageController extends GetxController {
     voucherList.remove(voucher);
     calculateTotalOrder();
   }
-  
+
+  removeVoucher(CartVoucher voucher) {
+    voucher.qtyOrder = (voucher.qtyOrder ?? 0) - 1;
+    voucher.totalPrice =
+        (voucher.totalPrice ?? 0) - (voucher.entity!.vpUnitValue ?? 0);
+    if (voucher.qtyOrder == 0) {
+      removeListvoucher(voucher);
+    }
+    calculateTotalOrder();
+  }
+
   adddeposit(DepositEntity deposit) {
     depositList.add(
       CartDeposit(
@@ -213,39 +243,69 @@ class SaleCartPageController extends GetxController {
 
   void calculateTotalOrder() {
     double totalAmntFinal = 0;
-    double ticketTotalAmnt = 0;
+    double totalAmnt = 0;
     int ticketTotalQtyVal = 0;
 
     if (ticketList.isNotEmpty) {
-      ticketTotalAmnt +=
-          ticketList.fold(0, (sum, val) => sum + val.totalPrice!);
+      totalAmnt += ticketList.fold(0, (sum, val) => sum + val.totalPrice!);
       ticketTotalQtyVal +=
           ticketList.fold(0, (sum, val) => sum + val.qtyOrder!);
+
+      if (voucherList.isNotEmpty) {
+        double discountAmount = 0;
+        for (var element in voucherList) {
+          discountAmount += element.totalPrice ?? 0;
+          // if (element.entity!.vpUnitType == UnitType.PERCENT) {
+          //   discountAmount +=
+          //       totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
+          // } else {
+          //   discountAmount +=
+          //       element.entity!.vpUnitValue ?? 0 * (element.qtyOrder ?? 1);
+          // }
+          logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
+        }
+
+        ticketTotalQtyVal +=
+            voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
+
+        totalAmnt = totalAmnt - discountAmount;
+      }
     }
     if (addonList.isNotEmpty) {
-      ticketTotalAmnt += addonList.fold(0, (sum, val) => sum + val.totalPrice!);
+      totalAmnt += addonList.fold(0, (sum, val) => sum + val.totalPrice!);
       ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
     }
+
+    totalAmntFinal = totalAmnt;
 
     if (potonganList.isNotEmpty) {
       double discountAmount = 0;
       for (var element in potonganList) {
         if (element.potongan!.voucherUnitType == UnitType.PERCENT) {
-          discountAmount += ticketTotalAmnt *
-              (element.potongan!.voucherUnitValue ?? 0) /
-              100;
+          discountAmount +=
+              totalAmnt * (element.potongan!.voucherUnitValue ?? 0) / 100;
         } else {
           discountAmount += element.potongan!.voucherUnitValue ?? 0;
         }
-        logger.safeLog('discount : ${discountAmount} ');
+        logger.safeLog('POTONGAN AMOUNT : $discountAmount ');
       }
 
       ticketTotalQtyVal +=
           potonganList.fold(0, (sum, val) => sum + val.qtyOrder!);
 
-      totalAmntFinal = ticketTotalAmnt - discountAmount;
-    } else {
-      totalAmntFinal = ticketTotalAmnt;
+      totalAmntFinal = totalAmnt - discountAmount;
+    }
+    if (depositList.isNotEmpty) {
+      double discountAmount = 0;
+      for (var element in depositList) {
+        discountAmount += element.deposit!.dpAmount ?? 0;
+        logger.safeLog('DEPOSIT AMOUNT : $discountAmount ');
+      }
+
+      ticketTotalQtyVal +=
+          depositList.fold(0, (sum, val) => sum + val.qtyOrder!);
+
+      totalAmntFinal = totalAmnt - discountAmount;
     }
     totalOrderAmnt.value = totalAmntFinal > 0 ? totalAmntFinal : 0;
     double paymentFee = getPricePayemntFee();

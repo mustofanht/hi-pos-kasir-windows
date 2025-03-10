@@ -98,11 +98,10 @@ class SaleCartPage extends GetView<SaleCartPageController> {
   Widget contentCart(SaleCartPageController controller) {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
-              controller.addonList.isEmpty && 
+              controller.addonList.isEmpty &&
               controller.voucherList.isEmpty &&
               controller.potonganList.isEmpty &&
-              controller.depositList.isEmpty 
-              )
+              controller.depositList.isEmpty)
           ? notOrder()
           : SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -758,6 +757,10 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                 ),
                 child: Row(
                   children: [
+                    Text(
+                      '${e.qtyOrder ?? 0} X ',
+                      style: textStyle.blackText,
+                    ),
                     Expanded(
                       child: Row(
                         children: [
@@ -779,6 +782,78 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,
+                          ),
+                          (e.qtyOrder ?? 0) > 0
+                              ? CustomButton(
+                                  onPressed: () {
+                                    controller.removeVoucher(e);
+                                  },
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin / 10,
+                                  ),
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    overlayColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.transparent),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      const EdgeInsets.all(0),
+                                    ),
+                                    elevation:
+                                        MaterialStateProperty.all<double>(0),
+                                  ),
+                                  label: Image.asset(
+                                    assetsConstant.icMinus,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  width: layoutStyle.blockHorizontal * 3,
+                                  height: layoutStyle.blockVertical * 5,
+                                )
+                              : Container(),
+                          CustomButton(
+                            onPressed: () {
+                              controller.addVoucherCart(e);
+                            },
+                            margin: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin / 10,
+                            ),
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              foregroundColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                  colorStyle.transparent),
+                              side: MaterialStateProperty.all<BorderSide>(
+                                BorderSide(
+                                  color: colorStyle.transparent,
+                                  width: 1,
+                                ),
+                              ),
+                              padding:
+                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                const EdgeInsets.all(0),
+                              ),
+                              elevation: MaterialStateProperty.all<double>(0),
+                            ),
+                            label: Image.asset(
+                              assetsConstant.icPlus,
+                              fit: BoxFit.contain,
+                            ),
+                            width: layoutStyle.blockHorizontal * 3,
+                            height: layoutStyle.blockVertical * 5,
                           ),
                           CustomButton(
                             margin: EdgeInsets.symmetric(

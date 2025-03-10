@@ -82,21 +82,23 @@ class SaleVoucherPageController extends GetxController {
     update();
   }
 
-  addVoucherToCart(VoucherEntity voucher) {
+  addVoucherToCart(VoucherEntity entity) {
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
 
-    if (saleCartPageController.voucherList.isNotEmpty) {
-      CartVoucher? existing = saleCartPageController.voucherList
-          .firstWhereOrNull((e) => e.entity!.vpId == voucher.vpId);
+    if (saleCartPageController.voucherList.isEmpty) {
+      saleCartPageController.addvoucher(entity);
+    } else {
+      CartVoucher? existingTicket = saleCartPageController.voucherList
+          .firstWhereOrNull((e) => e.entity!.vpId == entity.vpId);
 
-      if (existing != null) {
-        alert.warning("Warning", "voucher ${voucher.vpName} has been added!");
-        return;
+      if (existingTicket != null) {
+        saleCartPageController.addVoucherCart(existingTicket);
+      } else {
+        saleCartPageController.addvoucher(entity);
       }
     }
-    saleCartPageController.addvoucher(voucher);
-    saleCartPageController.calculateTotalOrder();
+    saleCartPageController.update();
     update();
   }
 
