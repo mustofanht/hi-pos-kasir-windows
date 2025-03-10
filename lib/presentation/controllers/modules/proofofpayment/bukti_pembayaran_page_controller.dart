@@ -16,10 +16,12 @@ import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
@@ -326,12 +328,12 @@ class BuktiPembayaranPageController extends GetxController
                       ),
                     )
                     .toList();
-        List<OrderVoucherModel> voucherList =
+        List<OrderPotonganModel> potonganList =
             detailModel.value.trnOrderVouchers == null
                 ? []
                 : detailModel.value.trnOrderVouchers!
                     .map(
-                      (e) => OrderVoucherModel(
+                      (e) => OrderPotonganModel(
                         ordvcTotalVoucher: 1,
                         ordvcTotalAmount: e.voucherUnitCalcValue!,
                         voucher: PotonganEntity(
@@ -343,6 +345,24 @@ class BuktiPembayaranPageController extends GetxController
                       ),
                     )
                     .toList();
+        List<OrderVoucherModel> voucherList = [];
+        //     detailModel.value.trnOrderVouchers == null
+        //         ? []
+        //         : detailModel.value.trnOrderVouchers!
+        //             .map(
+        //               (e) => OrderPotonganModel(
+        //                 ordvcTotalVoucher: 1,
+        //                 ordvcTotalAmount: e.voucherUnitCalcValue!,
+        //                 voucher: PotonganEntity(
+        //                   voucherUnitType: e.voucherUnitType,
+        //                   voucherUnitValue: e.voucherUnitValue,
+        //                   voucherName: e.voucherName,
+        //                   voucherCode: e.voucherCode,
+        //                 ),
+        //               ),
+        //             )
+        //             .toList();
+        List<OrderDepositModel> depositList = [];
 
         OrderModel orderModel = OrderModel(
           orderNumber: selectedData.value.orderNumber ?? '',
@@ -364,7 +384,9 @@ class BuktiPembayaranPageController extends GetxController
               DateTime.now(),
           listTicket: ticketList,
           listProduct: productList,
-          listVoucher: voucherList,
+          listVoucher: potonganList,
+          listVoucherPrice: voucherList,
+          listDepositUse: depositList,
         );
 
         // logger.safeLog('DATA PRINT : ${orderModel.toJson()}');

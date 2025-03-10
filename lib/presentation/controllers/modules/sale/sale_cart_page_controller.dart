@@ -4,9 +4,11 @@ import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
@@ -32,10 +34,12 @@ class SaleCartPageController extends GetxController {
 
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
+  final potonganList = RxList<CartPotongan>([]);
   final voucherList = RxList<CartVoucher>([]);
+  final depositList = RxList<CartDeposit>([]);
   late var orderList = Cart(
     cartTicketList: ticketList,
-    cartVoucherList: voucherList,
+    cartPotonganList: potonganList,
     addonList: addonList,
   ).obs;
 
@@ -157,19 +161,19 @@ class SaleCartPageController extends GetxController {
     calculateTotalOrder();
   }
 
-  addVoucher(PotonganEntity voucher) {
-    voucherList.add(
-      CartVoucher(
+  addpotongan(PotonganEntity potongan) {
+    potonganList.add(
+      CartPotongan(
         qtyOrder: 1,
-        totalPrice: voucher.voucherUnitValue!,
-        voucher: voucher,
+        totalPrice: potongan.voucherUnitValue!,
+        potongan: potongan,
       ),
     );
     calculateTotalOrder();
   }
 
-  removeListVoucher(CartVoucher voucher) {
-    voucherList.remove(voucher);
+  removeListpotongan(CartPotongan potongan) {
+    potonganList.remove(potongan);
     calculateTotalOrder();
   }
 
@@ -189,20 +193,21 @@ class SaleCartPageController extends GetxController {
       ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
     }
 
-    if (voucherList.isNotEmpty) {
+    if (potonganList.isNotEmpty) {
       double discountAmount = 0;
-      for (var element in voucherList) {
-        if (element.voucher!.voucherUnitType == UnitType.PERCENT) {
-          discountAmount +=
-              ticketTotalAmnt * (element.voucher!.voucherUnitValue ?? 0) / 100;
+      for (var element in potonganList) {
+        if (element.potongan!.voucherUnitType == UnitType.PERCENT) {
+          discountAmount += ticketTotalAmnt *
+              (element.potongan!.voucherUnitValue ?? 0) /
+              100;
         } else {
-          discountAmount += element.voucher!.voucherUnitValue ?? 0;
+          discountAmount += element.potongan!.voucherUnitValue ?? 0;
         }
         logger.safeLog('discount : ${discountAmount} ');
       }
 
       ticketTotalQtyVal +=
-          voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
+          potonganList.fold(0, (sum, val) => sum + val.qtyOrder!);
 
       totalAmntFinal = ticketTotalAmnt - discountAmount;
     } else {
@@ -218,7 +223,7 @@ class SaleCartPageController extends GetxController {
     salePageController.totalOrderQty(totalOrderQty.value);
     salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
     salePageController.addonList(addonList);
-    salePageController.voucherList(voucherList);
+    salePageController.potonganList(potonganList);
     salePageController.ticketList(ticketList);
 
     update();
@@ -230,10 +235,10 @@ class SaleCartPageController extends GetxController {
     // logger.safeLog('TOTAL AMT : ${finalTotalOrderAmt.value}');
     // logger.safeLog('TICKERT LIST : ${ticketList.length}');
     // logger.safeLog('TICKERT LIST : ${ticketList.isEmpty}');
-    // logger.safeLog('VOUCHER LIST : ${voucherList.length}');
-    // logger.safeLog('VOUCHER LIST : ${voucherList.isEmpty}');
+    // logger.safeLog('potongan LIST : ${potonganList.length}');
+    // logger.safeLog('potongan LIST : ${potonganList.isEmpty}');
     // logger.safeLog(
-    //     'VALID TO PAYMENT  : ${(finalTotalOrderAmt.value < 0 && voucherList.isEmpty && ticketList.isEmpty)}');
+    //     'VALID TO PAYMENT  : ${(finalTotalOrderAmt.value < 0 && potonganList.isEmpty && ticketList.isEmpty)}');
     if (finalTotalOrderAmt.value < 0 ||
         (addonList.isEmpty && ticketList.isEmpty)) {
       alert.warning('warning', 'Order cannot empty');
@@ -248,7 +253,7 @@ class SaleCartPageController extends GetxController {
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
-      salePageController.voucherList(voucherList);
+      salePageController.potonganList(potonganList);
       salePageController.ticketList(ticketList);
       salePageController.openPayment(true);
     }
@@ -260,14 +265,14 @@ class SaleCartPageController extends GetxController {
       selectedMstPayment.value = MstPayment();
       ticketList.clear();
       addonList.clear();
-      voucherList.clear();
+      potonganList.clear();
       calculateTotalOrder();
       updateCustomer();
       // clear and back payment page
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
-      salePageController.voucherList(voucherList);
+      salePageController.potonganList(potonganList);
       salePageController.ticketList(ticketList);
       salePageController.openPayment(false);
       salePageController.refreshForm();
@@ -286,7 +291,7 @@ class SaleCartPageController extends GetxController {
         value: CustomerSaleCart(
           ticketList: ticketList,
           addonList: addonList,
-          voucherList: voucherList,
+          potonganList: potonganList,
           totalOrder: finalTotalOrderAmt.value,
           paymentFee: getPricePayemntFee(),
         ).toJson(),

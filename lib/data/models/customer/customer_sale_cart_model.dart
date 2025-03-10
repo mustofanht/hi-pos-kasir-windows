@@ -2,12 +2,12 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
-import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 
 class CustomerSaleCart {
   List<CartTicket>? ticketList = [];
-  List<CartVoucher>? voucherList = [];
+  List<CartPotongan>? potonganList = [];
   List<CartAddon>? addonList = [];
   List<Membership>? memberList = [];
   double? totalOrder;
@@ -16,7 +16,7 @@ class CustomerSaleCart {
   CustomerSaleCart({
     this.ticketList,
     this.addonList,
-    this.voucherList,
+    this.potonganList,
     this.memberList,
     this.totalOrder,
     this.paymentFee,
@@ -26,7 +26,7 @@ class CustomerSaleCart {
     return {
       'ticketList': ticketList?.map((e) => e.toJson()).toList(),
       'addonList': addonList?.map((e) => e.toJson()).toList(),
-      'voucherList': voucherList?.map((e) => e.toJson2()).toList(),
+      'potonganList': potonganList?.map((e) => e.toJson2()).toList(),
       'memberList': memberList?.map((e) => e.toJson()).toList(),
       'totalOrder': totalOrder,
       'paymentFee': paymentFee,
@@ -59,14 +59,14 @@ class CustomerSaleCart {
           addonList?.add(CartAddon.fromJson(e));
         }
       }
-      for (var e in json['voucherList']) {
+      for (var e in json['potonganList']) {
         if (e is Map<Object?, Object?>) {
           Map<String, dynamic> result = common.convertToMapStringDynamic(e);
-          CartVoucher cartVoucher = CartVoucher.fromJson(result);
-          voucherList?.insert(indexVoucher, cartVoucher);
+          CartPotongan cartPotongan = CartPotongan.fromJson(result);
+          potonganList?.insert(indexVoucher, cartPotongan);
           indexVoucher++;
         } else {
-          voucherList?.add(CartVoucher.fromJson(e));
+          potonganList?.add(CartPotongan.fromJson(e));
         }
       }
       for (var e in json['memberList']) {

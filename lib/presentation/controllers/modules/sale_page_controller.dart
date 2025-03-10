@@ -6,12 +6,14 @@ import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
-import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
@@ -71,7 +73,7 @@ class SalePageController extends GetxController
   final totalOrderAmnt = RxDouble(0);
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
-  final voucherList = RxList<CartVoucher>([]);
+  final potonganList = RxList<CartPotongan>([]);
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
@@ -259,7 +261,9 @@ class SalePageController extends GetxController
   OrderModel getBodyOrder(String paymentMethod, String paymentMethodName) {
     List<OrderTicketModel> listTicket = [];
     List<OrderAddonModel> listProduct = [];
+    List<OrderPotonganModel> listPotongan = [];
     List<OrderVoucherModel> listVoucher = [];
+    List<OrderDepositModel> listDeposit = [];
 
     double totalTicketProduct = 0;
     int totalTotalTicketProduct = 0;
@@ -305,21 +309,21 @@ class SalePageController extends GetxController
         ),
       );
     }
-    if (voucherList.isNotEmpty) {
-      listVoucher.addAll(
-        voucherList.map(
+    if (potonganList.isNotEmpty) {
+      listPotongan.addAll(
+        potonganList.map(
           (element) {
-            double totalVouceher = element.totalPrice!;
-            if (element.voucher != null &&
-                element.voucher?.voucherUnitType == UnitType.PERCENT) {
-              totalVouceher =
+            double totalPotongan = element.totalPrice!;
+            if (element.potongan != null &&
+                element.potongan?.voucherUnitType == UnitType.PERCENT) {
+              totalPotongan =
                   (totalTicketProduct * (element.totalPrice ?? 0) / 100);
             }
-            return OrderVoucherModel(
-              voucher: element.voucher,
-              ordvcVoucherId: element.voucher?.voucherId,
+            return OrderPotonganModel(
+              voucher: element.potongan,
+              ordvcVoucherId: element.potongan?.voucherId,
               ordvcTotalVoucher: element.qtyOrder!,
-              ordvcTotalAmount: totalVouceher,
+              ordvcTotalAmount: totalPotongan,
             );
           },
         ),
@@ -349,7 +353,9 @@ class SalePageController extends GetxController
       orderStatus: 'N',
       listTicket: listTicket,
       listProduct: listProduct,
-      listVoucher: listVoucher,
+      listVoucher: listPotongan,
+      listVoucherPrice: listVoucher,
+      listDepositUse: listDeposit,
     );
   }
 }

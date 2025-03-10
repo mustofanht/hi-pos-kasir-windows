@@ -76,7 +76,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
   Widget contentCart(CustomerSaleCartPageController controller) {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
-              controller.voucherList.isEmpty &&
+              controller.potonganList.isEmpty &&
               controller.addonList.isEmpty)
           ? notOrder()
           : SingleChildScrollView(
@@ -109,7 +109,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                       addonListComponent(controller)
                     ] else
                       Container(),
-                    if (controller.voucherList.isNotEmpty) ...[
+                    if (controller.potonganList.isNotEmpty) ...[
                       voucherListComponent(controller)
                     ] else
                       Container(),
@@ -187,7 +187,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
       margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        children: controller.voucherList
+        children: controller.potonganList
             .map(
               (e) => Container(
                 margin: EdgeInsets.symmetric(
@@ -202,7 +202,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
-                            e.voucher!.voucherName ?? '',
+                            e.potongan!.voucherName ?? '',
                             style: TextStyle(
                               fontSize: fontSize.title,
                             ),
@@ -223,9 +223,9 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                     Container(
                       alignment: Alignment.topRight,
                       child: Text(
-                        e.voucher!.voucherUnitType == UnitType.PERCENT
-                            ? ('${e.voucher!.voucherUnitValue} %')
-                            : ('Rp${common.currencyFormat(e.voucher!.voucherUnitValue ?? 0)}'),
+                        e.potongan!.voucherUnitType == UnitType.PERCENT
+                            ? ('${e.potongan!.voucherUnitValue} %')
+                            : ('Rp${common.currencyFormat(e.potongan!.voucherUnitValue ?? 0)}'),
                         // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
                         style: TextStyle(
                           fontSize: fontSize.title,

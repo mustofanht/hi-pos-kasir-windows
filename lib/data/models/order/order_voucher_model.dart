@@ -1,31 +1,27 @@
-import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
-
 class OrderVoucherModel {
-  PotonganEntity? voucher;
-  int? ordvcVoucherId;
-  int ordvcTotalVoucher;
-  double ordvcTotalAmount;
+  int? ovpVoucherId;
+  int ovpTotalVoucher;
+  double ovpTotalAmount;
 
   OrderVoucherModel({
-    this.voucher,
-    this.ordvcVoucherId,
-    required this.ordvcTotalVoucher,
-    required this.ordvcTotalAmount,
+    this.ovpVoucherId,
+    required this.ovpTotalVoucher,
+    required this.ovpTotalAmount,
   });
 
   factory OrderVoucherModel.fromJson(Map<String, dynamic> json) {
     return OrderVoucherModel(
-      ordvcVoucherId: json['ordvcVoucherId'],
-      ordvcTotalVoucher: json['ordvcTotalVoucher'],
-      ordvcTotalAmount: json['ordvcTotalAmount'],
+      ovpVoucherId: json['ovpVoucherId'],
+      ovpTotalVoucher: json['ovpTotalVoucher'],
+      ovpTotalAmount: json['ovpTotalAmount'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "ordvcVoucherId": ordvcVoucherId,
-      "ordvcTotalVoucher": ordvcTotalVoucher,
-      "ordvcTotalAmount": ordvcTotalAmount,
+      "ovpVoucherId": ovpVoucherId,
+      "ovpTotalVoucher": ovpTotalVoucher,
+      "ovpTotalAmount": ovpTotalAmount,
     };
   }
 }

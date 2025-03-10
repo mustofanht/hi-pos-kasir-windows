@@ -10,7 +10,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
-import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
@@ -25,11 +25,11 @@ class CustomerSaleCartPageController extends GetxController {
 
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
-  final voucherList = RxList<CartVoucher>([]);
+  final potonganList = RxList<CartPotongan>([]);
   final memberList = RxList<Membership>([]);
   late var orderList = Cart(
     cartTicketList: ticketList,
-    cartVoucherList: voucherList,
+    cartPotonganList: potonganList,
     addonList: addonList,
   ).obs;
 
@@ -156,15 +156,15 @@ class CustomerSaleCartPageController extends GetxController {
 
   doAddCart(Map<String, dynamic> val) {
     ticketList.clear();
-    voucherList.clear();
+    potonganList.clear();
     addonList.clear();
     CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
 
     if (customerSaleCart.ticketList != null) {
       ticketList.addAll(customerSaleCart.ticketList!);
     }
-    if (customerSaleCart.voucherList != null) {
-      voucherList.addAll(customerSaleCart.voucherList!);
+    if (customerSaleCart.potonganList != null) {
+      potonganList.addAll(customerSaleCart.potonganList!);
     }
     if (customerSaleCart.addonList != null) {
       addonList.addAll(customerSaleCart.addonList!);

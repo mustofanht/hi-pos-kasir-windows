@@ -98,7 +98,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
   Widget contentCart(SaleCartPageController controller) {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
-              controller.voucherList.isEmpty &&
+              controller.potonganList.isEmpty &&
               controller.addonList.isEmpty)
           ? notOrder()
           : SingleChildScrollView(
@@ -169,7 +169,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       ),
                     ] else
                       Container(),
-                    if (controller.voucherList.isNotEmpty) ...[
+                    if (controller.potonganList.isNotEmpty) ...[
                       Container(
                         width: layoutStyle.screenWidth,
                         margin: EdgeInsets.symmetric(
@@ -694,7 +694,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
       margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        children: controller.voucherList
+        children: controller.potonganList
             .map(
               (e) => Container(
                 margin: EdgeInsets.symmetric(
@@ -706,7 +706,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text(
-                            e.voucher!.voucherName ?? '',
+                            e.potongan!.voucherName ?? '',
                             softWrap: true,
                           ),
                         ],
@@ -717,9 +717,9 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       child: Row(
                         children: [
                           Text(
-                            e.voucher!.voucherUnitType == UnitType.PERCENT
-                                ? ('${e.voucher!.voucherUnitValue} %')
-                                : ('Rp${common.currencyFormat(e.voucher!.voucherUnitValue ?? 0)}'),
+                            e.potongan!.voucherUnitType == UnitType.PERCENT
+                                ? ('${e.potongan!.voucherUnitValue} %')
+                                : ('Rp${common.currencyFormat(e.potongan!.voucherUnitValue ?? 0)}'),
                           ),
                           SizedBox(
                             width: layoutStyle.defaultMargin,
@@ -729,7 +729,7 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                               vertical: layoutStyle.defaultMargin / 10,
                             ),
                             onPressed: () {
-                              controller.removeListVoucher(e);
+                              controller.removeListpotongan(e);
                             },
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(

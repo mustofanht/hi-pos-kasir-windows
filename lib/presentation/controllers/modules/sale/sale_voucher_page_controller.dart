@@ -1,15 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
-import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
@@ -21,21 +24,24 @@ class SaleVoucherPageController extends GetxController {
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
 
-  final voucherList = <PotonganEntity>[].obs;
+  final voucherList = <VoucherEntity>[].obs;
+  final potonganList = <PotonganEntity>[].obs;
+  final depositList = <DepositEntity>[].obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
-  
+
   final typeItemList = <CustomIdNameEntity>[].obs;
-  final selectedTypeItemList = CustomIdNameEntity().obs;
+  final selectedTypeItemList = Rxn<String>('V');
 
   @override
   Future<void> onInit() async {
     super.onInit();
     scrollController.addListener(scrollHandler);
+    selectedTypeItemList.value = 'V';
     await doPrepareList(page: 0);
     doInitializeItemTypeList();
   }
-  
+
   doInitializeItemTypeList() {
     typeItemList.clear();
     typeItemList.add(CustomIdNameEntity(id: 'V', name: 'Voucher'));
@@ -44,10 +50,84 @@ class SaleVoucherPageController extends GetxController {
     update();
   }
 
+  Future<void> scrollHandler() async {
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      if (pagination.value.currentPage! < pagination.value.totalPage!) {
+        await doPrepareList(page: pagination.value.currentPage! + 1);
+      }
+    }
+  }
+
+  addPotonganToCart({required PotonganEntity voucher}) {
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
+    if (saleCartPageController.potonganList.isNotEmpty) {
+      CartPotongan? existingVoucher = saleCartPageController.potonganList
+          .firstWhereOrNull((e) => e.potongan!.voucherId == voucher.voucherId);
+
+      if (existingVoucher != null) {
+        alert.warning(
+            "Warning", "voucher ${voucher.voucherName} has been added!");
+        return;
+      }
+    }
+    saleCartPageController.addpotongan(voucher);
+    saleCartPageController.calculateTotalOrder();
+    update();
+  }
+
+  addVoucherToCart(VoucherEntity voucher) {
+    // final SaleCartPageController saleCartPageController =
+    //     Get.find<SaleCartPageController>();
+
+    // if (saleCartPageController.voucherList.isNotEmpty) {
+    //   CartPotongan? existingVoucher = saleCartPageController.potonganList
+    //       .firstWhereOrNull((e) => e.potongan!.voucherId == voucher.voucherId);
+
+    //   if (existingVoucher != null) {
+    //     alert.warning(
+    //         "Warning", "voucher ${voucher.voucherName} has been added!");
+    //     return;
+    //   }
+    // }
+    // saleCartPageController.addpotongan(voucher);
+    // saleCartPageController.calculateTotalOrder();
+    update();
+  }
+
+  addDepositToCart(DepositEntity voucher) {}
+
+  onSelectedType(CustomIdNameEntity element) async {
+    logger.safeLog('ON SELECT TYPE : ${element.toJson()}');
+    selectedTypeItemList.value = element.id;
+    voucherList.clear();
+    potonganList.clear();
+    depositList.clear();
+    await doPrepareList(
+      page: 0,
+    );
+    // logger.safeLog('LENGTH V : ${voucherList.length}');
+    // logger.safeLog('LENGTH P : ${potonganList.length}');
+    // logger.safeLog('LENGTH D : ${depositList.length}');
+    update();
+  }
 
   doPrepareList({
     required int page,
   }) async {
+    logger.safeLog('TYPE SELECTED : ${selectedTypeItemList.value}');
+    if (selectedTypeItemList.value == 'V') {
+      await doPrepareVoucher(page);
+    } else if (selectedTypeItemList.value == 'P') {
+      await doPreparedPotongan(page);
+    } else if (selectedTypeItemList.value == 'D') {
+      await doPreparedDeposit(page);
+    }
+  }
+
+  doPrepareVoucher(int page) async {
     if (isLoading.value) return;
     isLoading.value = true;
 
@@ -57,11 +137,24 @@ class SaleVoucherPageController extends GetxController {
       Map<String, dynamic> param = {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
-        'flMobile': 'Y',
-        'locationId': sessionUtil.getLocationId().toString(),
+        // 'flMobile': 'Y',
+        // 'locationId': sessionUtil.getLocationId().toString(),
       };
-
-      result = await _service.sale.voucherService.getAllPotongan(
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'vpLocId',
+          OPERATOR_CONSTANTS.EQUALS,
+          sessionUtil.getLocationId().toString(),
+        )!,
+      );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'vpState',
+          OPERATOR_CONSTANTS.EQUALS,
+          'Y',
+        )!,
+      );
+      result = await _service.sale.voucherService.getAllVoucher(
         authToken: _authToken,
         dataFilter: dataFilter,
         paramsFilter: param,
@@ -87,31 +180,98 @@ class SaleVoucherPageController extends GetxController {
     update();
   }
 
-  Future<void> scrollHandler() async {
-    if (scrollController.position.pixels ==
-        scrollController.position.maxScrollExtent) {
-      if (pagination.value.currentPage! < pagination.value.totalPage!) {
-        await doPrepareList(page: pagination.value.currentPage! + 1);
-      }
+  doPreparedPotongan(int page) async {
+    if (isLoading.value) return;
+    isLoading.value = true;
+
+    try {
+      var result;
+      List<FilterQuery> dataFilter = [];
+      Map<String, dynamic> param = {
+        'page': page.toString(),
+        'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+        'flMobile': 'Y',
+        'locationId': sessionUtil.getLocationId().toString(),
+      };
+
+      result = await _service.sale.voucherService.getAllPotongan(
+        authToken: _authToken,
+        dataFilter: dataFilter,
+        paramsFilter: param,
+      );
+
+      result.fold((l) {
+        logger.safeLog(l);
+        isLoading.value = false;
+      }, (r) {
+        if (page == 0) {
+          potonganList.value = r.data!;
+        } else {
+          potonganList.addAll(r.data!);
+        }
+        pagination.value = r.pagination!;
+        isLoading.value = false;
+        visibleLoadMore.value = false;
+      });
+    } catch (e) {
+      logger.safeLog(e);
+      isLoading.value = false;
     }
+    update();
   }
 
-  addVoucherToCart({required PotonganEntity voucher}) {
-    final SaleCartPageController saleCartPageController =
-        Get.find<SaleCartPageController>();
+  doPreparedDeposit(int page) async {
+    if (isLoading.value) return;
+    isLoading.value = true;
 
-    if (saleCartPageController.voucherList.isNotEmpty) {
-      CartVoucher? existingVoucher = saleCartPageController.voucherList
-          .firstWhereOrNull((e) => e.voucher!.voucherId == voucher.voucherId);
+    try {
+      var result;
+      List<FilterQuery> dataFilter = [];
+      Map<String, dynamic> param = {
+        'page': page.toString(),
+        'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
+        // 'flMobile': 'Y',
+        // 'locationId': sessionUtil.getLocationId().toString(),
+      };
 
-      if (existingVoucher != null) {
-        alert.warning(
-            "Warning", "voucher ${voucher.voucherName} has been added!");
-        return;
-      }
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'dpLocId',
+          OPERATOR_CONSTANTS.EQUALS,
+          sessionUtil.getLocationId().toString(),
+        )!,
+      );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'dpState',
+          OPERATOR_CONSTANTS.EQUALS,
+          'Y',
+        )!,
+      );
+
+      result = await _service.sale.voucherService.getAllDeposit(
+        authToken: _authToken,
+        dataFilter: dataFilter,
+        paramsFilter: param,
+      );
+
+      result.fold((l) {
+        logger.safeLog(l);
+        isLoading.value = false;
+      }, (r) {
+        if (page == 0) {
+          depositList.value = r.data!;
+        } else {
+          depositList.addAll(r.data!);
+        }
+        pagination.value = r.pagination!;
+        isLoading.value = false;
+        visibleLoadMore.value = false;
+      });
+    } catch (e) {
+      logger.safeLog(e);
+      isLoading.value = false;
     }
-    saleCartPageController.addVoucher(voucher);
-    saleCartPageController.calculateTotalOrder();
     update();
   }
 }
