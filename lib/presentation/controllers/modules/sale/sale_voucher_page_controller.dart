@@ -9,7 +9,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
-import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
@@ -21,7 +21,7 @@ class SaleVoucherPageController extends GetxController {
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
 
-  final voucherList = <VoucherEntity>[].obs;
+  final voucherList = <PotonganEntity>[].obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
   
@@ -96,7 +96,7 @@ class SaleVoucherPageController extends GetxController {
     }
   }
 
-  addVoucherToCart({required VoucherEntity voucher}) {
+  addVoucherToCart({required PotonganEntity voucher}) {
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
 

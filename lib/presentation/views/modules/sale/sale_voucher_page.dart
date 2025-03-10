@@ -5,7 +5,7 @@ import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 
@@ -48,7 +48,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
       );
     }
 
-    Widget voucherCard(VoucherEntity e) {
+    Widget voucherCard(PotonganEntity e) {
       return InkWell(
         onTap: () {
           controller.addVoucherToCart(voucher: e);

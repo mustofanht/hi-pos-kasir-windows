@@ -1,11 +1,11 @@
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 
 class CartVoucher {
   int? qtyOrder;
   double? totalPrice;
-  VoucherEntity? voucher;
+  PotonganEntity? voucher;
 
   CartVoucher({
     this.qtyOrder,
@@ -36,9 +36,9 @@ class CartVoucher {
       if (json['voucher'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
             common.convertToMapStringDynamic(json['voucher']);
-        voucher = VoucherEntity.fromJson(result);
+        voucher = PotonganEntity.fromJson(result);
       } else {
-        voucher = VoucherEntity.fromJson(json['voucher']);
+        voucher = PotonganEntity.fromJson(json['voucher']);
       }
     } catch (e) {
       logger.safeLog('Error $e');

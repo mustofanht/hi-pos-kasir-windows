@@ -1,7 +1,7 @@
-import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 
 class OrderVoucherModel {
-  VoucherEntity? voucher;
+  PotonganEntity? voucher;
   int? ordvcVoucherId;
   int ordvcTotalVoucher;
   double ordvcTotalAmount;

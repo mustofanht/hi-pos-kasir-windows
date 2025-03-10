@@ -28,13 +28,12 @@ import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
-import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
-import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
@@ -335,7 +334,7 @@ class BuktiPembayaranPageController extends GetxController
                       (e) => OrderVoucherModel(
                         ordvcTotalVoucher: 1,
                         ordvcTotalAmount: e.voucherUnitCalcValue!,
-                        voucher: VoucherEntity(
+                        voucher: PotonganEntity(
                           voucherUnitType: e.voucherUnitType,
                           voucherUnitValue: e.voucherUnitValue,
                           voucherName: e.voucherName,
