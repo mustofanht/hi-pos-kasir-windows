@@ -98,6 +98,18 @@ class CreateMemberPageController extends GetxController {
         name: MemberRelation.getName(MemberRelation.SAUDARA),
       ),
     );
+    listRelation.add(
+      CustomIdNameEntity(
+        id: MemberRelation.ORANG_TUA,
+        name: MemberRelation.getName(MemberRelation.ORANG_TUA),
+      ),
+    );
+    listRelation.add(
+      CustomIdNameEntity(
+        id: MemberRelation.TEMAN,
+        name: MemberRelation.getName(MemberRelation.TEMAN),
+      ),
+    );
     update();
   }
 

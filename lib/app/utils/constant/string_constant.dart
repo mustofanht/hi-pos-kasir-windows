@@ -94,8 +94,10 @@ class ProductRentalType {
 }
 
 class MemberRelation {
-  static const String ANAK = '1';
-  static const String SAUDARA = '2';
+  static const String ANAK = 'A';
+  static const String SAUDARA = 'S';
+  static const String ORANG_TUA = 'O';
+  static const String TEMAN = 'T';
 
   static String getName(String relation) {
     switch (relation) {
@@ -103,6 +105,10 @@ class MemberRelation {
         return "Anak";
       case SAUDARA:
         return "Saudara";
+      case ORANG_TUA:
+        return "Orang Tua";
+      case TEMAN:
+        return "Teman";
       default:
         return "";
     }
