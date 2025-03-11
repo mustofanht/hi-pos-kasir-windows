@@ -318,6 +318,8 @@ class SaleCartPageController extends GetxController {
     salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
     salePageController.addonList(addonList);
     salePageController.potonganList(potonganList);
+      salePageController.voucherList(voucherList);
+      salePageController.depositList(depositList);
     salePageController.ticketList(ticketList);
 
     update();
@@ -348,6 +350,8 @@ class SaleCartPageController extends GetxController {
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
       salePageController.potonganList(potonganList);
+      salePageController.voucherList(voucherList);
+      salePageController.depositList(depositList);
       salePageController.ticketList(ticketList);
       salePageController.openPayment(true);
     }
@@ -367,6 +371,8 @@ class SaleCartPageController extends GetxController {
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
       salePageController.potonganList(potonganList);
+      salePageController.voucherList(voucherList);
+      salePageController.depositList(depositList);
       salePageController.ticketList(ticketList);
       salePageController.openPayment(false);
       salePageController.refreshForm();

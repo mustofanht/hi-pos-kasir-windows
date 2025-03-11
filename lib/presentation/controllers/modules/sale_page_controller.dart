@@ -5,8 +5,10 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
@@ -74,6 +76,8 @@ class SalePageController extends GetxController
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
   final potonganList = RxList<CartPotongan>([]);
+  final voucherList = RxList<CartVoucher>([]);
+  final depositList = RxList<CartDeposit>([]);
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
@@ -302,7 +306,8 @@ class SalePageController extends GetxController
                       amount: element.rentModel!.newBuyPrice,
                       startDate: element.rentModel!.startDate,
                       endDate: element.rentModel!.endDate,
-                      orderNumberExtra: element.rentModel!.transactionExtra?.orderNumber,
+                      orderNumberExtra:
+                          element.rentModel!.transactionExtra?.orderNumber,
                     ),
             );
           },
@@ -324,6 +329,38 @@ class SalePageController extends GetxController
               ordvcVoucherId: element.potongan?.voucherId,
               ordvcTotalVoucher: element.qtyOrder!,
               ordvcTotalAmount: totalPotongan,
+            );
+          },
+        ),
+      );
+    }
+    if (voucherList.isNotEmpty) {
+      listVoucher.addAll(
+        voucherList.map(
+          (element) {
+            double total = element.totalPrice!;
+            if (element.entity != null &&
+                element.entity?.vpUnitType == UnitType.PERCENT) {
+              total = (totalTicketProduct * (element.totalPrice ?? 0) / 100);
+            }
+            return OrderVoucherModel(
+              ovpVoucherId: element.entity?.vpId,
+              ovpTotalAmount: total,
+              ovpTotalVoucher: element.qtyOrder ?? 0,
+            );
+          },
+        ),
+      );
+    }
+    if (depositList.isNotEmpty) {
+      listDeposit.addAll(
+        depositList.map(
+          (element) {
+            double total = element.totalPrice!;
+            return OrderDepositModel(
+              odpOrderNumber: '',
+              odpDpId: element.deposit!.dpId!,
+              odpTotalAmount: element.deposit!.dpAmount!,
             );
           },
         ),
