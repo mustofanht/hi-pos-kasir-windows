@@ -1575,14 +1575,16 @@ class CustomDialog {
     required String msg,
     required List<CustomIdNameEntity> listReason,
     required Rxn<CustomIdNameEntity> selectReason,
+    required RxBool etcReason,
     required Function(String reffNo) onNext,
   }) {
+    final reasonController = TextEditingController();
     Get.dialog(
       AlertDialog(
         contentPadding: EdgeInsets.zero,
         content: Container(
           width: layoutStyle.screenWidth / 2,
-          height: layoutStyle.blockVertical * 45,
+          height: layoutStyle.blockVertical * 50,
           decoration: BoxDecoration(
             color: colorStyle.white,
             borderRadius: const BorderRadius.all(
@@ -1657,9 +1659,43 @@ class CustomDialog {
                           ),
                           onChanged: (CustomIdNameEntity? reasonVal) {
                             selectReason.value = reasonVal;
+                            etcReason.value = reasonVal?.id == 'LN';
                           },
                         ),
                       ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin / 2,
+                      ),
+                      Obx(
+                        () => !etcReason.value
+                            ? Container()
+                            : CustomTextBox(
+                                height: layoutStyle.blockVertical * 6.5,
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: layoutStyle.defaultMargin,
+                                  vertical: layoutStyle.defaultMargin / 4,
+                                ),
+                                obscureText: false,
+                                border: Border.all(
+                                  color: colorStyle.grey,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  topLeft: Radius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                ),
+                                controller: reasonController,
+                                decoration: InputDecoration(
+                                  hintText: 'Alasan',
+                                  hintStyle: textStyle.greyText,
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                      )
                     ],
                   ),
                 ),
@@ -1715,7 +1751,18 @@ class CustomDialog {
                           if (selectReason.value?.id == null) {
                             alert.error('Error', 'please select reason void');
                           } else {
-                            onNext(selectReason.value!.name!);
+                            if (selectReason.value?.id == 'LN') {
+                              if (reasonController.text.isEmpty) {
+                                alert.error(
+                                  'Error',
+                                  'Alasan tidak boleh kosong!',
+                                );
+                              } else {
+                                onNext(reasonController.text);
+                              }
+                            } else {
+                              onNext(selectReason.value!.name!);
+                            }
                           }
                         },
                         style: ButtonStyle(

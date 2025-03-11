@@ -498,16 +498,19 @@ class BuktiPembayaranPageController extends GetxController
   }
 
   final selectReasonRx = Rxn<CustomIdNameEntity>(null);
+  final etcReason = false.obs;
 
   doVoidPayment() async {
     var reasons = await getListReasonVoid();
     selectReasonRx.value = reasons.first;
+    etcReason.value = false;
     update();
     logger.safeLog('reasons : ${reasons.length}');
     dialog.dialogVoidTicket(
       title: 'Void',
       msg: 'Apakah anda yakin akan melakukan void pembayaran ini?',
       selectReason: selectReasonRx,
+      etcReason: etcReason,
       listReason: reasons,
       onNext: (reasonVal) async {
         try {
@@ -577,6 +580,12 @@ class BuktiPembayaranPageController extends GetxController
     } catch (e) {
       logger.safeLog(e);
     }
+    reasons.add(
+      CustomIdNameEntity(
+        id: 'LN',
+        name: 'Lainnya',
+      ),
+    );
     return reasons;
   }
 }
