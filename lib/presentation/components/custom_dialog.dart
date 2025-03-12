@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -15,6 +16,7 @@ import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.da
 import 'package:jaya_propertiy/presentation/components/custom_list_transaction.dart';
 import 'package:jaya_propertiy/presentation/components/custom_select_hours_rent.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
+import 'package:jaya_propertiy/presentation/views/modules/member/membership_payment.dart';
 
 class CustomDialog {
   Future<bool> dialog({
@@ -2275,6 +2277,24 @@ class CustomDialog {
               ),
             ],
           ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  paymentMember({
+    required Function() onNext,
+    required AuthToken authToken,
+    required MemberValid memberValid,
+  }) async {
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: MembershipPayment(
+          onNext: onNext,
+          authToken: authToken,
+          memberValid: memberValid,
         ),
       ),
       barrierDismissible: false,

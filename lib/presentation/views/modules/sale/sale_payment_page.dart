@@ -362,6 +362,74 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                   ),
                                   keyboardType: TextInputType.text,
                                 ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: CustomTextBox(
+                                        height: layoutStyle.blockVertical * 6.5,
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: layoutStyle.defaultMargin,
+                                          vertical: layoutStyle.defaultMargin / 4,
+                                        ),
+                                        obscureText: false,
+                                        border: Border.all(
+                                          color: colorStyle.grey,
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          layoutStyle.defaultMargin / 2,
+                                        ),
+                                        label: Text(
+                                          'No Member',
+                                          style: textStyle.greyText.copyWith(
+                                            fontSize: fontSize.small,
+                                          ),
+                                        ),
+                                        controller: controller.memberNo,
+                                        decoration: InputDecoration(
+                                          hintText: 'Tulis No Member',
+                                          hintStyle: textStyle.greyText,
+                                          border: InputBorder.none,
+                                        ),
+                                        keyboardType: TextInputType.text,
+                                      ),
+                                    ),
+                                    CustomButton(
+                                      width:
+                                          layoutStyle.safeBlockHorizontal * 5,
+                                      height: layoutStyle.blockVertical * 6.5,
+                                      margin: EdgeInsets.symmetric(
+                                        vertical: layoutStyle.defaultMargin / 2,
+                                        // horizontal: layoutStyle.defaultMargin,
+                                      ),
+                                      onPressed: () async {
+                                        controller.onCheckMember();
+                                      },
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.resolveWith(
+                                          (states) => colorStyle.blue,
+                                        ),
+                                        overlayColor:
+                                            MaterialStateProperty.resolveWith(
+                                          (states) =>
+                                              colorStyle.black.withOpacity(0.1),
+                                        ),
+                                        shape:
+                                            MaterialStateProperty.resolveWith(
+                                          (states) => RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              layoutStyle.defaultMargin / 2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      label: Text('Cek', style: textStyle.whiteText,),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           )

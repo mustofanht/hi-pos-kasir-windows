@@ -364,6 +364,8 @@ class SaleCartPageController extends GetxController {
       ticketList.clear();
       addonList.clear();
       potonganList.clear();
+      voucherList.clear();
+      depositList.clear();
       calculateTotalOrder();
       updateCustomer();
       // clear and back payment page

@@ -20,8 +20,11 @@ import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
@@ -78,6 +81,8 @@ class SalePageController extends GetxController
   final potonganList = RxList<CartPotongan>([]);
   final voucherList = RxList<CartVoucher>([]);
   final depositList = RxList<CartDeposit>([]);
+
+  final memberNo = TextEditingController();
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
@@ -394,5 +399,36 @@ class SalePageController extends GetxController
       listVoucherPrice: listVoucher,
       listDepositUse: listDeposit,
     );
+  }
+
+  onCheckMember() async {
+    if (memberNo.text.isEmpty) {
+      alert.warning('Warning', 'Harap isi No Member terlebih dahulu!');
+      return;
+    }
+    try {
+      var result;
+      result = await _service.member.memberValid(
+        authToken: _authToken,
+        cardNo: memberNo.text,
+      );
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+        },
+        (r) async {
+          logger.safeLog('> Exists Member');
+          MemberValid memberValid = r.data;
+          logger.safeLog('DATA : ${memberValid.toJson()}');
+          await dialog.paymentMember(
+            onNext: () {},
+            authToken: _authToken,
+            memberValid: memberValid,
+          );
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+    }
   }
 }
