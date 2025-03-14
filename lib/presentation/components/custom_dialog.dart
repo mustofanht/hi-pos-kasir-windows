@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
@@ -2284,7 +2285,7 @@ class CustomDialog {
   }
 
   paymentMember({
-    required Function() onNext,
+    required Function(List<MemberListResponse> selectedMemberAnggota) onNext,
     required AuthToken authToken,
     required MemberValid memberValid,
   }) async {

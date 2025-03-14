@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 
@@ -17,7 +18,7 @@ class MembershipPayment extends StatefulWidget {
     required this.memberValid,
   });
 
-  final Function() onNext;
+  final Function(List<MemberListResponse> selectedMemberAnggota) onNext;
   final AuthToken authToken;
   final MemberValid memberValid;
 
@@ -31,6 +32,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
   final kuotaController = TextEditingController();
   final namaController = TextEditingController();
   final resetController = TextEditingController();
+  List<MemberListResponse> selectedMemberAnggota = [];
 
   @override
   void initState() {
@@ -266,8 +268,17 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                 horizontal: layoutStyle.defaultMargin,
               ),
               onPressed: () {
-                Get.back();
-                widget.onNext();
+                bool isValid = true;
+                if (widget.memberValid.mstMembership?.membCheckName == 'Y') {
+                  if (selectedMemberAnggota.isEmpty) {
+                    alert.warning('Warning', 'Pilih anggota member!');
+                    isValid = false;
+                  }
+                }
+                if (isValid) {
+                  Get.back();
+                  widget.onNext(selectedMemberAnggota);
+                }
               },
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.resolveWith(
@@ -296,6 +307,16 @@ class _MembershipPaymentState extends State<MembershipPayment> {
     }
 
     Widget columnAnggota(MemberListResponse memberListResponse) {
+      // bool isSelected = selectedMemberAnggota.isNotEmpty &&
+      //     selectedMemberAnggota.firstWhere((element) =>
+      //             element.lsRelCode == memberListResponse.lsRelCode) !=
+      //         null;
+      bool isSelected = selectedMemberAnggota.any(
+        (element) =>
+            element.lsRelCode == memberListResponse.lsRelCode &&
+            element.lsName == memberListResponse.lsName,
+      );
+
       return Row(
         children: [
           Expanded(
@@ -314,8 +335,29 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             child: Align(
               alignment: Alignment.center,
               child: Checkbox(
-                value: false,
-                onChanged: (val) {},
+                value: isSelected,
+                activeColor: colorStyle.primary,
+                checkColor: colorStyle.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                side: BorderSide(
+                  color: colorStyle.primary,
+                  width: 2,
+                ),
+                onChanged: (val) {
+                  setState(() {
+                    if (val == true) {
+                      selectedMemberAnggota.add(memberListResponse);
+                    } else {
+                      selectedMemberAnggota.removeWhere(
+                        (element) =>
+                            element.lsRelCode == memberListResponse.lsRelCode &&
+                            element.lsName == memberListResponse.lsName,
+                      );
+                    }
+                  });
+                },
               ),
             ),
           ),

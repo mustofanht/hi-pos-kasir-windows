@@ -23,6 +23,7 @@ import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
@@ -423,7 +424,24 @@ class SalePageController extends GetxController
           MemberValid memberValid = r.data;
           logger.safeLog('DATA : ${memberValid.toJson()}');
           await dialog.paymentMember(
-            onNext: () {},
+            onNext: (selectedMemberAnggotas) async {
+              int qtyVoucher = selectedMemberAnggotas.isEmpty
+                  ? 1
+                  : selectedMemberAnggotas.length;
+              logger.safeLog(
+                'qtyVoucher ==========================================================> $qtyVoucher',
+              );
+              if (memberValid.mstMembership != null &&
+                  memberValid.mstMembership!.membVpId != null) {
+                VoucherEntity? vpEntity = await getVoucherEntity(
+                  memberValid.mstMembership!.membVpId!,
+                );
+                if (vpEntity != null) {
+                  await clearVoucherToCart(vpEntity);
+                  await addVoucherToCart(vpEntity, qtyVoucher);
+                }
+              }
+            },
             authToken: _authToken,
             memberValid: memberValid,
           );
@@ -432,5 +450,56 @@ class SalePageController extends GetxController
     } catch (e) {
       logger.safeLog(e);
     }
+  }
+
+  Future<VoucherEntity?> getVoucherEntity(int vpId) async {
+    VoucherEntity? vpEntity;
+    try {
+      var result;
+      result = await _service.sale.voucherService
+          .getVoucherById(authToken: _authToken, vpId: vpId);
+
+      result.fold((l) {
+        logger.safeLog(l);
+      }, (r) {
+        vpEntity = r.data;
+      });
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    return vpEntity;
+  }
+
+  addVoucherToCart(VoucherEntity entity, int qtyVoucher) async {
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
+    if (saleCartPageController.voucherList.isEmpty) {
+      await saleCartPageController.addvoucher(entity);
+    } else {
+      final cartVoucher = CartVoucher(
+        qtyOrder: qtyVoucher,
+        totalPrice: qtyVoucher * entity.vpUnitValue!,
+        entity: entity,
+      );
+      saleCartPageController.voucherList.add(cartVoucher);
+    }
+    saleCartPageController.update();
+    update();
+  }
+
+  clearVoucherToCart(VoucherEntity entity) async {
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
+    if (saleCartPageController.voucherList.isNotEmpty) {
+      CartVoucher? existingTicket = saleCartPageController.voucherList
+          .firstWhereOrNull((e) => e.entity!.vpId == entity.vpId);
+      if (existingTicket != null) {
+        await saleCartPageController.removeListvoucher(existingTicket);
+      }
+    }
+    saleCartPageController.update();
+    update();
   }
 }

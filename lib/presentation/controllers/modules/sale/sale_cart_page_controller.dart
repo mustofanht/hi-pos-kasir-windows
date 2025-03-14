@@ -191,9 +191,9 @@ class SaleCartPageController extends GetxController {
   }
 
   addVoucherCart(CartVoucher voucher) {
-    if (ticketList.isNotEmpty) {
+    if (voucherList.isNotEmpty) {
       int qtyAllTiket = 0;
-      for (var element in ticketList) {
+      for (var element in voucherList) {
         qtyAllTiket += (element.qtyOrder ?? 0);
       }
       logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');

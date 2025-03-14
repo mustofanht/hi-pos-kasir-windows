@@ -36,6 +36,35 @@ class VoucherService {
     }
   }
 
+  Future<Either<String, BaseResponse<VoucherEntity>>> getVoucherById({
+    required AuthToken authToken,
+    required int vpId,
+  }) async {
+    var path = "mst_voucher_price/$vpId";
+
+    final uri = source.baseUri(path: path);
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<VoucherEntity> result =
+          BaseResponse<VoucherEntity>.fromJson(
+        json.decode(response.body),
+        (data) => VoucherEntity.fromJson(data),
+      );
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
   Future<Either<String, BaseResponse<List<PotonganEntity>>>> getAllPotongan({
     required AuthToken authToken,
     List<FilterQuery>? dataFilter,
@@ -70,6 +99,7 @@ class VoucherService {
       return Left(common.getMetadataMessages(response.body));
     }
   }
+
   Future<Either<String, BaseResponse<List<DepositEntity>>>> getAllDeposit({
     required AuthToken authToken,
     List<FilterQuery>? dataFilter,
