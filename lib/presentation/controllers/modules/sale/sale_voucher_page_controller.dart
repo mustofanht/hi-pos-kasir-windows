@@ -177,6 +177,20 @@ class SaleVoucherPageController extends GetxController {
           'Y',
         )!,
       );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'vpFlWebsite',
+          OPERATOR_CONSTANTS.EQUALS,
+          'N',
+        )!,
+      );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'vpFlMember',
+          OPERATOR_CONSTANTS.EQUALS,
+          'N',
+        )!,
+      );
       result = await _service.sale.voucherService.getAllVoucher(
         authToken: _authToken,
         dataFilter: dataFilter,
