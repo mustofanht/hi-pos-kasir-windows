@@ -3,6 +3,7 @@ import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_cus
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_item.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_payment.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_potongan.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ticket.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_voucher.dart';
 
@@ -23,12 +24,12 @@ class TrnDetailOrderEntity {
   TrnDetailOrderCustomer? customerDetail;
   List<TrnDetailOrder>? detailOrderModels;
   List<TrnDetailOrderTicket>? trnOrderTicket;
-  List<TrnDetailOrderVoucher>? trnOrderVouchers;
+  List<TrnDetailOrderPotongan>? trnOrderVouchers;
+  List<TrnDetailOrderVoucher>? trnOrderVoucherPrice;
+  // List<Object>? trnOrderDeposit;
   List<TrnDetailOrderItem>? trnOrderItem;
   TrnDetailOrderPayment? paymentDetail;
   TrnDetailOrderMember? trnOrderMember;
-  // List<Object>? trnOrderVoucherPrice;
-  // List<Object>? trnOrderDeposit;
 
   TrnDetailOrderEntity({
     this.orderNumber,
@@ -48,6 +49,7 @@ class TrnDetailOrderEntity {
     this.detailOrderModels,
     this.trnOrderTicket,
     this.trnOrderVouchers,
+    this.trnOrderVoucherPrice,
     this.trnOrderItem,
     this.paymentDetail,
     this.trnOrderMember,
@@ -91,6 +93,11 @@ class TrnDetailOrderEntity {
           : null,
       trnOrderVouchers: json['trnOrderVouchers'] != null
           ? (json['trnOrderVouchers'] as List)
+              .map((i) => TrnDetailOrderPotongan.fromJson(i))
+              .toList()
+          : null,
+      trnOrderVoucherPrice: json['trnOrderVoucherPrice'] != null
+          ? (json['trnOrderVoucherPrice'] as List)
               .map((i) => TrnDetailOrderVoucher.fromJson(i))
               .toList()
           : null,
@@ -127,6 +134,7 @@ class TrnDetailOrderEntity {
       'detailOrderModels': detailOrderModels?.map((e) => e.toJson()).toList(),
       'trnOrderTicket': trnOrderTicket?.map((e) => e.toJson()).toList(),
       'trnOrderVouchers': trnOrderVouchers?.map((e) => e.toJson()).toList(),
+      'trnOrderVoucherPrice': trnOrderVoucherPrice?.map((e) => e.toJson()).toList(),
       'trnOrderItem': trnOrderItem?.map((e) => e.toJson()).toList(),
       'paymentDetail': paymentDetail?.toJson(),
       'trnOrderMember': trnOrderMember?.toJson(),

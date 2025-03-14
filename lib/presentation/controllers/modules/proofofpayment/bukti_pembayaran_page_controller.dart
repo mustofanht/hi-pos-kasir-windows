@@ -36,6 +36,7 @@ import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dar
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 
@@ -346,22 +347,22 @@ class BuktiPembayaranPageController extends GetxController
                     )
                     .toList();
         List<OrderVoucherModel> voucherList = [];
-        //     detailModel.value.trnOrderVouchers == null
-        //         ? []
-        //         : detailModel.value.trnOrderVouchers!
-        //             .map(
-        //               (e) => OrderPotonganModel(
-        //                 ordvcTotalVoucher: 1,
-        //                 ordvcTotalAmount: e.voucherUnitCalcValue!,
-        //                 voucher: PotonganEntity(
-        //                   voucherUnitType: e.voucherUnitType,
-        //                   voucherUnitValue: e.voucherUnitValue,
-        //                   voucherName: e.voucherName,
-        //                   voucherCode: e.voucherCode,
-        //                 ),
-        //               ),
-        //             )
-        //             .toList();
+            detailModel.value.trnOrderVoucherPrice == null
+                ? []
+                : detailModel.value.trnOrderVoucherPrice!
+                    .map(
+                      (e) => OrderVoucherModel(
+                        ovpTotalVoucher: 1,
+                        ovpTotalAmount: e.voucherUnitCalcValue!,
+                        entity: VoucherEntity(
+                          vpUnitType: e.voucherUnitType,
+                          vpUnitValue: e.voucherUnitValue,
+                          vpName: e.voucherName,
+                          vpCode: e.voucherCode,
+                        )
+                      ),
+                    )
+                    .toList();
         List<OrderDepositModel> depositList = [];
 
         OrderModel orderModel = OrderModel(
