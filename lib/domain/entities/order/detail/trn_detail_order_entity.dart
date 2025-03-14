@@ -27,6 +27,8 @@ class TrnDetailOrderEntity {
   List<TrnDetailOrderItem>? trnOrderItem;
   TrnDetailOrderPayment? paymentDetail;
   TrnDetailOrderMember? trnOrderMember;
+  // List<Object>? trnOrderVoucherPrice;
+  // List<Object>? trnOrderDeposit;
 
   TrnDetailOrderEntity({
     this.orderNumber,

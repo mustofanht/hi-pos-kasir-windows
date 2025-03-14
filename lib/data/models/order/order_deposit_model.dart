@@ -1,9 +1,13 @@
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
+
 class OrderDepositModel {
+  DepositEntity? entity;
   String odpOrderNumber;
   int odpDpId;
   double odpTotalAmount;
 
   OrderDepositModel({
+    this.entity,
     required this.odpOrderNumber,
     required this.odpDpId,
     required this.odpTotalAmount,

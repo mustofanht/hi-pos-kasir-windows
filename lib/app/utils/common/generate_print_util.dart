@@ -213,7 +213,7 @@ class GeneratePrintUtil {
       }
     }
     // List voucher Order
-    double totalVoucher = 0;
+    // double totalPotongan = 0;
     for (var element in body.listVoucher) {
       bytes += generator.text(
         element.voucher?.voucherName ?? '',
@@ -222,8 +222,6 @@ class GeneratePrintUtil {
         ),
       );
       if (element.voucher!.voucherUnitType == UnitType.PERCENT) {
-        // double percentagePrice =
-        //     ((totalBayar * element.ordvcTotalAmount) / 100);
         bytes += generator.row(
           [
             PosColumn(
@@ -236,14 +234,6 @@ class GeneratePrintUtil {
                   : '',
               width: 4,
             ),
-            // PosColumn(
-            //   text: '( 0% )',
-            //   width: 2,
-            // ),
-            // PosColumn(
-            //   text: 'x ${element.ordvcTotalVoucher}',
-            //   width: 2,
-            // ),
             PosColumn(
               text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
               width: 6,
@@ -266,14 +256,6 @@ class GeneratePrintUtil {
                   : '',
               width: 4,
             ),
-            // PosColumn(
-            //   text: '( 0% )',
-            //   width: 2,
-            // ),
-            // PosColumn(
-            //   text: 'x ${element.ordvcTotalVoucher}',
-            //   width: 2,
-            // ),
             PosColumn(
               text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
               width: 6,
@@ -284,6 +266,90 @@ class GeneratePrintUtil {
           ],
         );
       }
+    }
+    // double totalPotongan = 0;
+    for (var element in body.listVoucherPrice) {
+      bytes += generator.text(
+        element.entity?.vpName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+      if (element.entity!.vpUnitType == UnitType.PERCENT) {
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: '%',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.entity?.vpUnitValue != null
+                  ? common.currencyFormat(element.entity!.vpUnitValue!)
+                  : '',
+              width: 4,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.ovpTotalAmount)}',
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      } else {
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: 'Rp',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.entity?.vpUnitValue != null
+                  ? common.currencyFormat(element.entity!.vpUnitValue!)
+                  : '',
+              width: 4,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.ovpTotalAmount)}',
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      }
+    }
+    // double totalPotongan = 0;
+    for (var element in body.listDepositUse) {
+      bytes += generator.text(
+        element.entity?.dpName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: 'Rp',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.entity?.dpAmount != null
+                  ? common.currencyFormat(element.entity!.dpAmount!)
+                  : '',
+              width: 4,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.odpTotalAmount)}',
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
     }
     bytes += generator.hr();
     if (body.adminFeeAmt > 0) {
@@ -303,23 +369,23 @@ class GeneratePrintUtil {
         ],
       );
     }
-    if (totalVoucher > 0) {
-      bytes += generator.row(
-        [
-          PosColumn(
-            text: 'Voucher',
-            width: 6,
-          ),
-          PosColumn(
-            text: '- ${common.currencyFormat(totalVoucher)}',
-            width: 6,
-            styles: const PosStyles(
-              align: PosAlign.right,
-            ),
-          ),
-        ],
-      );
-    }
+    // if (totalPotongan > 0) {
+    //   bytes += generator.row(
+    //     [
+    //       PosColumn(
+    //         text: 'Potongan',
+    //         width: 6,
+    //       ),
+    //       PosColumn(
+    //         text: '- ${common.currencyFormat(totalPotongan)}',
+    //         width: 6,
+    //         styles: const PosStyles(
+    //           align: PosAlign.right,
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
     bytes += generator.row(
       [
         PosColumn(

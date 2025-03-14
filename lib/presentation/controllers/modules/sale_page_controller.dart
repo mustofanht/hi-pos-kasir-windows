@@ -349,6 +349,7 @@ class SalePageController extends GetxController
               total = (totalTicketProduct * (element.totalPrice ?? 0) / 100);
             }
             return OrderVoucherModel(
+              entity: element.entity,
               ovpVoucherId: element.entity?.vpId,
               ovpTotalAmount: total,
               ovpTotalVoucher: element.qtyOrder ?? 0,
@@ -363,6 +364,7 @@ class SalePageController extends GetxController
           (element) {
             double total = element.totalPrice!;
             return OrderDepositModel(
+              entity: element.deposit,
               odpOrderNumber: '',
               odpDpId: element.deposit!.dpId!,
               odpTotalAmount: element.deposit!.dpAmount!,
