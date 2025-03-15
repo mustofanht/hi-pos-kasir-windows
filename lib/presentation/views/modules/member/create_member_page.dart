@@ -335,6 +335,11 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                         hintStyle: textStyle.greyText,
                         border: InputBorder.none,
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(16),
+                      ],
+                      maxLength: 16,
                     ),
                   ),
                   Expanded(
@@ -428,8 +433,9 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(14),
+                        LengthLimitingTextInputFormatter(13),
                       ],
+                      maxLength: 13,
                       keyboardType: TextInputType.phone,
                     ),
                   ),

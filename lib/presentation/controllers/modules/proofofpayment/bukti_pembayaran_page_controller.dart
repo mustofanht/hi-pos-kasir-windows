@@ -34,6 +34,7 @@ import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_e
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
@@ -280,133 +281,151 @@ class BuktiPembayaranPageController extends GetxController
           locationName = user.locationName!;
         }
 
-        if (detailModel.value.trnOrderMember != null) {
+        logger.safeLog('PRINT DETAIL MODEL : ${detailModel.value.toJson()}');
+        if (detailModel.value.trnOrderMember != null &&
+            detailModel.value.trnOrderMember!.memberNo != null) {
           await doPrintMember(locationName);
           Get.back();
           return;
+        } else {
+          await _createTicket(
+            _authToken,
+            null,
+            selectedData.value.orderNumber,
+            'C',
+          );
+
+          List<OrderTicketModel> ticketList =
+              detailModel.value.trnOrderTicket == null
+                  ? []
+                  : detailModel.value.trnOrderTicket!
+                      .map(
+                        (e) => OrderTicketModel(
+                          totalTicket: e.ticketQty!,
+                          totalAmount: e.ticketTtlAmount!,
+                          ticket: TicketEntity(
+                            ticketName: e.ticketName,
+                            ticketPrice: e.ticketPrice,
+                          ),
+                        ),
+                      )
+                      .toList();
+          List<OrderAddonModel> productList =
+              detailModel.value.trnOrderItem == null
+                  ? []
+                  : detailModel.value.trnOrderItem!
+                      .map(
+                        (e) => OrderAddonModel(
+                          ordadTotalAddon: e.prodQty!,
+                          ordadTotalAmount: e.prodTtlAmount!,
+                          addOn: AddonEntity(
+                            productName: e.prodName,
+                            productPrice: e.prodPrice,
+                          ),
+                          rentHdrDtl: OrderRentalModel(
+                            amount: e.prodTtlAmount,
+                            hour: e.hour,
+                            startDate: e.startDate,
+                            endDate: e.endDate,
+                          ),
+                        ),
+                      )
+                      .toList();
+          List<OrderPotonganModel> potonganList =
+              detailModel.value.trnOrderVouchers == null
+                  ? []
+                  : detailModel.value.trnOrderVouchers!
+                      .map(
+                        (e) => OrderPotonganModel(
+                          ordvcTotalVoucher: 1,
+                          ordvcTotalAmount: e.voucherUnitCalcValue!,
+                          voucher: PotonganEntity(
+                            voucherUnitType: e.voucherUnitType,
+                            voucherUnitValue: e.voucherUnitValue,
+                            voucherName: e.voucherName,
+                            voucherCode: e.voucherCode,
+                          ),
+                        ),
+                      )
+                      .toList();
+          List<OrderVoucherModel> voucherList =
+              detailModel.value.trnOrderVoucherPrice == null
+                  ? []
+                  : detailModel.value.trnOrderVoucherPrice!
+                      .map(
+                        (e) => OrderVoucherModel(
+                          ovpTotalVoucher: 1,
+                          ovpTotalAmount: e.voucherUnitCalcValue!,
+                          entity: VoucherEntity(
+                            vpUnitType: e.voucherUnitType,
+                            vpUnitValue: e.voucherUnitValue,
+                            vpName: e.voucherName,
+                            vpCode: e.voucherCode,
+                          ),
+                        ),
+                      )
+                      .toList();
+          List<OrderDepositModel> depositList =
+              detailModel.value.trnOrderDeposit == null
+                  ? []
+                  : detailModel.value.trnOrderDeposit!
+                      .map(
+                        (e) => OrderDepositModel(
+                          odpTotalAmount: e.depositAmount ?? 0,
+                          odpOrderNumber: null,
+                          odpDpId: null,
+                          entity: DepositEntity(
+                            dpName: e.depositName,
+                            dpAmount: e.depositAmount,
+                          ),
+                        ),
+                      )
+                      .toList();
+
+          OrderModel orderModel = OrderModel(
+            orderNumber: selectedData.value.orderNumber ?? '',
+            orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
+            orderTotalItem: detailModel.value.orderTotalItem!,
+            orderTotalAmt: detailModel.value.orderTotalAmt!,
+            adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee ??
+                selectedData.value.paymentDetail?.pymntAdminFee ??
+                0,
+            orderUnitId: 0,
+            orderLoacationId: 0,
+            orderPaidBy: detailModel.value.orderPaidBy!,
+            orderPaidByName: detailModel.value.orderPaidByName!,
+            orderStatus: detailModel.value.orderStatus!,
+            paymentDate: detailModel.value.orderDate ??
+                detailModel.value.paymentDetail?.pymntDate ??
+                selectedData.value.orderDate ??
+                selectedData.value.paymentDetail?.pymntDate ??
+                DateTime.now(),
+            listTicket: ticketList,
+            listProduct: productList,
+            listVoucher: potonganList,
+            listVoucherPrice: voucherList,
+            listDepositUse: depositList,
+          );
+
+          // logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
+          // logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
+          // logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
+          // logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
+
+          List<int> data = [];
+          data = await generatePrintUtil.dataPaymentTiketPrint(
+            locationName: locationName,
+            paperSize: PaperSize.mm80,
+            body: orderModel,
+            kasirName: detailModel.value.paymentDetail == null
+                ? ''
+                : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
+          );
+
+          logger.safeLog('==============================> PRINT EXISTING ');
+          await printerUtil.print(printerUtil.currPrinter!, data);
+          Get.back();
         }
-
-        await _createTicket(
-          _authToken,
-          null,
-          selectedData.value.orderNumber,
-          'C',
-        );
-
-        List<OrderTicketModel> ticketList =
-            detailModel.value.trnOrderTicket == null
-                ? []
-                : detailModel.value.trnOrderTicket!
-                    .map(
-                      (e) => OrderTicketModel(
-                        totalTicket: e.ticketQty!,
-                        totalAmount: e.ticketTtlAmount!,
-                        ticket: TicketEntity(
-                          ticketName: e.ticketName,
-                          ticketPrice: e.ticketPrice,
-                        ),
-                      ),
-                    )
-                    .toList();
-        List<OrderAddonModel> productList =
-            detailModel.value.trnOrderItem == null
-                ? []
-                : detailModel.value.trnOrderItem!
-                    .map(
-                      (e) => OrderAddonModel(
-                        ordadTotalAddon: e.prodQty!,
-                        ordadTotalAmount: e.prodTtlAmount!,
-                        addOn: AddonEntity(
-                          productName: e.prodName,
-                          productPrice: e.prodPrice,
-                        ),
-                        rentHdrDtl: OrderRentalModel(
-                          amount: e.prodTtlAmount,
-                          hour: e.hour,
-                          startDate: e.startDate,
-                          endDate: e.endDate,
-                        ),
-                      ),
-                    )
-                    .toList();
-        List<OrderPotonganModel> potonganList =
-            detailModel.value.trnOrderVouchers == null
-                ? []
-                : detailModel.value.trnOrderVouchers!
-                    .map(
-                      (e) => OrderPotonganModel(
-                        ordvcTotalVoucher: 1,
-                        ordvcTotalAmount: e.voucherUnitCalcValue!,
-                        voucher: PotonganEntity(
-                          voucherUnitType: e.voucherUnitType,
-                          voucherUnitValue: e.voucherUnitValue,
-                          voucherName: e.voucherName,
-                          voucherCode: e.voucherCode,
-                        ),
-                      ),
-                    )
-                    .toList();
-        List<OrderVoucherModel> voucherList = [];
-            detailModel.value.trnOrderVoucherPrice == null
-                ? []
-                : detailModel.value.trnOrderVoucherPrice!
-                    .map(
-                      (e) => OrderVoucherModel(
-                        ovpTotalVoucher: 1,
-                        ovpTotalAmount: e.voucherUnitCalcValue!,
-                        entity: VoucherEntity(
-                          vpUnitType: e.voucherUnitType,
-                          vpUnitValue: e.voucherUnitValue,
-                          vpName: e.voucherName,
-                          vpCode: e.voucherCode,
-                        )
-                      ),
-                    )
-                    .toList();
-        List<OrderDepositModel> depositList = [];
-
-        OrderModel orderModel = OrderModel(
-          orderNumber: selectedData.value.orderNumber ?? '',
-          orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
-          orderTotalItem: detailModel.value.orderTotalItem!,
-          orderTotalAmt: detailModel.value.orderTotalAmt!,
-          adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee ??
-              selectedData.value.paymentDetail?.pymntAdminFee ??
-              0,
-          orderUnitId: 0,
-          orderLoacationId: 0,
-          orderPaidBy: detailModel.value.orderPaidBy!,
-          orderPaidByName: detailModel.value.orderPaidByName!,
-          orderStatus: detailModel.value.orderStatus!,
-          paymentDate: detailModel.value.orderDate ??
-              detailModel.value.paymentDetail?.pymntDate ??
-              selectedData.value.orderDate ??
-              selectedData.value.paymentDetail?.pymntDate ??
-              DateTime.now(),
-          listTicket: ticketList,
-          listProduct: productList,
-          listVoucher: potonganList,
-          listVoucherPrice: voucherList,
-          listDepositUse: depositList,
-        );
-
-        // logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
-        // logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
-        // logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
-        // logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
-
-        List<int> data = [];
-        data = await generatePrintUtil.dataPaymentTiketPrint(
-          locationName: locationName,
-          paperSize: PaperSize.mm80,
-          body: orderModel,
-          kasirName: detailModel.value.paymentDetail == null
-              ? ''
-              : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
-        );
-
-        await printerUtil.print(printerUtil.currPrinter!, data);
-        Get.back();
       } else {
         alert.error('Error', 'please check connection printer');
         printerUtil.connectPrinter();
@@ -447,6 +466,7 @@ class BuktiPembayaranPageController extends GetxController
           : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
     );
 
+    logger.safeLog('==============================> PRINT MEMBER ');
     await printerUtil.print(printerUtil.currPrinter!, data);
   }
 

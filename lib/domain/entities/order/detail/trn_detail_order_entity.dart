@@ -1,5 +1,6 @@
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_customer.dart';
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_deposit.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_item.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_payment.dart';
@@ -26,7 +27,7 @@ class TrnDetailOrderEntity {
   List<TrnDetailOrderTicket>? trnOrderTicket;
   List<TrnDetailOrderPotongan>? trnOrderVouchers;
   List<TrnDetailOrderVoucher>? trnOrderVoucherPrice;
-  // List<Object>? trnOrderDeposit;
+  List<TrnDetailOrderDeposit>? trnOrderDeposit;
   List<TrnDetailOrderItem>? trnOrderItem;
   TrnDetailOrderPayment? paymentDetail;
   TrnDetailOrderMember? trnOrderMember;
@@ -50,6 +51,7 @@ class TrnDetailOrderEntity {
     this.trnOrderTicket,
     this.trnOrderVouchers,
     this.trnOrderVoucherPrice,
+    this.trnOrderDeposit,
     this.trnOrderItem,
     this.paymentDetail,
     this.trnOrderMember,
@@ -101,6 +103,11 @@ class TrnDetailOrderEntity {
               .map((i) => TrnDetailOrderVoucher.fromJson(i))
               .toList()
           : null,
+      trnOrderDeposit: json['trnOrderDeposit'] != null
+          ? (json['trnOrderDeposit'] as List)
+              .map((i) => TrnDetailOrderDeposit.fromJson(i))
+              .toList()
+          : null,
       trnOrderItem: json['trnOrderItem'] != null
           ? (json['trnOrderItem'] as List)
               .map((i) => TrnDetailOrderItem.fromJson(i))
@@ -135,6 +142,7 @@ class TrnDetailOrderEntity {
       'trnOrderTicket': trnOrderTicket?.map((e) => e.toJson()).toList(),
       'trnOrderVouchers': trnOrderVouchers?.map((e) => e.toJson()).toList(),
       'trnOrderVoucherPrice': trnOrderVoucherPrice?.map((e) => e.toJson()).toList(),
+      'trnOrderDeposit': trnOrderDeposit?.map((e) => e.toJson()).toList(),
       'trnOrderItem': trnOrderItem?.map((e) => e.toJson()).toList(),
       'paymentDetail': paymentDetail?.toJson(),
       'trnOrderMember': trnOrderMember?.toJson(),
