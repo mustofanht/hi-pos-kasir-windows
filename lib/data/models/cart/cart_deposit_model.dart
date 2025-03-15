@@ -25,7 +25,7 @@ class CartDeposit {
     return {
       "qtyOrder": qtyOrder,
       "totalPrice": totalPrice,
-      "entity": deposit != null ? deposit!.toJson2() : [],
+      "deposit": deposit != null ? deposit!.toJson2() : [],
     };
   }
 
@@ -33,12 +33,12 @@ class CartDeposit {
     try {
       qtyOrder = json['qtyOrder'];
       totalPrice = json['totalPrice'];
-      if (json['potongan'] is Map<Object?, Object?>) {
+      if (json['deposit'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
-            common.convertToMapStringDynamic(json['potongan']);
+            common.convertToMapStringDynamic(json['deposit']);
         deposit = DepositEntity.fromJson(result);
       } else {
-        deposit = DepositEntity.fromJson(json['potongan']);
+        deposit = DepositEntity.fromJson(json['deposit']);
       }
     } catch (e) {
       logger.safeLog('Error $e');

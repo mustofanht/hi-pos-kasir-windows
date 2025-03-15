@@ -77,7 +77,11 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
               controller.potonganList.isEmpty &&
-              controller.addonList.isEmpty)
+              controller.voucherList.isEmpty &&
+              controller.depositList.isEmpty &&
+              controller.addonList.isEmpty && 
+              controller.memberList.isEmpty
+              )
           ? notOrder()
           : SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -110,7 +114,15 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                     ] else
                       Container(),
                     if (controller.potonganList.isNotEmpty) ...[
+                      potonganListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.voucherList.isNotEmpty) ...[
                       voucherListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.depositList.isNotEmpty) ...[
+                      depositListComponent(controller)
                     ] else
                       Container(),
                     if (controller.memberList.isNotEmpty) ...[
@@ -181,7 +193,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
     );
   }
 
-  Widget voucherListComponent(CustomerSaleCartPageController controller) {
+  Widget potonganListComponent(CustomerSaleCartPageController controller) {
     return Container(
       alignment: Alignment.topCenter,
       margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
@@ -226,6 +238,127 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         e.potongan!.voucherUnitType == UnitType.PERCENT
                             ? ('${e.potongan!.voucherUnitValue} %')
                             : ('Rp${common.currencyFormat(e.potongan!.voucherUnitValue ?? 0)}'),
+                        // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+  
+  Widget voucherListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.voucherList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.entity?.vpName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Text(
+                            'QTY ${e.qtyOrder}',
+                            style: TextStyle(
+                              color: colorStyle.grey,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                        e.entity?.vpUnitType == UnitType.PERCENT
+                            ? ('${e.entity?.vpUnitValue} %')
+                            : ('Rp${common.currencyFormat(e.entity?.vpUnitValue ?? 0)}'),
+                        // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+  
+  Widget depositListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.depositList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.deposit?.dpName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Text(
+                            'QTY ${e.qtyOrder}',
+                            style: TextStyle(
+                              color: colorStyle.grey,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                        ('Rp${common.currencyFormat(e.deposit?.dpAmount ?? 0)}'),
+                        // e.deposit!.voucherUnitType == UnitType.PERCENT
+                        //     ? ('${e.potongan!.voucherUnitValue} %')
+                        //     : ('Rp${common.currencyFormat(e.potongan!.voucherUnitValue ?? 0)}'),
                         // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
                         style: TextStyle(
                           fontSize: fontSize.title,

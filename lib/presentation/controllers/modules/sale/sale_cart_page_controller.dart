@@ -42,6 +42,8 @@ class SaleCartPageController extends GetxController {
   late var orderList = Cart(
     cartTicketList: ticketList,
     cartPotonganList: potonganList,
+    cartVoucherList: voucherList,
+    cartDepositList: depositList,
     addonList: addonList,
   ).obs;
 
@@ -196,12 +198,12 @@ class SaleCartPageController extends GetxController {
       for (var element in voucherList) {
         qtyAllTiket += (element.qtyOrder ?? 0);
       }
-      logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');
-      logger.safeLog('qtyAllTiket : $qtyAllTiket');
-      if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
-        alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
-        return;
-      }
+      // logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');
+      // logger.safeLog('qtyAllTiket : $qtyAllTiket');
+      // if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
+      //   alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
+      //   return;
+      // }
     }
 
     voucher.qtyOrder = (voucher.qtyOrder ?? 0) + 1;
@@ -394,6 +396,8 @@ class SaleCartPageController extends GetxController {
           ticketList: ticketList,
           addonList: addonList,
           potonganList: potonganList,
+          voucherList: voucherList,
+          depositList: depositList,
           totalOrder: finalTotalOrderAmt.value,
           paymentFee: getPricePayemntFee(),
         ).toJson(),

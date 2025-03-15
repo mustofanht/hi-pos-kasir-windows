@@ -33,12 +33,12 @@ class CartVoucher {
     try {
       qtyOrder = json['qtyOrder'];
       totalPrice = json['totalPrice'];
-      if (json['potongan'] is Map<Object?, Object?>) {
+      if (json['entity'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
-            common.convertToMapStringDynamic(json['potongan']);
+            common.convertToMapStringDynamic(json['entity']);
         entity = VoucherEntity.fromJson(result);
       } else {
-        entity = VoucherEntity.fromJson(json['potongan']);
+        entity = VoucherEntity.fromJson(json['entity']);
       }
     } catch (e) {
       logger.safeLog('Error $e');
