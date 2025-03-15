@@ -145,7 +145,13 @@ class CustomerSaleCartPageController extends GetxController {
   }
 
   doMemberAddCart(Map<String, dynamic> val) {
+    ticketList.clear();
+    potonganList.clear();
+    voucherList.clear();
+    depositList.clear();
+    addonList.clear();
     memberList.clear();
+    
     CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
     // logger.safeLog('INI CEKKK = ${customerSaleCart.toJson()}');
 
@@ -167,9 +173,9 @@ class CustomerSaleCartPageController extends GetxController {
     voucherList.clear();
     depositList.clear();
     addonList.clear();
-    logger.safeLog('DO ADD CART CUSTOMER DISPLAY 1 - : $val');
+    memberList.clear();
+
     CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
-    logger.safeLog('DO ADD CART CUSTOMER DISPLAY 2 - : ${customerSaleCart.toJson()}');
 
     if (customerSaleCart.ticketList != null) {
       ticketList.addAll(customerSaleCart.ticketList!);
