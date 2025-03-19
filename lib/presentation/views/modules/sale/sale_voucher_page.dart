@@ -264,7 +264,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Expanded(
-                flex: 3,
+                flex: 1,
                 child: Image.asset(
                   'assets/images/coupon.png',
                   fit: BoxFit.fill,
@@ -275,7 +275,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                 ),
               ),
               SizedBox(
-                height: layoutStyle.defaultMargin,
+                height: layoutStyle.defaultMargin / 2,
               ),
               Expanded(
                 flex: 2,
@@ -288,7 +288,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                           child: Container(
                             width: constraints.maxWidth,
                             child: AutoSizeText(
-                              e.dpReffno!,
+                              'Reff No: ${e.dpReffno}',
                               style: TextStyle(
                                 fontSize: fontSize.body,
                                 fontWeight: FontWeight.bold,
@@ -304,7 +304,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                           child: Container(
                             width: constraints.maxWidth,
                             child: AutoSizeText(
-                              e.dpName!,
+                              'Nama: ${e.dpName}',
                               style: TextStyle(
                                 fontSize: fontSize.body,
                                 fontWeight: FontWeight.bold,
@@ -320,7 +320,23 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                           child: Container(
                             width: constraints.maxWidth,
                             child: AutoSizeText(
-                              e.dpNoHp!,
+                              'No. HP: ${e.dpNoHp}',
+                              style: TextStyle(
+                                fontSize: fontSize.body,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              minFontSize: 8,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          child: Container(
+                            width: constraints.maxWidth,
+                            child: AutoSizeText(
+                              'Jumlah: Rp.${common.currencyFormat(e.dpAmount ?? 0)}',
                               style: TextStyle(
                                 fontSize: fontSize.body,
                                 fontWeight: FontWeight.bold,
