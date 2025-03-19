@@ -195,15 +195,15 @@ class SaleCartPageController extends GetxController {
   addVoucherCart(CartVoucher voucher) {
     if (voucherList.isNotEmpty) {
       int qtyAllTiket = 0;
-      for (var element in voucherList) {
+      for (var element in ticketList) {
         qtyAllTiket += (element.qtyOrder ?? 0);
       }
       // logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');
       // logger.safeLog('qtyAllTiket : $qtyAllTiket');
-      // if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
-      //   alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
-      //   return;
-      // }
+      if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
+        alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
+        return;
+      }
     }
 
     voucher.qtyOrder = (voucher.qtyOrder ?? 0) + 1;
