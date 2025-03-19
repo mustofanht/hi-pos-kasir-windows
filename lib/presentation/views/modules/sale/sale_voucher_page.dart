@@ -438,9 +438,9 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
 
     Widget listContent() {
       return Obx(() {
-        logger.safeLog('LENGTH V : ${controller.voucherList.length}');
-        logger.safeLog('LENGTH P : ${controller.potonganList.length}');
-        logger.safeLog('LENGTH D : ${controller.depositList.length}');
+        // logger.safeLog('LENGTH V : ${controller.voucherList.length}');
+        // logger.safeLog('LENGTH P : ${controller.potonganList.length}');
+        // logger.safeLog('LENGTH D : ${controller.depositList.length}');
         if (controller.selectedTypeItemList.value == 'V') {
           return controller.voucherList.isEmpty
               ? SingleChildScrollView(

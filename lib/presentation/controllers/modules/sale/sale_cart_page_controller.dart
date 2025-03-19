@@ -257,13 +257,6 @@ class SaleCartPageController extends GetxController {
         double discountAmount = 0;
         for (var element in voucherList) {
           discountAmount += element.totalPrice ?? 0;
-          // if (element.entity!.vpUnitType == UnitType.PERCENT) {
-          //   discountAmount +=
-          //       totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
-          // } else {
-          //   discountAmount +=
-          //       element.entity!.vpUnitValue ?? 0 * (element.qtyOrder ?? 1);
-          // }
           logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
         }
 
@@ -280,6 +273,10 @@ class SaleCartPageController extends GetxController {
 
     totalAmntFinal = totalAmnt;
 
+    // logger.safeLog('POTONGAN JML : ${potonganList.length}');
+    // logger.safeLog('TOTAL AMOUNT : $totalAmnt');
+    // logger.safeLog('TOTAL AMOUNT FINAL : $totalAmntFinal');
+
     if (potonganList.isNotEmpty) {
       double discountAmount = 0;
       for (var element in potonganList) {
@@ -295,8 +292,13 @@ class SaleCartPageController extends GetxController {
       ticketTotalQtyVal +=
           potonganList.fold(0, (sum, val) => sum + val.qtyOrder!);
 
-      totalAmntFinal = totalAmnt - discountAmount;
+      totalAmntFinal = totalAmntFinal - discountAmount;
     }
+
+    // logger.safeLog('DEPOSIT JML : ${depositList.length}');
+    // logger.safeLog('TOTAL AMOUNT : $totalAmnt');
+    // logger.safeLog('TOTAL AMOUNT FINAL : $totalAmntFinal');
+    
     if (depositList.isNotEmpty) {
       double discountAmount = 0;
       for (var element in depositList) {
@@ -307,8 +309,9 @@ class SaleCartPageController extends GetxController {
       ticketTotalQtyVal +=
           depositList.fold(0, (sum, val) => sum + val.qtyOrder!);
 
-      totalAmntFinal = totalAmnt - discountAmount;
+      totalAmntFinal = totalAmntFinal - discountAmount;
     }
+
     totalOrderAmnt.value = totalAmntFinal > 0 ? totalAmntFinal : 0;
     double paymentFee = getPricePayemntFee();
     logger.safeLog('TOTAL PAYMENT : ${totalOrderAmnt.value}');
@@ -320,8 +323,8 @@ class SaleCartPageController extends GetxController {
     salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
     salePageController.addonList(addonList);
     salePageController.potonganList(potonganList);
-      salePageController.voucherList(voucherList);
-      salePageController.depositList(depositList);
+    salePageController.voucherList(voucherList);
+    salePageController.depositList(depositList);
     salePageController.ticketList(ticketList);
 
     update();
