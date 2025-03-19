@@ -111,6 +111,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
               children: [
                 Expanded(
                   child: CustomTextBox(
+                    isMandatory: true,
                     height: layoutStyle.blockVertical * 6.5,
                     margin: EdgeInsets.symmetric(
                       horizontal: layoutStyle.defaultMargin,
@@ -140,6 +141,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                 ),
                 Expanded(
                   child: CustomDropdownButton<CustomIdNameEntity>(
+                    isMandatory: true,
                     height: layoutStyle.blockVertical * 6.5,
                     items: controller.listRelation
                         .map(
@@ -344,6 +346,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                   ),
                   Expanded(
                     child: CustomTextBox(
+                      isMandatory: true,
                       height: layoutStyle.blockVertical * 6.5,
                       margin: EdgeInsets.symmetric(
                         horizontal: layoutStyle.defaultMargin,
@@ -377,6 +380,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                 children: [
                   Expanded(
                     child: CustomTextBox(
+                      isMandatory: true,
                       height: layoutStyle.blockVertical * 6.5,
                       margin: EdgeInsets.symmetric(
                         horizontal: layoutStyle.defaultMargin,
@@ -406,6 +410,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                   ),
                   Expanded(
                     child: CustomTextBox(
+                      isMandatory: true,
                       height: layoutStyle.blockVertical * 6.5,
                       margin: EdgeInsets.symmetric(
                         horizontal: layoutStyle.defaultMargin,
@@ -442,6 +447,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                 ],
               ),
               CustomTextBox(
+                isMandatory: true,
                 height: layoutStyle.blockVertical * 6.5,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,

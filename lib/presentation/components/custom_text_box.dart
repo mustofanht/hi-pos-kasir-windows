@@ -24,6 +24,7 @@ class CustomTextBox extends StatefulWidget {
   final int? maxLength;
   final int? maxLine;
   final bool? isDisabled;
+  final bool? isMandatory;
 
   const CustomTextBox({
     Key? key,
@@ -48,6 +49,7 @@ class CustomTextBox extends StatefulWidget {
     this.maxLine = 1,
     this.maxLength,
     this.isDisabled = false,
+    this.isMandatory = false,
   }) : super(key: key);
 
   @override
@@ -71,7 +73,17 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                   padding: EdgeInsets.symmetric(
                     vertical: layoutStyle.defaultMargin / 2,
                   ),
-                  child: widget.label,
+                  child: Row(
+                    children: [
+                      widget.label ?? const Text(''),
+                      widget.isMandatory!
+                          ? Text(
+                              '*',
+                              style: textStyle.redText,
+                            )
+                          : const Text('')
+                    ],
+                  ),
                 )
               : Container(),
           Container(

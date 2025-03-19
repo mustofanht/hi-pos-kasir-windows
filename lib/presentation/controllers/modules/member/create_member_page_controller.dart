@@ -232,6 +232,10 @@ class CreateMemberPageController extends GetxController {
       isValid = false;
       alert.warning('Warning', 'Name Harus Di isi!');
     }
+    if (isValid && emailController.text.isEmpty) {
+      isValid = false;
+      alert.warning('Warning', 'Email Harus Di isi!');
+    }
     if (isValid && addressController.text.isEmpty) {
       isValid = false;
       alert.warning('Warning', 'Alamat Harus Di isi!');
@@ -244,6 +248,22 @@ class CreateMemberPageController extends GetxController {
     if (isValid && membership.membCheckName == 'Y' && anggotaList.isEmpty) {
       isValid = false;
       alert.warning('Warning', 'Minimal harus memiliki 1 Anggota!');
+    }
+    if (isValid && anggotaList.isNotEmpty) {
+      for (var index in anggotaList) {
+        TextEditingController nameRelations = anggotaNamaControllers[index];
+        CustomIdNameEntity selectedRelations = anggotaSelectedRelations[index];
+        if (isValid && nameRelations.text.isEmpty) {
+          isValid = false;
+          alert.warning('Warning', 'List data anggota harus lengkap!');
+          break;
+        }
+        if (isValid && (selectedRelations.id == null || selectedRelations.id!.isEmpty)) {
+          isValid = false;
+          alert.warning('Warning', 'List data anggota harus lengkap!');
+          break;
+        }
+      }
     }
     return isValid;
   }
