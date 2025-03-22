@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -32,6 +33,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
   final kuotaController = TextEditingController();
   final namaController = TextEditingController();
   final resetController = TextEditingController();
+  final maxController = TextEditingController();
   List<MemberListResponse> selectedMemberAnggota = [];
 
   @override
@@ -44,6 +46,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
       kuotaController.text = (membership.membKuota ?? '').toString();
       namaController.text = widget.memberValid.cardName ?? '';
       resetController.text = membership.membResetPeriod ?? '';
+      maxController.text = (membership.membMaxKuota ?? '').toString();
     }
   }
 
@@ -212,7 +215,34 @@ class _MembershipPaymentState extends State<MembershipPayment> {
               ),
             ),
             Expanded(
-              child: Container(),
+              child: CustomTextBox(
+                height: layoutStyle.blockVertical * 6.5,
+                isDisabled: true,
+                margin: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin,
+                  vertical: layoutStyle.defaultMargin / 4,
+                ),
+                obscureText: false,
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                label: Text(
+                  'Max',
+                  style: textStyle.greyText.copyWith(
+                    fontSize: fontSize.small,
+                  ),
+                ),
+                controller: maxController,
+                decoration: InputDecoration(
+                  hintText: 'Max',
+                  hintStyle: textStyle.greyText,
+                  border: InputBorder.none,
+                ),
+              ),
             ),
           ],
         ),

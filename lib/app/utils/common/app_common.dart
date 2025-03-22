@@ -362,6 +362,11 @@ class AppCommon {
       ),
     );
   }
+
+  bool isValidIndonesianPhoneNumber(String phone) {
+    final RegExp regex = RegExp(r'^(?:\+62|62|0)[2-9][0-9]{8,11}$');
+    return regex.hasMatch(phone);
+  }
 }
 
 AppCommon common = new AppCommon();

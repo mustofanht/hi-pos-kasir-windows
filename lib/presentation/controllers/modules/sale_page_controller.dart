@@ -418,6 +418,7 @@ class SalePageController extends GetxController
       result.fold(
         (l) {
           logger.safeLog(l);
+          alert.warning('Warning', 'No Member tidak valid!');
         },
         (r) async {
           logger.safeLog('> Exists Member');
