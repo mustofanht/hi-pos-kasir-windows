@@ -7,8 +7,8 @@ class MemberService {
     String? search,
   }) async {
     var path = "member_card/inquiry?";
-      path += 'size=${PAGINATIONS_CONSTANT.LIMIT_PAGE}';
-      path += '&page=$page';
+    path += 'size=${PAGINATIONS_CONSTANT.LIMIT_PAGE}';
+    path += '&page=$page';
     if (search != null && path.isNotEmpty) {
       path += '&search=$search';
     }
@@ -119,7 +119,10 @@ class MemberService {
     required AuthToken authToken,
     required String cardNo,
   }) async {
-    var path = "member_card/valid/$cardNo";
+    var encodedCardNo = Uri.encodeComponent(cardNo);
+    var path = "member_card/valid/$encodedCardNo";
+
+    // var path = "member_card/valid/$cardNo";
 
     final uri = source.baseUri(
       path: path,
