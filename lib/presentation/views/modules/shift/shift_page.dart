@@ -384,6 +384,26 @@ class ShiftPage extends GetView<ShiftPageController> {
                                               head: false),
                                         )
                                         .toList(),
+                                  if (detail.listSumVoucher != null)
+                                    ...detail.listSumVoucher!
+                                        .map(
+                                          (e) => columnShift(
+                                              key: e.name ?? '',
+                                              value:
+                                                  'Rp.${common.currencyFormat(e.amount ?? 0)}',
+                                              head: false),
+                                        )
+                                        .toList(),
+                                  if (detail.listSumPotongan != null)
+                                    ...detail.listSumPotongan!
+                                        .map(
+                                          (e) => columnShift(
+                                              key: e.name ?? '',
+                                              value:
+                                                  'Rp.${common.currencyFormat(e.amount ?? 0)}',
+                                              head: false),
+                                        )
+                                        .toList(),
                                   // columnShift(
                                   //   key: 'QRIS',
                                   //   value: (detail.qrisSum ?? 0).toString(),

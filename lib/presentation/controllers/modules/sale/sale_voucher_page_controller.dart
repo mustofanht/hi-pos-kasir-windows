@@ -219,7 +219,7 @@ class SaleVoucherPageController extends GetxController {
 
       // dataFilter.add(
       //   apiFilterUtil.addSearch(
-      //     'GROUP_CONDITION_AND',
+      //     'GROUP_CONDITION_OR',
       //     OPERATOR_CONSTANTS.EQUALS,
       //     dataFilterDate,
       //   )!,
