@@ -49,6 +49,8 @@ class SaleCartPageController extends GetxController {
 
   final selectedMstPayment = MstPayment().obs;
 
+  final memberVoucher = false.obs;
+
   final Map<int, TextEditingController> ticketControllers = {};
 
   TextEditingController getTicketController(int id, int qtyOrder) {
@@ -166,6 +168,10 @@ class SaleCartPageController extends GetxController {
   }
 
   addpotongan(PotonganEntity potongan) {
+    if (memberVoucher.isTrue) {
+      alert.warning('Warning', 'Potongan tidak bisa di gunakan!');
+      return;
+    }
     potonganList.add(
       CartPotongan(
         qtyOrder: 1,
@@ -182,6 +188,10 @@ class SaleCartPageController extends GetxController {
   }
 
   addvoucher(VoucherEntity voucher) {
+    if (memberVoucher.isTrue) {
+      alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
+      return;
+    }
     voucherList.add(
       CartVoucher(
         qtyOrder: 1,
@@ -193,6 +203,10 @@ class SaleCartPageController extends GetxController {
   }
 
   addVoucherCart(CartVoucher voucher) {
+    if (memberVoucher.isTrue) {
+      alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
+      return;
+    }
     if (voucherList.isNotEmpty) {
       int qtyAllTiket = 0;
       for (var element in ticketList) {
@@ -228,6 +242,10 @@ class SaleCartPageController extends GetxController {
   }
 
   adddeposit(DepositEntity deposit) {
+    if (memberVoucher.isTrue) {
+      alert.warning('Warning', 'Deposit tidak bisa di gunakan!');
+      return;
+    }
     depositList.add(
       CartDeposit(
         qtyOrder: 1,
@@ -298,7 +316,7 @@ class SaleCartPageController extends GetxController {
     // logger.safeLog('DEPOSIT JML : ${depositList.length}');
     // logger.safeLog('TOTAL AMOUNT : $totalAmnt');
     // logger.safeLog('TOTAL AMOUNT FINAL : $totalAmntFinal');
-    
+
     if (depositList.isNotEmpty) {
       double discountAmount = 0;
       for (var element in depositList) {

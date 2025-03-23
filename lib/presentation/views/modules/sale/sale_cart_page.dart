@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -762,13 +763,10 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       style: textStyle.blackText,
                     ),
                     Expanded(
-                      child: Row(
-                        children: [
-                          Text(
-                            e.entity!.vpName ?? '',
-                            softWrap: true,
-                          ),
-                        ],
+                      child: AutoSizeText(
+                        e.entity!.vpName ?? '',
+                        // softWrap: true,
+                        // overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Align(
@@ -783,78 +781,84 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           SizedBox(
                             width: layoutStyle.defaultMargin,
                           ),
-                          (e.qtyOrder ?? 0) > 0
-                              ? CustomButton(
-                                  onPressed: () {
-                                    controller.removeVoucher(e);
-                                  },
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: layoutStyle.defaultMargin / 10,
-                                  ),
-                                  style: ButtonStyle(
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            colorStyle.transparent),
-                                    foregroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            colorStyle.transparent),
-                                    overlayColor:
-                                        MaterialStateProperty.all<Color>(
-                                            colorStyle.transparent),
-                                    side: MaterialStateProperty.all<BorderSide>(
-                                      BorderSide(
-                                        color: colorStyle.transparent,
-                                        width: 1,
+                          if (controller.memberVoucher.isFalse)
+                            (e.qtyOrder ?? 0) > 0
+                                ? CustomButton(
+                                    onPressed: () {
+                                      controller.removeVoucher(e);
+                                    },
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal:
+                                          layoutStyle.defaultMargin / 10,
+                                    ),
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              colorStyle.transparent),
+                                      foregroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              colorStyle.transparent),
+                                      overlayColor:
+                                          MaterialStateProperty.all<Color>(
+                                              colorStyle.transparent),
+                                      side:
+                                          MaterialStateProperty.all<BorderSide>(
+                                        BorderSide(
+                                          color: colorStyle.transparent,
+                                          width: 1,
+                                        ),
                                       ),
+                                      padding: MaterialStateProperty.all<
+                                          EdgeInsetsGeometry>(
+                                        const EdgeInsets.all(0),
+                                      ),
+                                      elevation:
+                                          MaterialStateProperty.all<double>(0),
                                     ),
-                                    padding: MaterialStateProperty.all<
-                                        EdgeInsetsGeometry>(
-                                      const EdgeInsets.all(0),
+                                    label: Image.asset(
+                                      assetsConstant.icMinus,
+                                      fit: BoxFit.contain,
                                     ),
-                                    elevation:
-                                        MaterialStateProperty.all<double>(0),
+                                    width: layoutStyle.blockHorizontal * 3,
+                                    height: layoutStyle.blockVertical * 5,
+                                  )
+                                : Container(),
+                          if (controller.memberVoucher.isFalse)
+                            CustomButton(
+                              onPressed: () {
+                                controller.addVoucherCart(e);
+                              },
+                              margin: EdgeInsets.symmetric(
+                                horizontal: layoutStyle.defaultMargin / 10,
+                              ),
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.transparent),
+                                foregroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.transparent),
+                                overlayColor: MaterialStateProperty.all<Color>(
+                                    colorStyle.transparent),
+                                side: MaterialStateProperty.all<BorderSide>(
+                                  BorderSide(
+                                    color: colorStyle.transparent,
+                                    width: 1,
                                   ),
-                                  label: Image.asset(
-                                    assetsConstant.icMinus,
-                                    fit: BoxFit.contain,
-                                  ),
-                                  width: layoutStyle.blockHorizontal * 3,
-                                  height: layoutStyle.blockVertical * 5,
-                                )
-                              : Container(),
-                          CustomButton(
-                            onPressed: () {
-                              controller.addVoucherCart(e);
-                            },
-                            margin: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 10,
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  colorStyle.transparent),
-                              side: MaterialStateProperty.all<BorderSide>(
-                                BorderSide(
-                                  color: colorStyle.transparent,
-                                  width: 1,
                                 ),
+                                padding: MaterialStateProperty.all<
+                                    EdgeInsetsGeometry>(
+                                  const EdgeInsets.all(0),
+                                ),
+                                elevation: MaterialStateProperty.all<double>(0),
                               ),
-                              padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                const EdgeInsets.all(0),
+                              label: Image.asset(
+                                assetsConstant.icPlus,
+                                fit: BoxFit.contain,
                               ),
-                              elevation: MaterialStateProperty.all<double>(0),
+                              width: layoutStyle.blockHorizontal * 3,
+                              height: layoutStyle.blockVertical * 5,
                             ),
-                            label: Image.asset(
-                              assetsConstant.icPlus,
-                              fit: BoxFit.contain,
-                            ),
-                            width: layoutStyle.blockHorizontal * 3,
-                            height: layoutStyle.blockVertical * 5,
-                          ),
                           CustomButton(
                             margin: EdgeInsets.symmetric(
                               vertical: layoutStyle.defaultMargin / 10,

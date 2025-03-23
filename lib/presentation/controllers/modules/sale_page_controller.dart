@@ -424,15 +424,26 @@ class SalePageController extends GetxController
         (r) async {
           logger.safeLog('> Exists Member');
           MemberValid memberValid = r.data;
+          if (memberValid.mstMembership?.membKuota == 0) {
+            alert.warning('Warning', 'Kuota sudah habis');
+            return;
+          }
+
           logger.safeLog('DATA : ${memberValid.toJson()}');
+
           await dialog.paymentMember(
             onNext: (selectedMemberAnggotas) async {
               int qtyVoucher = selectedMemberAnggotas.isEmpty
                   ? 1
                   : selectedMemberAnggotas.length;
-              logger.safeLog(
-                'qtyVoucher ==========================================================> $qtyVoucher',
-              );
+
+              if (qtyVoucher > (memberValid.mstMembership?.membKuota ?? 0)) {
+                alert.warning('Warning', 'TIdak bisa melebihi kuota tersedia');
+                return;
+              }
+              // logger.safeLog(
+              //   'qtyVoucher ==========================================================> $qtyVoucher',
+              // );
               if (memberValid.mstMembership != null &&
                   memberValid.mstMembership!.membVpId != null) {
                 VoucherEntity? vpEntity = await getVoucherEntity(
@@ -486,6 +497,7 @@ class SalePageController extends GetxController
       );
       saleCartPageController.voucherList.add(cartVoucher);
     }
+    saleCartPageController.memberVoucher.value = true;
     saleCartPageController.update();
     update();
   }
@@ -501,6 +513,7 @@ class SalePageController extends GetxController
         await saleCartPageController.removeListvoucher(existingTicket);
       }
     }
+    saleCartPageController.memberVoucher.value = false;
     saleCartPageController.update();
     update();
   }
