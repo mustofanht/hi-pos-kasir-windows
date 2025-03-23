@@ -13,6 +13,8 @@ class VoucherService {
     final uri =
         source.baseUri(path: path).replace(queryParameters: paramsFilter);
 
+    logger.safeLog('VOUCHER URL : $uri');
+
     final response = await http.get(
       uri,
       headers: common.generateHeader(
@@ -54,8 +56,7 @@ class VoucherService {
     logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
-      BaseResponse<VoucherEntity> result =
-          BaseResponse<VoucherEntity>.fromJson(
+      BaseResponse<VoucherEntity> result = BaseResponse<VoucherEntity>.fromJson(
         json.decode(response.body),
         (data) => VoucherEntity.fromJson(data),
       );

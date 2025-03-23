@@ -228,6 +228,10 @@ class SaleCartPageController extends GetxController {
 
   removeListvoucher(CartVoucher voucher) {
     voucherList.remove(voucher);
+    if (memberVoucher.isTrue) {
+      memberVoucher.value = false;
+      salePageController.memberNo.clear();
+    }
     calculateTotalOrder();
   }
 
@@ -273,10 +277,27 @@ class SaleCartPageController extends GetxController {
 
       if (voucherList.isNotEmpty) {
         double discountAmount = 0;
+
         for (var element in voucherList) {
-          discountAmount += element.totalPrice ?? 0;
-          logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
+          if (element.qtyOrder != null && element.qtyOrder! > 0) {
+            for (var i = 0; i < element.qtyOrder!; i++) {
+              if (element.entity!.vpUnitType == UnitType.PERCENT) {
+                discountAmount +=
+                    totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
+              } else {
+                discountAmount += element.entity!.vpUnitValue ?? 0;
+              }
+            }
+          }
+          // if (element.entity!.vpUnitType == UnitType.PERCENT) {
+          //   discountAmount +=
+          //       totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
+          // } else {
+          //   discountAmount += element.entity!.vpUnitValue ?? 0;
+          // }
+          // discountAmount += element.totalPrice ?? 0;
         }
+        logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
 
         ticketTotalQtyVal +=
             voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
@@ -383,6 +404,8 @@ class SaleCartPageController extends GetxController {
 
   clearCartOrder() {
     try {
+      memberVoucher.value = false;
+      salePageController.memberNo.clear();
       selectedMstPayment.value = MstPayment();
       ticketList.clear();
       addonList.clear();

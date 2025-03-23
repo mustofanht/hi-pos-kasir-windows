@@ -486,6 +486,10 @@ class SalePageController extends GetxController
   addVoucherToCart(VoucherEntity entity, int qtyVoucher) async {
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
+    
+    saleCartPageController.potonganList.clear();
+    saleCartPageController.voucherList.clear();
+    saleCartPageController.depositList.clear();
 
     if (saleCartPageController.voucherList.isEmpty) {
       await saleCartPageController.addvoucher(entity);

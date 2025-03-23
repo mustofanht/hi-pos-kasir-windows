@@ -12,7 +12,7 @@ class ApiFilterUtil {
         value: value,
       );
     } catch (e) {
-      logger.safeLog(e);
+      logger.safeLog('addSearch err : $e');
       return null;
     }
   }
@@ -28,9 +28,10 @@ class ApiFilterUtil {
           queryString += '$comma${filter.field}=%${filter.value}%';
         } else {
           if (filter.value is List) {
+            // logger.safeLog('BUILD QUERY IS LISTTTTTTTTTT : ${filter.value.length}');
             if (filter.value.length == 0) continue;
             var value = Uri.encodeComponent(
-                '[${buildQuery(data: filter.group, params: null)}]');
+                '[${buildQuery(data: filter.value, params: null)}]');
             queryString += '$comma${filter.field}${filter.operator}$value';
           } else {
             queryString +=

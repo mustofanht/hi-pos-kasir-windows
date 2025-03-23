@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
@@ -198,6 +199,39 @@ class SaleVoucherPageController extends GetxController {
           0,
         )!,
       );
+
+      // List<FilterQuery> dataFilterDate = [];
+
+      // dataFilterDate.add(
+      //   apiFilterUtil.addSearch(
+      //     'vpEndDate',
+      //     OPERATOR_CONSTANTS.GREATHER_THAN_OR_EQUALS,
+      //     dateTimeUtil.dateFormat(DateTime.now(), 'yyyy-MM-dd'),
+      //   )!,
+      // );
+      // dataFilterDate.add(
+      //   apiFilterUtil.addSearch(
+      //     'vpEndDate',
+      //     OPERATOR_CONSTANTS.EQUALS,
+      //     OPERATOR_CONSTANTS.IS_NULL,
+      //   )!,
+      // );
+
+      // dataFilter.add(
+      //   apiFilterUtil.addSearch(
+      //     'GROUP_CONDITION_AND',
+      //     OPERATOR_CONSTANTS.EQUALS,
+      //     dataFilterDate,
+      //   )!,
+      // );
+      // dataFilter.add(
+      //   apiFilterUtil.addSearch(
+      //     'vpStartDate',
+      //     OPERATOR_CONSTANTS.LESS_THAN_OR_EQUALS,
+      //     dateTimeUtil.dateFormat(DateTime.now(), 'yyyy-MM-dd'),
+      //   )!,
+      // );
+
       result = await _service.sale.voucherService.getAllVoucher(
         authToken: _authToken,
         dataFilter: dataFilter,
