@@ -108,6 +108,7 @@ class SalePageController extends GetxController
     noWaController.text = '';
     alamatController.text = '';
     keteranganVoucher.text = '';
+    memberNo.text = '';
     doInitialValueDropdown();
     doSelectPaymentType(
       CustomIdNameEntity(

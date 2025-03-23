@@ -191,6 +191,13 @@ class SaleVoucherPageController extends GetxController {
           'N',
         )!,
       );
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'vpLimit',
+          OPERATOR_CONSTANTS.GREATHER_THAN,
+          0,
+        )!,
+      );
       result = await _service.sale.voucherService.getAllVoucher(
         authToken: _authToken,
         dataFilter: dataFilter,

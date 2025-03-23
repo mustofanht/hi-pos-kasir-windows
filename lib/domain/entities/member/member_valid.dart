@@ -1,3 +1,4 @@
+import 'package:jaya_propertiy/domain/entities/member/member_detail.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 
@@ -12,6 +13,7 @@ class MemberValid {
   String? cardAddress;
   Membership? mstMembership;
   List<MemberListResponse>? memberListResponses;
+  MemberDetail? memberDetail;
 
   MemberValid({
     this.cardNo,
@@ -24,6 +26,7 @@ class MemberValid {
     this.cardAddress,
     this.mstMembership,
     this.memberListResponses,
+    this.memberDetail,
   });
 
   factory MemberValid.fromJson(Map<String, dynamic> json) {
@@ -38,6 +41,9 @@ class MemberValid {
       cardAddress: json['cardAddress'],
       mstMembership: json['mstMembership'] != null
           ? Membership.fromJson(json['mstMembership'])
+          : null,
+      memberDetail: json['memberDetail'] != null
+          ? MemberDetail.fromJson(json['memberDetail'])
           : null,
       memberListResponses: json['memberListResponses'] != null
           ? List<MemberListResponse>.from(
@@ -59,6 +65,7 @@ class MemberValid {
       'cardEmail': cardEmail,
       'cardAddress': cardAddress,
       'mstMembership': mstMembership?.toJson(),
+      'memberDetail': memberDetail?.toJson(),
       'memberListResponses': memberListResponses,
     };
   }

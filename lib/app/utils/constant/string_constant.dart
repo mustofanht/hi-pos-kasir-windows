@@ -115,6 +115,28 @@ class MemberRelation {
   }
 }
 
+class PERIODE {
+  static const String HARIAN = "D";
+  static const String MINGGUAN = "W";
+  static const String BULANAN = "M";
+  static const String TAHUNAN = "Y";
+  
+  static String getName(String relation) {
+    switch (relation) {
+      case HARIAN:
+        return "Harian";
+      case MINGGUAN:
+        return "Mingguan";
+      case BULANAN:
+        return "Bulanan";
+      case TAHUNAN:
+        return "Tahunan";
+      default:
+        return "";
+    }
+  }
+}
+
 AppStringConstant constant = new AppStringConstant();
 ArgumentsConstant argConstant = new ArgumentsConstant();
 AppRequestContentType contentType = new AppRequestContentType();

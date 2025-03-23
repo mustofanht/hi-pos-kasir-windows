@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_detail.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
@@ -41,11 +42,12 @@ class _MembershipPaymentState extends State<MembershipPayment> {
     super.initState();
     if (widget.memberValid.mstMembership != null) {
       Membership membership = widget.memberValid.mstMembership!;
+      MemberDetail? memberDetail = widget.memberValid.memberDetail;
       membershipController.text = membership.membName ?? '';
-      exptController.text = '';
+      exptController.text = memberDetail?.regEffTo ?? '';
       kuotaController.text = (membership.membKuota ?? '').toString();
       namaController.text = widget.memberValid.cardName ?? '';
-      resetController.text = membership.membResetPeriod ?? '';
+      resetController.text = PERIODE.getName(membership.membResetPeriod ?? '');
       maxController.text = (membership.membMaxKuota ?? '').toString();
     }
   }
