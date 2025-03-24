@@ -11,6 +11,8 @@ class ShiftDetailEntity {
   final String? lokasiName;
   final int? tiketCount;
   final int? itemCount;
+  final int? potonganCount;
+  final int? voucherCount;
   final String? qrisSum;
   final String? edcSum;
   final String? travelokaSum;
@@ -28,6 +30,8 @@ class ShiftDetailEntity {
     this.lokasiName,
     this.tiketCount,
     this.itemCount,
+    this.potonganCount,
+    this.voucherCount,
     this.qrisSum,
     this.edcSum,
     this.travelokaSum,
@@ -51,6 +55,8 @@ class ShiftDetailEntity {
       lokasiName: json['lokasiName'],
       tiketCount: json['tiketCount'],
       itemCount: json['itemCount'],
+      potonganCount: json['potonganCount'],
+      voucherCount: json['voucherCount'],
       qrisSum: json['qrisSum'],
       edcSum: json['edcSum'],
       travelokaSum: json['travelokaSum'],
@@ -83,6 +89,8 @@ class ShiftDetailEntity {
       'lokasiName': lokasiName,
       'tiketCount': tiketCount,
       'itemCount': itemCount,
+      'potonganCount': potonganCount,
+      'voucherCount': voucherCount,
       'qrisSum': qrisSum,
       'edcSum': edcSum,
       'travelokaSum': travelokaSum,

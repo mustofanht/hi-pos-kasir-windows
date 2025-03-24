@@ -371,6 +371,16 @@ class ShiftPage extends GetView<ShiftPageController> {
                                     head: false,
                                   ),
                                   columnShift(
+                                    key: 'Potongan',
+                                    value: (detail.itemCount ?? 0).toString(),
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Vocuher',
+                                    value: (detail.itemCount ?? 0).toString(),
+                                    head: false,
+                                  ),
+                                  columnShift(
                                     key: '',
                                     head: true,
                                   ),
@@ -384,6 +394,10 @@ class ShiftPage extends GetView<ShiftPageController> {
                                               head: false),
                                         )
                                         .toList(),
+                                  columnShift(
+                                    key: 'Voucher',
+                                    head: true,
+                                  ),
                                   if (detail.listSumVoucher != null)
                                     ...detail.listSumVoucher!
                                         .map(
@@ -394,6 +408,10 @@ class ShiftPage extends GetView<ShiftPageController> {
                                               head: false),
                                         )
                                         .toList(),
+                                  columnShift(
+                                    key: 'Potongan',
+                                    head: true,
+                                  ),
                                   if (detail.listSumPotongan != null)
                                     ...detail.listSumPotongan!
                                         .map(
