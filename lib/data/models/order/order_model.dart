@@ -11,6 +11,7 @@ class OrderModel {
   String? orderEmail;
   String? orderNumber;
   String? orderReffno;
+  String? orderMemberNo;
   String? qrCode;
   int orderTotalItem;
   double orderTotalAmt;
@@ -36,6 +37,7 @@ class OrderModel {
     this.orderEmail,
     this.orderNumber,
     this.orderReffno,
+    this.orderMemberNo,
     this.qrCode,
     this.paymentDate,
     this.orderVoucherDesc,
@@ -63,6 +65,7 @@ class OrderModel {
       orderEmail: json['orderEmail'],
       orderNumber: json['orderNumber'],
       orderReffno: json['orderReffno'],
+      orderMemberNo: json['orderMemberNo'],
       qrCode: json['qrCode'],
       orderTotalItem: json['orderTotalItem'],
       orderTotalAmt: json['orderTotalAmt'],
@@ -86,8 +89,8 @@ class OrderModel {
           .map((e) => OrderDepositModel.fromJson(e))
           .toList(),
       listCreateTicket: json['listCreateTicket']
-              .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
-              .toList(),
+          .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
+          .toList(),
     );
   }
 
@@ -98,6 +101,7 @@ class OrderModel {
       "orderEmail": orderEmail,
       "orderNumber": orderNumber,
       "orderReffno": orderReffno,
+      "orderMemberNo": orderMemberNo,
       "qrCode": qrCode,
       "orderTotalItem": orderTotalItem,
       "orderTotalAmt": orderTotalAmt,

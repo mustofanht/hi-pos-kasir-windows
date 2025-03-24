@@ -116,7 +116,7 @@ class SaleCartPageController extends GetxController {
         return;
       }
     }
-    
+
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) - 1;
     ticket.totalPrice =
         (ticket.totalPrice ?? 0) - (ticket.ticket!.ticketPrice ?? 0);
@@ -291,17 +291,43 @@ class SaleCartPageController extends GetxController {
       if (voucherList.isNotEmpty) {
         double discountAmount = 0;
 
+        List<CartTicket> sortedTicketList = List.from(ticketList);
+        sortedTicketList.sort((a, b) => b.totalPrice!.compareTo(a.totalPrice!));
+
         for (var element in voucherList) {
-          if (element.qtyOrder != null && element.qtyOrder! > 0) {
-            for (var i = 0; i < element.qtyOrder!; i++) {
+          int remainingVoucherQty = element.qtyOrder ?? 0;
+
+          if (remainingVoucherQty > 0) {
+            for (var ticket in sortedTicketList) {
+              if (remainingVoucherQty == 0) break;
+
+              int applicableQty = ticket.qtyOrder! < remainingVoucherQty
+                  ? ticket.qtyOrder!
+                  : remainingVoucherQty;
+              remainingVoucherQty -= applicableQty;
+
               if (element.entity!.vpUnitType == UnitType.PERCENT) {
-                discountAmount +=
-                    totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
+                discountAmount += applicableQty *
+                    (ticket.totalPrice! / ticket.qtyOrder!) *
+                    (element.entity!.vpUnitValue ?? 0) /
+                    100;
               } else {
-                discountAmount += element.entity!.vpUnitValue ?? 0;
+                discountAmount +=
+                    applicableQty * (element.entity!.vpUnitValue ?? 0);
               }
             }
           }
+
+          // if (element.qtyOrder != null && element.qtyOrder! > 0) {
+          //   for (var i = 0; i < element.qtyOrder!; i++) {
+          //     if (element.entity!.vpUnitType == UnitType.PERCENT) {
+          //       discountAmount +=
+          //           totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
+          //     } else {
+          //       discountAmount += element.entity!.vpUnitValue ?? 0;
+          //     }
+          //   }
+          // }
           // if (element.entity!.vpUnitType == UnitType.PERCENT) {
           //   discountAmount +=
           //       totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;

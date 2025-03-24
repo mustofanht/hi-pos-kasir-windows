@@ -161,7 +161,7 @@ class SaleVoucherPageController extends GetxController {
       Map<String, dynamic> param = {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
-        // 'flMobile': 'Y',
+        'flMobile': 'Y',
         // 'locationId': sessionUtil.getLocationId().toString(),
       };
       dataFilter.add(

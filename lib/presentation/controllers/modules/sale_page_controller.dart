@@ -21,7 +21,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
-import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+// import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -364,7 +364,7 @@ class SalePageController extends GetxController
       listDeposit.addAll(
         depositList.map(
           (element) {
-            double total = element.totalPrice!;
+            // double total = element.totalPrice!;
             return OrderDepositModel(
               entity: element.deposit,
               odpOrderNumber: '',
@@ -385,6 +385,7 @@ class SalePageController extends GetxController
       orderPhoneNumber: noWaController.text.isEmpty ? ' ' : noWaController.text,
       orderEmail: emailController.text.isEmpty ? ' ' : emailController.text,
       orderReffno: null,
+      orderMemberNo: memberNo.text,
       orderTotalItem: totalTotalTicketProduct,
       custAddres: alamatController.text.isEmpty ? ' ' : alamatController.text,
       orderVoucherDesc:
@@ -486,7 +487,7 @@ class SalePageController extends GetxController
   addVoucherToCart(VoucherEntity entity, int qtyVoucher) async {
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
-    
+
     saleCartPageController.potonganList.clear();
     saleCartPageController.voucherList.clear();
     saleCartPageController.depositList.clear();

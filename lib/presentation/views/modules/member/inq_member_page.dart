@@ -116,7 +116,8 @@ class InqMemberPage extends GetView<InqMemberPageController> {
       required MemberCard entity,
     }) {
       String id = element.id!;
-      String val = entity.toJson()[id].toString();
+      Object? valObj = entity.toJson()[id];
+      String val = (valObj ?? '').toString();
       // if (id == 'pymntStatus') {
       //   return CustomBadge(
       //     label: val == 'P' ? 'Paid' : 'Not Paid',
