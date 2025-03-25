@@ -193,7 +193,7 @@ class CreateMemberPageController extends GetxController {
       anggotaSelectedRelations
           .add(CustomIdNameEntity(id: '', name: 'Pilih Relasi'));
     } else {
-      alert.warning('Warning', 'Maximal 2 anggota');
+      alert.warning('Warning', 'Maximal ${membership.membMaxKuota} anggota');
     }
   }
 
@@ -258,7 +258,8 @@ class CreateMemberPageController extends GetxController {
           alert.warning('Warning', 'List data anggota harus lengkap!');
           break;
         }
-        if (isValid && (selectedRelations.id == null || selectedRelations.id!.isEmpty)) {
+        if (isValid &&
+            (selectedRelations.id == null || selectedRelations.id!.isEmpty)) {
           isValid = false;
           alert.warning('Warning', 'List data anggota harus lengkap!');
           break;
