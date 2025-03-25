@@ -372,12 +372,14 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   ),
                                   columnShift(
                                     key: 'Potongan',
-                                    value: (detail.itemCount ?? 0).toString(),
+                                    value:
+                                        (detail.potonganCount ?? 0).toString(),
                                     head: false,
                                   ),
                                   columnShift(
                                     key: 'Vocuher',
-                                    value: (detail.itemCount ?? 0).toString(),
+                                    value:
+                                        (detail.voucherCount ?? 0).toString(),
                                     head: false,
                                   ),
                                   columnShift(
