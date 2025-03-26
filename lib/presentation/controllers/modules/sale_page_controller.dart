@@ -434,14 +434,6 @@ class SalePageController extends GetxController
 
           await dialog.paymentMember(
             onNext: (selectedMemberAnggotas) async {
-              int qtyVoucher = selectedMemberAnggotas.isEmpty
-                  ? 1
-                  : selectedMemberAnggotas.length;
-
-              if (qtyVoucher > (memberValid.mstMembership?.membKuota ?? 0)) {
-                alert.warning('Warning', 'TIdak bisa melebihi kuota tersedia');
-                return;
-              }
               // logger.safeLog(
               //   'qtyVoucher ==========================================================> $qtyVoucher',
               // );
@@ -451,6 +443,20 @@ class SalePageController extends GetxController
                   memberValid.mstMembership!.membVpId!,
                 );
                 if (vpEntity != null) {
+                  int qtyVoucher =
+                      memberValid.mstMembership?.membCheckName == 'Y'
+                          ? selectedMemberAnggotas.length
+                          : qtyVoucherMember(memberValid);
+
+                  if (qtyVoucher >
+                      (memberValid.mstMembership?.membMaxKuota ?? 0)) {
+                    alert.warning(
+                      'Warning',
+                      'Tidak bisa melebihi kuota tersedia',
+                    );
+                    return;
+                  }
+
                   await clearVoucherToCart(vpEntity);
                   await addVoucherToCart(vpEntity, qtyVoucher);
                 }
@@ -464,6 +470,26 @@ class SalePageController extends GetxController
     } catch (e) {
       logger.safeLog(e);
     }
+  }
+
+  int qtyVoucherMember(MemberValid memberValid) {
+    int qty = 1;
+
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+    int totalQtyTiket = 0;
+    for (var tiket in saleCartPageController.ticketList) {
+      totalQtyTiket += tiket.qtyOrder ?? 0;
+    }
+
+    int maxKuota = memberValid.mstMembership?.membMaxKuota ?? 0;
+
+    if (totalQtyTiket <= maxKuota) {
+      qty = totalQtyTiket;
+    } else {
+      qty = maxKuota;
+    }
+    return qty;
   }
 
   Future<VoucherEntity?> getVoucherEntity(int vpId) async {
