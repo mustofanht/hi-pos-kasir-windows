@@ -443,13 +443,23 @@ class SalePageController extends GetxController
                   memberValid.mstMembership!.membVpId!,
                 );
                 if (vpEntity != null) {
+                  logger.safeLog(
+                    'DATA MEMBERSHIP: ${memberValid.mstMembership?.toJson()}',
+                  );
+
                   int qtyVoucher =
                       memberValid.mstMembership?.membCheckName == 'Y'
                           ? selectedMemberAnggotas.length
                           : qtyVoucherMember(memberValid);
 
-                  if (qtyVoucher >
-                      (memberValid.mstMembership?.membMaxKuota ?? 0)) {
+                  int maxQty = (memberValid.mstMembership?.membKuota ?? 0) <
+                          (memberValid.mstMembership?.membMaxKuota ?? 0)
+                      ? (memberValid.mstMembership?.membKuota ?? 0)
+                      : (memberValid.mstMembership?.membMaxKuota ?? 0);
+
+                  logger.safeLog('qtyVoucher: $qtyVoucher');
+                  logger.safeLog('maxQty: $maxQty');
+                  if (qtyVoucher > maxQty) {
                     alert.warning(
                       'Warning',
                       'Tidak bisa melebihi kuota tersedia',
