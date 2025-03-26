@@ -377,7 +377,7 @@ class ShiftPage extends GetView<ShiftPageController> {
                                     head: false,
                                   ),
                                   columnShift(
-                                    key: 'Vocuher',
+                                    key: 'Voucher',
                                     value:
                                         (detail.voucherCount ?? 0).toString(),
                                     head: false,
