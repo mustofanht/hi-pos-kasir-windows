@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -371,7 +371,8 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                         height: layoutStyle.blockVertical * 6.5,
                                         margin: EdgeInsets.symmetric(
                                           horizontal: layoutStyle.defaultMargin,
-                                          vertical: layoutStyle.defaultMargin / 4,
+                                          vertical:
+                                              layoutStyle.defaultMargin / 4,
                                         ),
                                         obscureText: false,
                                         border: Border.all(
@@ -426,7 +427,10 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                           ),
                                         ),
                                       ),
-                                      label: Text('Cek', style: textStyle.whiteText,),
+                                      label: Text(
+                                        'Cek',
+                                        style: textStyle.whiteText,
+                                      ),
                                     ),
                                   ],
                                 ),

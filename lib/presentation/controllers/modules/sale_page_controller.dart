@@ -492,7 +492,10 @@ class SalePageController extends GetxController
       totalQtyTiket += tiket.qtyOrder ?? 0;
     }
 
-    int maxKuota = memberValid.mstMembership?.membMaxKuota ?? 0;
+    int maxKuota = (memberValid.mstMembership?.membKuota ?? 0) <
+            (memberValid.mstMembership?.membMaxKuota ?? 0)
+        ? (memberValid.mstMembership?.membKuota ?? 0)
+        : (memberValid.mstMembership?.membMaxKuota ?? 0);
 
     if (totalQtyTiket <= maxKuota) {
       qty = totalQtyTiket;
@@ -521,6 +524,7 @@ class SalePageController extends GetxController
   }
 
   addVoucherToCart(VoucherEntity entity, int qtyVoucher) async {
+    logger.safeLog('Member addVoucherToCart : $qtyVoucher');
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
 
@@ -528,16 +532,12 @@ class SalePageController extends GetxController
     saleCartPageController.voucherList.clear();
     saleCartPageController.depositList.clear();
 
-    if (saleCartPageController.voucherList.isEmpty) {
-      await saleCartPageController.addvoucher(entity);
-    } else {
-      final cartVoucher = CartVoucher(
-        qtyOrder: qtyVoucher,
-        totalPrice: qtyVoucher * entity.vpUnitValue!,
-        entity: entity,
-      );
-      saleCartPageController.voucherList.add(cartVoucher);
-    }
+    final cartVoucher = CartVoucher(
+      qtyOrder: qtyVoucher,
+      totalPrice: qtyVoucher * entity.vpUnitValue!,
+      entity: entity,
+    );
+    saleCartPageController.voucherList.add(cartVoucher);
     saleCartPageController.memberVoucher.value = true;
     saleCartPageController.update();
     update();
