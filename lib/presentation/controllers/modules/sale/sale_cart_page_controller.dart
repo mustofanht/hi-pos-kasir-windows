@@ -14,6 +14,7 @@ import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart'
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
@@ -50,6 +51,7 @@ class SaleCartPageController extends GetxController {
   final selectedMstPayment = MstPayment().obs;
 
   final memberVoucher = false.obs;
+  final memberValid = MemberValid().obs;
 
   final Map<int, TextEditingController> ticketControllers = {};
 
@@ -69,6 +71,7 @@ class SaleCartPageController extends GetxController {
       ),
     );
     ticketControllers[ticket.ticketId]?.text = ticket.ticketMinimum.toString();
+    checkQtyMemberVocuher();
     calculateTotalOrder();
   }
 
@@ -100,6 +103,7 @@ class SaleCartPageController extends GetxController {
         ((ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0));
     ticketControllers[ticket.ticket?.ticketId]?.text =
         ticket.qtyOrder.toString();
+    checkQtyMemberVocuher();
     calculateTotalOrder();
   }
 
@@ -562,5 +566,34 @@ class SaleCartPageController extends GetxController {
         cartAddOn,
       ),
     );
+  }
+
+  checkQtyMemberVocuher() {
+    int qty = 1;
+    int totalQtyTiket = 0;
+    for (var tiket in ticketList) {
+      totalQtyTiket += tiket.qtyOrder ?? 0;
+    }
+
+    if (memberValid.value.mstMembership != null) {
+      int maxKuota = (memberValid.value.mstMembership?.membKuota ?? 0) <
+              (memberValid.value.mstMembership?.membMaxKuota ?? 0)
+          ? (memberValid.value.mstMembership?.membKuota ?? 0)
+          : (memberValid.value.mstMembership?.membMaxKuota ?? 0);
+
+      if (totalQtyTiket <= maxKuota) {
+        qty = totalQtyTiket;
+      } else {
+        qty = maxKuota;
+      }
+
+      if (voucherList.isNotEmpty) {
+        CartVoucher cartSelected = voucherList.firstWhere(
+          (element) =>
+              element.entity?.vpId == memberValid.value.mstMembership?.membVpId,
+        );
+        cartSelected.qtyOrder = qty;
+      }
+    }
   }
 }

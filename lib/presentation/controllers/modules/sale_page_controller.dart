@@ -449,7 +449,10 @@ class SalePageController extends GetxController
 
                   int qtyVoucher =
                       memberValid.mstMembership?.membCheckName == 'Y'
-                          ? selectedMemberAnggotas.length
+                          ? qtyVoucherMemberCheckName(
+                              memberValid,
+                              selectedMemberAnggotas.length,
+                            )
                           : qtyVoucherMember(memberValid);
 
                   int maxQty = (memberValid.mstMembership?.membKuota ?? 0) <
@@ -469,6 +472,10 @@ class SalePageController extends GetxController
 
                   await clearVoucherToCart(vpEntity);
                   await addVoucherToCart(vpEntity, qtyVoucher);
+
+                  final SaleCartPageController saleCartPageController =
+                      Get.find<SaleCartPageController>();
+                  saleCartPageController.memberValid.value = memberValid;
                 }
               }
             },
@@ -501,6 +508,26 @@ class SalePageController extends GetxController
       qty = totalQtyTiket;
     } else {
       qty = maxKuota;
+    }
+    return qty;
+  }
+
+  int qtyVoucherMemberCheckName(
+      MemberValid memberValid, int qtySelectedMember) {
+    int qty = 1;
+
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
+    int totalQtyTiket = 0;
+    for (var tiket in saleCartPageController.ticketList) {
+      totalQtyTiket += tiket.qtyOrder ?? 0;
+    }
+
+    if (totalQtyTiket <= qtySelectedMember) {
+      qty = totalQtyTiket;
+    } else {
+      qty = qtySelectedMember;
     }
     return qty;
   }

@@ -3,7 +3,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
-import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+// import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
@@ -153,18 +153,22 @@ class InqMemberPage extends GetView<InqMemberPageController> {
             ? Text(dateTimeUtil.dateFormat(DateTime.parse(val), 'yyyy-MM-dd'))
             : const Text('');
       } else if (id == 'resetPeriodName') {
+        String? state = entity.toJson()['membState'].toString();
+        bool isDisabled = state != 'Y';
         return CustomButton(
           width: layoutStyle.safeBlockHorizontal * 5,
           height: layoutStyle.safeBlockVertical * 7,
-          onPressed: () async {
-            controller.goToDetail(entity);
-          },
+          onPressed: isDisabled
+              ? () {}
+              : () async {
+                  controller.goToDetail(entity);
+                },
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith(
-              (states) => colorStyle.blue,
+              (states) => isDisabled ? colorStyle.grey : colorStyle.blue,
             ),
             overlayColor: MaterialStateProperty.resolveWith(
-              (states) => colorStyle.black.withOpacity(0.1),
+              (states) => isDisabled ? null : colorStyle.black.withOpacity(0.1),
             ),
             shape: MaterialStateProperty.resolveWith(
               (states) => RoundedRectangleBorder(

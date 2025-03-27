@@ -8,6 +8,8 @@ class MemberCard {
   int? cardKuota;
   String? regResetPeriod;
   String? resetPeriodName;
+  DateTime? cardCreatedDate;
+  String? membState;
 
   MemberCard({
     this.cardLocId,
@@ -19,6 +21,8 @@ class MemberCard {
     this.cardKuota,
     this.regResetPeriod,
     this.resetPeriodName,
+    this.cardCreatedDate,
+    this.membState,
   });
 
   factory MemberCard.fromJson(Map<String, dynamic> json) {
@@ -27,11 +31,17 @@ class MemberCard {
       cardNo: json['cardNo'],
       cardName: json['cardName'],
       membName: json['membName'],
-      expiredDate: json['expiredDate'] != null ? DateTime.parse(json['expiredDate']).toLocal() : null,
+      expiredDate: json['expiredDate'] != null
+          ? DateTime.parse(json['expiredDate']).toLocal()
+          : null,
       status: json['status'],
       cardKuota: json['cardKuota'],
       regResetPeriod: json['regResetPeriod'],
       resetPeriodName: json['resetPeriodName'],
+      cardCreatedDate: json['cardCreatedDate'] != null
+          ? DateTime.parse(json['cardCreatedDate']).toLocal()
+          : null,
+      membState: json['membState'],
     );
   }
 
@@ -46,6 +56,8 @@ class MemberCard {
       'cardKuota': cardKuota,
       'regResetPeriod': regResetPeriod,
       'resetPeriodName': resetPeriodName,
+      'cardCreatedDate': cardCreatedDate?.toIso8601String(),
+      'membState': membState,
     };
   }
 }
