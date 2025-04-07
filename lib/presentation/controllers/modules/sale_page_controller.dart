@@ -476,6 +476,7 @@ class SalePageController extends GetxController
                   final SaleCartPageController saleCartPageController =
                       Get.find<SaleCartPageController>();
                   saleCartPageController.memberValid.value = memberValid;
+                  saleCartPageController.calculateTotalOrder();
                 }
               }
             },
