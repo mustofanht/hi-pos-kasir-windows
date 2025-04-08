@@ -20,6 +20,7 @@ import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 // import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
@@ -430,10 +431,22 @@ class SalePageController extends GetxController
             return;
           }
 
+          final effTo = memberValid.memberDetail?.regEffTo;
+          logger.safeLog('EXPIRED AT : $effTo');
+          if (effTo != null) {
+            final now = DateTime.now();
+            logger.safeLog('CURR AT : $now');
+            if (now.isAfter(effTo)) {
+              alert.warning('Warning', 'Masa berlaku member sudah berakhir!');
+              return;
+            }
+          }
+
           logger.safeLog('DATA : ${memberValid.toJson()}');
 
           await dialog.paymentMember(
             onNext: (selectedMemberAnggotas) async {
+              String memberNoStr = memberNo.text;
               // logger.safeLog(
               //   'qtyVoucher ==========================================================> $qtyVoucher',
               // );
@@ -471,7 +484,14 @@ class SalePageController extends GetxController
                   }
 
                   await clearVoucherToCart(vpEntity);
-                  await addVoucherToCart(vpEntity, qtyVoucher);
+                  // logger.safeLog('ADD VOUCHER MEMBER NO 1 : ${memberNo.text}');
+                  // logger.safeLog('ADD VOUCHER MEMBER NO 1 : $memberNoStr');
+                  await addVoucherToCart(
+                    vpEntity,
+                    qtyVoucher,
+                    memberNoStr,
+                    selectedMemberAnggotas,
+                  );
 
                   final SaleCartPageController saleCartPageController =
                       Get.find<SaleCartPageController>();
@@ -482,6 +502,7 @@ class SalePageController extends GetxController
             },
             authToken: _authToken,
             memberValid: memberValid,
+            memberNo: memberNo.text,
           );
         },
       );
@@ -551,8 +572,13 @@ class SalePageController extends GetxController
     return vpEntity;
   }
 
-  addVoucherToCart(VoucherEntity entity, int qtyVoucher) async {
-    logger.safeLog('Member addVoucherToCart : $qtyVoucher');
+  addVoucherToCart(
+    VoucherEntity entity,
+    int qtyVoucher,
+    String? memberNo,
+    List<MemberListResponse>? selectedMemberAnggota,
+  ) async {
+    // logger.safeLog('Member addVoucherToCart : $qtyVoucher');
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
 
@@ -560,10 +586,14 @@ class SalePageController extends GetxController
     saleCartPageController.voucherList.clear();
     saleCartPageController.depositList.clear();
 
+    logger.safeLog('ADD VOUCHER MEMBER NO 2 : $memberNo');
+
     final cartVoucher = CartVoucher(
       qtyOrder: qtyVoucher,
       totalPrice: qtyVoucher * entity.vpUnitValue!,
       entity: entity,
+      memberNo: memberNo,
+      selectedMemberAnggota: selectedMemberAnggota,
     );
     saleCartPageController.voucherList.add(cartVoucher);
     saleCartPageController.memberVoucher.value = true;

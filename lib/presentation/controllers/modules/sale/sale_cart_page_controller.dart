@@ -575,24 +575,28 @@ class SaleCartPageController extends GetxController {
       totalQtyTiket += tiket.qtyOrder ?? 0;
     }
 
-    if (memberValid.value.mstMembership != null) {
-      int maxKuota = (memberValid.value.mstMembership?.membKuota ?? 0) <
-              (memberValid.value.mstMembership?.membMaxKuota ?? 0)
-          ? (memberValid.value.mstMembership?.membKuota ?? 0)
-          : (memberValid.value.mstMembership?.membMaxKuota ?? 0);
+    if (memberValid.value.memberListResponses == null ||
+        memberValid.value.memberListResponses!.isEmpty) {
+      if (memberValid.value.mstMembership != null) {
+        int maxKuota = (memberValid.value.mstMembership?.membKuota ?? 0) <
+                (memberValid.value.mstMembership?.membMaxKuota ?? 0)
+            ? (memberValid.value.mstMembership?.membKuota ?? 0)
+            : (memberValid.value.mstMembership?.membMaxKuota ?? 0);
 
-      if (totalQtyTiket <= maxKuota) {
-        qty = totalQtyTiket;
-      } else {
-        qty = maxKuota;
-      }
+        if (totalQtyTiket <= maxKuota) {
+          qty = totalQtyTiket;
+        } else {
+          qty = maxKuota;
+        }
 
-      if (voucherList.isNotEmpty) {
-        CartVoucher cartSelected = voucherList.firstWhere(
-          (element) =>
-              element.entity?.vpId == memberValid.value.mstMembership?.membVpId,
-        );
-        cartSelected.qtyOrder = qty;
+        if (voucherList.isNotEmpty) {
+          CartVoucher cartSelected = voucherList.firstWhere(
+            (element) =>
+                element.entity?.vpId ==
+                memberValid.value.mstMembership?.membVpId,
+          );
+          cartSelected.qtyOrder = qty;
+        }
       }
     }
   }

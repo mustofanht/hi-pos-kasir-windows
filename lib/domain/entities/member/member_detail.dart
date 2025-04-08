@@ -8,8 +8,8 @@ class MemberDetail {
   String? regMaxPeriod;
   double? regPrice;
   String? regNextReset;
-  String? regEffFrom;
-  String? regEffTo;
+  DateTime? regEffFrom;
+  DateTime? regEffTo;
   String? regCreatedDate;
   String? regCreatedBy;
   String? regUpdatedDate;
@@ -48,8 +48,12 @@ class MemberDetail {
           ? (json['regPrice'] as num).toDouble()
           : null,
       regNextReset: json['regNextReset'],
-      regEffFrom: json['regEffFrom'],
-      regEffTo: json['regEffTo'],
+      regEffFrom: json['regEffFrom'] != null
+          ? DateTime.parse(json['regEffFrom']).toLocal()
+          : null,
+      regEffTo: json['regEffTo'] != null
+          ? DateTime.parse(json['regEffTo']).toLocal()
+          : null,
       regCreatedDate: json['regCreatedDate'],
       regCreatedBy: json['regCreatedBy'],
       regUpdatedDate: json['regUpdatedDate'],
@@ -69,8 +73,8 @@ class MemberDetail {
       'regMaxPeriod': regMaxPeriod,
       'regPrice': regPrice,
       'regNextReset': regNextReset,
-      'regEffFrom': regEffFrom,
-      'regEffTo': regEffTo,
+      'regEffFrom': regEffFrom?.toIso8601String(),
+      'regEffTo': regEffTo?.toIso8601String(),
       'regCreatedDate': regCreatedDate,
       'regCreatedBy': regCreatedBy,
       'regUpdatedDate': regUpdatedDate,

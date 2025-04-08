@@ -2288,6 +2288,7 @@ class CustomDialog {
     required Function(List<MemberListResponse> selectedMemberAnggota) onNext,
     required AuthToken authToken,
     required MemberValid memberValid,
+    required String memberNo,
   }) async {
     Get.dialog(
       AlertDialog(
@@ -2296,6 +2297,7 @@ class CustomDialog {
           onNext: onNext,
           authToken: authToken,
           memberValid: memberValid,
+          memberNo: memberNo,
         ),
       ),
       barrierDismissible: false,

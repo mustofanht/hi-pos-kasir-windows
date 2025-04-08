@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
@@ -11,6 +13,7 @@ import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class MembershipPayment extends StatefulWidget {
   const MembershipPayment({
@@ -18,11 +21,13 @@ class MembershipPayment extends StatefulWidget {
     required this.onNext,
     required this.authToken,
     required this.memberValid,
+    required this.memberNo,
   });
 
   final Function(List<MemberListResponse> selectedMemberAnggota) onNext;
   final AuthToken authToken;
   final MemberValid memberValid;
+  final String memberNo;
 
   @override
   State<MembershipPayment> createState() => _MembershipPaymentState();
@@ -44,11 +49,35 @@ class _MembershipPaymentState extends State<MembershipPayment> {
       Membership membership = widget.memberValid.mstMembership!;
       MemberDetail? memberDetail = widget.memberValid.memberDetail;
       membershipController.text = membership.membName ?? '';
-      exptController.text = memberDetail?.regEffTo ?? '';
+      exptController.text =
+          (memberDetail != null && memberDetail!.regEffTo != null)
+              ? dateTimeUtil.dateFormat(memberDetail!.regEffTo!, 'yyyy-MM-dd')
+              : '';
       kuotaController.text = (membership.membKuota ?? '').toString();
       namaController.text = widget.memberValid.cardName ?? '';
       resetController.text = PERIODE.getName(membership.membResetPeriod ?? '');
-      maxController.text = (membership.membMaxKuota ?? '').toString();
+      maxController.text =
+          '${membership.membMaxKuota} / ${PERIODE.getName(memberDetail?.regMaxPeriod ?? '')}';
+    }
+    setMemberAnggotaSelected();
+  }
+
+  setMemberAnggotaSelected() {
+    final cartController = Get.find<SaleCartPageController>();
+    logger.safeLog('memberVoucher : ${cartController.memberVoucher}');
+    if (cartController.memberVoucher.isTrue &&
+        cartController.voucherList.isNotEmpty) {
+      logger.safeLog('MEMBER NO : ${widget.memberNo}');
+      logger.safeLog(
+          'MEMBER NO SELECTED : ${cartController.voucherList.first.memberNo}');
+      logger.safeLog(
+          'SIZE SELECTED ANGGOTA : ${cartController.voucherList.first.selectedMemberAnggota?.length}');
+      if (cartController.voucherList.first.memberNo == widget.memberNo) {
+        setState(() {
+          selectedMemberAnggota =
+              cartController.voucherList.first.selectedMemberAnggota ?? [];
+        });
+      }
     }
   }
 
@@ -59,32 +88,70 @@ class _MembershipPaymentState extends State<MembershipPayment> {
         Row(
           children: [
             Expanded(
-              child: CustomTextBox(
-                height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
+              // child: CustomTextBox(
+              //   height: layoutStyle.blockVertical * 6.5,
+              //   isDisabled: true,
+              //   margin: EdgeInsets.symmetric(
+              //     horizontal: layoutStyle.defaultMargin,
+              //     vertical: layoutStyle.defaultMargin / 4,
+              //   ),
+              //   obscureText: false,
+              //   border: Border.all(
+              //     color: colorStyle.grey,
+              //     width: 1,
+              //   ),
+              //   borderRadius: BorderRadius.circular(
+              //     layoutStyle.defaultMargin / 2,
+              //   ),
+              //   label: Text(
+              //     'Membership',
+              //     style: textStyle.greyText.copyWith(
+              //       fontSize: fontSize.small,
+              //     ),
+              //   ),
+              //   controller: membershipController,
+              //   decoration: InputDecoration(
+              //     hintText: 'Membership',
+              //     hintStyle: textStyle.greyText,
+              //     border: InputBorder.none,
+              //   ),
+              // ),
+              child: Container(
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,
                 ),
-                obscureText: false,
-                border: Border.all(
-                  color: colorStyle.grey,
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(
-                  layoutStyle.defaultMargin / 2,
-                ),
-                label: Text(
-                  'Membership',
-                  style: textStyle.greyText.copyWith(
-                    fontSize: fontSize.small,
-                  ),
-                ),
-                controller: membershipController,
-                decoration: InputDecoration(
-                  hintText: 'Membership',
-                  hintStyle: textStyle.greyText,
-                  border: InputBorder.none,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 2,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Membership',
+                            style: textStyle.greyText.copyWith(
+                              fontSize: fontSize.small,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: layoutStyle.blockVertical * 6.5,
+                      child: AutoSizeText(
+                        membershipController.text,
+                        style: textStyle.blackText,
+                        textAlign: TextAlign.start,
+                        maxLines: 3,
+                        minFontSize: 8,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -350,46 +417,87 @@ class _MembershipPaymentState extends State<MembershipPayment> {
       );
 
       return Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
-            child: Text(
-              memberListResponse.lsName ?? '',
-              style: textStyle.blackText,
+            child: Container(
+              height: layoutStyle.blockVertical * 8,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin / 2,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  memberListResponse.lsName ?? '',
+                  style: textStyle.blackText,
+                ),
+              ),
             ),
           ),
           Expanded(
-            child: Text(
-              MemberRelation.getName(memberListResponse.lsRelCode ?? ''),
-              style: textStyle.blackText,
+            child: Container(
+              height: layoutStyle.blockVertical * 8,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin / 2,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  MemberRelation.getName(memberListResponse.lsRelCode ?? ''),
+                  style: textStyle.blackText,
+                ),
+              ),
             ),
           ),
           Expanded(
-            child: Align(
-              alignment: Alignment.center,
-              child: Checkbox(
-                value: isSelected,
-                activeColor: colorStyle.primary,
-                checkColor: colorStyle.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+            child: Container(
+              height: layoutStyle.blockVertical * 8,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
                 ),
-                side: BorderSide(
-                  color: colorStyle.primary,
-                  width: 2,
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: Checkbox(
+                  value: isSelected,
+                  activeColor: colorStyle.primary,
+                  checkColor: colorStyle.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  side: BorderSide(
+                    color: colorStyle.primary,
+                    width: 2,
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      if (val == true) {
+                        selectedMemberAnggota.add(memberListResponse);
+                      } else {
+                        selectedMemberAnggota.removeWhere(
+                          (element) =>
+                              element.lsRelCode ==
+                                  memberListResponse.lsRelCode &&
+                              element.lsName == memberListResponse.lsName,
+                        );
+                      }
+                    });
+                  },
                 ),
-                onChanged: (val) {
-                  setState(() {
-                    if (val == true) {
-                      selectedMemberAnggota.add(memberListResponse);
-                    } else {
-                      selectedMemberAnggota.removeWhere(
-                        (element) =>
-                            element.lsRelCode == memberListResponse.lsRelCode &&
-                            element.lsName == memberListResponse.lsName,
-                      );
-                    }
-                  });
-                },
               ),
             ),
           ),
@@ -420,24 +528,66 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    'Nama',
-                    textAlign: TextAlign.start,
-                    style: textStyle.blackText,
+                  child: Container(
+                    height: layoutStyle.blockVertical * 8,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: layoutStyle.defaultMargin / 2,
+                    ),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Nama',
+                        textAlign: TextAlign.start,
+                        style: textStyle.blackText,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
-                  child: Text(
-                    'Hubungan',
-                    textAlign: TextAlign.start,
-                    style: textStyle.blackText,
+                  child: Container(
+                    height: layoutStyle.blockVertical * 8,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: layoutStyle.defaultMargin / 2,
+                    ),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Hubungan',
+                        textAlign: TextAlign.start,
+                        style: textStyle.blackText,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
-                  child: Text(
-                    'Pilih',
-                    textAlign: TextAlign.center,
-                    style: textStyle.blackText,
+                  child: Container(
+                    height: layoutStyle.blockVertical * 8,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                    ),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Pilih',
+                        textAlign: TextAlign.center,
+                        style: textStyle.blackText,
+                      ),
+                    ),
                   ),
                 ),
               ],
