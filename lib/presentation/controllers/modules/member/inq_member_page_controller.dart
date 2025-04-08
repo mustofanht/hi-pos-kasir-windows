@@ -197,7 +197,9 @@ class InqMemberPageController extends GetxController
 
   Future<bool> checkMemberValidation(MemberCard? val) async {
     bool isExists = false;
-    if (val != null && val.cardKuota != null) {
+    // logger.safeLog('val.cardKuota : ${val?.cardKuota}');
+    // if (val != null && val.cardKuota != null) {
+    if (val != null) {
       try {
         var result;
         result = await _service.member.memberValid(

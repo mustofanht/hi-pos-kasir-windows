@@ -224,6 +224,14 @@ class SaleCartPageController extends GetxController {
       alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
       return;
     }
+
+    if (((voucher.qtyOrder ?? 0) + 1) > (voucher.entity?.vpLimit ?? 0)) {
+      alert.warning(
+        'Warning',
+        'Limit Voucher tersisa ${voucher.entity?.vpLimit ?? 0}',
+      );
+      return;
+    }
     if (voucherList.isNotEmpty) {
       int qtyAllTiket = 0;
       for (var element in ticketList) {
