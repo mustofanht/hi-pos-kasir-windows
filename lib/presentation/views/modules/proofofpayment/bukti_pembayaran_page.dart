@@ -260,19 +260,41 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                 child: Container(
                   padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
                   decoration: BoxDecoration(
-                    color: model.paymentDetail?.pymntStatus == 'P'
+                    // color: model.paymentDetail?.pymntStatus == 'P'
+                    //     ? colorStyle.lime
+                    //     : colorStyle.cloud_blue,
+                    color: model.orderStatus == 'P'
                         ? colorStyle.lime
-                        : colorStyle.cloud_blue,
+                        : model.orderStatus == 'S'
+                            ? colorStyle.blue
+                            : model.orderStatus == 'V'
+                                ? colorStyle.red
+                                : colorStyle.cloud_blue,
                     borderRadius: const BorderRadius.all(
                       Radius.circular(10),
                     ),
                   ),
                   child: Text(
-                    model.paymentDetail?.pymntStatus == 'P'
+                    // model.paymentDetail?.pymntStatus == 'P'
+                    //     ? 'Paid'
+                    //     : 'Not Paid',
+                    model.orderStatus == 'P'
                         ? 'Paid'
-                        : 'Not Paid',
+                        : model.orderStatus == 'S'
+                            ? 'Submit'
+                            : model.orderStatus == 'V'
+                                ? 'Void'
+                                : 'Not Paid',
                     style: TextStyle(
-                      color: colorStyle.black,
+                      // color: colorStyle.black,
+
+                      color: model.orderStatus == 'P'
+                          ? colorStyle.black
+                          : model.orderStatus == 'S'
+                              ? colorStyle.white
+                              : model.orderStatus == 'V'
+                                  ? colorStyle.white
+                                  : colorStyle.black,
                       fontSize: fontSize.small,
                     ),
                   ),

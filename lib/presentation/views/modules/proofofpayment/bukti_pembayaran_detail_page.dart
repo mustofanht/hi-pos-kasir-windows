@@ -262,6 +262,12 @@ class BuktiPembayaranDetailPage extends StatelessWidget {
                           fontSize: fontSize.subtitle,
                         ),
                       ),
+                      Text(
+                        model.orderVoidReason != null && model.orderVoidReason!.isNotEmpty ? 'Void Reson : ${model.orderVoidReason ?? ''}' : '',
+                        style: TextStyle(
+                          fontSize: fontSize.subtitle,
+                        ),
+                      ),
                       SizedBox(
                         height: layoutStyle.defaultMargin,
                       ),
