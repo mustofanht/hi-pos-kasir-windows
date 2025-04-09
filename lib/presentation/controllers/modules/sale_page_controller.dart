@@ -552,6 +552,7 @@ class SalePageController extends GetxController
                   saleCartPageController.calculateTotalOrder();
                 }
               }
+              memberNo.text = memberNoStr;
             },
             authToken: _authToken,
             memberValid: memberValid,

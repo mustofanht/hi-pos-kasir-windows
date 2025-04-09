@@ -88,74 +88,77 @@ class _MembershipPaymentState extends State<MembershipPayment> {
         Row(
           children: [
             Expanded(
-              // child: CustomTextBox(
-              //   height: layoutStyle.blockVertical * 6.5,
-              //   isDisabled: true,
-              //   margin: EdgeInsets.symmetric(
-              //     horizontal: layoutStyle.defaultMargin,
-              //     vertical: layoutStyle.defaultMargin / 4,
-              //   ),
-              //   obscureText: false,
-              //   border: Border.all(
-              //     color: colorStyle.grey,
-              //     width: 1,
-              //   ),
-              //   borderRadius: BorderRadius.circular(
-              //     layoutStyle.defaultMargin / 2,
-              //   ),
-              //   label: Text(
-              //     'Membership',
-              //     style: textStyle.greyText.copyWith(
-              //       fontSize: fontSize.small,
-              //     ),
-              //   ),
-              //   controller: membershipController,
-              //   decoration: InputDecoration(
-              //     hintText: 'Membership',
-              //     hintStyle: textStyle.greyText,
-              //     border: InputBorder.none,
-              //   ),
-              // ),
-              child: Container(
+              child: CustomTextBox(
+                height: layoutStyle.blockVertical * 6.5,
+                isReadonly: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 2,
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Membership',
-                            style: textStyle.greyText.copyWith(
-                              fontSize: fontSize.small,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      height: layoutStyle.blockVertical * 6.5,
-                      child: AutoSizeText(
-                        membershipController.text,
-                        style: textStyle.blackText.copyWith(
-                          fontSize: fontSize.body,
-                        ),
-                        textAlign: TextAlign.start,
-                        maxLines: 3,
-                        minFontSize: 8,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                obscureText: false,
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                label: Text(
+                  'Membership',
+                  style: textStyle.greyText.copyWith(
+                    fontSize: fontSize.small,
+                  ),
+                ),
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
+                ),
+                controller: membershipController,
+                decoration: InputDecoration(
+                  hintText: 'Membership',
+                  hintStyle: textStyle.greyText,
+                  border: InputBorder.none,
                 ),
               ),
+              // child: Container(
+              //   margin: EdgeInsets.symmetric(
+              //     horizontal: layoutStyle.defaultMargin,
+              //     vertical: layoutStyle.defaultMargin / 4,
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Padding(
+              //         padding: EdgeInsets.symmetric(
+              //           vertical: layoutStyle.defaultMargin / 2,
+              //         ),
+              //         child: Row(
+              //           children: [
+              //             Text(
+              //               'Membership',
+              //               style: textStyle.greyText.copyWith(
+              //                 fontSize: fontSize.small,
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //       Container(
+              //         height: layoutStyle.blockVertical * 6.5,
+              //         child: AutoSizeText(
+              //           membershipController.text,
+              //           style: textStyle.blackText.copyWith(
+              //             fontSize: fontSize.body,
+              //           ),
+              //           textAlign: TextAlign.start,
+              //           maxLines: 3,
+              //           minFontSize: 8,
+              //           overflow: TextOverflow.ellipsis,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ),
             Expanded(
               child: CustomTextBox(
@@ -178,6 +181,9 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                   style: textStyle.greyText.copyWith(
                     fontSize: fontSize.small,
                   ),
+                ),
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
                 ),
                 controller: exptController,
                 decoration: InputDecoration(
@@ -213,6 +219,9 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                     fontSize: fontSize.small,
                   ),
                 ),
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
+                ),
                 controller: kuotaController,
                 decoration: InputDecoration(
                   hintText: 'Kuota',
@@ -242,6 +251,9 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                   style: textStyle.greyText.copyWith(
                     fontSize: fontSize.small,
                   ),
+                ),
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
                 ),
                 controller: namaController,
                 decoration: InputDecoration(
@@ -277,6 +289,9 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                     fontSize: fontSize.small,
                   ),
                 ),
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
+                ),
                 controller: resetController,
                 decoration: InputDecoration(
                   hintText: 'Reset',
@@ -306,6 +321,9 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                   style: textStyle.greyText.copyWith(
                     fontSize: fontSize.small,
                   ),
+                ),
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
                 ),
                 controller: maxController,
                 decoration: InputDecoration(
