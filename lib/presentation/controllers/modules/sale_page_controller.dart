@@ -342,24 +342,75 @@ class SalePageController extends GetxController
         ),
       );
     }
+    // if (voucherList.isNotEmpty) {
+    //   int count = 0;
+    //   listVoucher.addAll(
+    //     voucherList.map(
+    //       (element) {
+    //         int countRemaining = 0;
+    //         CartTicket ticket = ticketList[count];
+    //         ticket.qtyOrder ;
+
+    //         // double total = element.totalPrice!;
+    //         // if (element.entity != null &&
+    //         //     element.entity?.vpUnitType == UnitType.PERCENT) {
+    //         //   total = (totalTicketProduct * (element.totalPrice ?? 0) / 100);
+    //         // }
+
+    //         return OrderVoucherModel(
+    //           entity: element.entity,
+    //           ovpVoucherId: element.entity?.vpId,
+    //           ovpTotalAmount: total,
+    //           ovpTotalVoucher: element.qtyOrder ?? 0,
+    //         );
+    //       },
+    //     ),
+    //   );
+    // }
+
     if (voucherList.isNotEmpty) {
-      listVoucher.addAll(
-        voucherList.map(
-          (element) {
-            double total = element.totalPrice!;
-            if (element.entity != null &&
-                element.entity?.vpUnitType == UnitType.PERCENT) {
-              total = (totalTicketProduct * (element.totalPrice ?? 0) / 100);
+      double discountAmount = 0;
+
+      for (var element in voucherList) {
+        int remainingVoucherQty = element.qtyOrder ?? 0;
+
+        if (remainingVoucherQty > 0) {
+          for (var ticket in ticketList) {
+            if (remainingVoucherQty == 0) break;
+
+            int applicableQty = ticket.qtyOrder! < remainingVoucherQty
+                ? ticket.qtyOrder!
+                : remainingVoucherQty;
+            remainingVoucherQty -= applicableQty;
+
+            logger.safeLog('applicableQty : $applicableQty');
+            logger.safeLog('remainingVoucherQty : $remainingVoucherQty');
+
+            if (element.entity!.vpUnitType == UnitType.PERCENT) {
+              logger.safeLog('ticket.totalPrice : ${ticket.totalPrice}');
+              logger.safeLog('ticket.qtyOrder : ${ticket.qtyOrder}');
+              logger.safeLog(
+                  'element.entity!.vpUnitValue : ${element.entity!.vpUnitValue}');
+
+              discountAmount += applicableQty *
+                  (ticket.ticket?.ticketPrice ?? 0) *
+                  (element.entity!.vpUnitValue ?? 0) /
+                  100;
+            } else {
+              discountAmount +=
+                  applicableQty * (element.entity!.vpUnitValue ?? 0);
             }
-            return OrderVoucherModel(
-              entity: element.entity,
-              ovpVoucherId: element.entity?.vpId,
-              ovpTotalAmount: total,
-              ovpTotalVoucher: element.qtyOrder ?? 0,
-            );
-          },
-        ),
-      );
+          }
+          listVoucher.add(OrderVoucherModel(
+            entity: element.entity,
+            ovpVoucherId: element.entity?.vpId,
+            ovpTotalAmount: discountAmount,
+            ovpTotalVoucher: element.qtyOrder ?? 0,
+          ));
+          ;
+        }
+      }
+      logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
     }
     if (depositList.isNotEmpty) {
       listDeposit.addAll(
@@ -421,7 +472,8 @@ class SalePageController extends GetxController
       result.fold(
         (l) {
           logger.safeLog(l);
-          alert.warning('Warning', 'No Member tidak valid!');
+          alert.warning('Warning', l);
+          // alert.warning('Warning', 'No Member tidak valid!');
         },
         (r) async {
           logger.safeLog('> Exists Member');
@@ -611,6 +663,18 @@ class SalePageController extends GetxController
       if (existingTicket != null) {
         await saleCartPageController.removeListvoucher(existingTicket);
       }
+    }
+    saleCartPageController.memberVoucher.value = false;
+    saleCartPageController.update();
+    update();
+  }
+
+  clearAllVoucherToCart() async {
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+
+    if (saleCartPageController.voucherList.isNotEmpty) {
+      saleCartPageController.voucherList.clear();
     }
     saleCartPageController.memberVoucher.value = false;
     saleCartPageController.update();

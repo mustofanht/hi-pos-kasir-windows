@@ -192,8 +192,15 @@ class OrderPaymentController extends GetxController {
   final _authToken = Get.arguments[argConstant.authToken];
   var isProcessing = false.obs;
 
-  doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) {
+  doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
+      // validation on create order service
+      bool isSuccess = await _doCreateOrderPayment(
+        body: body,
+        orderNo: orderNo,
+      );
+      if (!isSuccess) return;
+
       // Display the waiting payment alert
       dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',

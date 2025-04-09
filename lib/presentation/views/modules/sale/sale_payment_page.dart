@@ -395,6 +395,11 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                           border: InputBorder.none,
                                         ),
                                         keyboardType: TextInputType.text,
+                                        onChanged: (text) {
+                                          if (text.isEmpty) {
+                                            controller.clearAllVoucherToCart();
+                                          }
+                                        },
                                       ),
                                     ),
                                     CustomButton(

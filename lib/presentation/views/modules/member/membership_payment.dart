@@ -144,7 +144,9 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                       height: layoutStyle.blockVertical * 6.5,
                       child: AutoSizeText(
                         membershipController.text,
-                        style: textStyle.blackText,
+                        style: textStyle.blackText.copyWith(
+                          fontSize: fontSize.body,
+                        ),
                         textAlign: TextAlign.start,
                         maxLines: 3,
                         minFontSize: 8,
