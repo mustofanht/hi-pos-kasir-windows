@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
@@ -489,7 +490,7 @@ class SalePageController extends GetxController
             final now = DateTime.now();
             logger.safeLog('CURR AT : $now');
             if (now.isAfter(effTo)) {
-              alert.warning('Warning', 'Masa berlaku member sudah berakhir!');
+              alert.warning('Warning', 'Member Expired. Masa berlaku Member telah berakhir pada ${dateTimeUtil.dateFormat(effTo, 'yyyy-MM-dd')}.');
               return;
             }
           }
