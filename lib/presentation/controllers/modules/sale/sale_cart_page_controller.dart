@@ -108,18 +108,18 @@ class SaleCartPageController extends GetxController {
   }
 
   removeTicket(CartTicket ticket) {
-    if (voucherList.isNotEmpty) {
-      int qtyCurr = (ticket.qtyOrder ?? 0) - 1;
-      int totalQtyVoucher = 0;
-      for (var element in voucherList) {
-        totalQtyVoucher += (element.qtyOrder ?? 0);
-      }
-      if (qtyCurr < totalQtyVoucher) {
-        alert.warning(
-            'Warning', 'Qty Ticket tidak bisa kurang dari qty voucher!');
-        return;
-      }
-    }
+    // if (voucherList.isNotEmpty) {
+    //   int qtyCurr = (ticket.qtyOrder ?? 0) - 1;
+    //   int totalQtyVoucher = 0;
+    //   for (var element in voucherList) {
+    //     totalQtyVoucher += (element.qtyOrder ?? 0);
+    //   }
+    //   if (qtyCurr < totalQtyVoucher) {
+    //     alert.warning(
+    //         'Warning', 'Qty Ticket tidak bisa kurang dari qty voucher!');
+    //     return;
+    //   }
+    // }
 
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) - 1;
     ticket.totalPrice =
@@ -129,6 +129,7 @@ class SaleCartPageController extends GetxController {
     }
     ticketControllers[ticket.ticket?.ticketId]?.text =
         ticket.qtyOrder.toString();
+    checkQtyMemberVocuher();
     calculateTotalOrder();
   }
 

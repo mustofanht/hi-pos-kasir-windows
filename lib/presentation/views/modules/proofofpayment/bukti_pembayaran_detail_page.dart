@@ -263,7 +263,7 @@ class BuktiPembayaranDetailPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        model.orderVoidReason != null && model.orderVoidReason!.isNotEmpty ? 'Void Reson : ${model.orderVoidReason ?? ''}' : '',
+                        model.orderVoidReason != null && model.orderVoidReason!.isNotEmpty ? 'Void Reason : ${model.orderVoidReason ?? ''}' : '',
                         style: TextStyle(
                           fontSize: fontSize.subtitle,
                         ),

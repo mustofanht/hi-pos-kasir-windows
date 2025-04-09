@@ -281,7 +281,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                     model.orderStatus == 'P'
                         ? 'Paid'
                         : model.orderStatus == 'S'
-                            ? 'Submit'
+                            ? 'Request Void'
                             : model.orderStatus == 'V'
                                 ? 'Void'
                                 : 'Not Paid',

@@ -195,7 +195,7 @@ class OrderPaymentController extends GetxController {
   doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
       // validation on create order service
-      bool isSuccess = await _doCreateOrderPayment(
+      bool isSuccess = await _doPreCreateOrderPayment(
         body: body,
         orderNo: orderNo,
       );
@@ -254,6 +254,43 @@ class OrderPaymentController extends GetxController {
       logger.safeLog(e);
       alert.error('Error', 'Unexpected Error');
       isProcessing.value = false;
+    }
+  }
+
+  Future<bool> _doPreCreateOrderPayment({
+    required OrderModel body,
+    Rxn<String>? orderNo,
+  }) async {
+    try {
+      var result;
+      result = await _service.order.orderService.preCreateOrder(
+        authToken: _authToken,
+        body: body,
+        reffNo: orderNo?.value,
+      );
+
+      bool isSuccess = false;
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Pre Create Order Error 1');
+          // alert.error('Error', 'Terjadi Kesalahan!');
+          alert.error('Error', l);
+          isSuccess = false;
+        },
+        (r) {
+          logger.safeLog('Pre Create Order Success');
+          logger.safeLog(r.data);
+          // orderNo?.value = r.data?.orderNumber;
+          isSuccess = true;
+        },
+      );
+      return Future.value(isSuccess);
+    } catch (e) {
+      logger.safeLog(e);
+      logger.safeLog('Create Order Error 2');
+      alert.error('Error', 'Terjadi Kesalahan!');
+      return Future.value(false);
     }
   }
 
