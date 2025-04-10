@@ -163,7 +163,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             Expanded(
               child: CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
+                isReadonly: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,
@@ -200,7 +200,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             Expanded(
               child: CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
+                isReadonly: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,
@@ -233,7 +233,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             Expanded(
               child: CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
+                isReadonly: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,
@@ -270,7 +270,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             Expanded(
               child: CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
+                isReadonly: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,
@@ -303,7 +303,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             Expanded(
               child: CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
+                isReadonly: true,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
                   vertical: layoutStyle.defaultMargin / 4,

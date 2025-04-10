@@ -490,7 +490,8 @@ class SalePageController extends GetxController
             final now = DateTime.now();
             logger.safeLog('CURR AT : $now');
             if (now.isAfter(effTo)) {
-              alert.warning('Warning', 'Member Expired. Masa berlaku Member telah berakhir pada ${dateTimeUtil.dateFormat(effTo, 'yyyy-MM-dd')}.');
+              alert.warning('Warning',
+                  'Member Expired. Masa berlaku Member telah berakhir pada ${dateTimeUtil.dateFormat(effTo, 'yyyy-MM-dd')}.');
               return;
             }
           }
