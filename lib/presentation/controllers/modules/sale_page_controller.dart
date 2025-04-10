@@ -271,7 +271,7 @@ class SalePageController extends GetxController
     }
   }
 
-  OrderModel getBodyOrder(String paymentMethod, String paymentMethodName) {
+  OrderModel getBodyOrder(String? paymentMethod, String? paymentMethodName) {
     List<OrderTicketModel> listTicket = [];
     List<OrderAddonModel> listProduct = [];
     List<OrderPotonganModel> listPotongan = [];
@@ -448,8 +448,8 @@ class SalePageController extends GetxController
       adminFeeAmt: saleCartPageController.getPricePayemntFee(),
       orderUnitId: sessionUtil.getUnitId()!,
       orderLoacationId: 1,
-      orderPaidBy: paymentMethod,
-      orderPaidByName: paymentMethodName,
+      orderPaidBy: paymentMethod ?? '',
+      orderPaidByName: paymentMethodName ?? '',
       orderStatus: 'N',
       listTicket: listTicket,
       listProduct: listProduct,
@@ -459,11 +459,27 @@ class SalePageController extends GetxController
     );
   }
 
+  Future<bool> validationPraCreateOrder() async {
+    final OrderPaymentController orderPayment =
+        Get.put(OrderPaymentController());
+    final body = getBodyOrder(null, null);
+    // validation on create order service
+    bool isSuccess = await orderPayment.doPreCreateOrderPayment(
+      body: body,
+      orderNo: orderNo,
+    );
+    return isSuccess;
+  }
+
   onCheckMember() async {
     if (memberNo.text.isEmpty) {
       alert.warning('Warning', 'Harap isi No Member terlebih dahulu!');
       return;
     }
+
+    bool isSuccess = await validationPraCreateOrder();
+    if (!isSuccess) return;
+
     try {
       var result;
       result = await _service.member.memberValid(
