@@ -553,10 +553,12 @@ class BuktiPembayaranPageController extends GetxController
                 logger.safeLog(l);
                 alert.error('Error', l);
               },
-              (r) {
+              (r) async {
                 logger.safeLog(r);
                 alert.success('Success', r);
-                doSelectedOrder(selectedData.value);
+                TrnOrderEntity selectDetailB4 = selectedData.value;
+                await doRefresh();
+                await doSelectedOrder(selectDetailB4);
               },
             );
           } else {
