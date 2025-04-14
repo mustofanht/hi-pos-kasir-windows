@@ -466,7 +466,7 @@ class SalePageController extends GetxController
     // validation on create order service
     bool isSuccess = await orderPayment.doPreCreateOrderPayment(
       body: body,
-      orderNo: orderNo,
+      check: 'Y',
     );
     return isSuccess;
   }

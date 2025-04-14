@@ -4,12 +4,12 @@ class OrderTicketService {
   Future<Either<String, BaseResponse<ResponseOrderEntity>>> preCreateOrder({
     required AuthToken authToken,
     required OrderModel body,
-    String? reffNo,
+    String? check,
   }) async {
-    logger.safeLog('reffNo : $reffNo');
+    logger.safeLog('reffNo : $check');
     var path = "trn_order/praCreateOrder";
-    if (reffNo != null) {
-      path += '?orderNo=$reffNo';
+    if (check != null) {
+      path += '?check=$check';
     }
 
     final uri = source.baseUri(path: path);
@@ -39,6 +39,7 @@ class OrderTicketService {
       return Left(respMsg.toString());
     }
   }
+
   Future<Either<String, BaseResponse<ResponseOrderEntity>>> createOrder({
     required AuthToken authToken,
     required OrderModel body,

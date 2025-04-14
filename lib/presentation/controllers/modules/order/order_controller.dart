@@ -197,7 +197,7 @@ class OrderPaymentController extends GetxController {
       // validation on create order service
       bool isSuccess = await doPreCreateOrderPayment(
         body: body,
-        orderNo: orderNo,
+        check: "N",
       );
       if (!isSuccess) return;
 
@@ -259,14 +259,14 @@ class OrderPaymentController extends GetxController {
 
   Future<bool> doPreCreateOrderPayment({
     required OrderModel body,
-    Rxn<String>? orderNo,
+    required String check,
   }) async {
     try {
       var result;
       result = await _service.order.orderService.preCreateOrder(
         authToken: _authToken,
         body: body,
-        reffNo: orderNo?.value,
+        check: check,
       );
 
       bool isSuccess = false;
