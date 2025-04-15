@@ -278,15 +278,15 @@ class SalePageController extends GetxController
     List<OrderVoucherModel> listVoucher = [];
     List<OrderDepositModel> listDeposit = [];
 
-    double totalTicketProduct = 0;
-    int totalTotalTicketProduct = 0;
+    double totalPrice = 0;
+    int countTotal = 0;
 
     if (ticketList.isNotEmpty) {
       listTicket.addAll(
         ticketList.map(
           (element) {
-            totalTicketProduct += element.totalPrice!;
-            totalTotalTicketProduct += element.qtyOrder ?? 0;
+            totalPrice += element.totalPrice!;
+            countTotal += element.qtyOrder ?? 0;
             return OrderTicketModel(
               ticket: element.ticket,
               ordtcTicketId: element.ticket?.ticketId,
@@ -301,8 +301,8 @@ class SalePageController extends GetxController
       listProduct.addAll(
         addonList.map(
           (element) {
-            totalTicketProduct += element.totalPrice!;
-            totalTotalTicketProduct += element.qtyOrder ?? 0;
+            totalPrice += element.totalPrice!;
+            countTotal += element.qtyOrder ?? 0;
             return OrderAddonModel(
               addOn: element.addon,
               ordadAddonId: element.addon?.productId,
@@ -318,26 +318,6 @@ class SalePageController extends GetxController
                       orderNumberExtra:
                           element.rentModel!.transactionExtra?.orderNumber,
                     ),
-            );
-          },
-        ),
-      );
-    }
-    if (potonganList.isNotEmpty) {
-      listPotongan.addAll(
-        potonganList.map(
-          (element) {
-            double totalPotongan = element.totalPrice!;
-            if (element.potongan != null &&
-                element.potongan?.voucherUnitType == UnitType.PERCENT) {
-              totalPotongan =
-                  (totalTicketProduct * (element.totalPrice ?? 0) / 100);
-            }
-            return OrderPotonganModel(
-              voucher: element.potongan,
-              ordvcVoucherId: element.potongan?.voucherId,
-              ordvcTotalVoucher: element.qtyOrder!,
-              ordvcTotalAmount: totalPotongan,
             );
           },
         ),
@@ -402,16 +382,36 @@ class SalePageController extends GetxController
                   applicableQty * (element.entity!.vpUnitValue ?? 0);
             }
           }
+
+          totalPrice -= discountAmount;
           listVoucher.add(OrderVoucherModel(
             entity: element.entity,
             ovpVoucherId: element.entity?.vpId,
             ovpTotalAmount: discountAmount,
             ovpTotalVoucher: element.qtyOrder ?? 0,
           ));
-          ;
         }
       }
       logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
+    }
+    if (potonganList.isNotEmpty) {
+      listPotongan.addAll(
+        potonganList.map(
+          (element) {
+            double totalPotongan = element.totalPrice!;
+            if (element.potongan != null &&
+                element.potongan?.voucherUnitType == UnitType.PERCENT) {
+              totalPotongan = (totalPrice * (element.totalPrice ?? 0) / 100);
+            }
+            return OrderPotonganModel(
+              voucher: element.potongan,
+              ordvcVoucherId: element.potongan?.voucherId,
+              ordvcTotalVoucher: element.qtyOrder!,
+              ordvcTotalAmount: totalPotongan,
+            );
+          },
+        ),
+      );
     }
     if (depositList.isNotEmpty) {
       listDeposit.addAll(
@@ -439,7 +439,7 @@ class SalePageController extends GetxController
       orderEmail: emailController.text.isEmpty ? ' ' : emailController.text,
       orderReffno: null,
       orderMemberNo: memberNo.text,
-      orderTotalItem: totalTotalTicketProduct,
+      orderTotalItem: countTotal,
       custAddres: alamatController.text.isEmpty ? ' ' : alamatController.text,
       orderVoucherDesc:
           keteranganVoucher.text.isEmpty ? ' ' : keteranganVoucher.text,
