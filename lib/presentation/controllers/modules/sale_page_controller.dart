@@ -351,6 +351,7 @@ class SalePageController extends GetxController
 
     if (voucherList.isNotEmpty) {
       double discountAmount = 0;
+      double totalDiscountAmount = 0;
 
       for (var element in voucherList) {
         int remainingVoucherQty = element.qtyOrder ?? 0;
@@ -369,21 +370,27 @@ class SalePageController extends GetxController
 
             if (element.entity!.vpUnitType == UnitType.PERCENT) {
               logger.safeLog('ticket.totalPrice : ${ticket.totalPrice}');
+              logger.safeLog(
+                  'ticket.ticket.ticketPrice : ${ticket.ticket?.ticketPrice}');
               logger.safeLog('ticket.qtyOrder : ${ticket.qtyOrder}');
               logger.safeLog(
                   'element.entity!.vpUnitValue : ${element.entity!.vpUnitValue}');
 
-              discountAmount += applicableQty *
+              discountAmount = applicableQty *
                   (ticket.ticket?.ticketPrice ?? 0) *
                   (element.entity!.vpUnitValue ?? 0) /
                   100;
             } else {
-              discountAmount +=
+              discountAmount =
                   applicableQty * (element.entity!.vpUnitValue ?? 0);
             }
           }
 
+          totalDiscountAmount += discountAmount;
           totalPrice -= discountAmount;
+
+          logger.safeLog('discountAmount : $discountAmount ');
+
           listVoucher.add(OrderVoucherModel(
             entity: element.entity,
             ovpVoucherId: element.entity?.vpId,
@@ -392,7 +399,7 @@ class SalePageController extends GetxController
           ));
         }
       }
-      logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
+      logger.safeLog('VOUCHER AMOUNT : $totalDiscountAmount ');
     }
     if (potonganList.isNotEmpty) {
       listPotongan.addAll(
