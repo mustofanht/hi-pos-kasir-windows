@@ -90,11 +90,11 @@ class SaleVoucherPageController extends GetxController {
     if (saleCartPageController.voucherList.isEmpty) {
       saleCartPageController.addvoucher(entity);
     } else {
-      CartVoucher? existingTicket = saleCartPageController.voucherList
+      CartVoucher? existing = saleCartPageController.voucherList
           .firstWhereOrNull((e) => e.entity!.vpId == entity.vpId);
 
-      if (existingTicket != null) {
-        saleCartPageController.addVoucherCart(existingTicket);
+      if (existing != null) {
+        saleCartPageController.addVoucherCart(existing);
       } else {
         saleCartPageController.addvoucher(entity);
       }

@@ -214,7 +214,7 @@ class SalePageController extends GetxController
 
   doPayment() {
     if (doVerifyRequest()) {
-      logger.safeLog('orderNo.value : ${orderNo.value}');
+      // logger.safeLog('orderNo.value : ${orderNo.value}');
       final OrderController orderController = Get.put(OrderController());
       final OrderPaymentController orderPayment =
           Get.put(OrderPaymentController());
@@ -349,55 +349,119 @@ class SalePageController extends GetxController
     //   );
     // }
 
+    // if (voucherList.isNotEmpty) {
+    //   // double discountAmount = 0;
+    //   double totalDiscountAmount = 0;
+
+    //   for (var element in voucherList) {
+    //     int remainingVoucherQty = element.qtyOrder ?? 0;
+    //     double voucherDiscountAmount = 0;
+
+    //     if (remainingVoucherQty > 0) {
+    //       for (var ticket in ticketList) {
+    //         if (remainingVoucherQty == 0) break;
+
+    //         int applicableQty = ticket.qtyOrder! < remainingVoucherQty
+    //             ? ticket.qtyOrder!
+    //             : remainingVoucherQty;
+    //         remainingVoucherQty -= applicableQty;
+
+    //         // logger.safeLog('applicableQty : $applicableQty');
+    //         // logger.safeLog('remainingVoucherQty : $remainingVoucherQty');
+
+    //         double discountPerUnit = 0;
+    //         if (element.entity!.vpUnitType == UnitType.PERCENT) {
+    //           // logger.safeLog('ticket.totalPrice : ${ticket.totalPrice}');
+    //           // logger.safeLog(
+    //           //     'ticket.ticket.ticketPrice : ${ticket.ticket?.ticketPrice}');
+    //           // logger.safeLog('ticket.qtyOrder : ${ticket.qtyOrder}');
+    //           // logger.safeLog(
+    //           //     'element.entity!.vpUnitValue : ${element.entity!.vpUnitValue}');
+
+    //           // discountAmount = applicableQty *
+    //           //     (ticket.ticket?.ticketPrice ?? 0) *
+    //           //     (element.entity!.vpUnitValue ?? 0) /
+    //           //     100;
+
+    //           discountPerUnit = (ticket.ticket?.ticketPrice ?? 0) *
+    //               (element.entity!.vpUnitValue ?? 0) /
+    //               100;
+    //         } else {
+    //           // discountAmount =
+    //           //     applicableQty * (element.entity!.vpUnitValue ?? 0);
+    //           discountPerUnit = element.entity!.vpUnitValue ?? 0;
+    //         }
+
+    //         double discountAmount = applicableQty * discountPerUnit;
+    //         voucherDiscountAmount += discountAmount;
+    //         totalPrice -= discountAmount;
+    //       }
+
+    //       totalDiscountAmount += voucherDiscountAmount;
+
+    //       // totalDiscountAmount += discountAmount;
+    //       // totalPrice -= discountAmount;
+    //       listVoucher.add(OrderVoucherModel(
+    //         entity: element.entity,
+    //         ovpVoucherId: element.entity?.vpId,
+    //         // ovpTotalAmount: totalDiscountAmount,
+    //         ovpTotalAmount: voucherDiscountAmount,
+    //         ovpTotalVoucher: element.qtyOrder ?? 0,
+    //       ));
+    //     }
+    //   }
+    //   logger.safeLog('VOUCHER AMOUNT : $totalDiscountAmount ');
+    // }
     if (voucherList.isNotEmpty) {
-      double discountAmount = 0;
       double totalDiscountAmount = 0;
+      final Map<CartTicket, int> remainingTicketQtyMap = {
+        for (var ticket in ticketList) ticket: ticket.qtyOrder!
+      };
 
       for (var element in voucherList) {
         int remainingVoucherQty = element.qtyOrder ?? 0;
+        double voucherDiscountAmount = 0;
 
         if (remainingVoucherQty > 0) {
           for (var ticket in ticketList) {
-            if (remainingVoucherQty == 0) break;
+            int remainingTicketQty = remainingTicketQtyMap[ticket] ?? 0;
+            if (remainingVoucherQty == 0 || remainingTicketQty == 0) continue;
 
-            int applicableQty = ticket.qtyOrder! < remainingVoucherQty
-                ? ticket.qtyOrder!
+            int applicableQty = remainingTicketQty < remainingVoucherQty
+                ? remainingTicketQty
                 : remainingVoucherQty;
+
+            remainingTicketQtyMap[ticket] = remainingTicketQty - applicableQty;
             remainingVoucherQty -= applicableQty;
 
-            logger.safeLog('applicableQty : $applicableQty');
-            logger.safeLog('remainingVoucherQty : $remainingVoucherQty');
-
+            double discountPerUnit = 0;
             if (element.entity!.vpUnitType == UnitType.PERCENT) {
-              logger.safeLog('ticket.totalPrice : ${ticket.totalPrice}');
               logger.safeLog(
-                  'ticket.ticket.ticketPrice : ${ticket.ticket?.ticketPrice}');
-              logger.safeLog('ticket.qtyOrder : ${ticket.qtyOrder}');
-              logger.safeLog(
-                  'element.entity!.vpUnitValue : ${element.entity!.vpUnitValue}');
-
-              discountAmount = applicableQty *
-                  (ticket.ticket?.ticketPrice ?? 0) *
+                'PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}',
+              );
+              discountPerUnit = (ticket.ticket?.ticketPrice ?? 0) *
                   (element.entity!.vpUnitValue ?? 0) /
                   100;
             } else {
-              discountAmount =
-                  applicableQty * (element.entity!.vpUnitValue ?? 0);
+              logger.safeLog(
+                'NOT PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}',
+              );
+              discountPerUnit = element.entity!.vpUnitValue ?? 0;
             }
+            double discountAmount = applicableQty * discountPerUnit;
+            voucherDiscountAmount += discountAmount;
+            totalPrice -= discountAmount;
           }
-
-          totalDiscountAmount += discountAmount;
-          totalPrice -= discountAmount;
-
-          logger.safeLog('discountAmount : $discountAmount ');
-
-          listVoucher.add(OrderVoucherModel(
-            entity: element.entity,
-            ovpVoucherId: element.entity?.vpId,
-            ovpTotalAmount: discountAmount,
-            ovpTotalVoucher: element.qtyOrder ?? 0,
-          ));
         }
+
+        totalDiscountAmount += voucherDiscountAmount;
+
+        listVoucher.add(OrderVoucherModel(
+          entity: element.entity,
+          ovpVoucherId: element.entity?.vpId,
+          ovpTotalAmount: voucherDiscountAmount,
+          ovpTotalVoucher: element.qtyOrder ?? 0,
+        ));
       }
       logger.safeLog('VOUCHER AMOUNT : $totalDiscountAmount ');
     }

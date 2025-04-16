@@ -210,11 +210,49 @@ class SaleCartPageController extends GetxController {
     calculateTotalOrder();
   }
 
-  addvoucher(VoucherEntity voucher) {
+  bool validateVoucher(int qtyOrder, VoucherEntity voucher) {
+    bool isValid = true;
     if (memberVoucher.isTrue) {
       alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
-      return;
+      isValid = false;
     }
+
+    if ((qtyOrder + 1) > (voucher.vpLimit ?? 0)) {
+      alert.warning(
+        'Warning',
+        'Limit Voucher tersisa ${voucher.vpLimit ?? 0}',
+      );
+      isValid = false;
+    }
+
+    if (voucherList.isNotEmpty) {
+      int qtyAllTiket = 0;
+      int qtyAllVoucher = 0;
+      for (var element in ticketList) {
+        qtyAllTiket += (element.qtyOrder ?? 0);
+      }
+      for (var element in voucherList) {
+        qtyAllVoucher += (element.qtyOrder ?? 0);
+      }
+
+      logger.safeLog('qtyAllVoucher : $qtyAllVoucher');
+      logger.safeLog('qtyAllTiket : $qtyAllTiket');
+      if ((qtyAllVoucher + 1) > qtyAllTiket) {
+        alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
+        isValid = false;
+      }
+    }
+    return isValid;
+  }
+
+  addvoucher(VoucherEntity voucher) {
+    // if (memberVoucher.isTrue) {
+    //   alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
+    //   return;
+    // }
+    bool isValid = validateVoucher(1, voucher);
+    if (!isValid) return;
+
     voucherList.add(
       CartVoucher(
         qtyOrder: 1,
@@ -226,30 +264,33 @@ class SaleCartPageController extends GetxController {
   }
 
   addVoucherCart(CartVoucher voucher) {
-    if (memberVoucher.isTrue) {
-      alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
-      return;
-    }
+    // if (memberVoucher.isTrue) {
+    //   alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
+    //   return;
+    // }
 
-    if (((voucher.qtyOrder ?? 0) + 1) > (voucher.entity?.vpLimit ?? 0)) {
-      alert.warning(
-        'Warning',
-        'Limit Voucher tersisa ${voucher.entity?.vpLimit ?? 0}',
-      );
-      return;
-    }
-    if (voucherList.isNotEmpty) {
-      int qtyAllTiket = 0;
-      for (var element in ticketList) {
-        qtyAllTiket += (element.qtyOrder ?? 0);
-      }
-      // logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');
-      // logger.safeLog('qtyAllTiket : $qtyAllTiket');
-      if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
-        alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
-        return;
-      }
-    }
+    // if (((voucher.qtyOrder ?? 0) + 1) > (voucher.entity?.vpLimit ?? 0)) {
+    //   alert.warning(
+    //     'Warning',
+    //     'Limit Voucher tersisa ${voucher.entity?.vpLimit ?? 0}',
+    //   );
+    //   return;
+    // }
+    // if (voucherList.isNotEmpty) {
+    //   int qtyAllTiket = 0;
+    //   for (var element in ticketList) {
+    //     qtyAllTiket += (element.qtyOrder ?? 0);
+    //   }
+    //   // logger.safeLog('voucher.qtyOrder : ${voucher.qtyOrder}');
+    //   // logger.safeLog('qtyAllTiket : $qtyAllTiket');
+    //   if (((voucher.qtyOrder ?? 0) + 1) > qtyAllTiket) {
+    //     alert.warning('Warning', 'Qty Voucher tidak bisa melebihi qty tiket');
+    //     return;
+    //   }
+    // }
+
+    bool isValid = validateVoucher((voucher.qtyOrder ?? 0), voucher.entity!);
+    if (!isValid) return;
 
     voucher.qtyOrder = (voucher.qtyOrder ?? 0) + 1;
     voucher.totalPrice =
@@ -301,6 +342,54 @@ class SaleCartPageController extends GetxController {
     double totalAmnt = 0;
     int ticketTotalQtyVal = 0;
 
+    // if (ticketList.isNotEmpty) {
+    //   totalAmnt += ticketList.fold(0, (sum, val) => sum + val.totalPrice!);
+    //   ticketTotalQtyVal +=
+    //       ticketList.fold(0, (sum, val) => sum + val.qtyOrder!);
+
+    //   if (voucherList.isNotEmpty) {
+    //     double discountAmount = 0;
+
+    //     // List<CartTicket> sortedTicketList = List.from(ticketList);
+    //     // sortedTicketList.sort((a, b) => b.totalPrice!.compareTo(a.totalPrice!));
+
+    //     for (var element in voucherList) {
+    //       int remainingVoucherQty = element.qtyOrder ?? 0;
+
+    //       if (remainingVoucherQty > 0) {
+    //         for (var ticket in ticketList) {
+    //           if (remainingVoucherQty == 0) break;
+
+    //           int applicableQty = ticket.qtyOrder! < remainingVoucherQty
+    //               ? ticket.qtyOrder!
+    //               : remainingVoucherQty;
+    //           remainingVoucherQty -= applicableQty;
+
+    //           if (element.entity!.vpUnitType == UnitType.PERCENT) {
+    //             logger.safeLog(
+    //                 'PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}');
+    //             discountAmount += applicableQty *
+    //                 (ticket.totalPrice! / ticket.qtyOrder!) *
+    //                 (element.entity!.vpUnitValue ?? 0) /
+    //                 100;
+    //           } else {
+    //             logger.safeLog(
+    //                 'NOT PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}');
+    //             discountAmount +=
+    //                 applicableQty * (element.entity!.vpUnitValue ?? 0);
+    //           }
+    //         }
+    //       }
+    //     }
+    //     logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
+
+    //     ticketTotalQtyVal +=
+    //         voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
+
+    //     totalAmnt = totalAmnt - discountAmount;
+    //   }
+    // }
+
     if (ticketList.isNotEmpty) {
       totalAmnt += ticketList.fold(0, (sum, val) => sum + val.totalPrice!);
       ticketTotalQtyVal +=
@@ -308,60 +397,49 @@ class SaleCartPageController extends GetxController {
 
       if (voucherList.isNotEmpty) {
         double discountAmount = 0;
-
-        List<CartTicket> sortedTicketList = List.from(ticketList);
-        sortedTicketList.sort((a, b) => b.totalPrice!.compareTo(a.totalPrice!));
+        final Map<CartTicket, int> remainingTicketQtyMap = {
+          for (var ticket in ticketList) ticket: ticket.qtyOrder!
+        };
 
         for (var element in voucherList) {
           int remainingVoucherQty = element.qtyOrder ?? 0;
 
           if (remainingVoucherQty > 0) {
-            for (var ticket in sortedTicketList) {
-              if (remainingVoucherQty == 0) break;
+            for (var ticket in ticketList) {
+              int remainingTicketQty = remainingTicketQtyMap[ticket] ?? 0;
+              if (remainingVoucherQty == 0 || remainingTicketQty == 0) continue;
 
-              int applicableQty = ticket.qtyOrder! < remainingVoucherQty
-                  ? ticket.qtyOrder!
+              int applicableQty = remainingTicketQty < remainingVoucherQty
+                  ? remainingTicketQty
                   : remainingVoucherQty;
+
+              remainingTicketQtyMap[ticket] =
+                  remainingTicketQty - applicableQty;
               remainingVoucherQty -= applicableQty;
 
               if (element.entity!.vpUnitType == UnitType.PERCENT) {
+                logger.safeLog(
+                    'PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}');
                 discountAmount += applicableQty *
                     (ticket.totalPrice! / ticket.qtyOrder!) *
                     (element.entity!.vpUnitValue ?? 0) /
                     100;
               } else {
+                logger.safeLog(
+                    'NOT PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}');
                 discountAmount +=
                     applicableQty * (element.entity!.vpUnitValue ?? 0);
               }
             }
           }
-
-          // if (element.qtyOrder != null && element.qtyOrder! > 0) {
-          //   for (var i = 0; i < element.qtyOrder!; i++) {
-          //     if (element.entity!.vpUnitType == UnitType.PERCENT) {
-          //       discountAmount +=
-          //           totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
-          //     } else {
-          //       discountAmount += element.entity!.vpUnitValue ?? 0;
-          //     }
-          //   }
-          // }
-          // if (element.entity!.vpUnitType == UnitType.PERCENT) {
-          //   discountAmount +=
-          //       totalAmnt * (element.entity!.vpUnitValue ?? 0) / 100;
-          // } else {
-          //   discountAmount += element.entity!.vpUnitValue ?? 0;
-          // }
-          // discountAmount += element.totalPrice ?? 0;
         }
-        logger.safeLog('VOUCHER AMOUNT : $discountAmount ');
 
         ticketTotalQtyVal +=
             voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
-
         totalAmnt = totalAmnt - discountAmount;
       }
     }
+
     if (addonList.isNotEmpty) {
       totalAmnt += addonList.fold(0, (sum, val) => sum + val.totalPrice!);
       ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
