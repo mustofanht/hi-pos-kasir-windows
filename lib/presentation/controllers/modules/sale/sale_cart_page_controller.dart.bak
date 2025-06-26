@@ -138,10 +138,7 @@ class SaleCartPageController extends GetxController {
   }
 
   bool _canRemoveTicket(CartTicket ticket) {
-    if (!memberVoucher.isTrue || voucherList.isEmpty) return true;
-
-    final firstVoucher = voucherList.first;
-    if (firstVoucher.selectedMemberAnggota?.isEmpty ?? true) return true;
+    if (voucherList.isEmpty) return true;
 
     final newQty = (ticket.qtyOrder ?? 0) - 1;
     final totalVoucherQty =
