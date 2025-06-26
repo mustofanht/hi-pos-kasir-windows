@@ -250,7 +250,8 @@ class SaleCartPageController extends GetxController {
     //   alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
     //   return;
     // }
-    bool isValid = validateVoucher(1, voucher);
+    // bool isValid = validateVoucher(1, voucher);
+    bool isValid = validateVoucher(0, voucher);
     if (!isValid) return;
 
     voucherList.add(
