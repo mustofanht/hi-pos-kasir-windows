@@ -108,21 +108,36 @@ class SaleCartPageController extends GetxController {
   }
 
   removeTicket(CartTicket ticket) {
-    if (memberVoucher.isTrue) {
-      if (voucherList.isNotEmpty) {
-        if (voucherList.first.selectedMemberAnggota != null &&
-            voucherList.first.selectedMemberAnggota!.isNotEmpty) {
-          int qtyCurr = (ticket.qtyOrder ?? 0) - 1;
-          int totalQtyVoucher = 0;
-          for (var element in voucherList) {
-            totalQtyVoucher += (element.qtyOrder ?? 0);
-          }
-          if (qtyCurr < totalQtyVoucher) {
-            alert.warning(
-                'Warning', 'Qty Ticket tidak bisa kurang dari qty voucher!');
-            return;
-          }
-        }
+    // logger.safeLog('voucherList LENGTH : ${voucherList.length}');
+    // logger.safeLog(
+    //     'voucherList.first.selectedMemberAnggota LENGTH : ${voucherList.first.selectedMemberAnggota?.length}');
+    // if (memberVoucher.isTrue) {
+    //   if (voucherList.isNotEmpty) {
+    //     if (voucherList.first.selectedMemberAnggota != null &&
+    //         voucherList.first.selectedMemberAnggota!.isNotEmpty) {
+    //       int qtyCurr = (ticket.qtyOrder ?? 0) - 1;
+    //       int totalQtyVoucher = 0;
+    //       for (var element in voucherList) {
+    //         totalQtyVoucher += (element.qtyOrder ?? 0);
+    //       }
+    //       if (qtyCurr < totalQtyVoucher) {
+    //         alert.warning(
+    //             'Warning', 'Qty Ticket tidak bisa kurang dari qty voucher!');
+    //         return;
+    //       }
+    //     }
+    //   }
+    // }
+    if (voucherList.isNotEmpty) {
+      int qtyCurr = (ticket.qtyOrder ?? 0) - 1;
+      int totalQtyVoucher = 0;
+      for (var element in voucherList) {
+        totalQtyVoucher += (element.qtyOrder ?? 0);
+      }
+      if (qtyCurr < totalQtyVoucher) {
+        alert.warning(
+            'Warning', 'Qty Ticket tidak bisa kurang dari qty voucher!');
+        return;
       }
     }
 
