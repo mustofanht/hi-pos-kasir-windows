@@ -5,6 +5,7 @@ class OrderMemberModel {
   String? qrCode;
   String? orderName;
   String? orderMemberNo;
+  DateTime? orderMemberExpiredDate;
   String? orderPhoneNumber;
   String? orderEmail;
   String? orderReffno;
@@ -21,6 +22,7 @@ class OrderMemberModel {
     this.qrCode,
     this.orderName,
     this.orderMemberNo,
+    this.orderMemberExpiredDate,
     this.orderPhoneNumber,
     this.orderEmail,
     this.orderReffno,
@@ -39,6 +41,9 @@ class OrderMemberModel {
       qrCode: json['qrCode'],
       orderName: json['orderName'],
       orderMemberNo: json['orderMemberNo'],
+      orderMemberExpiredDate: json['orderMemberExpiredDate'] != null
+          ? DateTime.parse(json['orderMemberExpiredDate']).toLocal()
+          : null,
       orderPhoneNumber: json['orderPhoneNumber'],
       orderEmail: json['orderEmail'],
       orderReffno: json['orderReffno'],
@@ -62,6 +67,7 @@ class OrderMemberModel {
       'qrCode': qrCode,
       'orderName': orderName,
       'orderMemberNo': orderMemberNo,
+      'orderMemberExpiredDate': orderMemberExpiredDate?.toIso8601String(),
       'orderPhoneNumber': orderPhoneNumber,
       'orderEmail': orderEmail,
       'orderReffno': orderReffno,

@@ -440,6 +440,7 @@ class BuktiPembayaranPageController extends GetxController
     OrderMemberModel orderMemberModel = OrderMemberModel(
       orderName: detailModel.value.trnOrderMember?.memberName,
       orderMemberNo: detailModel.value.trnOrderMember?.memberNo,
+      orderMemberExpiredDate: detailModel.value.trnOrderMember?.memberExpiredDate,
       orderPhoneNumber: detailModel.value.trnOrderMember?.memberPhone,
       orderEmail: detailModel.value.trnOrderMember?.memberEmail,
       orderReffno: detailModel.value.paymentDetail?.pymntReffno,

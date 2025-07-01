@@ -1,3 +1,5 @@
+import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
+
 class ResponseOrderEntity {
   String? orderNumber;
   String? orderName;
@@ -14,6 +16,7 @@ class ResponseOrderEntity {
   String? orderActivationReason;
   String? orderActivationPath;
   String? orderVoucherDesc;
+  TrnDetailOrderMember? trnDetailOrderMember;
 
   ResponseOrderEntity({
     this.orderNumber,
@@ -31,6 +34,7 @@ class ResponseOrderEntity {
     this.orderActivationReason,
     this.orderActivationPath,
     this.orderVoucherDesc,
+    this.trnDetailOrderMember,
   });
 
   factory ResponseOrderEntity.fromJson(Map<String, dynamic> json) {
@@ -53,6 +57,9 @@ class ResponseOrderEntity {
       orderActivationReason: json['orderActivationReason'],
       orderActivationPath: json['orderActivationPath'],
       orderVoucherDesc: json['orderVoucherDesc'],
+      trnDetailOrderMember: json['trnOrderMember'] != null
+          ? TrnDetailOrderMember.fromJson(json['trnOrderMember'])
+          : null,
     );
   }
 
@@ -72,6 +79,7 @@ class ResponseOrderEntity {
       'orderActivationReason': orderActivationReason,
       'orderActivationPath': orderActivationPath,
       'orderVoucherDesc': orderVoucherDesc,
+      'trnDetailOrderMember': trnDetailOrderMember?.toJson(),
     };
   }
 }

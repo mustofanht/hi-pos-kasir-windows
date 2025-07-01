@@ -152,12 +152,12 @@ class PaymentMemberController extends GetxController {
       result.fold(
         (l) {
           logger.safeLog(l);
-          logger.safeLog('Create Order Error 1');
+          logger.safeLog('_doCreateOrderQr Error 1');
           // alert.error('Error', l);
           msg = l;
         },
         (r) {
-          logger.safeLog('Create Order Success');
+          logger.safeLog('_doCreateOrderQr QRIS Success');
           logger.safeLog(r.data);
 
           displayUtil.updateSecondDisplay(
@@ -174,13 +174,17 @@ class PaymentMemberController extends GetxController {
           orderNo?.value = responsePaymentMember?.orderNumber;
           orderPaymentNo.value = responsePaymentMember?.orderPaymentNo;
           body.orderReffno = responsePaymentMember?.orderPaymentNo;
+          body.orderMemberNo =
+              responsePaymentMember?.trnDetailOrderMember?.memberNo;
+          body.orderMemberExpiredDate =
+              responsePaymentMember?.trnDetailOrderMember?.memberExpiredDate;
           body.qrCode = responsePaymentMember?.qrisUrl;
         },
       );
       return Future.value(msg);
     } catch (e) {
       logger.safeLog(e);
-      logger.safeLog('Create Order Error 2');
+      logger.safeLog('_doCreateOrderQr Error 2');
       // alert.error('Error', e.toString());
       return e.toString();
     }
@@ -265,23 +269,27 @@ class PaymentMemberController extends GetxController {
       result.fold(
         (l) {
           logger.safeLog(l);
-          logger.safeLog('Create Order Error 1');
+          logger.safeLog('_doCreateOrderPayment Error 1');
           // alert.error('Error', 'Terjadi Kesalahan!');
           alert.error('Error', l);
           isSuccess = false;
         },
         (r) {
-          logger.safeLog('Create Order Success');
+          logger.safeLog('_doCreateOrderPayment Success');
           logger.safeLog(r.data);
           ResponseOrderEntity? responsePaymentMember = r.data;
           orderNo?.value = responsePaymentMember?.orderNumber;
+          body.orderMemberNo =
+              responsePaymentMember?.trnDetailOrderMember?.memberNo;
+          body.orderMemberExpiredDate =
+              responsePaymentMember?.trnDetailOrderMember?.memberExpiredDate;
           isSuccess = true;
         },
       );
       return Future.value(isSuccess);
     } catch (e) {
       logger.safeLog(e);
-      logger.safeLog('Create Order Error 2');
+      logger.safeLog('_doCreateOrderPayment Error 2');
       alert.error('Error', 'Terjadi Kesalahan!');
       return Future.value(false);
     }

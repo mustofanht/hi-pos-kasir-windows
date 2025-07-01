@@ -225,8 +225,17 @@ class GenerateMemberPrintUtil {
     bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
 
+    // bytes += generator.text(
+    //   'Member ${body.orderName}',
+    //   styles: const PosStyles(
+    //     align: PosAlign.center,
+    //     bold: true,
+    //     width: PosTextSize.size2,
+    //     height: PosTextSize.size2,
+    //   ),
+    // );
     bytes += generator.text(
-      'Member ${body.orderName}',
+      body.orderMemberNo ?? '',
       styles: const PosStyles(
         align: PosAlign.center,
         bold: true,
@@ -243,8 +252,15 @@ class GenerateMemberPrintUtil {
         bold: true,
       ),
     );
+    // bytes += generator.text(
+    //   'Member No : ${body.orderMemberNo ?? ''}',
+    //   styles: const PosStyles(
+    //     align: PosAlign.left,
+    //     bold: true,
+    //   ),
+    // );
     bytes += generator.text(
-      'Member No : ${body.orderMemberNo ?? ''}',
+      'Nama Member : ${body.membership?.membName ?? ''}',
       styles: const PosStyles(
         align: PosAlign.left,
         bold: true,
@@ -294,21 +310,21 @@ class GenerateMemberPrintUtil {
       ],
     );
 
-    bytes += generator.row(
-      [
-        PosColumn(
-          text: 'EMAIL',
-          width: 6,
-        ),
-        PosColumn(
-          text: body.orderEmail ?? '',
-          width: 6,
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
-        ),
-      ],
-    );
+    // bytes += generator.row(
+    //   [
+    //     PosColumn(
+    //       text: 'EMAIL',
+    //       width: 6,
+    //     ),
+    //     PosColumn(
+    //       text: body.orderEmail ?? '',
+    //       width: 6,
+    //       styles: const PosStyles(
+    //         align: PosAlign.right,
+    //       ),
+    //     ),
+    //   ],
+    // );
 
     bytes += generator.row(
       [
@@ -317,7 +333,12 @@ class GenerateMemberPrintUtil {
           width: 6,
         ),
         PosColumn(
-          text: 'Ini Dari Mana ?',
+          text: body.orderMemberExpiredDate != null
+              ? dateTimeUtil.getFormattedDate(
+                  date: body.orderMemberExpiredDate!,
+                  format: dateFormat.fullTimePrinted,
+                )
+              : 'Selamanya',
           width: 6,
           styles: const PosStyles(
             align: PosAlign.right,
