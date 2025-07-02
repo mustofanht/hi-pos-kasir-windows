@@ -210,6 +210,8 @@ class GenerateMemberPrintUtil {
       paymentDate: paymentDate,
     );
 
+    bytes += generator.cut();
+    
     return bytes;
   }
 
