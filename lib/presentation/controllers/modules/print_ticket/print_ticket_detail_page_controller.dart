@@ -161,7 +161,8 @@ class PrintTicketDetailPageController extends GetxController {
         logger.safeLog('Email : ${val}');
         var result = _service.message.sendEmail(
           authToken: _authToken,
-          phoneNumber: int.parse(val),
+          orderNo: model.value.orderNumber ?? '',
+          mailTo: val,
           message: _buildBodyMessage(),
         );
         result.fold(
@@ -173,6 +174,7 @@ class PrintTicketDetailPageController extends GetxController {
         logger.safeLog('WA : ${val}');
         var result = _service.message.sendWa(
           authToken: _authToken,
+          orderNo: model.value.orderNumber ?? '',
           phoneNumber: int.parse(val),
           message: _buildBodyMessage(),
         );

@@ -44,7 +44,7 @@ class OrderUtil {
         loading.popUpLoading();
         await Future.delayed(const Duration(seconds: 1), () {});
         Get.back();
-        await _handleSendProofOfPayment(authToken, body);
+        await _handleSendProofOfPayment(authToken, body, orderNo?.value ?? '');
       },
       onPrint: () async {
         if (printerUtil.currPrinter != null) {
@@ -64,9 +64,9 @@ class OrderUtil {
   _handleSendProofOfPayment(
     AuthToken authToken,
     OrderModel body,
+    String orderNo,
   ) {
-    logger.safeLog('NO WA : ${body.orderPhoneNumber}');
-    logger.safeLog('EMAIL : ${body.orderEmail}');
+    logger.safeLog('_handleSendProofOfPayment ');
     dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
       orderEmailValue: body.orderEmail != ' ' ? body.orderEmail : null,
@@ -74,10 +74,11 @@ class OrderUtil {
           body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
       // orderNoWaValue: body.orderPhoneNumber,
       onSendEmail: (val) {
-        logger.safeLog('Email : ${val}');
+        logger.safeLog('_handleSendProofOfPayment Email : $val');
         var result = _service.message.sendEmail(
           authToken: authToken,
-          phoneNumber: int.parse(val),
+          orderNo: orderNo,
+          mailTo: val,
           message: 'Thanks For Order ${body.orderReffno}',
         );
         result.fold(
@@ -86,9 +87,10 @@ class OrderUtil {
         );
       },
       onSendWa: (val) {
-        logger.safeLog('WA : ${val}');
+        logger.safeLog('_handleSendProofOfPayment WA : $val');
         var result = _service.message.sendWa(
           authToken: authToken,
+          orderNo: orderNo,
           phoneNumber: int.parse(val),
           message: 'Thanks For Order ${body.orderReffno}',
         );
@@ -257,7 +259,7 @@ class OrderMemberUtil {
         loading.popUpLoading();
         await Future.delayed(const Duration(seconds: 1), () {});
         Get.back();
-        await _handleSendProofOfPayment(authToken, body);
+        await _handleSendProofOfPayment(authToken, body, orderNo?.value ?? '');
       },
       onPrint: () async {
         if (printerUtil.currPrinter != null) {
@@ -292,9 +294,9 @@ class OrderMemberUtil {
   _handleSendProofOfPayment(
     AuthToken authToken,
     OrderMemberModel body,
+    String orderNo,
   ) {
-    logger.safeLog('NO WA : ${body.orderPhoneNumber}');
-    logger.safeLog('EMAIL : ${body.orderEmail}');
+    logger.safeLog('_handleSendProofOfPayment Member');
     dialog.paymentSendProofOfPayment(
       title: 'Pembayaran Berhasil',
       orderEmailValue: body.orderEmail != ' ' ? body.orderEmail : null,
@@ -302,10 +304,11 @@ class OrderMemberUtil {
           body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
       // orderNoWaValue: body.orderPhoneNumber,
       onSendEmail: (val) {
-        logger.safeLog('Email : ${val}');
+        logger.safeLog('_handleSendProofOfPayment Member Email : $val');
         var result = _service.message.sendEmail(
           authToken: authToken,
-          phoneNumber: int.parse(val),
+          orderNo: orderNo,
+          mailTo: val,
           message: 'Thanks For Order ${body.orderReffno}',
         );
         result.fold(
@@ -314,9 +317,10 @@ class OrderMemberUtil {
         );
       },
       onSendWa: (val) {
-        logger.safeLog('WA : ${val}');
+        logger.safeLog('_handleSendProofOfPayment Member WA : $val');
         var result = _service.message.sendWa(
           authToken: authToken,
+          orderNo: orderNo,
           phoneNumber: int.parse(val),
           message: 'Thanks For Order ${body.orderReffno}',
         );
