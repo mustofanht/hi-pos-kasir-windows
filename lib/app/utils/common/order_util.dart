@@ -73,31 +73,55 @@ class OrderUtil {
       orderNoWaValue:
           body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
       // orderNoWaValue: body.orderPhoneNumber,
-      onSendEmail: (val) {
+      onSendEmail: (val) async {
+        loading.popUpLoading();
         logger.safeLog('_handleSendProofOfPayment Email : $val');
-        var result = _service.message.sendEmail(
-          authToken: authToken,
-          orderNo: orderNo,
-          mailTo: val,
-          message: 'Thanks For Order ${body.orderReffno}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        try {
+          var result = await _service.message.sendEmail(
+            authToken: authToken,
+            orderNo: orderNo,
+            mailTo: val,
+            message: 'Thanks For Order ${body.orderReffno}',
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Email Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Email Internal Server Error');
+        }
       },
-      onSendWa: (val) {
+      onSendWa: (val) async {
+        loading.popUpLoading();
         logger.safeLog('_handleSendProofOfPayment WA : $val');
-        var result = _service.message.sendWa(
-          authToken: authToken,
-          orderNo: orderNo,
-          phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.orderReffno}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        try {
+          var result = await _service.message.sendWa(
+            authToken: authToken,
+            orderNo: orderNo,
+            phoneNumber: int.parse(val),
+            message: 'Thanks For Order ${body.orderReffno}',
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Wa Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Wa Internal Server Error');
+        }
       },
       onNewOrder: _handleNewOrder,
     );
@@ -303,31 +327,55 @@ class OrderMemberUtil {
       orderNoWaValue:
           body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
       // orderNoWaValue: body.orderPhoneNumber,
-      onSendEmail: (val) {
+      onSendEmail: (val) async {
+        loading.popUpLoading();
         logger.safeLog('_handleSendProofOfPayment Member Email : $val');
-        var result = _service.message.sendEmail(
-          authToken: authToken,
-          orderNo: orderNo,
-          mailTo: val,
-          message: 'Thanks For Order ${body.orderReffno}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        try {
+          var result = await _service.message.sendEmail(
+            authToken: authToken,
+            orderNo: orderNo,
+            mailTo: val,
+            message: 'Thanks For Order ${body.orderReffno}',
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Email Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Email Internal Server Error');
+        }
       },
-      onSendWa: (val) {
+      onSendWa: (val) async {
+        loading.popUpLoading();
         logger.safeLog('_handleSendProofOfPayment Member WA : $val');
-        var result = _service.message.sendWa(
-          authToken: authToken,
-          orderNo: orderNo,
-          phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.orderReffno}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        try {
+          var result = await _service.message.sendWa(
+            authToken: authToken,
+            orderNo: orderNo,
+            phoneNumber: int.parse(val),
+            message: 'Thanks For Order ${body.orderReffno}',
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Wa Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Wa Internal Server Error');
+        }
       },
       onNewOrder: _handleNewOrder,
     );

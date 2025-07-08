@@ -17,6 +17,7 @@ import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_e
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 
 class PrintTicketDetailPageController extends GetxController {
@@ -158,30 +159,54 @@ class PrintTicketDetailPageController extends GetxController {
       title: 'Send Email WA',
       labelButton: 'Close',
       onSendEmail: (val) {
-        logger.safeLog('Email : ${val}');
-        var result = _service.message.sendEmail(
-          authToken: _authToken,
-          orderNo: model.value.orderNumber ?? '',
-          mailTo: val,
-          message: _buildBodyMessage(),
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        loading.popUpLoading();
+        logger.safeLog('Email : $val');
+        try {
+          var result = _service.message.sendEmail(
+            authToken: _authToken,
+            orderNo: model.value.orderNumber ?? '',
+            mailTo: val,
+            message: _buildBodyMessage(),
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Email Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Email Internal Server Error');
+        }
       },
       onSendWa: (val) {
-        logger.safeLog('WA : ${val}');
-        var result = _service.message.sendWa(
-          authToken: _authToken,
-          orderNo: model.value.orderNumber ?? '',
-          phoneNumber: int.parse(val),
-          message: _buildBodyMessage(),
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        loading.popUpLoading();
+        logger.safeLog('WA : $val');
+        try {
+          var result = _service.message.sendWa(
+            authToken: _authToken,
+            orderNo: model.value.orderNumber ?? '',
+            phoneNumber: int.parse(val),
+            message: _buildBodyMessage(),
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Wa Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Wa Internal Server Error');
+        }
       },
       onNewOrder: () {
         Get.back();
