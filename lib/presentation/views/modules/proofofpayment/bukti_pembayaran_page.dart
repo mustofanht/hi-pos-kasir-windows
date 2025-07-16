@@ -263,7 +263,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                     // color: model.paymentDetail?.pymntStatus == 'P'
                     //     ? colorStyle.lime
                     //     : colorStyle.cloud_blue,
-                    color: model.orderStatus == 'P'
+                    color: model.orderStatus == 'P' || model.orderStatus == 'C'
                         ? colorStyle.lime
                         : model.orderStatus == 'S'
                             ? colorStyle.blue
@@ -278,7 +278,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                     // model.paymentDetail?.pymntStatus == 'P'
                     //     ? 'Paid'
                     //     : 'Not Paid',
-                    model.orderStatus == 'P'
+                    model.orderStatus == 'P' || model.orderStatus == 'C'
                         ? 'Paid'
                         : model.orderStatus == 'S'
                             ? 'Request Void'
@@ -288,13 +288,14 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                     style: TextStyle(
                       // color: colorStyle.black,
 
-                      color: model.orderStatus == 'P'
-                          ? colorStyle.black
-                          : model.orderStatus == 'S'
-                              ? colorStyle.white
-                              : model.orderStatus == 'V'
+                      color:
+                          model.orderStatus == 'P' || model.orderStatus == 'C'
+                              ? colorStyle.black
+                              : model.orderStatus == 'S'
                                   ? colorStyle.white
-                                  : colorStyle.black,
+                                  : model.orderStatus == 'V'
+                                      ? colorStyle.white
+                                      : colorStyle.black,
                       fontSize: fontSize.small,
                     ),
                   ),
