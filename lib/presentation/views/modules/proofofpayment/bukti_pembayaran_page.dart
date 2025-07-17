@@ -3,6 +3,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -68,12 +69,16 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                 width: layoutStyle.defaultMargin / 2,
               ),
               CustomButton(
-                onPressed: () {
-                  controller.doPrintTicket();
-                },
+                onPressed: controller.selectedData.value.orderStatus == 'C' ||
+                        controller.selectedData.value.orderStatus == 'P'
+                    ? () {
+                        controller.doPrintTicket();
+                      }
+                    : () {},
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(
-                    colorStyle.primary,
+                    controller.selectedData.value.orderStatus == 'C' ||
+                        controller.selectedData.value.orderStatus == 'P' ? colorStyle.primary : colorStyle.primary.withOpacity(0.50),
                   ),
                   foregroundColor: MaterialStateProperty.all<Color>(
                     colorStyle.white,
