@@ -319,7 +319,8 @@ class PrintTicketDetailPageController extends GetxController {
           if (listCreateTicket.isNotEmpty) {
             int count = 1;
             int totalPak = listCreateTicket.length;
-            String reffNo = model.value.orderNumber ?? '';
+            // String reffNo = model.value.orderNumber ?? '';
+            String reffNo = model.value.paymentDetail?.pymntReffno ?? '';
             for (var element in listCreateTicket) {
               // String reffNo = element.ticketNo ?? '';
               List<int> dataPrint = await generatePrintUtil.dataGatePrint(
