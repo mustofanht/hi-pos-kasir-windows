@@ -7,6 +7,7 @@ class AppAssetConstant {
 
   // Icons
   final String icUser = "${constant.pathIcons}ic-user.png";
+  final String icInfo = "${constant.pathIcons}ic-info.png";
   final String icEmail = "${constant.pathIcons}ic-user.png";
   final String icInputCalendar = "${constant.pathIcons}ic-input-calendar.png";
   final String icInformationDialog =
@@ -15,6 +16,7 @@ class AppAssetConstant {
   final String icMinus = "${constant.pathIcons}ic-minus.png";
   final String icDelete = "${constant.pathIcons}ic-delete.png";
   final String icQris = "${constant.pathIcons}ic-qris.png";
+  final String icBelt = "${constant.pathIcons}ic-belt.svg";
   final String icQrisSVg = "${constant.pathIconsSvg}ic-qris.svg";
   final String icPaymentSuccess =
       "${constant.pathIconsSvg}ic-payment-success.svg";
@@ -33,6 +35,8 @@ class AppAssetConstant {
   final String icPaymentTraveloka = "${constant.pathIcons}ic-payment-traveloka.png";
   final String icPaymentTiket = "${constant.pathIcons}ic-payment-tiket.png";
 
+  // Member
+  final String membership = "${constant.pathImages}membership.png";
 }
 
 AppAssetConstant assetsConstant = new AppAssetConstant();

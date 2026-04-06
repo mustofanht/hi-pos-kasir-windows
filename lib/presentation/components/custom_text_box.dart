@@ -24,6 +24,8 @@ class CustomTextBox extends StatefulWidget {
   final int? maxLength;
   final int? maxLine;
   final bool? isDisabled;
+  final bool? isReadonly;
+  final bool? isMandatory;
 
   const CustomTextBox({
     Key? key,
@@ -47,7 +49,9 @@ class CustomTextBox extends StatefulWidget {
     this.onSubmit,
     this.maxLine = 1,
     this.maxLength,
+    this.isReadonly = false,
     this.isDisabled = false,
+    this.isMandatory = false,
   }) : super(key: key);
 
   @override
@@ -71,7 +75,17 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                   padding: EdgeInsets.symmetric(
                     vertical: layoutStyle.defaultMargin / 2,
                   ),
-                  child: widget.label,
+                  child: Row(
+                    children: [
+                      widget.label ?? const Text(''),
+                      widget.isMandatory!
+                          ? Text(
+                              '*',
+                              style: textStyle.redText,
+                            )
+                          : const Text('')
+                    ],
+                  ),
                 )
               : Container(),
           Container(
@@ -110,6 +124,7 @@ class _CustomTextBoxState extends State<CustomTextBox> {
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
+                    readOnly: widget.isReadonly ?? false,
                     enabled:
                         widget.isDisabled != null ? !widget.isDisabled! : true,
                     onSubmitted: widget.isDisabled! ? null : widget.onSubmit,

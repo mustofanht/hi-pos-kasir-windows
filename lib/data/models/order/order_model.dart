@@ -1,5 +1,7 @@
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 
@@ -9,6 +11,7 @@ class OrderModel {
   String? orderEmail;
   String? orderNumber;
   String? orderReffno;
+  String? orderMemberNo;
   String? qrCode;
   int orderTotalItem;
   double orderTotalAmt;
@@ -23,7 +26,9 @@ class OrderModel {
   String? custAddres;
   List<OrderTicketModel> listTicket;
   List<OrderAddonModel> listProduct;
-  List<OrderVoucherModel> listVoucher;
+  List<OrderPotonganModel> listVoucher;
+  List<OrderVoucherModel> listVoucherPrice;
+  List<OrderDepositModel> listDepositUse;
   List<ResponseCreateTicketNoEntity>? listCreateTicket;
 
   OrderModel({
@@ -32,6 +37,7 @@ class OrderModel {
     this.orderEmail,
     this.orderNumber,
     this.orderReffno,
+    this.orderMemberNo,
     this.qrCode,
     this.paymentDate,
     this.orderVoucherDesc,
@@ -47,6 +53,8 @@ class OrderModel {
     required this.listTicket,
     required this.listProduct,
     required this.listVoucher,
+    required this.listVoucherPrice,
+    required this.listDepositUse,
     this.listCreateTicket,
   });
 
@@ -57,6 +65,7 @@ class OrderModel {
       orderEmail: json['orderEmail'],
       orderNumber: json['orderNumber'],
       orderReffno: json['orderReffno'],
+      orderMemberNo: json['orderMemberNo'],
       qrCode: json['qrCode'],
       orderTotalItem: json['orderTotalItem'],
       orderTotalAmt: json['orderTotalAmt'],
@@ -71,11 +80,17 @@ class OrderModel {
       listProduct:
           json['listProduct'].map((e) => OrderAddonModel.fromJson(e)).toList(),
       listVoucher: json['listVoucher']
+          .map((e) => OrderPotonganModel.fromJson(e))
+          .toList(),
+      listVoucherPrice: json['listVoucherPrice']
           .map((e) => OrderVoucherModel.fromJson(e))
           .toList(),
+      listDepositUse: json['listDepositUse']
+          .map((e) => OrderDepositModel.fromJson(e))
+          .toList(),
       listCreateTicket: json['listCreateTicket']
-              .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
-              .toList(),
+          .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
+          .toList(),
     );
   }
 
@@ -86,6 +101,7 @@ class OrderModel {
       "orderEmail": orderEmail,
       "orderNumber": orderNumber,
       "orderReffno": orderReffno,
+      "orderMemberNo": orderMemberNo,
       "qrCode": qrCode,
       "orderTotalItem": orderTotalItem,
       "orderTotalAmt": orderTotalAmt,
@@ -100,6 +116,8 @@ class OrderModel {
       "listTicket": listTicket.map((e) => e.toJson()).toList(),
       "listProduct": listProduct.map((e) => e.toJson()).toList(),
       "listVoucher": listVoucher.map((e) => e.toJson()).toList(),
+      "listVoucherPrice": listVoucherPrice.map((e) => e.toJson()).toList(),
+      "listDepositUse": listDepositUse.map((e) => e.toJson()).toList(),
       "listCreateTicket": listCreateTicket == null
           ? []
           : listCreateTicket?.map((e) => e.toJson()).toList(),

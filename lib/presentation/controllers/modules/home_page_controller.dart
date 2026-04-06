@@ -4,19 +4,15 @@ import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-// import 'package:jaya_propertiy/app/utils/common/notification_utils.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
-import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
-// import 'package:jaya_propertiy/data/models/common/received_notification.dart';
-// import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/menu_item_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/proofofpayment/bukti_pembayaran_page_controller.dart';
@@ -27,9 +23,8 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_vouche
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/setting/setting_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/shift/shift_page_controller.dart';
+import 'package:jaya_propertiy/presentation/views/modules/member/member_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
-// import 'package:jaya_propertiy/presentation/views/modules/print_ticket/cek_order_page.dart';
-// import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/proofofpayment/bukti_pembayaran_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale_page.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +71,8 @@ class HomePageController extends GetxController {
     //   logger.safeLog('Payload : ${receivedNotification.toJson()}');
     // });
 
-    onSelectedMenu(MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined));
+    onSelectedMenu(
+        MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined));
 
     username.value = sessionUtil.getUserName();
     timeString.value = _formatDateTime(DateTime.now());
@@ -126,13 +122,15 @@ class HomePageController extends GetxController {
     MenuItem(
         id: 2, name: 'Bukti\nPembayaran', icon: Icons.receipt_long_outlined),
     MenuItem(id: 3, name: 'Cek\nOrder', icon: Icons.confirmation_num_outlined),
-    MenuItem(id: 4, name: 'Shift', icon: Icons.confirmation_num_outlined),
-    MenuItem(id: 5, name: 'Pengaturan', icon: Icons.settings),
-    MenuItem(id: 6, name: 'Logout', icon: Icons.logout),
+    MenuItem(id: 4, name: 'Member', icon: Icons.person),
+    MenuItem(id: 5, name: 'Shift', icon: Icons.confirmation_num_outlined),
+    MenuItem(id: 6, name: 'Pengaturan', icon: Icons.settings),
+    MenuItem(id: 7, name: 'Logout', icon: Icons.logout),
   ];
 
   Future<void> onSelectedMenu(MenuItem menu) async {
     logger.safeLog('CURR MENU : ${selectedMenu.value}');
+    clearMemberMenu();
     bool isValid = true;
     if (menu.id == 1) {
       bool isActiveKasir = await common.shiftActive(_authToken);
@@ -143,14 +141,14 @@ class HomePageController extends GetxController {
           'Tidak bisa melakukan penjualan, shift sudah berakhir',
         );
 
-        if(selectedMenu.value == 1){
+        if (selectedMenu.value == 1) {
           selectedMenu.value = 2;
         }
       }
     }
 
     if (isValid) {
-      if (menu.id == 6) {
+      if (menu.id == 7) {
         dialog.dialogDelete(
           title: 'LOGOUT',
           msg: 'Apakah anda yakin akan logout?',
@@ -205,35 +203,6 @@ class HomePageController extends GetxController {
     }
   }
 
-  Widget underConstruction() {
-    return Container(
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset(
-            assetsConstant.imgUnderConstruction,
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-            width: layoutStyle.blockHorizontal * 50,
-            height: layoutStyle.blockVertical * 50,
-          ),
-          SizedBox(
-            height: layoutStyle.defaultMargin,
-          ),
-          Text(
-            'Under Construction',
-            style: TextStyle(
-              fontSize: fontSize.header * 2,
-              fontWeight: fontWeight.bold,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
   Widget? get selectedContent {
     Get.delete<PrintTicketPageController>();
     Get.delete<PrintTicketDetailPageController>();
@@ -255,17 +224,27 @@ class HomePageController extends GetxController {
         Get.lazyPut(() => PrintTicketPageController());
         // Get.lazyPut(() => PrintTicketDetailPageController());
         return const PrintTicketPage();
-        // return const CekOrderPage();
+      // return const CekOrderPage();
       case 4:
+        Get.lazyPut(() => MemberPageController());
+        return const MemberPage();
+      case 5:
         Get.lazyPut(() => ShiftPageController());
         return const ShiftPage();
-      case 5:
+      case 6:
         Get.lazyPut(() => SettingPageController());
         return const SettingPage();
-      case 6:
+      case 7:
         return null;
       default:
-        return underConstruction();
+        return common.underConstruction();
+    }
+  }
+
+  clearMemberMenu() {
+    if (Get.isRegistered<MemberPageController>()) {
+      final memberController = Get.find<MemberPageController>();
+      memberController.clear();
     }
   }
 }

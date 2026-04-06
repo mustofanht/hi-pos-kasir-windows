@@ -1,6 +1,7 @@
 part of 'theme_style.dart';
 
 class LayoutStyle {
+  double aspectRatio = 0;
   double textScale = 0;
   double screenWidth = 0;
   double screenHeight = 0;
@@ -13,10 +14,12 @@ class LayoutStyle {
   double safeAreaVertical = 0;
   double safeBlockHorizontal = 0;
   double safeBlockVertical = 0;
+  bool isOpenKeyboard = false;
 
   void init(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
 
+    aspectRatio = screenWidth / screenHeight;
     textScale = mediaQuery.textScaleFactor;
     screenWidth = mediaQuery.size.width;
     screenHeight = mediaQuery.size.height;
@@ -29,6 +32,8 @@ class LayoutStyle {
     safeAreaVertical = mediaQuery.padding.top + mediaQuery.padding.bottom;
     safeBlockHorizontal = (screenWidth - safeAreaHorizontal) / 100;
     safeBlockVertical = (screenHeight - safeAreaVertical) / 100;
+    isOpenKeyboard  = mediaQuery.viewInsets.bottom != 0;
+
   }
 }
 

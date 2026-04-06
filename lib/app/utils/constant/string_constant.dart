@@ -25,6 +25,7 @@ class ArgumentsConstant {
 enum DateTimePickerType {
   Default,
   OnlyYear,
+  OnlyTime,
 }
 
 enum DocumentSource {
@@ -60,6 +61,7 @@ class UnitType {
 }
 
 class CustomerDisplayAction {
+  static String MEMBER_ADD_CART = 'member-add-cart';
   static String ADD_CART = 'add-cart';
   static String PAYMENT = 'payment';
 }
@@ -81,6 +83,58 @@ final Map<String, String> MapPaymentMethod = {
 class PaymentStatus {
   static String Pending = '01';
   static String Success = '02';
+}
+
+class ProductRentalType {
+  static String SALE = 'J';
+  static String HOURS = 'Sewa Perjam';
+  static String DAYS = 'Sewa Harian';
+  // static String HOURS = 'H';
+  // static String DAYS = 'D';
+}
+
+class MemberRelation {
+  static const String ANAK = 'A';
+  static const String SAUDARA = 'S';
+  static const String ORANG_TUA = 'O';
+  static const String TEMAN = 'T';
+
+  static String getName(String relation) {
+    switch (relation) {
+      case ANAK:
+        return "Anak";
+      case SAUDARA:
+        return "Saudara";
+      case ORANG_TUA:
+        return "Orang Tua";
+      case TEMAN:
+        return "Teman";
+      default:
+        return "";
+    }
+  }
+}
+
+class PERIODE {
+  static const String HARIAN = "D";
+  static const String MINGGUAN = "W";
+  static const String BULANAN = "M";
+  static const String TAHUNAN = "Y";
+  
+  static String getName(String relation) {
+    switch (relation) {
+      case HARIAN:
+        return "Harian";
+      case MINGGUAN:
+        return "Mingguan";
+      case BULANAN:
+        return "Bulanan";
+      case TAHUNAN:
+        return "Tahunan";
+      default:
+        return "";
+    }
+  }
 }
 
 AppStringConstant constant = new AppStringConstant();

@@ -3,9 +3,12 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_sale_cart_page_controller.dart';
 
 class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
@@ -73,8 +76,12 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
   Widget contentCart(CustomerSaleCartPageController controller) {
     return Expanded(
       child: (controller.ticketList.isEmpty &&
+              controller.potonganList.isEmpty &&
               controller.voucherList.isEmpty &&
-              controller.addonList.isEmpty)
+              controller.depositList.isEmpty &&
+              controller.addonList.isEmpty && 
+              controller.memberList.isEmpty
+              )
           ? notOrder()
           : SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -106,8 +113,20 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                       addonListComponent(controller)
                     ] else
                       Container(),
+                    if (controller.potonganList.isNotEmpty) ...[
+                      potonganListComponent(controller)
+                    ] else
+                      Container(),
                     if (controller.voucherList.isNotEmpty) ...[
                       voucherListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.depositList.isNotEmpty) ...[
+                      depositListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.memberList.isNotEmpty) ...[
+                      memberListComponent(controller)
                     ] else
                       Container(),
                   ],
@@ -174,6 +193,66 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
     );
   }
 
+  Widget potonganListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.potonganList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.potongan!.voucherName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Text(
+                            'QTY ${e.qtyOrder}',
+                            style: TextStyle(
+                              color: colorStyle.grey,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                        e.potongan!.voucherUnitType == UnitType.PERCENT
+                            ? ('${e.potongan!.voucherUnitValue} %')
+                            : ('Rp${common.currencyFormat(e.potongan!.voucherUnitValue ?? 0)}'),
+                        // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+  
   Widget voucherListComponent(CustomerSaleCartPageController controller) {
     return Container(
       alignment: Alignment.topCenter,
@@ -195,7 +274,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
-                            e.voucher!.voucherName ?? '',
+                            e.entity?.vpName ?? '',
                             style: TextStyle(
                               fontSize: fontSize.title,
                             ),
@@ -216,9 +295,70 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                     Container(
                       alignment: Alignment.topRight,
                       child: Text(
-                        e.voucher!.voucherUnitType == UnitType.PERCENT
-                            ? ('${e.voucher!.voucherUnitValue} %')
-                            : ('Rp${common.currencyFormat(e.voucher!.voucherUnitValue ?? 0)}'),
+                        e.entity?.vpUnitType == UnitType.PERCENT
+                            ? ('${e.entity?.vpUnitValue} %')
+                            : ('Rp${common.currencyFormat(e.entity?.vpUnitValue ?? 0)}'),
+                        // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+  
+  Widget depositListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.depositList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.deposit?.dpName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Text(
+                            'QTY ${e.qtyOrder}',
+                            style: TextStyle(
+                              color: colorStyle.grey,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                        ('Rp${common.currencyFormat(e.deposit?.dpAmount ?? 0)}'),
+                        // e.deposit!.voucherUnitType == UnitType.PERCENT
+                        //     ? ('${e.potongan!.voucherUnitValue} %')
+                        //     : ('Rp${common.currencyFormat(e.potongan!.voucherUnitValue ?? 0)}'),
                         // '- Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
                         style: TextStyle(
                           fontSize: fontSize.title,
@@ -234,6 +374,68 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
     );
   }
 
+  Widget rentProductCart(CartAddon e) {
+    return Container(
+      margin: EdgeInsets.symmetric(
+        vertical: layoutStyle.defaultMargin / 10,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Text('${e.qtyOrder} X '),
+                    Expanded(
+                      child: Text(
+                        '${e.addon!.productName ?? ''} (${e.rentModel!.startDate != null && e.rentModel!.endDate != null ? '${dateTimeUtil.getFormattedDate(date: e.rentModel!.startDate!, format: dateFormat.hourMinutes)} - ${dateTimeUtil.getFormattedDate(date: e.rentModel!.endDate!, format: dateFormat.hourMinutes)}' : ''})',
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+                if (e.rentModel?.newBuyPrice != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Pembelian Baru ',
+                          softWrap: true,
+                          style: textStyle.greyText,
+                        ),
+                      ),
+                      Text(
+                        'Rp.${common.currencyFormat(e.rentModel!.newBuyPrice!)}',
+                        style: textStyle.blackText,
+                      ),
+                    ],
+                  ),
+                // if (e.rentModel?.extraTimeBuyPrice != null)
+                //   Row(
+                //     children: [
+                //       Expanded(
+                //         child: Text(
+                //           'Pembelian Extra Time',
+                //           softWrap: true,
+                //           style: textStyle.greyText,
+                //         ),
+                //       ),
+                //       Text(
+                //         'Rp.${common.currencyFormat(e.rentModel!.extraTimeBuyPrice!)}',
+                //         style: textStyle.blackText,
+                //       ),
+                //     ],
+                //   ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget addonListComponent(CustomerSaleCartPageController controller) {
     return Container(
       alignment: Alignment.topCenter,
@@ -241,6 +443,65 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: controller.addonList
+            .map(
+              (e) => e.rentModel != null
+                  ? rentProductCart(e)
+                  : Container(
+                      margin: EdgeInsets.symmetric(
+                        vertical: layoutStyle.defaultMargin / 2,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  e.addon!.productName ?? '',
+                                  style: TextStyle(
+                                    fontSize: fontSize.title,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: layoutStyle.defaultMargin / 5,
+                                ),
+                                Text(
+                                  'QTY ${e.qtyOrder}',
+                                  style: TextStyle(
+                                    color: colorStyle.grey,
+                                    fontSize: fontSize.subtitle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.topRight,
+                            child: Text(
+                              'Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                              style: TextStyle(
+                                fontSize: fontSize.title,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget memberListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.memberList
             .map(
               (e) => Container(
                 margin: EdgeInsets.symmetric(
@@ -255,19 +516,9 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
-                            e.addon!.productName ?? '',
+                            e.membName ?? '',
                             style: TextStyle(
                               fontSize: fontSize.title,
-                            ),
-                          ),
-                          SizedBox(
-                            height: layoutStyle.defaultMargin / 5,
-                          ),
-                          Text(
-                            'QTY ${e.qtyOrder}',
-                            style: TextStyle(
-                              color: colorStyle.grey,
-                              fontSize: fontSize.subtitle,
                             ),
                           ),
                         ],
@@ -276,7 +527,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                     Container(
                       alignment: Alignment.topRight,
                       child: Text(
-                        'Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        'Rp.${common.currencyFormat(e.membRegPrice ?? 0)}',
                         style: TextStyle(
                           fontSize: fontSize.title,
                         ),

@@ -16,6 +16,7 @@ class CustomDropdownButton<T> extends StatelessWidget {
   final EdgeInsetsGeometry margin;
   final Color? backgroundColor;
   final bool? isLoading;
+  final bool? isMandatory;
 
   const CustomDropdownButton({
     Key? key,
@@ -31,6 +32,7 @@ class CustomDropdownButton<T> extends StatelessWidget {
     this.margin = EdgeInsets.zero,
     this.backgroundColor,
     this.isLoading = false,
+    this.isMandatory = false,
   }) : super(key: key);
 
   @override
@@ -46,7 +48,18 @@ class CustomDropdownButton<T> extends StatelessWidget {
                   padding: EdgeInsets.symmetric(
                     vertical: layoutStyle.defaultMargin / 2,
                   ),
-                  child: label,
+                  // child: label,
+                  child: Row(
+                    children: [
+                      label ?? const Text(''),
+                      isMandatory!
+                          ? Text(
+                              '*',
+                              style: textStyle.redText,
+                            )
+                          : const Text('')
+                    ],
+                  ),
                 )
               : Container(),
           isLoading!

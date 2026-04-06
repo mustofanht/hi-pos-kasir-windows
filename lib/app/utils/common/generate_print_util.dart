@@ -1,12 +1,52 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 // import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 
 class GeneratePrintUtil {
+  List<int> buildListRentalPayment(
+    Generator generator,
+    OrderAddonModel element,
+  ) {
+    List<int> bytes = [];
+    bytes += generator.row(
+      [
+        PosColumn(
+          text: element.addOn?.productName ?? '',
+          width: 12,
+          styles: const PosStyles(
+            align: PosAlign.left,
+          ),
+        ),
+      ],
+    );
+    bytes += generator.row(
+      [
+        PosColumn(
+          text:
+              '(${element.rentHdrDtl?.startDate != null && element.rentHdrDtl?.endDate != null ? '${dateTimeUtil.getFormattedDate(date: element.rentHdrDtl!.startDate!, format: dateFormat.hourMinutes)} - ${dateTimeUtil.getFormattedDate(date: element.rentHdrDtl!.endDate!, format: dateFormat.hourMinutes)}' : ''}) (${element.rentHdrDtl?.hour} Jam)',
+          width: 7,
+          styles: const PosStyles(
+            align: PosAlign.left,
+          ),
+        ),
+        PosColumn(
+          text: common.currencyFormat(element.ordadTotalAmount),
+          width: 5,
+          styles: const PosStyles(
+            align: PosAlign.right,
+          ),
+        )
+      ],
+    );
+    return bytes;
+  }
+
   Future<List<int>> dataPaymentTiketPrint({
     String? locationName,
     String? kasirName,
@@ -135,44 +175,45 @@ class GeneratePrintUtil {
     // List item Order
     for (var element in body.listProduct) {
       // totalBayar += element.ordadTotalAmount;
-      bytes += generator.text(
-        element.addOn?.productName ?? '',
-        styles: const PosStyles(
-          align: PosAlign.left,
-        ),
-      );
-      bytes += generator.row(
-        [
-          PosColumn(
-            text: 'Rp',
-            width: 2,
+      logger.safeLog('PRODUCT TO PRINT : ${element.toJson()}');
+      if (element.rentHdrDtl != null) {
+        bytes += buildListRentalPayment(generator, element);
+      } else {
+        bytes += generator.text(
+          element.addOn?.productName ?? '',
+          styles: const PosStyles(
+            align: PosAlign.left,
           ),
-          PosColumn(
-            text: element.addOn?.productPrice != null
-                ? common.currencyFormat(element.addOn!.productPrice!)
-                : '',
-            width: 3,
-          ),
-          // PosColumn(
-          //   text: '( 0% )',
-          //   width: 2,
-          // ),
-          PosColumn(
-            text: 'x ${element.ordadTotalAddon}',
-            width: 2,
-          ),
-          PosColumn(
-            text: common.currencyFormat(element.ordadTotalAmount),
-            width: 5,
-            styles: const PosStyles(
-              align: PosAlign.right,
+        );
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: 'Rp',
+              width: 2,
             ),
-          )
-        ],
-      );
+            PosColumn(
+              text: element.addOn?.productPrice != null
+                  ? common.currencyFormat(element.addOn!.productPrice!)
+                  : '',
+              width: 3,
+            ),
+            PosColumn(
+              text: 'x ${element.ordadTotalAddon}',
+              width: 2,
+            ),
+            PosColumn(
+              text: common.currencyFormat(element.ordadTotalAmount),
+              width: 5,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      }
     }
     // List voucher Order
-    double totalVoucher = 0;
+    // double totalPotongan = 0;
     for (var element in body.listVoucher) {
       bytes += generator.text(
         element.voucher?.voucherName ?? '',
@@ -181,8 +222,6 @@ class GeneratePrintUtil {
         ),
       );
       if (element.voucher!.voucherUnitType == UnitType.PERCENT) {
-        // double percentagePrice =
-        //     ((totalBayar * element.ordvcTotalAmount) / 100);
         bytes += generator.row(
           [
             PosColumn(
@@ -195,14 +234,6 @@ class GeneratePrintUtil {
                   : '',
               width: 4,
             ),
-            // PosColumn(
-            //   text: '( 0% )',
-            //   width: 2,
-            // ),
-            // PosColumn(
-            //   text: 'x ${element.ordvcTotalVoucher}',
-            //   width: 2,
-            // ),
             PosColumn(
               text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
               width: 6,
@@ -225,14 +256,6 @@ class GeneratePrintUtil {
                   : '',
               width: 4,
             ),
-            // PosColumn(
-            //   text: '( 0% )',
-            //   width: 2,
-            // ),
-            // PosColumn(
-            //   text: 'x ${element.ordvcTotalVoucher}',
-            //   width: 2,
-            // ),
             PosColumn(
               text: '- ${common.currencyFormat(element.ordvcTotalAmount)}',
               width: 6,
@@ -243,6 +266,90 @@ class GeneratePrintUtil {
           ],
         );
       }
+    }
+    // double totalPotongan = 0;
+    for (var element in body.listVoucherPrice) {
+      bytes += generator.text(
+        element.entity?.vpName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+      if (element.entity!.vpUnitType == UnitType.PERCENT) {
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: '%',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.entity?.vpUnitValue != null
+                  ? common.currencyFormat(element.entity!.vpUnitValue!)
+                  : '',
+              width: 4,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.ovpTotalAmount)}',
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      } else {
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: 'Rp',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.entity?.vpUnitValue != null
+                  ? common.currencyFormat(element.entity!.vpUnitValue!)
+                  : '',
+              width: 4,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.ovpTotalAmount)}',
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
+      }
+    }
+    // double totalPotongan = 0;
+    for (var element in body.listDepositUse) {
+      bytes += generator.text(
+        element.entity?.dpName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: 'Rp',
+              width: 2,
+            ),
+            PosColumn(
+              text: element.entity?.dpAmount != null
+                  ? common.currencyFormat(element.entity!.dpAmount!)
+                  : '',
+              width: 4,
+            ),
+            PosColumn(
+              text: '- ${common.currencyFormat(element.odpTotalAmount)}',
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            )
+          ],
+        );
     }
     bytes += generator.hr();
     if (body.adminFeeAmt > 0) {
@@ -262,23 +369,23 @@ class GeneratePrintUtil {
         ],
       );
     }
-    if (totalVoucher > 0) {
-      bytes += generator.row(
-        [
-          PosColumn(
-            text: 'Voucher',
-            width: 6,
-          ),
-          PosColumn(
-            text: '- ${common.currencyFormat(totalVoucher)}',
-            width: 6,
-            styles: const PosStyles(
-              align: PosAlign.right,
-            ),
-          ),
-        ],
-      );
-    }
+    // if (totalPotongan > 0) {
+    //   bytes += generator.row(
+    //     [
+    //       PosColumn(
+    //         text: 'Potongan',
+    //         width: 6,
+    //       ),
+    //       PosColumn(
+    //         text: '- ${common.currencyFormat(totalPotongan)}',
+    //         width: 6,
+    //         styles: const PosStyles(
+    //           align: PosAlign.right,
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
     bytes += generator.row(
       [
         PosColumn(
@@ -468,7 +575,7 @@ class GeneratePrintUtil {
     final generator = Generator(paperSize, profile);
     bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
-    
+
     bytes += generator.text(
       'Ready',
       styles: const PosStyles(
@@ -484,7 +591,6 @@ class GeneratePrintUtil {
         bold: true,
       ),
     );
-
 
     bytes += generator.cut();
 

@@ -1,6 +1,7 @@
 import 'package:jaya_propertiy/presentation/bindings/auth/login_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/default/splash_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/home_page_binding.dart';
+import 'package:jaya_propertiy/presentation/bindings/modules/member/member_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/print_ticket/print_ticket_detail_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/print_ticket/print_ticket_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/proofofpayment/bukti_pembayaran_page_binding.dart';
@@ -14,6 +15,9 @@ import 'package:jaya_propertiy/presentation/views/auth/login_page.dart';
 import 'package:jaya_propertiy/presentation/views/dafault/splash_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/home_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/member/inq_member_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/member/member_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/member/new_member_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_detail_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/proofofpayment/bukti_pembayaran_page.dart';
@@ -138,6 +142,15 @@ class AppRoute {
       transition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 1000),
     ),
+    // member
+    GetPage(
+      name: RouteName.memberPage,
+      page: () => const MemberPage(),
+      binding: MemberPageBinding(),
+      curve: Curves.easeInOut,
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 1000),
+    ),
     // shift
     GetPage(
       name: RouteName.shiftPage,
@@ -182,6 +195,11 @@ abstract class RouteName {
   // Print Ticket
   static const printTicketPage = '/print-ticket-page';
   // static const printTicketDetailPage = '/print-ticket-detail-page';
+
+  // setting
+  static const memberPage = '/member-page';
+  static const inqMemberPage = '/inq-member-page';
+  static const newMemberPage = '/new-member-page';
 
   // shift
   static const shiftPage = '/shift-page';

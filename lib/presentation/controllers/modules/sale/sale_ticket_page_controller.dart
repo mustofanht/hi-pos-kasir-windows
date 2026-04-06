@@ -21,7 +21,6 @@ class SaleTicketPageController extends GetxController {
   final pagination = Pagination().obs;
 
   final ticketList = <TicketEntity>[].obs;
-  final isLoadMore = false.obs;
   final isLoading = false.obs;
   final visibleLoadMore = false.obs;
 
@@ -33,12 +32,8 @@ class SaleTicketPageController extends GetxController {
   }
 
   Future<void> doPrepareList({required int page}) async {
-    logger.safeLog('page : $page');
-    if (page > 0) {
-      isLoadMore.value = true;
-    } else {
-      isLoading.value = true;
-    }
+    if (isLoading.value) return;
+    isLoading.value = true;
 
     try {
       ticketList.clear();
@@ -51,14 +46,6 @@ class SaleTicketPageController extends GetxController {
         'locationId': sessionUtil.getLocationId().toString(),
       };
 
-      // dataFilter.add(
-      //   apiFilterUtil.addSearch(
-      //     'ticketUnit',
-      //     OPERATOR_CONSTANTS.EQUALS,
-      //     sessionUtil.getLocationId(),
-      //   )!,
-      // );
-
       result = await _service.sale.ticketService.getAll(
         authToken: _authToken,
         dataFilter: dataFilter,
@@ -68,7 +55,6 @@ class SaleTicketPageController extends GetxController {
       result.fold((l) {
         logger.safeLog(l);
         isLoading.value = false;
-        isLoadMore.value = false;
       }, (r) {
         if (page == 0) {
           ticketList.value = r.data!;
@@ -77,23 +63,21 @@ class SaleTicketPageController extends GetxController {
         }
         pagination.value = r.pagination!;
         isLoading.value = false;
-        isLoadMore.value = false;
         visibleLoadMore.value = false;
       });
     } catch (e) {
       logger.safeLog(e);
       isLoading.value = false;
-      isLoadMore.value = false;
     }
     logger.safeLog('ticketList : ${ticketList.length}');
     update();
   }
 
-  void scrollHandler() {
+  Future<void> scrollHandler() async {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
       if (pagination.value.currentPage! < pagination.value.totalPage!) {
-        doPrepareList(page: pagination.value.currentPage! + 1);
+        await doPrepareList(page: pagination.value.currentPage! + 1);
       }
     }
   }
@@ -109,10 +93,11 @@ class SaleTicketPageController extends GetxController {
           .firstWhereOrNull((e) => e.ticket!.ticketId == ticket.ticketId);
 
       if (existingTicket != null) {
-        existingTicket.qtyOrder = (existingTicket.qtyOrder ?? 0) + 1;
-        existingTicket.totalPrice =
-            (existingTicket.totalPrice ?? 0) + (ticket.ticketPrice ?? 0);
-        saleCartPageController.calculateTotalOrder();
+        // existingTicket.qtyOrder = (existingTicket.qtyOrder ?? 0) + 1;
+        // existingTicket.totalPrice =
+        //     (existingTicket.totalPrice ?? 0) + (ticket.ticketPrice ?? 0);
+        // saleCartPageController.calculateTotalOrder();
+        saleCartPageController.addTicketCart(existingTicket);
       } else {
         saleCartPageController.addTicket(ticket);
       }

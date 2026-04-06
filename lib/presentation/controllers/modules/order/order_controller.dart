@@ -1,29 +1,18 @@
 import 'dart:async';
 
-import 'package:either_dart/either.dart';
-import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/app_common.dart';
-import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
-import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
-import 'package:jaya_propertiy/app/utils/common/session_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
+import 'package:jaya_propertiy/app/utils/common/order_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/message_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
-import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
-import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
-import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
-import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class OrderController extends GetxController {
   OrderController();
@@ -203,8 +192,15 @@ class OrderPaymentController extends GetxController {
   final _authToken = Get.arguments[argConstant.authToken];
   var isProcessing = false.obs;
 
-  doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) {
+  doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
     try {
+      // validation on create order service
+      bool isSuccess = await doPreCreateOrderPayment(
+        body: body,
+        check: "N",
+      );
+      if (!isSuccess) return;
+
       // Display the waiting payment alert
       dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
@@ -242,19 +238,59 @@ class OrderPaymentController extends GetxController {
                   _authToken, body, orderNo);
               // alert.success('Success', 'Payment Success');
 
-              isProcessing.value = false;
+              // isProcessing.value = false;
             }
+            isProcessing.value = false;
           } else {
             alert.error(
               'Error',
               messagesConstant.requiredField('Nomor Refference'),
             );
+            isProcessing.value = false;
           }
         },
       );
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Unexpected Error');
+      isProcessing.value = false;
+    }
+  }
+
+  Future<bool> doPreCreateOrderPayment({
+    required OrderModel body,
+    required String check,
+  }) async {
+    try {
+      var result;
+      result = await _service.order.orderService.preCreateOrder(
+        authToken: _authToken,
+        body: body,
+        check: check,
+      );
+
+      bool isSuccess = false;
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          logger.safeLog('Pre Create Order Error 1');
+          // alert.error('Error', 'Terjadi Kesalahan!');
+          alert.error('Error', l);
+          isSuccess = false;
+        },
+        (r) {
+          logger.safeLog('Pre Create Order Success');
+          logger.safeLog(r.data);
+          // orderNo?.value = r.data?.orderNumber;
+          isSuccess = true;
+        },
+      );
+      return Future.value(isSuccess);
+    } catch (e) {
+      logger.safeLog(e);
+      logger.safeLog('Create Order Error 2');
+      alert.error('Error', 'Terjadi Kesalahan!');
+      return Future.value(false);
     }
   }
 
@@ -275,7 +311,8 @@ class OrderPaymentController extends GetxController {
         (l) {
           logger.safeLog(l);
           logger.safeLog('Create Order Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
+          // alert.error('Error', 'Terjadi Kesalahan!');
+          alert.error('Error', l);
           isSuccess = false;
         },
         (r) {
@@ -295,213 +332,217 @@ class OrderPaymentController extends GetxController {
   }
 }
 
-class OrderUtil {
-  final _service = MainService();
-  DisplayUtil displayUtil = DisplayUtil();
+// class OrderUtil {
+//   final _service = MainService();
+//   DisplayUtil displayUtil = DisplayUtil();
 
-  showPaymentSuccessAlert(
-    AuthToken authToken,
-    OrderModel body,
-    Rxn<String>? orderNo,
-  ) async {
-    await _createTicket(authToken, body, orderNo, 'P');
-    dialog.paymentQrSuccess(
-      title: 'Success Pembayaran Telah Berhasil',
-      msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
-      onSendProofOfPayment: () async {
-        Get.back();
-        loading.popUpLoading();
-        await Future.delayed(const Duration(seconds: 1), () {});
-        Get.back();
-        await _handleSendProofOfPayment(authToken, body);
-      },
-      onPrint: () async {
-        if (printerUtil.currPrinter != null) {
-          Get.back();
-          loading.popUpLoading();
-          await Future.delayed(const Duration(seconds: 1), () {});
-          Get.back();
-          await _handleOnPrintOrder(authToken, body, orderNo);
-        } else {
-          alert.error('Error', 'please check connection printer');
-          printerUtil.connectPrinter();
-        }
-      },
-    );
-  }
+//   showPaymentSuccessAlert(
+//     AuthToken authToken,
+//     OrderModel body,
+//     Rxn<String>? orderNo,
+//   ) async {
+//     await _createTicket(authToken, body, orderNo, 'P');
+//     dialog.paymentQrSuccess(
+//       title: 'Success Pembayaran Telah Berhasil',
+//       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
+//       onSendProofOfPayment: () async {
+//         Get.back();
+//         loading.popUpLoading();
+//         await Future.delayed(const Duration(seconds: 1), () {});
+//         Get.back();
+//         await _handleSendProofOfPayment(authToken, body);
+//       },
+//       onPrint: () async {
+//         if (printerUtil.currPrinter != null) {
+//           Get.back();
+//           loading.popUpLoading();
+//           await Future.delayed(const Duration(seconds: 1), () {});
+//           Get.back();
+//           await _handleOnPrintOrder(authToken, body, orderNo);
+//         } else {
+//           alert.error('Error', 'please check connection printer');
+//           printerUtil.connectPrinter();
+//         }
+//       },
+//     );
+//   }
 
-  _handleSendProofOfPayment(
-    AuthToken authToken,
-    OrderModel body,
-  ) {
-    logger.safeLog('NO WA : ${body.orderPhoneNumber}');
-    logger.safeLog('EMAIL : ${body.orderEmail}');
-    dialog.paymentSendProofOfPayment(
-      title: 'Pembayaran Berhasil',
-      orderEmailValue: body.orderEmail != ' ' ? body.orderEmail : null,
-      orderNoWaValue:
-          body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
-      // orderNoWaValue: body.orderPhoneNumber,
-      onSendEmail: (val) {
-        logger.safeLog('Email : ${val}');
-        var result = _service.message.sendEmail(
-          authToken: authToken,
-          phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.orderReffno}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
-      },
-      onSendWa: (val) {
-        logger.safeLog('WA : ${val}');
-        var result = _service.message.sendWa(
-          authToken: authToken,
-          phoneNumber: int.parse(val),
-          message: 'Thanks For Order ${body.orderReffno}',
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
-      },
-      onNewOrder: _handleNewOrder,
-    );
-  }
+//   _handleSendProofOfPayment(
+//     AuthToken authToken,
+//     OrderModel body,
+//   ) {
+//     logger.safeLog('NO WA : ${body.orderPhoneNumber}');
+//     logger.safeLog('EMAIL : ${body.orderEmail}');
+//     dialog.paymentSendProofOfPayment(
+//       title: 'Pembayaran Berhasil',
+//       orderEmailValue: body.orderEmail != ' ' ? body.orderEmail : null,
+//       orderNoWaValue:
+//           body.orderPhoneNumber != ' ' ? body.orderPhoneNumber : null,
+//       // orderNoWaValue: body.orderPhoneNumber,
+//       onSendEmail: (val) {
+//         logger.safeLog('Email : ${val}');
+//         var result = _service.message.sendEmail(
+//           authToken: authToken,
+//           phoneNumber: int.parse(val),
+//           message: 'Thanks For Order ${body.orderReffno}',
+//         );
+//         result.fold(
+//           (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+//           (right) => alert.success('Success', 'Send Wa Sucess'),
+//         );
+//       },
+//       onSendWa: (val) {
+//         logger.safeLog('WA : ${val}');
+//         var result = _service.message.sendWa(
+//           authToken: authToken,
+//           phoneNumber: int.parse(val),
+//           message: 'Thanks For Order ${body.orderReffno}',
+//         );
+//         result.fold(
+//           (left) => alert.error('Error', 'Send Wa Internal Server Error'),
+//           (right) => alert.success('Success', 'Send Wa Sucess'),
+//         );
+//       },
+//       onNewOrder: _handleNewOrder,
+//     );
+//   }
 
-  _handleNewOrder() async {
-    Get.back();
-    loading.popUpLoading();
-    await Future.delayed(const Duration(seconds: 1), () {});
-    await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
-    await orderUtil.clearOrder();
-    Get.back();
-  }
+//   _handleNewOrder() async {
+//     Get.back();
+//     loading.popUpLoading();
+//     await Future.delayed(const Duration(seconds: 1), () {});
+//     await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
+//     await orderUtil.clearOrder();
+//     Get.back();
+//   }
 
-  _handleOnPrintOrder(
-    AuthToken authToken,
-    OrderModel body,
-    Rxn<String>? orderNo,
-  ) async {
-    await _createTicket(authToken, body, orderNo, 'C');
-    logger.safeLog('TEST : ${body.toJson()}');
+//   _handleOnPrintOrder(
+//     AuthToken authToken,
+//     OrderModel body,
+//     Rxn<String>? orderNo,
+//   ) async {
+//     await _createTicket(authToken, body, orderNo, 'C');
+//     logger.safeLog('TEST : ${body.toJson()}');
 
-    logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
-    printerUtil.connectPrinter();
-    if (printerUtil.currPrinter != null) {
-      String locationName = "";
-      String kasirName = "";
-      UserEntity? user = await common.getUser(
-        authToken: authToken,
-      );
-      if (user != null) {
-        locationName = user.locationName!;
-      }
-      kasirName = sessionUtil.getUserName();
+//     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
+//     printerUtil.connectPrinter();
+//     if (printerUtil.currPrinter != null) {
+//       String locationName = "";
+//       String kasirName = "";
+//       UserEntity? user = await common.getUser(
+//         authToken: authToken,
+//       );
+//       if (user != null) {
+//         locationName = user.locationName!;
+//       }
+//       kasirName = sessionUtil.getUserName();
 
-      List<int> data = [];
-      data = await generatePrintUtil.dataPaymentTiketPrint(
-        locationName: locationName,
-        kasirName: kasirName,
-        paperSize: PaperSize.mm80,
-        body: body,
-      );
-      if (body.listCreateTicket != null) {
-        int count = 1;
-        int totalPak = body.listCreateTicket!.length;
-        String reffNo = body.orderReffno ?? '';
-        for (var element in body.listCreateTicket!) {
-          // String reffNo = element.ticketNo ?? '';
-          List<int> dataPrint = await generatePrintUtil.dataGatePrint(
-            locationName: locationName,
-            paperSize: PaperSize.mm80,
-            orderNo: body.orderNumber ?? '',
-            reffNo: reffNo,
-            pakOf: count,
-            pakTotal: totalPak,
-            qrCode: element.ticketNo!,
-            expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
-            ticketName: element.ticketName,
-            paymentDate: body.paymentDate ?? DateTime.now(),
-          );
-          data.addAll(dataPrint);
-          count++;
-        }
-      }
+//       List<int> data = [];
+//       data = await generatePrintUtil.dataPaymentTiketPrint(
+//         locationName: locationName,
+//         kasirName: kasirName,
+//         paperSize: PaperSize.mm80,
+//         body: body,
+//       );
+//       if (body.listCreateTicket != null) {
+//         int count = 1;
+//         int totalPak = body.listCreateTicket!.length;
+//         String reffNo = body.orderReffno ?? '';
+//         for (var element in body.listCreateTicket!) {
+//           // String reffNo = element.ticketNo ?? '';
+//           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+//             locationName: locationName,
+//             paperSize: PaperSize.mm80,
+//             orderNo: body.orderNumber ?? '',
+//             reffNo: reffNo,
+//             pakOf: count,
+//             pakTotal: totalPak,
+//             qrCode: element.ticketNo!,
+//             // expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+//             expiredAt: dateTimeUtil.getFormattedDate(
+//               date: element.ticketActiveDate!.toLocal(),
+//               format: dateFormat.dateDDMMMMYYYY,
+//             ),
+//             ticketName: element.ticketName,
+//             paymentDate: body.paymentDate ?? DateTime.now(),
+//           );
+//           data.addAll(dataPrint);
+//           count++;
+//         }
+//       }
 
-      Get.back();
-      loading.popUpLoading();
-      await printerUtil.print(printerUtil.currPrinter!, data);
-      await doRefreshCustomerDisplay(
-        paymentMethod: PaymentMethod.QRIS,
-      );
-      await clearOrder();
-      Get.back();
-    } else {
-      alert.error('Error', 'please check connection printer');
-      printerUtil.connectPrinter();
-    }
-  }
+//       Get.back();
+//       loading.popUpLoading();
+//       await printerUtil.print(printerUtil.currPrinter!, data);
+//       await doRefreshCustomerDisplay(
+//         paymentMethod: PaymentMethod.QRIS,
+//       );
+//       await clearOrder();
+//       Get.back();
+//     } else {
+//       alert.error('Error', 'please check connection printer');
+//       printerUtil.connectPrinter();
+//     }
+//   }
 
-  Future<void> _createTicket(AuthToken authToken, OrderModel body,
-      Rxn<String>? orderNo, String status) async {
-    if (orderNo?.value != null) {
-      List<ResponseCreateTicketNoEntity> listCreateTicket =
-          await createTicketNo(
-        authToken,
-        orderNo!.value!,
-        status,
-      );
-      body.paymentDate = DateTime.now();
-      body.orderNumber = orderNo.value ?? '';
-      body.listCreateTicket = listCreateTicket;
-    }
-  }
+//   Future<void> _createTicket(AuthToken authToken, OrderModel body,
+//       Rxn<String>? orderNo, String status) async {
+//     if (orderNo?.value != null) {
+//       List<ResponseCreateTicketNoEntity> listCreateTicket =
+//           await createTicketNo(
+//         authToken,
+//         orderNo!.value!,
+//         status,
+//       );
+//       body.paymentDate = DateTime.now();
+//       body.orderNumber = orderNo.value ?? '';
+//       body.listCreateTicket = listCreateTicket;
+//     }
+//   }
 
-  Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
-      AuthToken authToken, String orderNo, String status) async {
-    try {
-      List<ResponseCreateTicketNoEntity> dataList = [];
-      var result = await _service.order.orderService.createTicketNo(
-          authToken: authToken, reffNo: orderNo, status: status);
+//   Future<List<ResponseCreateTicketNoEntity>> createTicketNo(
+//       AuthToken authToken, String orderNo, String status) async {
+//     try {
+//       List<ResponseCreateTicketNoEntity> dataList = [];
+//       var result = await _service.order.orderService.createTicketNo(
+//           authToken: authToken, reffNo: orderNo, status: status);
 
-      result.fold(
-        (l) {
-          logger.safeLog(l);
-          logger.safeLog('Create Ticket No Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
-        },
-        (r) {
-          logger.safeLog('Create Ticket No Success');
-          logger.safeLog(r);
-          dataList = r;
-        },
-      );
-      return dataList;
-    } catch (e) {
-      logger.safeLog('Create Ticket No Error 2');
-      logger.safeLog(e.toString());
-      return [];
-    }
-  }
+//       result.fold(
+//         (l) {
+//           logger.safeLog(l);
+//           logger.safeLog('Create Ticket No Error 1');
+//           alert.error('Error', 'Terjadi Kesalahan!');
+//         },
+//         (r) {
+//           logger.safeLog('Create Ticket No Success');
+//           logger.safeLog(r);
+//           dataList = r;
+//         },
+//       );
+//       return dataList;
+//     } catch (e) {
+//       logger.safeLog('Create Ticket No Error 2');
+//       logger.safeLog(e.toString());
+//       return [];
+//     }
+//   }
 
-  doRefreshCustomerDisplay({required String paymentMethod}) {
-    displayUtil.updateSecondDisplay(
-      CustomerDisplay(
-        key: CustomerDisplayAction.PAYMENT,
-        value: CustomerPayment(
-          type: paymentMethod,
-          isSuccess: false,
-        ).toJson(),
-      ).toJson(),
-    );
-  }
+//   doRefreshCustomerDisplay({required String paymentMethod}) {
+//     displayUtil.updateSecondDisplay(
+//       CustomerDisplay(
+//         key: CustomerDisplayAction.PAYMENT,
+//         value: CustomerPayment(
+//           type: paymentMethod,
+//           isSuccess: false,
+//         ).toJson(),
+//       ).toJson(),
+//     );
+//   }
 
-  clearOrder() {
-    final saleController = Get.find<SaleCartPageController>();
-    saleController.clearCartOrder();
-  }
-}
+//   clearOrder() {
+//     final saleController = Get.find<SaleCartPageController>();
+//     saleController.clearCartOrder();
+//   }
+// }
 
-OrderUtil orderUtil = OrderUtil();
+// OrderUtil orderUtil = OrderUtil();

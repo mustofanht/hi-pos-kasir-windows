@@ -9,12 +9,17 @@ import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/data/models/auth/sign_in_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/resources/network_source.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/base_response.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_order_entity.dart';
@@ -24,10 +29,13 @@ import 'package:jaya_propertiy/domain/entities/payment/response_cek_payment_enti
 import 'package:jaya_propertiy/domain/entities/promo/promo_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
+import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 
 part 'auth_service.dart';
 part 'sale_service.dart';
@@ -43,6 +51,9 @@ part 'order/order_ticket_service.dart';
 part 'payment/payment_order_service.dart';
 part 'master_data_service.dart';
 part 'reason_void_service.dart';
+part 'rental_service.dart';
+part 'transaction_service.dart';
+part 'member_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -54,4 +65,7 @@ class MainService {
   final promo = PromoService();
   final masterData = MasterDataService();
   final reasonVoid = ReasonVoidService();
+  final rental = RentalService();
+  final transaction = TransactionService();
+  final member = MemberService();
 }

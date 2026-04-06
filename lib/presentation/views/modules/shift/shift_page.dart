@@ -371,11 +371,51 @@ class ShiftPage extends GetView<ShiftPageController> {
                                     head: false,
                                   ),
                                   columnShift(
+                                    key: 'Potongan',
+                                    value:
+                                        (detail.potonganCount ?? 0).toString(),
+                                    head: false,
+                                  ),
+                                  columnShift(
+                                    key: 'Voucher',
+                                    value:
+                                        (detail.voucherCount ?? 0).toString(),
+                                    head: false,
+                                  ),
+                                  columnShift(
                                     key: '',
                                     head: true,
                                   ),
                                   if (detail.listSumPayment != null)
                                     ...detail.listSumPayment!
+                                        .map(
+                                          (e) => columnShift(
+                                              key: e.name ?? '',
+                                              value:
+                                                  'Rp.${common.currencyFormat(e.amount ?? 0)}',
+                                              head: false),
+                                        )
+                                        .toList(),
+                                  columnShift(
+                                    key: 'Voucher',
+                                    head: true,
+                                  ),
+                                  if (detail.listSumVoucher != null)
+                                    ...detail.listSumVoucher!
+                                        .map(
+                                          (e) => columnShift(
+                                              key: e.name ?? '',
+                                              value:
+                                                  'Rp.${common.currencyFormat(e.amount ?? 0)}',
+                                              head: false),
+                                        )
+                                        .toList(),
+                                  columnShift(
+                                    key: 'Potongan',
+                                    head: true,
+                                  ),
+                                  if (detail.listSumPotongan != null)
+                                    ...detail.listSumPotongan!
                                         .map(
                                           (e) => columnShift(
                                               key: e.name ?? '',
@@ -466,8 +506,8 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   ),
                                   label: const Text(
                                       'Akhiri Shift & Mulai Settlement'),
-                                  width: layoutStyle.blockHorizontal * 20,
-                                  height: layoutStyle.blockVertical * 5,
+                                  width: layoutStyle.screenWidth,
+                                  height: layoutStyle.blockVertical * 7,
                                 )
                               : Container(),
                         ],

@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 
 class CustomDateTimePicker extends StatefulWidget {
@@ -22,6 +23,7 @@ class CustomDateTimePicker extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final bool enable;
   final bool useTimePicker;
+  final DateTime? minDateTime;
 
   const CustomDateTimePicker({
     Key? key,
@@ -39,6 +41,7 @@ class CustomDateTimePicker extends StatefulWidget {
     this.margin,
     this.enable = true,
     this.useTimePicker = false,
+    this.minDateTime,
   }) : super(key: key);
 
   @override
@@ -56,6 +59,17 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
     if (widget.newDate != null) {
       date = widget.newDate as DateTime;
       selectedYear = widget.newDate as DateTime;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomDateTimePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.newDate != oldWidget.newDate) {
+      setState(() {
+        date = widget.newDate ?? DateTime.now();
+        selectedYear = widget.newDate ?? DateTime.now();
+      });
     }
   }
 
@@ -151,21 +165,43 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
     final newTime = await showTimePicker(
           context: context,
           initialTime: _time,
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                alwaysUse24HourFormat: true, // Mengaktifkan format 24 jam
+              ),
+              child: child!,
+            );
+          },
         ) ??
         const TimeOfDay(hour: 0, minute: 0);
 
+    // Buat DateTime berdasarkan waktu yang dipilih
+    final selectedDateTime = DateTime(
+      newDate.year,
+      newDate.month,
+      newDate.day,
+      newTime.hour,
+      newTime.minute,
+    );
+
+    // Validasi minDate
+    if (widget.minDateTime != null) {
+      if (selectedDateTime.isBefore(widget.minDateTime!)) {
+        // Tampilkan pesan error jika tidak valid
+        alert.warning('Warning',
+            'Waktu yang dipilih harus setelah ${dateTimeUtil.dateFormat(widget.minDateTime!, 'hh:mm:ss')}');
+        return;
+      }
+    }
+
     setState(() {
       _time = newTime;
-      date = DateTime(
-        newDate.year,
-        newDate.month,
-        newDate.day,
-        newTime.hour,
-        newTime.minute,
-      );
+      date = selectedDateTime;
     });
+
     widget.onDateChanged!(date);
-    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +227,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
               if (widget.enable) {
                 if (widget.type == DateTimePickerType.OnlyYear) {
                   _selectYear();
+                } else if (widget.type == DateTimePickerType.OnlyTime) {
+                  _selectTime(date);
                 } else {
                   _selectDate(context);
                 }
@@ -202,7 +240,9 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                 horizontal: layoutStyle.defaultMargin / 2,
               ),
               decoration: BoxDecoration(
-                color: widget.backgroundColor ?? colorStyle.white,
+                color: widget.enable
+                    ? widget.backgroundColor ?? colorStyle.white
+                    : colorStyle.lightGrey,
                 borderRadius: widget.borderRadius,
                 border: widget.border,
                 boxShadow: widget.boxShadow,
@@ -216,15 +256,28 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                           ? 'Select  Date'
                           : (widget.type == DateTimePickerType.OnlyYear)
                               ? dateTimeUtil.onlyYear(selectedYear)
-                              : widget.dateFormat != null
-                                  ? dateTimeUtil.getFormattedDate(
-                                      date: date,
-                                      format: DateFormat(
-                                        widget.dateFormat ?? "dd-MM-yyyy",
-                                        Get.locale.toString(),
-                                      ),
-                                    )
-                                  : dateTimeUtil.dateWithDay(date),
+                              : widget.type == DateTimePickerType.OnlyTime
+                                  ? (widget.newDate == null
+                                      ? ''
+                                      : widget.dateFormat != null
+                                          ? dateTimeUtil.getFormattedDate(
+                                              date: date,
+                                              format: DateFormat(
+                                                widget.dateFormat ??
+                                                    "dd-MM-yyyy",
+                                                Get.locale.toString(),
+                                              ),
+                                            )
+                                          : dateTimeUtil.onlyTime(date))
+                                  : widget.dateFormat != null
+                                      ? dateTimeUtil.getFormattedDate(
+                                          date: date,
+                                          format: DateFormat(
+                                            widget.dateFormat ?? "dd-MM-yyyy",
+                                            Get.locale.toString(),
+                                          ),
+                                        )
+                                      : dateTimeUtil.dateWithDay(date),
                       style: widget.firstState
                           ? textStyle.greyText.copyWith(
                               fontWeight: fontWeight.medium,
@@ -234,11 +287,16 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                             ),
                     ),
                   ),
-                  Image.asset(
-                    assetsConstant.icInputCalendar,
-                    width: 24,
-                    height: 24,
-                  ),
+                  widget.type == DateTimePickerType.OnlyTime
+                      ? Icon(
+                          Icons.access_time,
+                          color: colorStyle.grey,
+                        )
+                      : Image.asset(
+                          assetsConstant.icInputCalendar,
+                          width: 24,
+                          height: 24,
+                        ),
                 ],
               ),
             ),

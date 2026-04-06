@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_member_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/message_util.dart';
@@ -15,23 +16,32 @@ import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
+import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+
+import '../../../components/custom_loading.dart';
 
 class BuktiPembayaranPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -233,28 +243,54 @@ class BuktiPembayaranPageController extends GetxController
       title: 'Send Email WA',
       labelButton: 'Close',
       onSendEmail: (val) {
-        logger.safeLog('Email : ${val}');
-        var result = _service.message.sendEmail(
-          authToken: _authToken,
-          phoneNumber: int.parse(val),
-          message: messageUtil.buildBodyMessageDetailOrder([]),
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        loading.popUpLoading();
+        logger.safeLog('Email : $val');
+        try {
+          var result = _service.message.sendEmail(
+            authToken: _authToken,
+            orderNo: detailModel.value.orderNumber ?? '',
+            mailTo: val,
+            message: messageUtil.buildBodyMessageDetailOrder([]),
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Email Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Email Internal Server Error');
+        }
       },
       onSendWa: (val) {
-        logger.safeLog('WA : ${val}');
-        var result = _service.message.sendWa(
-          authToken: _authToken,
-          phoneNumber: int.parse(val),
-          message: messageUtil.buildBodyMessageDetailOrder([]),
-        );
-        result.fold(
-          (left) => alert.error('Error', 'Send Wa Internal Server Error'),
-          (right) => alert.success('Success', 'Send Wa Sucess'),
-        );
+        loading.popUpLoading();
+        logger.safeLog('WA : $val');
+        try {
+          var result = _service.message.sendWa(
+            authToken: _authToken,
+            orderNo: detailModel.value.orderNumber ?? '',
+            phoneNumber: int.parse(val),
+            message: messageUtil.buildBodyMessageDetailOrder([]),
+          );
+          result.fold(
+            (left) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.error('Error', left);
+            },
+            (right) {
+              if (Get.isDialogOpen == true) Get.back();
+              alert.success('Success', 'Send Wa Sucess');
+            },
+          );
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          alert.error('Error', 'Send Wa Internal Server Error');
+        }
       },
       onNewOrder: () {
         Get.back();
@@ -273,101 +309,151 @@ class BuktiPembayaranPageController extends GetxController
           locationName = user.locationName!;
         }
 
-        await _createTicket(
-          _authToken,
-          null,
-          selectedData.value.orderNumber,
-          'C',
-        );
+        logger.safeLog('PRINT DETAIL MODEL : ${detailModel.value.toJson()}');
+        if (detailModel.value.trnOrderMember != null &&
+            detailModel.value.trnOrderMember!.memberNo != null) {
+          await doPrintMember(locationName);
+          Get.back();
+          return;
+        } else {
+          await _createTicket(
+            _authToken,
+            null,
+            selectedData.value.orderNumber,
+            'C',
+          );
 
-        List<OrderTicketModel> ticketList =
-            detailModel.value.trnOrderTicket == null
-                ? []
-                : detailModel.value.trnOrderTicket!
-                    .map(
-                      (e) => OrderTicketModel(
-                        totalTicket: e.ticketQty!,
-                        totalAmount: e.ticketTtlAmount!,
-                        ticket: TicketEntity(
-                          ticketName: e.ticketName,
-                          ticketPrice: e.ticketPrice,
+          List<OrderTicketModel> ticketList =
+              detailModel.value.trnOrderTicket == null
+                  ? []
+                  : detailModel.value.trnOrderTicket!
+                      .map(
+                        (e) => OrderTicketModel(
+                          totalTicket: e.ticketQty!,
+                          totalAmount: e.ticketTtlAmount!,
+                          ticket: TicketEntity(
+                            ticketName: e.ticketName,
+                            ticketPrice: e.ticketPrice,
+                          ),
                         ),
-                      ),
-                    )
-                    .toList();
-        List<OrderAddonModel> productList =
-            detailModel.value.trnOrderItem == null
-                ? []
-                : detailModel.value.trnOrderItem!
-                    .map(
-                      (e) => OrderAddonModel(
-                        ordadTotalAddon: e.prodQty!,
-                        ordadTotalAmount: e.prodTtlAmount!,
-                        addOn: AddonEntity(
-                          productName: e.prodName,
-                          productPrice: e.prodPrice,
+                      )
+                      .toList();
+          List<OrderAddonModel> productList =
+              detailModel.value.trnOrderItem == null
+                  ? []
+                  : detailModel.value.trnOrderItem!
+                      .map(
+                        (e) => OrderAddonModel(
+                          ordadTotalAddon: e.prodQty!,
+                          ordadTotalAmount: e.prodTtlAmount!,
+                          addOn: AddonEntity(
+                            productName: e.prodName,
+                            productPrice: e.prodPrice,
+                          ),
+                          rentHdrDtl: OrderRentalModel(
+                            amount: e.prodTtlAmount,
+                            hour: e.hour,
+                            startDate: e.startDate,
+                            endDate: e.endDate,
+                          ),
                         ),
-                      ),
-                    )
-                    .toList();
-        List<OrderVoucherModel> voucherList =
-            detailModel.value.trnOrderVouchers == null
-                ? []
-                : detailModel.value.trnOrderVouchers!
-                    .map(
-                      (e) => OrderVoucherModel(
-                        ordvcTotalVoucher: 1,
-                        ordvcTotalAmount: e.voucherUnitCalcValue!,
-                        voucher: VoucherEntity(
-                          voucherUnitType: e.voucherUnitType,
-                          voucherUnitValue: e.voucherUnitValue,
-                          voucherName: e.voucherName,
-                          voucherCode: e.voucherCode,
+                      )
+                      .toList();
+          List<OrderPotonganModel> potonganList =
+              detailModel.value.trnOrderVouchers == null
+                  ? []
+                  : detailModel.value.trnOrderVouchers!
+                      .map(
+                        (e) => OrderPotonganModel(
+                          ordvcTotalVoucher: 1,
+                          ordvcTotalAmount: e.voucherUnitCalcValue!,
+                          voucher: PotonganEntity(
+                            voucherUnitType: e.voucherUnitType,
+                            voucherUnitValue: e.voucherUnitValue,
+                            voucherName: e.voucherName,
+                            voucherCode: e.voucherCode,
+                          ),
                         ),
-                      ),
-                    )
-                    .toList();
+                      )
+                      .toList();
+          List<OrderVoucherModel> voucherList =
+              detailModel.value.trnOrderVoucherPrice == null
+                  ? []
+                  : detailModel.value.trnOrderVoucherPrice!
+                      .map(
+                        (e) => OrderVoucherModel(
+                          ovpTotalVoucher: 1,
+                          ovpTotalAmount: e.voucherUnitCalcValue!,
+                          entity: VoucherEntity(
+                            vpUnitType: e.voucherUnitType,
+                            vpUnitValue: e.voucherUnitValue,
+                            vpName: e.voucherName,
+                            vpCode: e.voucherCode,
+                          ),
+                        ),
+                      )
+                      .toList();
+          List<OrderDepositModel> depositList =
+              detailModel.value.trnOrderDeposit == null
+                  ? []
+                  : detailModel.value.trnOrderDeposit!
+                      .map(
+                        (e) => OrderDepositModel(
+                          odpTotalAmount: e.depositAmount ?? 0,
+                          odpOrderNumber: null,
+                          odpDpId: null,
+                          entity: DepositEntity(
+                            dpName: e.depositName,
+                            dpAmount: e.depositAmount,
+                          ),
+                        ),
+                      )
+                      .toList();
 
-        OrderModel orderModel = OrderModel(
-          orderNumber: selectedData.value.orderNumber ?? '',
-          orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
-          orderTotalItem: detailModel.value.orderTotalItem!,
-          orderTotalAmt: detailModel.value.orderTotalAmt!,
-          adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee ??
-              selectedData.value.paymentDetail?.pymntAdminFee ??
-              0,
-          orderUnitId: 0,
-          orderLoacationId: 0,
-          orderPaidBy: detailModel.value.orderPaidBy!,
-          orderPaidByName: detailModel.value.orderPaidByName!,
-          orderStatus: detailModel.value.orderStatus!,
-          paymentDate: detailModel.value.orderDate ??
-              detailModel.value.paymentDetail?.pymntDate ??
-              selectedData.value.orderDate ??
-              selectedData.value.paymentDetail?.pymntDate ??
-              DateTime.now(),
-          listTicket: ticketList,
-          listProduct: productList,
-          listVoucher: voucherList,
-        );
+          OrderModel orderModel = OrderModel(
+            orderNumber: selectedData.value.orderNumber ?? '',
+            orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
+            orderTotalItem: detailModel.value.orderTotalItem!,
+            orderTotalAmt: detailModel.value.orderTotalAmt!,
+            adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee ??
+                selectedData.value.paymentDetail?.pymntAdminFee ??
+                0,
+            orderUnitId: 0,
+            orderLoacationId: 0,
+            orderPaidBy: detailModel.value.orderPaidBy!,
+            orderPaidByName: detailModel.value.orderPaidByName!,
+            orderStatus: detailModel.value.orderStatus!,
+            paymentDate: detailModel.value.orderDate ??
+                detailModel.value.paymentDetail?.pymntDate ??
+                selectedData.value.orderDate ??
+                selectedData.value.paymentDetail?.pymntDate ??
+                DateTime.now(),
+            listTicket: ticketList,
+            listProduct: productList,
+            listVoucher: potonganList,
+            listVoucherPrice: voucherList,
+            listDepositUse: depositList,
+          );
 
-        logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
-        logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
-        logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
-        logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
+          // logger.safeLog('DATA PRINT : ${orderModel.toJson()}');
+          // logger.safeLog('DATA PRINT : ${orderModel.listTicket.length}');
+          // logger.safeLog('DATA PRINT : ${orderModel.listProduct.length}');
+          // logger.safeLog('DATA PRINT : ${orderModel.listVoucher.length}');
 
-        List<int> data = [];
-        data = await generatePrintUtil.dataPaymentTiketPrint(
-          locationName: locationName,
-          paperSize: PaperSize.mm80,
-          body: orderModel,
-          kasirName: detailModel.value.paymentDetail == null
-              ? ''
-              : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
-        );
+          List<int> data = [];
+          data = await generatePrintUtil.dataPaymentTiketPrint(
+            locationName: locationName,
+            paperSize: PaperSize.mm80,
+            body: orderModel,
+            kasirName: detailModel.value.paymentDetail == null
+                ? ''
+                : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
+          );
 
-        await printerUtil.print(printerUtil.currPrinter!, data);
-        Get.back();
+          logger.safeLog('==============================> PRINT EXISTING ');
+          await printerUtil.print(printerUtil.currPrinter!, data);
+          Get.back();
+        }
       } else {
         alert.error('Error', 'please check connection printer');
         printerUtil.connectPrinter();
@@ -376,6 +462,42 @@ class BuktiPembayaranPageController extends GetxController
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
     }
+  }
+
+  doPrintMember(String locationName) async {
+    OrderMemberModel orderMemberModel = OrderMemberModel(
+      orderName: detailModel.value.trnOrderMember?.memberName,
+      orderMemberNo: detailModel.value.trnOrderMember?.memberNo,
+      orderMemberExpiredDate:
+          detailModel.value.trnOrderMember?.memberExpiredDate,
+      orderPhoneNumber: detailModel.value.trnOrderMember?.memberPhone,
+      orderEmail: detailModel.value.trnOrderMember?.memberEmail,
+      orderReffno: detailModel.value.paymentDetail?.pymntReffno,
+      orderPaidBy: detailModel.value.paymentDetail?.pymntCreatedBy,
+      totalPrice: detailModel.value.trnOrderMember?.membershipTtlAmount,
+      adminFeeAmt: detailModel.value.paymentDetail?.pymntAdminFee,
+      membership: Membership(
+        membName: detailModel.value.trnOrderMember?.membershipName,
+        membRegPrice: detailModel.value.trnOrderMember?.membershipPrice,
+      ),
+      listMember: detailModel.value.trnOrderMember?.memberList,
+    );
+
+    // logger.safeLog('DATA PRINT MEMBER : ${orderMemberModel.toJson()}');
+
+    List<int> data = [];
+    data = await generateMemberPrintUtil.paymentPrint(
+      body: orderMemberModel,
+      paymentDate: detailModel.value.orderDate,
+      locationName: locationName,
+      paperSize: PaperSize.mm80,
+      kasirName: detailModel.value.paymentDetail == null
+          ? ''
+          : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
+    );
+
+    logger.safeLog('==============================> PRINT MEMBER ');
+    await printerUtil.print(printerUtil.currPrinter!, data);
   }
 
   Future<void> _createTicket(
@@ -427,16 +549,19 @@ class BuktiPembayaranPageController extends GetxController
   }
 
   final selectReasonRx = Rxn<CustomIdNameEntity>(null);
+  final etcReason = false.obs;
 
   doVoidPayment() async {
     var reasons = await getListReasonVoid();
     selectReasonRx.value = reasons.first;
+    etcReason.value = false;
     update();
     logger.safeLog('reasons : ${reasons.length}');
     dialog.dialogVoidTicket(
       title: 'Void',
       msg: 'Apakah anda yakin akan melakukan void pembayaran ini?',
       selectReason: selectReasonRx,
+      etcReason: etcReason,
       listReason: reasons,
       onNext: (reasonVal) async {
         try {
@@ -458,10 +583,12 @@ class BuktiPembayaranPageController extends GetxController
                 logger.safeLog(l);
                 alert.error('Error', l);
               },
-              (r) {
+              (r) async {
                 logger.safeLog(r);
                 alert.success('Success', r);
-                doSelectedOrder(selectedData.value);
+                TrnOrderEntity selectDetailB4 = selectedData.value;
+                await doRefresh();
+                await doSelectedOrder(selectDetailB4);
               },
             );
           } else {
@@ -506,6 +633,12 @@ class BuktiPembayaranPageController extends GetxController
     } catch (e) {
       logger.safeLog(e);
     }
+    reasons.add(
+      CustomIdNameEntity(
+        id: 'LN',
+        name: 'Lainnya',
+      ),
+    );
     return reasons;
   }
 }

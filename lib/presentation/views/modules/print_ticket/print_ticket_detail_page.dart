@@ -161,44 +161,44 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
                 ),
                 child: Row(
                   children: [
-                      leftColum(
-                        column: 'Status Pembayaran',
-                        value: CustomBadge(
-                          label: controller.statusPembayaran.value == 'P'
-                              ? 'Paid'
-                              : 'Not Paid/Waiting',
-                          colorLabel: controller.statusPembayaran.value == 'P'
-                              ? colorStyle.white
-                              : colorStyle.black,
-                          colorBox: controller.statusPembayaran.value == 'P'
-                              ? colorStyle.green
-                              : colorStyle.creamy,
-                          margin: EdgeInsets.zero,
-                          // label: model.paymentDetail?.pymntStatus == 'P'
-                          //     ? 'Paid'
-                          //     : 'Not Paid/Waiting',
-                          // colorLabel: model.paymentDetail?.pymntStatus == 'P'
-                          //     ? colorStyle.white
-                          //     : colorStyle.black,
-                          // colorBox: model.paymentDetail?.pymntStatus == 'P'
-                          //     ? colorStyle.green
-                          //     : colorStyle.creamy,
-                          // margin: EdgeInsets.zero,
-                        ),
+                    leftColum(
+                      column: 'Status Pembayaran',
+                      value: CustomBadge(
+                        label: controller.statusPembayaran.value == 'P'
+                            ? 'Paid'
+                            : 'Not Paid/Waiting',
+                        colorLabel: controller.statusPembayaran.value == 'P'
+                            ? colorStyle.white
+                            : colorStyle.black,
+                        colorBox: controller.statusPembayaran.value == 'P'
+                            ? colorStyle.green
+                            : colorStyle.creamy,
+                        margin: EdgeInsets.zero,
+                        // label: model.paymentDetail?.pymntStatus == 'P'
+                        //     ? 'Paid'
+                        //     : 'Not Paid/Waiting',
+                        // colorLabel: model.paymentDetail?.pymntStatus == 'P'
+                        //     ? colorStyle.white
+                        //     : colorStyle.black,
+                        // colorBox: model.paymentDetail?.pymntStatus == 'P'
+                        //     ? colorStyle.green
+                        //     : colorStyle.creamy,
+                        // margin: EdgeInsets.zero,
                       ),
-                      leftColum(
-                        column: 'Status Cetak',
-                        value: CustomBadge(
-                          label: controller.statusCetak.value == 'Y'
-                              ? 'Cetak'
-                              : 'Belum Cetak',
-                          colorLabel: colorStyle.white,
-                          colorBox: controller.statusCetak.value == 'Y'
-                              ? colorStyle.green
-                              : colorStyle.yellow,
-                          margin: EdgeInsets.zero,
-                        ),
+                    ),
+                    leftColum(
+                      column: 'Status Cetak',
+                      value: CustomBadge(
+                        label: controller.statusCetak.value == 'Y'
+                            ? 'Cetak'
+                            : 'Belum Cetak',
+                        colorLabel: colorStyle.white,
+                        colorBox: controller.statusCetak.value == 'Y'
+                            ? colorStyle.green
+                            : colorStyle.yellow,
+                        margin: EdgeInsets.zero,
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -524,170 +524,138 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
     Widget rightSection() {
       return Obx(
         () => Expanded(
-          child: Container(
-            height: layoutStyle.screenHeight,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorStyle.white,
-                      borderRadius:
-                          BorderRadius.circular(layoutStyle.defaultMargin / 2),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorStyle.white,
+                    borderRadius:
+                        BorderRadius.circular(layoutStyle.defaultMargin / 2),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(
+                      layoutStyle.defaultMargin,
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.all(
-                        layoutStyle.defaultMargin,
+                    child: tableCustom(),
+                  ),
+                ),
+              ),
+              controller.parentModel.value.orderStatus == 'V'
+                  ? Container()
+                  : Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: layoutStyle.defaultMargin / 2),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomButton(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                // horizontal: layoutStyle.defaultMargin,
+                              ),
+                              onPressed: () {
+                                controller.doSendEmail();
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.white,
+                                ),
+                                overlayColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) =>
+                                      colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                ),
+                                elevation: const MaterialStatePropertyAll(0),
+                              ),
+                              label: Text(
+                                'Kirim Email',
+                                style: textStyle.blackText,
+                              ),
+                              height: layoutStyle.blockVertical * 6.5,
+                            ),
+                          ),
+                          SizedBox(
+                            width: layoutStyle.defaultMargin / 2,
+                          ),
+                          Expanded(
+                            child: CustomButton(
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                // horizontal: layoutStyle.defaultMargin,
+                              ),
+                              onPressed: () {
+                                controller.doActiveTicket();
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.white,
+                                ),
+                                overlayColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) =>
+                                      colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                ),
+                                elevation: const MaterialStatePropertyAll(0),
+                              ),
+                              label: Text(
+                                'Aktivasi Status Tiket',
+                                style: textStyle.blackText,
+                              ),
+                              height: layoutStyle.blockVertical * 6.5,
+                            ),
+                          ),
+                        ],
                       ),
-                      child: tableCustom(),
-                      // child: RefreshIndicator(
-                      //   onRefresh: () async {
-                      //     // await controller.doPrepareList(page: 1);
-                      //   },
-                      //   child: CustomScrollView(
-                      //     physics: const AlwaysScrollableScrollPhysics(),
-                      //     slivers: [
-                      //       SliverPersistentHeader(
-                      //         pinned: true,
-                      //         delegate: DataTableDelegate(
-                      //           minHeight: 50.0,
-                      //           maxHeight: 50.0,
-                      //           child: Material(
-                      //             color: colorStyle.lightGrey,
-                      //             borderRadius: BorderRadius.only(
-                      //               topLeft: Radius.circular(
-                      //                 layoutStyle.defaultMargin / 5,
-                      //               ),
-                      //               topRight: Radius.circular(
-                      //                 layoutStyle.defaultMargin / 5,
-                      //               ),
-                      //             ),
-                      //             child: headerSection(),
-                      //           ),
-                      //         ),
-                      //       ),
-                      //       dataListSection(),
-                      //     ],
-                      //   ),
-                      // ),
+                    ),
+              // (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
+              //         controller.model.value.orderStatus != 'C')
+              // controller.parentModel.value.otdtlStatus == 'Y' &&
+              //         controller.parentModel.value.orderStatus != 'V'
+              //     ?
+              CustomButton(
+                onPressed: () {
+                  controller.doPrintTicket();
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                    (states) => colorStyle.grey,
+                  ),
+                  overlayColor: MaterialStateProperty.resolveWith(
+                    (states) => colorStyle.black.withOpacity(0.1),
+                  ),
+                  shape: MaterialStateProperty.resolveWith(
+                    (states) => RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
                     ),
                   ),
                 ),
-                controller.parentModel.value.orderStatus == 'V'
-                    ? Container()
-                    : Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: layoutStyle.defaultMargin / 2),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: CustomButton(
-                                margin: EdgeInsets.symmetric(
-                                  vertical: layoutStyle.defaultMargin / 2,
-                                  // horizontal: layoutStyle.defaultMargin,
-                                ),
-                                onPressed: () {
-                                  controller.doSendEmail();
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) => colorStyle.white,
-                                  ),
-                                  overlayColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) =>
-                                        colorStyle.black.withOpacity(0.1),
-                                  ),
-                                  shape: MaterialStateProperty.resolveWith(
-                                    (states) => RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        layoutStyle.defaultMargin / 2,
-                                      ),
-                                    ),
-                                  ),
-                                  elevation: const MaterialStatePropertyAll(0),
-                                ),
-                                label: Text(
-                                  'Kirim Email',
-                                  style: textStyle.blackText,
-                                ),
-                                height: layoutStyle.blockVertical * 6.5,
-                              ),
-                            ),
-                            SizedBox(
-                              width: layoutStyle.defaultMargin / 2,
-                            ),
-                            Expanded(
-                              child: CustomButton(
-                                margin: EdgeInsets.symmetric(
-                                  vertical: layoutStyle.defaultMargin / 2,
-                                  // horizontal: layoutStyle.defaultMargin,
-                                ),
-                                onPressed: () {
-                                  controller.doActiveTicket();
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) => colorStyle.white,
-                                  ),
-                                  overlayColor:
-                                      MaterialStateProperty.resolveWith(
-                                    (states) =>
-                                        colorStyle.black.withOpacity(0.1),
-                                  ),
-                                  shape: MaterialStateProperty.resolveWith(
-                                    (states) => RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        layoutStyle.defaultMargin / 2,
-                                      ),
-                                    ),
-                                  ),
-                                  elevation: const MaterialStatePropertyAll(0),
-                                ),
-                                label: Text(
-                                  'Aktivasi Status Tiket',
-                                  style: textStyle.blackText,
-                                ),
-                                height: layoutStyle.blockVertical * 6.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                // (controller.model.value.paymentDetail?.pymntStatus != 'P' &&
-                //         controller.model.value.orderStatus != 'C')
-                controller.parentModel.value.otdtlStatus == 'Y' &&
-                        controller.parentModel.value.orderStatus != 'V'
-                    ? CustomButton(
-                        onPressed: () {
-                          controller.doPrintTicket();
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.grey,
-                          ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        label: Text(
-                          'Print Tiket',
-                          style: textStyle.whiteText,
-                        ),
-                        height: layoutStyle.blockVertical * 6.5,
-                      )
-                    : Container(),
-              ],
-            ),
+                label: Text(
+                  'Print Tiket',
+                  style: textStyle.whiteText,
+                ),
+                height: layoutStyle.blockVertical * 6.5,
+              )
+              // : Container(),
+            ],
           ),
         ),
       );
@@ -706,7 +674,7 @@ class _PrintTicketDetailPageState extends State<PrintTicketDetailPage> {
                     children: [
                       SizedBox(
                         width: layoutStyle.blockHorizontal * 4,
-                        height: layoutStyle.blockVertical * 5,
+                        height: layoutStyle.blockVertical * 6.5,
                         child: CustomButton(
                           onPressed: () {
                             controller.doBack();
