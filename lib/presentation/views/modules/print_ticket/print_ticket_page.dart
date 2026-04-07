@@ -159,11 +159,65 @@ class PrintTicketPage extends StatelessWidget {
                           // physics: const AlwaysScrollableScrollPhysics(),
                           scrollDirection: Axis.vertical,
                           child: Column(
-                            children: controller.dataList
-                                .map(
-                                  (e) => dataTableCustom(e),
-                                )
-                                .toList(),
+                            children: [
+                              // List items
+                              ...controller.dataList
+                                  .map(
+                                    (e) => dataTableCustom(e),
+                                  )
+                                  .toList(),
+
+                              // Loading indicator when loading more
+                              Obx(
+                                () {
+                                  if (controller.isLoadingMore.value) {
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: layoutStyle.defaultMargin,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                colorStyle.blue,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                              width:
+                                                  layoutStyle.defaultMargin / 2),
+                                          Text(
+                                            'Memuat data...',
+                                            style: textStyle.greyText,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  } else if (!controller.hasMorePages &&
+                                      controller.dataList.isNotEmpty) {
+                                    // No more data message
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: layoutStyle.defaultMargin,
+                                      ),
+                                      child: Text(
+                                        'Semua data sudah ditampilkan',
+                                        style: textStyle.greyText,
+                                      ),
+                                    );
+                                  } else {
+                                    return SizedBox.shrink();
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ),
