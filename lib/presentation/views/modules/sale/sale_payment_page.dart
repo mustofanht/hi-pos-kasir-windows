@@ -404,7 +404,7 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                     ),
                                     CustomButton(
                                       width:
-                                          layoutStyle.safeBlockHorizontal * 5,
+                                          layoutStyle.safeBlockHorizontal * 8,
                                       height: layoutStyle.blockVertical * 6.5,
                                       margin: EdgeInsets.symmetric(
                                         vertical: layoutStyle.defaultMargin / 2,
@@ -418,6 +418,19 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                             MaterialStateProperty.resolveWith(
                                           (states) => colorStyle.blue,
                                         ),
+                                        padding: MaterialStateProperty.all<
+                                            EdgeInsetsGeometry>(
+                                          EdgeInsets.symmetric(
+                                            horizontal:
+                                                layoutStyle.defaultMargin / 4,
+                                          ),
+                                        ),
+                                        minimumSize:
+                                            MaterialStateProperty.all<Size>(
+                                          Size.zero,
+                                        ),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
                                         overlayColor:
                                             MaterialStateProperty.resolveWith(
                                           (states) =>

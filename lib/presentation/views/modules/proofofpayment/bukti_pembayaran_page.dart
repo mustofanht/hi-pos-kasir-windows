@@ -253,7 +253,9 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
           padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
           color: selectedCard ? colorStyle.lightGrey : colorStyle.white,
           width: layoutStyle.screenWidth,
-          height: layoutStyle.blockVertical * 30,
+          constraints: BoxConstraints(
+            minHeight: layoutStyle.blockVertical * 30,
+          ),
           child: Column(
             children: [
               Container(
@@ -306,116 +308,114 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                   ),
                 ),
               ),
-              Expanded(
-                child: Container(
-                  alignment: Alignment.topCenter,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            // horizontal: layoutStyle.defaultMargin / 5,
-                            vertical: layoutStyle.defaultMargin / 2,
+              Container(
+                alignment: Alignment.topCenter,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          // horizontal: layoutStyle.defaultMargin / 5,
+                          vertical: layoutStyle.defaultMargin / 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorStyle.white,
+                          border: Border.all(
+                            color: colorStyle.grey,
+                            width: 1.0,
                           ),
-                          decoration: BoxDecoration(
-                            color: colorStyle.white,
-                            border: Border.all(
-                              color: colorStyle.grey,
-                              width: 1.0,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(
+                              7,
                             ),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(
-                                7,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Image.asset(
-                                model.orderPaidBy == PaymentMethod.EDC
-                                    ? assetsConstant.imgEdc
-                                    : model.orderPaidBy == PaymentMethod.QRIS
-                                        ? assetsConstant.imgExampleBarcode
-                                        : model.orderPaidBy ==
-                                                PaymentMethod.TRAVELOKA
-                                            ? assetsConstant.imgTraveloka
-                                            : model.orderPaidBy ==
-                                                    PaymentMethod.TICKET
-                                                ? assetsConstant.imgEdc
-                                                : assetsConstant.imgEdc,
-                                // fit: BoxFit.fill,
-                                width: layoutStyle.blockHorizontal * 8,
-                                height: layoutStyle.blockVertical * 10,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  // MapPaymentMethod[model.orderPaidBy] ?? '',
-                                  model.orderPaidByName ?? '',
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  softWrap: true,
-                                  style: TextStyle(
-                                    fontWeight: fontWeight.bold,
-                                    fontSize: fontSize.small,
-                                  ),
-                                ),
-                              )
-                            ],
                           ),
                         ),
-                      ),
-                      Expanded(
                         child: Row(
                           children: [
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: layoutStyle.defaultMargin / 2,
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(model.orderNumber ?? ''),
-                                    SizedBox(
-                                      height: layoutStyle.defaultMargin,
-                                    ),
-                                    Text(
-                                      model.orderName ?? '',
-                                      // model.customerDetail?.custName ?? '',
-                                      style: TextStyle(
-                                        fontWeight: fontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            Image.asset(
+                              model.orderPaidBy == PaymentMethod.EDC
+                                  ? assetsConstant.imgEdc
+                                  : model.orderPaidBy == PaymentMethod.QRIS
+                                      ? assetsConstant.imgExampleBarcode
+                                      : model.orderPaidBy ==
+                                              PaymentMethod.TRAVELOKA
+                                          ? assetsConstant.imgTraveloka
+                                          : model.orderPaidBy ==
+                                                  PaymentMethod.TICKET
+                                              ? assetsConstant.imgEdc
+                                              : assetsConstant.imgEdc,
+                              // fit: BoxFit.fill,
+                              width: layoutStyle.blockHorizontal * 8,
+                              height: layoutStyle.blockVertical * 10,
                             ),
                             Expanded(
+                              child: Text(
+                                // MapPaymentMethod[model.orderPaidBy] ?? '',
+                                model.orderPaidByName ?? '',
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
+                                style: TextStyle(
+                                  fontWeight: fontWeight.bold,
+                                  fontSize: fontSize.small,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: layoutStyle.defaultMargin / 2,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(dateTimeUtil.getFormattedDate(
-                                      date: model.orderDate!,
-                                      format: dateFormat.hourMinutes)),
+                                  Text(model.orderNumber ?? ''),
                                   SizedBox(
                                     height: layoutStyle.defaultMargin,
                                   ),
                                   Text(
-                                    'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
+                                    model.orderName ?? '',
+                                    // model.customerDetail?.custName ?? '',
                                     style: TextStyle(
-                                      color: colorStyle.primary,
+                                      fontWeight: fontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(dateTimeUtil.getFormattedDate(
+                                    date: model.orderDate!,
+                                    format: dateFormat.hourMinutes)),
+                                SizedBox(
+                                  height: layoutStyle.defaultMargin,
+                                ),
+                                Text(
+                                  'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
+                                  style: TextStyle(
+                                    color: colorStyle.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
