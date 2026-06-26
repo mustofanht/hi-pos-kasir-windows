@@ -1,93 +1,116 @@
-# POS MOBILE FE
+# Hi-POS Kasir
 
+Aplikasi **Point of Sale (Kasir)** berbasis Flutter untuk lini produk Hi-POS.
+Menangani transaksi penjualan, cetak tiket ber-QR melalui printer thermal,
+tampilan layar pelanggan (secondary display), keanggotaan, shift kasir, serta
+laporan penjualan.
 
+## Fitur Utama
 
-## Getting started
+- **Autentikasi** — login kasir dengan JWT.
+- **Penjualan (Sale)** — keranjang, pilih produk/tiket, hitung total, pembayaran,
+  dan struk.
+- **Cetak Tiket + QR** — tiap `ticketNo` dicetak sebagai QR via printer thermal
+  (`esc_pos_utils_plus` + `thermal_printer`). Mendukung opsi pendamping
+  (1 tiket → 2 QR).
+- **Customer Display** — layar kedua menghadap pelanggan menggunakan
+  `presentation_displays` (menampilkan item & total saat transaksi).
+- **Member** — pencarian & pengelolaan keanggotaan pelanggan.
+- **Shift Kasir** — buka/tutup shift.
+- **Bukti Pembayaran (Proof of Payment)**.
+- **Laporan & Grafik** — dashboard penjualan dengan `syncfusion_flutter_charts`
+  dan `fl_chart`.
+- **Pengaturan** — konfigurasi perangkat, printer, dan aplikasi.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Arsitektur
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+Aplikasi memakai pola **GetX** (State Management + Dependency Injection + Routing):
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/raumah/pos-system/pos-mobile-fe.git
-git branch -M main
-git push -uf origin main
+lib/
+├── app/
+│   └── utils/
+│       ├── styles/        # Tema & palet warna (color_style.dart, theme_style.dart)
+│       ├── constant/      # Environment & konstanta (env_constant.dart)
+│       └── common/        # Util cetak (generate_print_util.dart), dll
+├── data/
+│   └── services/          # Service API (mis. order_ticket_service.dart)
+├── domain/
+│   └── entities/          # Entity (mis. response_create_ticket_no_entity.dart)
+└── presentation/
+    ├── bindings/          # GetX bindings (injeksi controller)
+    ├── components/        # Widget reusable
+    ├── controllers/       # GetX controllers
+    └── views/
+        ├── auth/
+        └── modules/       # sale, customer, member, shift, print_ticket,
+                           # proofofpayment, setting, home
 ```
 
-## Integrate with your tools
+## Warna / Tema
 
-- [ ] [Set up project integrations](https://gitlab.com/raumah/pos-system/pos-mobile-fe/-/settings/integrations)
+Palet utama didefinisikan di `lib/app/utils/styles/color_style.dart`:
 
-## Collaborate with your team
+| Token        | Nilai                       |
+|--------------|-----------------------------|
+| `primary`    | `#612FF5` (ungu)            |
+| `primaryDark`| `#3907CD`                   |
+| `green`      | `#42AD43`                   |
+| `red`        | `#CE2F21`                   |
+| `yellow`     | `#FFC300`                   |
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+> Palet yang sama dipakai sebagai acuan warna aplikasi **Hi-Pos Swift (hi-pos-item)**.
 
-## Test and Deploy
+## Teknologi
 
-Use the built-in continuous integration in GitLab.
+| Paket | Kegunaan |
+|---|---|
+| `get` | State management, DI, routing |
+| `get_storage` | Penyimpanan lokal ringan |
+| `google_fonts` | Tipografi |
+| `esc_pos_utils_plus`, `thermal_printer` | Cetak struk & tiket thermal |
+| `presentation_displays` | Layar kedua (customer display) |
+| `syncfusion_flutter_charts`, `fl_chart` | Grafik laporan |
+| `table_calendar` | Pemilihan tanggal/laporan |
+| `flutter_svg`, `flutter_carousel_widget` | Aset & UI |
+| `jwt_decoder` | Dekode token JWT |
+| `device_info_plus` | Info perangkat |
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+## Konfigurasi API
 
-***
+Base URL diatur lewat `lib/app/utils/constant/env_constant.dart` (enum
+`Environment`: `local`, `dev`, `production`, `chatbot`).
 
-# Editing this README
+```dart
+// contoh
+Environment.dev.url; // https://dev.hi-pos.id/syspos-service/api/v1
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Menjalankan
 
-## Suggestions for a good README
+### Prasyarat
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- Flutter SDK (Dart `>=3.0.6 <4.0.0`)
+- Android Studio / VS Code
+- Perangkat Android dengan printer thermal (untuk fitur cetak)
 
-## Name
-Choose a self-explaining name for your project.
+### Langkah
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```bash
+flutter pub get
+flutter run
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Build APK Release
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```bash
+flutter build apk --release
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Output: `build/app/outputs/flutter-apk/app-release.apk`.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Catatan
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- Plugin `presentation_displays` di-vendor secara lokal di `./plugin/presentation_displays`.
+- `win32` di-*override* ke `5.5.4` agar kompatibel dengan Dart SDK terbaru
+  (lihat `dependency_overrides` di `pubspec.yaml`).
