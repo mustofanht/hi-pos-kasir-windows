@@ -1603,9 +1603,10 @@ class CustomDialog {
                     vertical: layoutStyle.defaultMargin / 5,
                     horizontal: layoutStyle.defaultMargin,
                   ),
-                  child: Column(
+                  child: SingleChildScrollView(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
                         assetsConstant.icInformationDialog,
@@ -1622,13 +1623,11 @@ class CustomDialog {
                       SizedBox(
                         height: layoutStyle.defaultMargin / 5,
                       ),
-                      Flexible(
-                        child: Text(
-                          msg,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: fontSize.body,
-                          ),
+                      Text(
+                        msg,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: fontSize.body,
                         ),
                       ),
                       SizedBox(
@@ -1700,6 +1699,7 @@ class CustomDialog {
                               ),
                       )
                     ],
+                  ),
                   ),
                 ),
               ),
