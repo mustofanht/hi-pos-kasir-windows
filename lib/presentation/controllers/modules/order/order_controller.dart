@@ -48,6 +48,7 @@ class OrderController extends GetxController {
             key: CustomerDisplayAction.PAYMENT,
             value: CustomerPayment(
               orderNo: orderNo?.value,
+              qrCode: body.qrCode,
               type: PaymentMethod.QRIS,
               isSuccess: false,
             ).toJson(),

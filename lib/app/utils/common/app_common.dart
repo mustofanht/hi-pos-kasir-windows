@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -305,16 +306,24 @@ class AppCommon {
     logger.safeLog("End getImagePromo ----------------------------- ");
   }
 
-  Image getQrImg(String? qrCode) {
-    return qrCode != null && qrCode.contains('http')
-        ? Image.network(qrCode, fit: BoxFit.fill, errorBuilder:
-            (BuildContext context, Object exception, StackTrace? stackTrace) {
-            return const Center(child: Text('Img Not Found'));
-          })
-        : Image.asset(qrCode!, fit: BoxFit.fill, errorBuilder:
-            (BuildContext context, Object exception, StackTrace? stackTrace) {
-            return const Center(child: Text('Img Not Found'));
-          });
+  Widget getQrImg(String? qrCode) {
+    if (qrCode == null || qrCode.isEmpty) {
+      return const Center(child: Text('QR belum tersedia'));
+    }
+    // Backend mengirim URL gambar (http/https) → muat langsung.
+    if (qrCode.contains('http')) {
+      return Image.network(qrCode, fit: BoxFit.fill, errorBuilder:
+          (BuildContext context, Object exception, StackTrace? stackTrace) {
+        return const Center(child: Text('QR gagal dimuat'));
+      });
+    }
+    // Selain itu dianggap payload QRIS (string) → gambar QR di sisi aplikasi.
+    return QrImageView(
+      data: qrCode,
+      version: QrVersions.auto,
+      backgroundColor: Colors.white,
+      padding: const EdgeInsets.all(12),
+    );
   }
 
   Future<bool> shiftActive(AuthToken _authToken) async {

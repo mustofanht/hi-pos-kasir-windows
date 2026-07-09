@@ -43,6 +43,7 @@ dependencies:
   table_sticky_headers: ^2.0.5
   device_info_plus: ^9.1.2
   auto_size_text: ^3.0.0
+  qr_flutter: ^4.1.0
 
 # win32 5.0.9 (pulled in transitively) uses UnmodifiableUint8ListView, which was
 # removed in Dart 3.4+. Force a version compatible with the current Dart SDK.
