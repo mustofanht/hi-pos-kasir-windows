@@ -27,8 +27,8 @@ jobs:
         run: flutter doctor -v
         continue-on-error: true
 
-      - name: Generate windows/ platform files
-        run: flutter create --platforms=windows --project-name jaya_propertiy .
+      # Folder windows/ sudah di-commit (dengan icon & nama HI-POS Kasir),
+      # jadi TIDAK perlu 'flutter create' lagi supaya kustomisasi tidak tertimpa.
 
       - name: Install dependencies
         run: flutter pub get
