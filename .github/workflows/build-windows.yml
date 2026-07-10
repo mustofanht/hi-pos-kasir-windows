@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest   # runner sudah punya Visual Studio 2022 + Desktop C++
+    runs-on: windows-2022   # image teruji: Visual Studio 2022 + Desktop C++ built-in
 
     steps:
       - name: Checkout source
@@ -22,6 +22,10 @@ jobs:
 
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
+
+      - name: Diagnostik toolchain (cek deteksi Visual Studio)
+        run: flutter doctor -v
+        continue-on-error: true
 
       - name: Generate windows/ platform files
         run: flutter create --platforms=windows --project-name jaya_propertiy .
