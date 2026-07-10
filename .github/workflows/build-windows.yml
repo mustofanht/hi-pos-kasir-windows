@@ -1,0 +1,40 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:          # bisa dijalankan manual dari tab Actions
+
+jobs:
+  build:
+    runs-on: windows-latest   # runner sudah punya Visual Studio 2022 + Desktop C++
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Generate windows/ platform files
+        run: flutter create --platforms=windows .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Upload EXE (folder Release lengkap)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hipos-kasir-windows
+          path: build/windows/x64/runner/Release/
+          if-no-files-found: error

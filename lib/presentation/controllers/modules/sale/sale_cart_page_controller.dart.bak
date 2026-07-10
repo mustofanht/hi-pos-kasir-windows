@@ -1,0 +1,619 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
+import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
+import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
+import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
+import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
+import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
+
+class SaleCartPageController extends GetxController {
+  // Dependencies
+  final SalePageController salePageController = Get.find<SalePageController>();
+  final DisplayUtil displayUtil = DisplayUtil();
+  final MainService _service = MainService();
+  final _authToken = Get.arguments[argConstant.authToken];
+
+  // Observable values
+  final totalOrderAmnt = RxDouble(0);
+  final finalTotalOrderAmt = RxDouble(0);
+  final totalOrderQty = RxInt(0);
+  final memberVoucher = false.obs;
+  final memberValid = MemberValid().obs;
+  final selectedMstPayment = MstPayment().obs;
+
+  // Cart lists
+  final addonList = RxList<CartAddon>([]);
+  final ticketList = RxList<CartTicket>([]);
+  final potonganList = RxList<CartPotongan>([]);
+  final voucherList = RxList<CartVoucher>([]);
+  final depositList = RxList<CartDeposit>([]);
+
+  // Text controllers for ticket quantities
+  final Map<int, TextEditingController> ticketControllers = {};
+
+  late var orderList = Cart(
+    cartTicketList: ticketList,
+    cartPotonganList: potonganList,
+    cartVoucherList: voucherList,
+    cartDepositList: depositList,
+    addonList: addonList,
+  ).obs;
+
+  // Helper Methods
+  TextEditingController getTicketController(int id, int qtyOrder) {
+    return ticketControllers.putIfAbsent(
+      id,
+      () => TextEditingController(text: qtyOrder.toString()),
+    );
+  }
+
+  void _showWarning(String message) {
+    alert.warning('Warning', message);
+  }
+
+  void _updateTicketController(int? ticketId, int quantity) {
+    ticketControllers[ticketId]?.text = quantity.toString();
+  }
+
+  void _refreshCalculations() {
+    checkQtyMemberVocuher();
+    calculateTotalOrder();
+  }
+
+  // Ticket Management
+  void addTicket(TicketEntity ticket) {
+    final cartTicket = CartTicket(
+      qtyOrder: ticket.ticketMinimum,
+      ticket: ticket,
+      totalPrice: (ticket.ticketMinimum ?? 0) * ticket.ticketPrice!,
+    );
+
+    ticketList.add(cartTicket);
+    _updateTicketController(ticket.ticketId, ticket.ticketMinimum ?? 0);
+    _refreshCalculations();
+  }
+
+  void onCompleteQtyTicketCart(CartTicket ticket) {
+    final controller = ticketControllers[ticket.ticket?.ticketId];
+    if (controller == null) return;
+
+    final qty = int.tryParse(controller.text) ?? 0;
+    final minimum = ticket.ticket?.ticketMinimum ?? 0;
+
+    if (qty < minimum) {
+      controller.text = minimum.toString();
+    }
+    calculateTotalOrder();
+  }
+
+  void onChangeQtyTicketCart(CartTicket ticket, int qty) {
+    final minimum = ticket.ticket?.ticketMinimum ?? 0;
+    if (qty < minimum) return;
+
+    ticket.qtyOrder = qty;
+    ticket.totalPrice = (ticket.ticket!.ticketPrice ?? 0) * qty;
+    calculateTotalOrder();
+  }
+
+  void addTicketCart(CartTicket ticket) {
+    ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
+    ticket.totalPrice =
+        (ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0);
+    _updateTicketController(ticket.ticket?.ticketId, ticket.qtyOrder ?? 0);
+    _refreshCalculations();
+  }
+
+  void removeTicket(CartTicket ticket) {
+    if (!_canRemoveTicket(ticket)) return;
+
+    ticket.qtyOrder = (ticket.qtyOrder ?? 0) - 1;
+    ticket.totalPrice =
+        (ticket.totalPrice ?? 0) - (ticket.ticket!.ticketPrice ?? 0);
+
+    if (ticket.qtyOrder == 0) {
+      removeListTicket(ticket);
+      return;
+    }
+
+    _updateTicketController(ticket.ticket?.ticketId, ticket.qtyOrder ?? 0);
+    _refreshCalculations();
+  }
+
+  bool _canRemoveTicket(CartTicket ticket) {
+    if (voucherList.isEmpty) return true;
+
+    final newQty = (ticket.qtyOrder ?? 0) - 1;
+    final totalVoucherQty =
+        voucherList.fold(0, (sum, voucher) => sum + (voucher.qtyOrder ?? 0));
+
+    if (newQty < totalVoucherQty) {
+      _showWarning('Qty Ticket tidak bisa kurang dari qty voucher!');
+      return false;
+    }
+    return true;
+  }
+
+  void removeListTicket(CartTicket ticket) {
+    ticketControllers[ticket.ticket?.ticketId]?.clear();
+    ticketList.remove(ticket);
+    calculateTotalOrder();
+  }
+
+  // Addon Management
+  void addAddon(AddonEntity addon) {
+    final cartAddon = CartAddon(
+      qtyOrder: 1,
+      totalPrice: addon.productPrice ?? 0,
+      addon: addon,
+    );
+    addonList.add(cartAddon);
+    calculateTotalOrder();
+  }
+
+  void addAddonRent(AddonEntity addon, CartRentModel rentModel) {
+    final cartAddon = CartAddon(
+      qtyOrder: 1,
+      totalPrice: addon.productPrice!,
+      addon: addon,
+      rentModel: rentModel,
+    );
+    addonList.add(cartAddon);
+    calculateTotalOrder();
+  }
+
+  void addAddonCart(CartAddon addon) {
+    if (addon.rentModel != null) return;
+
+    addon.qtyOrder = (addon.qtyOrder ?? 0) + 1;
+    addon.totalPrice =
+        (addon.totalPrice ?? 0) + (addon.addon!.productPrice ?? 0);
+    calculateTotalOrder();
+  }
+
+  void removeAddon(CartAddon addon) {
+    addon.qtyOrder = (addon.qtyOrder ?? 0) - 1;
+    addon.totalPrice =
+        (addon.totalPrice ?? 0) - (addon.addon!.productPrice ?? 0);
+
+    if (addon.qtyOrder == 0) {
+      removeListAddon(addon);
+      return;
+    }
+    calculateTotalOrder();
+  }
+
+  void removeListAddon(CartAddon addon) {
+    addonList.remove(addon);
+    calculateTotalOrder();
+  }
+
+  // Discount Management
+  void addpotongan(PotonganEntity potongan) {
+    if (memberVoucher.isTrue) {
+      _showWarning('Potongan tidak bisa di gunakan!');
+      return;
+    }
+
+    final cartPotongan = CartPotongan(
+      qtyOrder: 1,
+      totalPrice: potongan.voucherUnitValue!,
+      potongan: potongan,
+    );
+    potonganList.add(cartPotongan);
+    calculateTotalOrder();
+  }
+
+  void removeListpotongan(CartPotongan potongan) {
+    potonganList.remove(potongan);
+    calculateTotalOrder();
+  }
+
+  // Voucher Management
+  bool validateVoucher(int qtyOrder, VoucherEntity voucher) {
+    if (memberVoucher.isTrue) {
+      _showWarning('Voucher tidak bisa di gunakan!');
+      return false;
+    }
+
+    if ((qtyOrder + 1) > (voucher.vpLimit ?? 0)) {
+      _showWarning('Limit Voucher tersisa ${voucher.vpLimit ?? 0}');
+      return false;
+    }
+
+    if (voucherList.isNotEmpty) {
+      final totalTicketQty =
+          ticketList.fold(0, (sum, ticket) => sum + (ticket.qtyOrder ?? 0));
+      final totalVoucherQty =
+          voucherList.fold(0, (sum, voucher) => sum + (voucher.qtyOrder ?? 0));
+
+      if ((totalVoucherQty + 1) > totalTicketQty) {
+        _showWarning('Qty Voucher tidak bisa melebihi qty tiket');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void addvoucher(VoucherEntity voucher) {
+    // if (!validateVoucher(1, voucher)) return;
+    if (!validateVoucher(0, voucher)) return;
+
+    final cartVoucher = CartVoucher(
+      qtyOrder: 1,
+      totalPrice: voucher.vpUnitValue!,
+      entity: voucher,
+    );
+    voucherList.add(cartVoucher);
+    calculateTotalOrder();
+  }
+
+  void addVoucherCart(CartVoucher voucher) {
+    if (!validateVoucher(voucher.qtyOrder ?? 0, voucher.entity!)) return;
+
+    voucher.qtyOrder = (voucher.qtyOrder ?? 0) + 1;
+    voucher.totalPrice =
+        (voucher.totalPrice ?? 0) + (voucher.entity!.vpUnitValue ?? 0);
+    calculateTotalOrder();
+  }
+
+  void removeVoucher(CartVoucher voucher) {
+    voucher.qtyOrder = (voucher.qtyOrder ?? 0) - 1;
+    voucher.totalPrice =
+        (voucher.totalPrice ?? 0) - (voucher.entity!.vpUnitValue ?? 0);
+
+    if (voucher.qtyOrder == 0) {
+      removeListvoucher(voucher);
+      return;
+    }
+    calculateTotalOrder();
+  }
+
+  removeListvoucher(CartVoucher voucher) {
+    voucherList.remove(voucher);
+    if (memberVoucher.isTrue) {
+      memberVoucher.value = false;
+      salePageController.memberNo.clear();
+    }
+    calculateTotalOrder();
+  }
+
+  // Deposit Management
+  void adddeposit(DepositEntity deposit) {
+    if (memberVoucher.isTrue) {
+      _showWarning('Deposit tidak bisa di gunakan!');
+      return;
+    }
+
+    final cartDeposit = CartDeposit(
+      qtyOrder: 1,
+      totalPrice: deposit.dpAmount ?? 0,
+      deposit: deposit,
+    );
+    depositList.add(cartDeposit);
+    calculateTotalOrder();
+  }
+
+  void removeListdeposit(CartDeposit deposit) {
+    depositList.remove(deposit);
+    calculateTotalOrder();
+  }
+
+  // Core Calculation Logic
+  void calculateTotalOrder() {
+    final calculator = _OrderCalculator(
+      ticketList: ticketList,
+      voucherList: voucherList,
+      addonList: addonList,
+      potonganList: potonganList,
+      depositList: depositList,
+    );
+
+    final result = calculator.calculate();
+
+    totalOrderAmnt.value = result.totalAmount;
+    final paymentFee = getPricePayemntFee();
+    finalTotalOrderAmt.value = result.totalAmount + paymentFee;
+    totalOrderQty.value = result.totalQuantity;
+
+    _updateSalePageController();
+    update();
+    updateCustomer();
+  }
+
+  void _updateSalePageController() {
+    salePageController.totalOrderQty(totalOrderQty.value);
+    salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
+    salePageController.addonList(addonList);
+    salePageController.potonganList(potonganList);
+    salePageController.voucherList(voucherList);
+    salePageController.depositList(depositList);
+    salePageController.ticketList(ticketList);
+  }
+
+  // Payment Methods
+  double getPricePayemntFee() {
+    final payment = selectedMstPayment.value;
+    if (payment.pymntFlBbnCust != 'Y') return 0;
+
+    final fee = payment.pymntAdminFee ?? 0;
+    return payment.pymntTypeFee == UnitType.PERCENT
+        ? (totalOrderAmnt.value * fee / 100)
+        : fee;
+  }
+
+  void onPayment() {
+    if (finalTotalOrderAmt.value < 0 ||
+        (addonList.isEmpty && ticketList.isEmpty)) {
+      _showWarning('Order cannot empty');
+      return;
+    }
+
+    if (salePageController.openPayment.value) {
+      salePageController.doPayment();
+    } else {
+      salePageController.doPrepared();
+      _updateSalePageController();
+      salePageController.openPayment(true);
+    }
+  }
+
+  // Utility Methods
+  void clearCartOrder() {
+    try {
+      memberVoucher.value = false;
+      salePageController.memberNo.clear();
+      selectedMstPayment.value = MstPayment();
+
+      // Clear all lists
+      [ticketList, addonList, potonganList, voucherList, depositList]
+          .forEach((list) => list.clear());
+
+      calculateTotalOrder();
+      updateCustomer();
+      _updateSalePageController();
+      salePageController.openPayment(false);
+      salePageController.refreshForm();
+      salePageController.update();
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    Get.back();
+    update();
+  }
+
+  void updateCustomer() {
+    final customerSaleCart = CustomerSaleCart(
+      ticketList: ticketList,
+      addonList: addonList,
+      potonganList: potonganList,
+      voucherList: voucherList,
+      depositList: depositList,
+      totalOrder: finalTotalOrderAmt.value,
+      paymentFee: getPricePayemntFee(),
+    );
+
+    final customerDisplay = CustomerDisplay(
+      key: CustomerDisplayAction.ADD_CART,
+      value: customerSaleCart.toJson(),
+    );
+
+    displayUtil.updateSecondDisplay(customerDisplay.toJson());
+  }
+
+  // Rental Management
+  Future<void> onNextRental(
+    CartRentModel cartRentModel,
+    AddonEntity addon,
+    CartAddon? existingAddon,
+  ) async {
+    Get.back();
+
+    addon.productPrice = 0;
+    if (existingAddon != null) {
+      addonList.remove(existingAddon);
+    }
+
+    final result = await _service.rental.getPriceRental(
+      authToken: _authToken,
+      hours: cartRentModel.totalHours!,
+      productId: addon.productId!,
+      orderNoExtra: cartRentModel.transactionExtra?.orderNumber,
+    );
+
+    result.fold(
+      (error) => logger.safeLog(error),
+      (response) {
+        addon.productPrice = response.data;
+        cartRentModel.newBuyPrice = response.data;
+        addAddonRent(addon, cartRentModel);
+        update();
+      },
+    );
+  }
+
+  Future<void> doUpdateRent(CartAddon cartAddOn) async {
+    await dialog.selectHourRent(
+      authToken: _authToken,
+      entitiy: cartAddOn.addon!,
+      detailModel: cartAddOn.rentModel,
+      isExtraTime: cartAddOn.rentModel!.isExtraTime!,
+      onNext: (cartRentModel) => onNextRental(
+        cartRentModel,
+        cartAddOn.addon!,
+        cartAddOn,
+      ),
+    );
+  }
+
+  void checkQtyMemberVocuher() {
+    final totalTicketQty =
+        ticketList.fold(0, (sum, ticket) => sum + (ticket.qtyOrder ?? 0));
+
+    if (memberValid.value.memberListResponses?.isNotEmpty ?? false) return;
+
+    final membership = memberValid.value.mstMembership;
+    if (membership == null) return;
+
+    final maxQuota = [membership.membKuota ?? 0, membership.membMaxKuota ?? 0]
+        .reduce((a, b) => a < b ? a : b);
+    final qty = totalTicketQty <= maxQuota ? totalTicketQty : maxQuota;
+
+    if (voucherList.isNotEmpty) {
+      try {
+        final cartSelected = voucherList.firstWhere(
+          (voucher) => voucher.entity?.vpId == membership.membVpId,
+        );
+        cartSelected.qtyOrder = qty;
+      } catch (e) {
+        // Voucher not found, ignore
+      }
+    }
+  }
+}
+
+// Helper class to handle order calculations
+class _OrderCalculator {
+  final RxList<CartTicket> ticketList;
+  final RxList<CartVoucher> voucherList;
+  final RxList<CartAddon> addonList;
+  final RxList<CartPotongan> potonganList;
+  final RxList<CartDeposit> depositList;
+
+  _OrderCalculator({
+    required this.ticketList,
+    required this.voucherList,
+    required this.addonList,
+    required this.potonganList,
+    required this.depositList,
+  });
+
+  OrderCalculationResult calculate() {
+    double totalAmount = 0;
+    int totalQuantity = 0;
+
+    // Calculate tickets and vouchers
+    if (ticketList.isNotEmpty) {
+      final ticketAmount =
+          ticketList.fold(0.0, (sum, ticket) => sum + ticket.totalPrice!);
+      final ticketQty =
+          ticketList.fold(0, (sum, ticket) => sum + ticket.qtyOrder!);
+
+      totalAmount += ticketAmount;
+      totalQuantity += ticketQty;
+
+      // Apply voucher discounts
+      if (voucherList.isNotEmpty) {
+        totalAmount -= _calculateVoucherDiscount();
+        totalQuantity +=
+            voucherList.fold(0, (sum, voucher) => sum + voucher.qtyOrder!);
+      }
+    }
+
+    // Add addons
+    if (addonList.isNotEmpty) {
+      totalAmount +=
+          addonList.fold(0.0, (sum, addon) => sum + addon.totalPrice!);
+      totalQuantity += addonList.fold(0, (sum, addon) => sum + addon.qtyOrder!);
+    }
+
+    // Apply discounts (potongan)
+    if (potonganList.isNotEmpty) {
+      totalAmount -= _calculatePotonganDiscount(totalAmount);
+      totalQuantity +=
+          potonganList.fold(0, (sum, potongan) => sum + potongan.qtyOrder!);
+    }
+
+    // Apply deposits
+    if (depositList.isNotEmpty) {
+      totalAmount -= depositList.fold(
+          0.0, (sum, deposit) => sum + (deposit.deposit!.dpAmount ?? 0));
+      totalQuantity +=
+          depositList.fold(0, (sum, deposit) => sum + deposit.qtyOrder!);
+    }
+
+    return OrderCalculationResult(
+      totalAmount: totalAmount > 0 ? totalAmount : 0,
+      totalQuantity: totalQuantity,
+    );
+  }
+
+  double _calculateVoucherDiscount() {
+    double discountAmount = 0;
+    final Map<CartTicket, int> remainingTicketQtyMap = {
+      for (var ticket in ticketList) ticket: ticket.qtyOrder!
+    };
+
+    for (var voucher in voucherList) {
+      int remainingVoucherQty = voucher.qtyOrder ?? 0;
+
+      for (var ticket in ticketList) {
+        if (remainingVoucherQty == 0) break;
+
+        int remainingTicketQty = remainingTicketQtyMap[ticket] ?? 0;
+        if (remainingTicketQty == 0) continue;
+
+        int applicableQty = remainingTicketQty < remainingVoucherQty
+            ? remainingTicketQty
+            : remainingVoucherQty;
+
+        remainingTicketQtyMap[ticket] = remainingTicketQty - applicableQty;
+        remainingVoucherQty -= applicableQty;
+
+        final unitPrice = ticket.totalPrice! / ticket.qtyOrder!;
+        final voucherValue = voucher.entity!.vpUnitValue ?? 0;
+
+        if (voucher.entity!.vpUnitType == UnitType.PERCENT) {
+          discountAmount += applicableQty * unitPrice * voucherValue / 100;
+        } else {
+          discountAmount += applicableQty * voucherValue;
+        }
+      }
+    }
+
+    return discountAmount;
+  }
+
+  double _calculatePotonganDiscount(double totalAmount) {
+    double discountAmount = 0;
+
+    for (var potongan in potonganList) {
+      final value = potongan.potongan!.voucherUnitValue ?? 0;
+
+      if (potongan.potongan!.voucherUnitType == UnitType.PERCENT) {
+        discountAmount += totalAmount * value / 100;
+      } else {
+        discountAmount += value;
+      }
+    }
+
+    return discountAmount;
+  }
+}
+
+class OrderCalculationResult {
+  final double totalAmount;
+  final int totalQuantity;
+
+  OrderCalculationResult({
+    required this.totalAmount,
+    required this.totalQuantity,
+  });
+}
