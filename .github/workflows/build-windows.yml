@@ -24,7 +24,7 @@ jobs:
         run: flutter config --enable-windows-desktop
 
       - name: Generate windows/ platform files
-        run: flutter create --platforms=windows .
+        run: flutter create --platforms=windows --project-name jaya_propertiy .
 
       - name: Install dependencies
         run: flutter pub get
