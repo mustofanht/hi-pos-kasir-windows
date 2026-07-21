@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+  body{margin:0;font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:#5C3BEB}
+  a:hover{color:#4A2FC7}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:#D9D7F5;border-radius:4px}
+</style>
+</helmet>
+<div style="display:flex;height:100vh;width:100%;background:#F6F6FA;color:#222;overflow:hidden">
+
+  <div style="width:104px;flex-shrink:0;background:#fff;border-right:1px solid #ECECF2;padding:20px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;overflow-y:auto">
+    <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;color:#333">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+    </div>
+
+    <div style="width:100%;padding:10px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;background:#EEEBFF;color:#5C3BEB">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M11 20V4M18 20v-7"></path></svg>
+      <span style="font-size:11.5px;font-weight:700">Penjualan</span>
+    </div>
+
+    <div style="width:100%;padding:10px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:#8A8A99">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"></path><path d="M9 8h6M9 12h6M9 16h4"></path></svg>
+      <span style="font-size:11.5px;font-weight:600;text-align:center">Bukti<br>Pembayaran</span>
+    </div>
+
+    <div style="width:100%;padding:10px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:#8A8A99">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M4 10.5h16" stroke-dasharray="2 2.4"></path></svg>
+      <span style="font-size:11.5px;font-weight:600;text-align:center">Cek<br>Order</span>
+    </div>
+
+    <div style="width:100%;padding:10px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:#8A8A99">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.3"></circle><path d="M5 20c1.2-4 4-5.8 7-5.8s5.8 1.8 7 5.8"></path></svg>
+      <span style="font-size:11.5px;font-weight:600">Member</span>
+    </div>
+
+    <div style="width:100%;padding:10px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:#8A8A99">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
+      <span style="font-size:11.5px;font-weight:600">Shift</span>
+    </div>
+
+    <div style="width:100%;padding:10px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:#8A8A99">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M4 12h2.2M17.8 12H20M12 4v2.2M12 17.8V20M6.3 6.3l1.6 1.6M16.1 16.1l1.6 1.6M17.7 6.3l-1.6 1.6M7.9 16.1l-1.6 1.6"></path></svg>
+      <span style="font-size:11.5px;font-weight:600">Pengaturan</span>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+
+    <div style="background:linear-gradient(90deg,#5C3BEB,#6E4CF5);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="color:#fff;font-size:18px;font-weight:700">Hi, fika</div>
+        <div style="color:#DCD5FF;font-size:12.5px;margin-top:2px">Selasa, 14 Jul 2026</div>
+      </div>
+      <div style="color:#fff;font-size:19px;font-weight:800;letter-spacing:.2px">Arena Sports Club</div>
+    </div>
+
+    <div style="flex:1;display:flex;min-height:0">
+
+      <div style="flex:1;padding:26px 30px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;min-width:0">
+
+        <div style="display:flex;align-items:center;gap:6px;background:#ECEBF4;border-radius:12px;padding:5px;width:fit-content">
+          <div style="{{ tabStyle.ticket }}" onClick="{{ selectTab_ticket }}">Ticket</div>
+          <div style="{{ tabStyle.lapangan }}" onClick="{{ selectTab_lapangan }}">Lapangan</div>
+          <div style="{{ tabStyle.potongan }}" onClick="{{ selectTab_potongan }}">Potongan</div>
+          <div style="{{ tabStyle.item }}" onClick="{{ selectTab_item }}">Item</div>
+        </div>
+
+        <sc-if value="{{ isTicketTab }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <div style="width:170px;border:1.5px solid #DED9F8;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer">
+              <div style="width:100px;height:100px;border-radius:12px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;font-weight:800;color:#5C3BEB;font-size:13px;text-align:center">Arena<br>Sports Club</div>
+              <div style="font-size:14px;font-weight:700;color:#1E1E28">Weekdays</div>
+            </div>
+            <div style="width:170px;border:1.5px solid #DED9F8;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer">
+              <div style="width:100px;height:100px;border-radius:12px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;font-weight:800;color:#5C3BEB;font-size:13px;text-align:center">Arena<br>Sports Club</div>
+              <div style="font-size:14px;font-weight:700;color:#1E1E28;text-align:center">Tiket Rombongan weekdays</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLapanganTab }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+
+            <div style="display:flex;align-items:center;gap:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
+              <sc-for list="{{ courtChips }}" as="chip" hint-placeholder-count="11">
+                <div style="{{ chip.style }}" onClick="{{ chip.onClick }}">{{ chip.name }}</div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+              <div style="font-size:13px;color:#8A8A99">Pilih jam &amp; durasi untuk {{ courtLabel }}</div>
+              <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E7E5F5;border-radius:12px;padding:9px 14px">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#5C3BEB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 9.5h16M8 3v3.5M16 3v3.5"></path></svg>
+                <div style="font-size:13.5px;font-weight:700;color:#1E1E28">{{ dateLabel }} &middot; Hari ini</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:13px;height:13px;border-radius:4px;background:#fff;border:1px solid #DAD8E8;display:inline-block"></span><span style="font-size:12.5px;color:#5A5A68">Tersedia</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:13px;height:13px;border-radius:4px;background:#5C3BEB;display:inline-block"></span><span style="font-size:12.5px;color:#5A5A68">Dipilih</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:13px;height:13px;border-radius:4px;background:#EFEFF2;display:inline-block"></span><span style="font-size:12.5px;color:#5A5A68">Terisi</span></div>
+              <div style="margin-left:auto;font-size:12.5px;color:#8A8A99">Harga <b style="color:#1E1E28">Rp 100.000</b> / jam</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;padding-bottom:10px">
+              <sc-for list="{{ slots }}" as="slot" hint-placeholder-count="17">
+                <div style="{{ slot.style }}" onClick="{{ slot.onClick }}">
+                  <div>{{ slot.time }}</div>
+                  <div style="font-size:11px;margin-top:4px;opacity:.75;font-weight:600">{{ slot.statusText }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPotonganTab }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:60px 0;text-align:center;color:#B3B3BD;font-size:14px">Belum ada data potongan</div>
+        </sc-if>
+
+        <sc-if value="{{ isItemTab }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:60px 0;text-align:center;color:#B3B3BD;font-size:14px">Belum ada item</div>
+        </sc-if>
+      </div>
+
+      <div style="width:380px;flex-shrink:0;background:#fff;border-left:1px solid #ECECF2;padding:26px 26px;display:flex;flex-direction:column;overflow-y:auto">
+        <div style="font-size:19px;font-weight:800;color:#5C3BEB;margin-bottom:18px">Pesanan</div>
+
+        <sc-if value="{{ showPaid }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px">
+            <div style="width:64px;height:64px;border-radius:50%;background:#E9F9EF;display:flex;align-items:center;justify-content:center;color:#28A862">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            </div>
+            <div style="font-size:16.5px;font-weight:700;color:#1E1E28;margin-top:6px">Booking Berhasil</div>
+            <div style="font-size:13px;color:#8A8A99;line-height:1.5">{{ receiptCourt }} · {{ receiptDate }}<br>{{ receiptTime }} ({{ receiptDuration }})</div>
+            <div style="font-size:20px;font-weight:800;color:#1E1E28;margin-top:6px">{{ receiptTotal }}</div>
+            <div style="margin-top:18px;padding:13px 26px;border-radius:30px;background:#5C3BEB;color:#fff;font-weight:700;font-size:14px;cursor:pointer" onClick="{{ newOrder }}">Buat Pesanan Baru</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px">
+            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="#C7C4E6" stroke-width="1.4"><path d="M4 8l8-4 8 4-8 4-8-4z"></path><path d="M4 8v9l8 4 8-4V8"></path><path d="M4 8l8 4v9M20 8l-8 4"></path></svg>
+            <div style="font-size:15.5px;font-weight:700;color:#1E1E28;margin-top:6px">Belum Ada Pesanan</div>
+            <div style="font-size:12.5px;color:#8A8A99">Pilih jam pada jadwal untuk membuat pesanan</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showSelection }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column">
+            <div style="border:1px solid #ECECF2;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:14.5px;font-weight:700;color:#1E1E28">{{ courtLabel }}</div>
+              <div style="font-size:12.5px;color:#8A8A99">{{ dateLabel }}</div>
+              <div style="height:1px;background:#F0F0F4"></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#5A5A68"><span>Jam</span><span style="font-weight:600;color:#1E1E28">{{ timeRangeLabel }}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#5A5A68"><span>Durasi</span><span style="font-weight:600;color:#1E1E28">{{ durationLabel }}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#5A5A68"><span>Harga/jam</span><span style="font-weight:600;color:#1E1E28">Rp 100.000</span></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="margin-top:auto;padding-top:18px;border-top:1px solid #F0F0F4">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-size:19px;font-weight:800;color:#1E1E28">Total</div>
+            <div style="font-size:24px;font-weight:800;color:#1E1E28">{{ totalLabel }}</div>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1;text-align:center;padding:13px;border-radius:30px;border:1.5px solid #E2574C;color:#E2574C;font-weight:700;font-size:14px;cursor:pointer" onClick="{{ cancelOrder }}">Batal</div>
+            <div style="{{ payButtonStyle }}" onClick="{{ payOrder }}">Bayar</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TIMES = ['06:00 - 07:00','07:00 - 08:00','08:00 - 09:00','09:00 - 10:00','10:00 - 11:00','11:00 - 12:00','12:00 - 13:00','13:00 - 14:00','14:00 - 15:00','15:00 - 16:00','16:00 - 17:00','17:00 - 18:00','18:00 - 19:00','19:00 - 20:00','20:00 - 21:00','21:00 - 22:00','22:00 - 23:00'];
+
+const COURTS = [
+  {name:'Lapangan 1 Badminton', bookedIdx:[3,4,8,13]},
+  {name:'Lapangan 2 Badminton', bookedIdx:[0,1,6,7,15]},
+  {name:'Lapangan 3 Badminton', bookedIdx:[5,9,10,11,14,16]},
+  {name:'Lapangan 1 Futsal', bookedIdx:[2,3,9,10,11]},
+  {name:'Lapangan 2 Futsal', bookedIdx:[6,7,14]},
+  {name:'Lapangan 1 Padel', bookedIdx:[1,2,12,13]},
+  {name:'Lapangan 2 Padel', bookedIdx:[8,9,10]},
+  {name:'Lapangan 1 Tenis', bookedIdx:[0,5,6,15,16]},
+  {name:'Lapangan 2 Tenis', bookedIdx:[3,4,11]},
+  {name:'Lapangan 1 Basket', bookedIdx:[4,5,12,13]},
+  {name:'Lapangan 1 Voli', bookedIdx:[2,3,10,16]},
+];
+
+const HOUR_PRICE = 100000;
+const DAY_NAMES = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+function formatRupiah(n){ return 'Rp ' + n.toLocaleString('id-ID'); }
+
+function getSlotDefs(courtIndex){
+  const booked = COURTS[courtIndex].bookedIdx;
+  return TIMES.map((time,i) => ({time, booked: booked.includes(i)}));
+}
+
+class Component extends DCLogic {
+  state = { selected: [], paid: false, receipt: null, activeTab: 'lapangan', activeCourtIndex: 0 };
+
+  selectTab(tab){ this.setState({activeTab: tab}); }
+  selectCourt(i){ this.setState({activeCourtIndex: i, selected: []}); }
+
+  toggleSlot(i){
+    const defs = getSlotDefs(this.state.activeCourtIndex);
+    if(defs[i].booked) return;
+    this.setState(s => {
+      const sel = s.selected;
+      if(sel.length === 0) return {selected:[i]};
+      const min = Math.min(...sel), max = Math.max(...sel);
+      if(sel.includes(i)){
+        if(i === min || i === max) return {selected: sel.filter(x => x !== i)};
+        return {selected:[i]};
+      }
+      if(i === min - 1 && !defs[i].booked) return {selected:[i, ...sel]};
+      if(i === max + 1 && !defs[i].booked) return {selected:[...sel, i]};
+      return {selected:[i]};
+    });
+  }
+
+  cancelOrder(){ this.setState({selected: []}); }
+  newOrder(){ this.setState({paid:false, receipt:null, selected:[]}); }
+
+  payOrder(){
+    if(this.state.selected.length === 0) return;
+    const court = COURTS[this.state.activeCourtIndex];
+    const defs = getSlotDefs(this.state.activeCourtIndex);
+    const sel = [...this.state.selected].sort((a,b)=>a-b);
+    const min = sel[0], max = sel[sel.length-1];
+    const start = defs[min].time.split(' - ')[0];
+    const end = defs[max].time.split(' - ')[1];
+    this.setState({
+      paid: true,
+      selected: [],
+      receipt: {
+        court: court.name,
+        time: start + ' - ' + end,
+        duration: sel.length + ' jam',
+        total: formatRupiah(sel.length * HOUR_PRICE),
+        date: this.getDateLabel()
+      }
+    });
+  }
+
+  getDateLabel(){
+    const base = new Date(2026, 6, 14);
+    return DAY_NAMES[base.getDay()] + ', ' + base.getDate() + ' ' + MONTH_NAMES[base.getMonth()] + ' ' + base.getFullYear();
+  }
+
+  renderVals(){
+    const sel = this.state.selected;
+    const hasSelection = sel.length > 0;
+    const min = hasSelection ? Math.min(...sel) : null;
+    const max = hasSelection ? Math.max(...sel) : null;
+
+    const court = COURTS[this.state.activeCourtIndex];
+    const defs = getSlotDefs(this.state.activeCourtIndex);
+    const courtLabel = court.name;
+
+    const courtChips = COURTS.map((c, i) => ({
+      key: i, name: c.name,
+      onClick: () => this.selectCourt(i),
+      style: i === this.state.activeCourtIndex
+        ? {padding:'9px 20px', borderRadius:'20px', fontSize:'13.5px', fontWeight:700, cursor:'pointer', background:'#5C3BEB', color:'#fff', whiteSpace:'nowrap', flexShrink:0}
+        : {padding:'9px 20px', borderRadius:'20px', fontSize:'13.5px', fontWeight:700, cursor:'pointer', background:'#fff', color:'#5A5A68', border:'1px solid #E4E1F5', whiteSpace:'nowrap', flexShrink:0}
+    }));
+
+    const slots = defs.map((s, i) => {
+      const isSelected = sel.includes(i);
+      let style = {
+        padding:'14px 8px', borderRadius:'10px', border:'1px solid #E4E4EA',
+        textAlign:'center', fontWeight:600, fontSize:'13.5px', cursor:'pointer',
+        userSelect:'none', transition:'all .12s', background:'#fff', color:'#222'
+      };
+      let statusText = 'Tersedia';
+      if(s.booked){
+        style = {...style, background:'#F1F1F4', color:'#B3B3BD', borderColor:'#ECECEF', cursor:'not-allowed'};
+        statusText = 'Terisi';
+      } else if(isSelected){
+        style = {...style, background:'#5C3BEB', color:'#fff', borderColor:'#5C3BEB', boxShadow:'0 4px 10px rgba(92,59,235,.3)'};
+        statusText = 'Dipilih';
+      }
+      return {
+        key: i, time: s.time, style, statusText,
+        onClick: s.booked ? undefined : () => this.toggleSlot(i)
+      };
+    });
+
+    const duration = sel.length;
+    const total = duration * HOUR_PRICE;
+    const timeRangeLabel = hasSelection ? (defs[min].time.split(' - ')[0] + ' - ' + defs[max].time.split(' - ')[1]) : '';
+
+    const r = this.state.receipt;
+    const tab = this.state.activeTab;
+    const tabBase = {padding:'9px 20px', borderRadius:'9px', fontSize:'13.5px', fontWeight:700, cursor:'pointer', color:'#6E6E80'};
+    const tabActive = {...tabBase, background:'#fff', boxShadow:'0 1px 4px rgba(30,20,80,.12)', color:'#1E1E28'};
+    const tabStyle = {
+      ticket: tab === 'ticket' ? tabActive : tabBase,
+      lapangan: tab === 'lapangan' ? tabActive : tabBase,
+      potongan: tab === 'potongan' ? tabActive : tabBase,
+      item: tab === 'item' ? tabActive : tabBase,
+    };
+
+    return {
+      dateLabel: this.getDateLabel(),
+      slots,
+      courtChips,
+      courtLabel,
+      isTicketTab: tab === 'ticket',
+      isLapanganTab: tab === 'lapangan',
+      isPotonganTab: tab === 'potongan',
+      isItemTab: tab === 'item',
+      tabStyle,
+      selectTab_ticket: () => this.selectTab('ticket'),
+      selectTab_lapangan: () => this.selectTab('lapangan'),
+      selectTab_potongan: () => this.selectTab('potongan'),
+      selectTab_item: () => this.selectTab('item'),
+      showPaid: this.state.paid,
+      showEmpty: !this.state.paid && !hasSelection,
+      showSelection: !this.state.paid && hasSelection,
+      timeRangeLabel,
+      durationLabel: duration + ' jam',
+      totalLabel: this.state.paid ? formatRupiah(0) : formatRupiah(total),
+      receiptCourt: r ? r.court : '',
+      receiptDate: r ? r.date : '',
+      receiptTime: r ? r.time : '',
+      receiptDuration: r ? r.duration : '',
+      receiptTotal: r ? r.total : '',
+      cancelOrder: () => this.cancelOrder(),
+      newOrder: () => this.newOrder(),
+      payOrder: () => this.payOrder(),
+      payButtonStyle: {
+        flex:1, textAlign:'center', padding:'13px', borderRadius:'30px',
+        fontWeight:700, fontSize:'14px',
+        background: hasSelection ? '#5C3BEB' : '#D9D5F5',
+        color: '#fff',
+        cursor: hasSelection ? 'pointer' : 'not-allowed'
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

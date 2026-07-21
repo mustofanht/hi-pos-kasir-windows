@@ -22,6 +22,7 @@ import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 
 class SaleCartPageController extends GetxController {
@@ -202,8 +203,17 @@ class SaleCartPageController extends GetxController {
 
   removeListAddon(CartAddon val) {
     addonList.remove(val);
+    if (val.rentModel != null) {
+      // Lepas juga pilihan jam pada tab Booking Lapangan.
+      _lapanganController?.onCartRentRemoved(val);
+    }
     calculateTotalOrder();
   }
+
+  SaleLapanganPageController? get _lapanganController =>
+      Get.isRegistered<SaleLapanganPageController>()
+          ? Get.find<SaleLapanganPageController>()
+          : null;
 
   addpotongan(PotonganEntity potongan) {
     if (memberVoucher.isTrue) {
@@ -563,6 +573,7 @@ class SaleCartPageController extends GetxController {
       potonganList.clear();
       voucherList.clear();
       depositList.clear();
+      _lapanganController?.onCartCleared();
       calculateTotalOrder();
       updateCustomer();
       // clear and back payment page

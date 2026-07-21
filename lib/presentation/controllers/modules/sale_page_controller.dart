@@ -46,7 +46,7 @@ class SalePageController extends GetxController
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
   }
 

@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_addon_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_cart_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/sale/sale_lapangan_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_payment_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_voucher_page.dart';
@@ -33,7 +34,7 @@ class SalePage extends GetView<SalePageController> {
               color: colorStyle.lightGrey,
               child: Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.screenWidth / 7),
+                    horizontal: layoutStyle.screenWidth / 12),
                 child: TabBar(
                   controller: controller.tabController,
                   indicator: BoxDecoration(
@@ -48,6 +49,7 @@ class SalePage extends GetView<SalePageController> {
                   unselectedLabelColor: colorStyle.black,
                   tabs: const [
                     Tab(text: 'Ticket'),
+                    Tab(text: 'Lapangan'),
                     Tab(text: 'Potongan'),
                     Tab(text: 'Item'),
                   ],
@@ -59,6 +61,7 @@ class SalePage extends GetView<SalePageController> {
                 controller: controller.tabController,
                 children: const [
                   SaleTicketPage(),
+                  SaleLapanganPage(),
                   SaleVoucherPage(),
                   SaleAddonPage(),
                 ],
