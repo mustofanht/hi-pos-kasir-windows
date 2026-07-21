@@ -54,7 +54,10 @@ class _CustomButtonState extends State<CustomButton> {
                 mainAxisAlignment: widget.labelAlignment,
                 children: [
                   widget.prefixIcon ?? Container(),
-                  widget.label,
+                  // Label dibungkus Flexible supaya menyusut mengikuti lebar
+                  // tombol, bukan meluber (RenderFlex overflowed) saat tombol
+                  // sempit — mis. tombol ikon di halaman Pesanan & Member.
+                  Flexible(child: widget.label),
                   widget.suffixIcon ?? Container(),
                 ],
               ),

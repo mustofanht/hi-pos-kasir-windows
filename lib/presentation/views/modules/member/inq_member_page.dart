@@ -74,6 +74,11 @@ class InqMemberPage extends GetView<InqMemberPageController> {
                   ),
                 ),
               ),
+              // Tombol ikon ini sempit, padding bawaan ElevatedButton (16px
+              // kiri-kanan) tidak menyisakan ruang untuk ikonnya.
+              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                EdgeInsets.zero,
+              ),
             ),
             label: Icon(
               Icons.search,
@@ -103,6 +108,9 @@ class InqMemberPage extends GetView<InqMemberPageController> {
                     layoutStyle.defaultMargin / 2,
                   ),
                 ),
+              ),
+              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                EdgeInsets.zero,
               ),
             ),
             label: Icon(Icons.add, color: colorStyle.white),
