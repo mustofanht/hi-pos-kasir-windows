@@ -143,9 +143,14 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                                         style: textStyle.blackText
                                             .copyWith(fontSize: fontSize.small),
                                       ),
+                                      // Aula (okupansi terbuka): jam selesai bernilai
+                                      // sentinel 9999 — tampilkan status "Terpakai",
+                                      // bukan jam palsu. Lihat MANUAL_OUT_AULA_MOBILE.md §3.
                                       AutoSizeText(
-                                        dateTimeUtil.dateFormat(
-                                            e.endDate!, 'HH:mm'),
+                                        e.endDate!.year >= 9999
+                                            ? 'Terpakai'
+                                            : dateTimeUtil.dateFormat(
+                                                e.endDate!, 'HH:mm'),
                                         style: textStyle.blackText
                                             .copyWith(fontSize: fontSize.small),
                                       ),

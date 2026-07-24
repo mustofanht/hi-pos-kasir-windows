@@ -43,6 +43,15 @@ class CustomSelectHoursRentController extends GetxController {
 
   final isLoading = false.obs;
 
+  /// Item dengan Minimal Lama Sewa = 0 disewa tanpa batas waktu: harganya flat
+  /// mengikuti setup Back Office (boleh Rp0) dan item baru kembali Available
+  /// lewat Manual Out, bukan karena jamnya habis. Karena itu Extra Time dan
+  /// Jumlah Jam tidak boleh diutak-atik kasir.
+  ///
+  /// Sengaja hanya menengok minRentPrd, bukan harga — Back Office tetap boleh
+  /// memberi item seperti ini harga flat selain Rp0.
+  bool get isZeroMinRent => entitiy.minRentPrd == 0;
+
   @override
   Future<void> onInit() async {
     // TODO: implement onInit
@@ -115,6 +124,7 @@ class CustomSelectHoursRentController extends GetxController {
   }
 
   doMinHours() {
+    if (isZeroMinRent) return;
     int totalHours = int.tryParse(totalHoursController.text) ?? 0;
     if (totalHours > minHours.value) {
       if (totalHours > 0) {
@@ -126,6 +136,7 @@ class CustomSelectHoursRentController extends GetxController {
   }
 
   doAddHours() {
+    if (isZeroMinRent) return;
     int totalHours = int.tryParse(totalHoursController.text) ?? 0;
     totalHours++;
     totalHoursController.text = totalHours.toString();
@@ -155,11 +166,13 @@ class CustomSelectHoursRentController extends GetxController {
   }
 
   doCheckIsExtraTime() {
+    if (isZeroMinRent) return;
     isExtraTime.value = !isExtraTime.value;
     update();
   }
 
   doSelectTransactionBefore() {
+    if (isZeroMinRent) return;
     if (isExtraTime.value) {
       dialog.selectListTransaction(
         entitiy: entitiy,

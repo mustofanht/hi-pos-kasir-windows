@@ -8,6 +8,7 @@ class AppStringConstant {
   final String none = "None";
   final String all = "All";
   final String sessionInformation = "session_information";
+  final String activeLocation = "active_location";
   final String pathImages = "assets/images/";
   final String pathImagesSvg = "assets/images/svg/";
   final String pathIcons = "assets/icons/";

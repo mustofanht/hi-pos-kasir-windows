@@ -280,7 +280,7 @@ class SaleLapanganPage extends GetView<SaleLapanganPageController> {
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),
-          itemCount: SaleLapanganPageController.totalSlot,
+          itemCount: controller.totalSlot,
           itemBuilder: (context, index) => slotCell(index),
         ),
       );

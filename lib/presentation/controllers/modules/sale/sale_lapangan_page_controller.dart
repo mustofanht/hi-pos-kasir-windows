@@ -5,11 +5,11 @@ import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
-import 'package:jaya_propertiy/data/dummy/lapangan_dummy.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
@@ -27,16 +27,46 @@ class SaleLapanganPageController extends GetxController {
   final _service = MainService();
   final _authToken = Get.arguments[argConstant.authToken];
 
-  /// Jadwal dibuka jam 06:00, slot terakhir 22:00 - 23:00.
-  static const int startHour = 6;
-  static const int closeHour = 23;
-  static const int totalSlot = closeHour - startHour;
+  /// Jam buka & tutup jadwal sepenuhnya diturunkan dari setup harga tiket
+  /// lapangan aktif (ticket_price_time): [startHour] = jam mulai paling awal,
+  /// [closeHour] = jam tutup paling akhir. Tidak ada jadwal hardcode — bila
+  /// tiket belum punya rentang harga, jadwal kosong ([totalSlot] = 0).
+  int get startHour => _activeCourtHourRange()?[0] ?? 0;
+  int get closeHour => _activeCourtHourRange()?[1] ?? 0;
+  int get totalSlot => closeHour > startHour ? closeHour - startHour : 0;
+
+  /// `[startHour, endHour]` dari rentang harga tiket lapangan aktif, atau `null`
+  /// bila tidak ada. endHour bersifat eksklusif (jam tutup), sejalan dengan
+  /// semantik harga `startHour <= jam < endHour` di [_calculateTicketPrice].
+  List<int>? _activeCourtHourRange() {
+    final productId = activeCourt?.productId;
+    if (productId == null) return null;
+    final priceTimes = _ticketPriceTimesMap[productId];
+    if (priceTimes == null || priceTimes.isEmpty) return null;
+
+    int? minStart;
+    int? maxEnd;
+    for (final pt in priceTimes) {
+      final s = pt.startHour;
+      final e = pt.endHour;
+      if (s == null || e == null) continue;
+      if (minStart == null || s < minStart) minStart = s;
+      if (maxEnd == null || e > maxEnd) maxEnd = e;
+    }
+    if (minStart == null || maxEnd == null || maxEnd <= minStart) return null;
+    return [minStart, maxEnd];
+  }
 
   /// Batas halaman yang ditarik saat mengambil daftar lapangan / riwayat rental.
   static const int _maxPage = 6;
 
   final courtList = <AddonEntity>[].obs;
   final activeCourtIndex = 0.obs;
+
+  /// Mapping dari productId tiket lapangan ke ticketPriceTimes untuk kalkulasi harga.
+  /// Key: ticketId (sama dengan productId di AddonEntity)
+  /// Value: List<TicketPriceTimeEntity> dari TicketEntity
+  final Map<int, List<TicketPriceTimeEntity>> _ticketPriceTimesMap = {};
 
   /// Index slot yang sudah dibooking (dari server) untuk lapangan aktif.
   final bookedSlot = <int>{}.obs;
@@ -131,9 +161,7 @@ class SaleLapanganPageController extends GetxController {
   LapanganSlotStatus slotStatus(int index) {
     if (bookedSlot.contains(index)) return LapanganSlotStatus.terisi;
     if (selectedSlot.contains(index)) return LapanganSlotStatus.dipilih;
-    // Saat mode dummy, seluruh jam dibiarkan terbuka supaya desain tetap bisa
-    // ditinjau kapan pun tanpa separuh grid berubah jadi "Lewat".
-    if (!LapanganDummy.enabled && slotEndDate(index).isBefore(DateTime.now())) {
+    if (slotEndDate(index).isBefore(DateTime.now())) {
       return LapanganSlotStatus.lewat;
     }
     return LapanganSlotStatus.tersedia;
@@ -152,14 +180,15 @@ class SaleLapanganPageController extends GetxController {
     }
   }
 
-  /// Ambil semua lapangan (produk sewa per jam) sebagai chip.
+  /// Ambil semua lapangan (tiket dengan ticket_fl_lapangan='Y').
   Future<void> doPrepareCourtList() async {
     if (isLoading.value) return;
     isLoading.value = true;
 
-    courtList.value = LapanganDummy.enabled
-        ? lapanganDummy.courtList()
-        : await _fetchCourtList();
+    // HANYA ambil tiket lapangan (ticket_fl_lapangan='Y'); lapangan nempel di
+    // tiket, bukan produk hourly.
+    courtList.value = await _fetchLapanganTickets();
+
     isLoading.value = false;
 
     if (courtList.isNotEmpty) {
@@ -171,37 +200,59 @@ class SaleLapanganPageController extends GetxController {
     update();
   }
 
-  Future<List<AddonEntity>> _fetchCourtList() async {
+  /// Ambil tiket lapangan (ticket_fl_lapangan='Y') dari mst_ticket.
+  Future<List<AddonEntity>> _fetchLapanganTickets() async {
     final List<AddonEntity> collected = [];
     try {
-      int page = 0;
-      int totalPage = 1;
-      while (page < totalPage && page < _maxPage) {
-        var result;
-        result = await _service.sale.addonService.getHourly(
-          authToken: _authToken,
-          locationId: sessionUtil.getLocationId(),
-          page: page,
-        );
+      Map<String, dynamic> param = {
+        'locationId': sessionUtil.getLocationIdsQueryParam(),
+      };
 
-        bool stop = false;
-        result.fold(
-          (l) {
-            logger.safeLog(l);
-            stop = true;
-          },
-          (r) {
-            collected.addAll(r.data ?? <AddonEntity>[]);
-            totalPage = r.pagination?.totalPage ?? 1;
-          },
-        );
-        if (stop) break;
-        page++;
-      }
+      var result = await _service.sale.ticketService.getLapangan(
+        authToken: _authToken,
+        paramsFilter: param,
+      );
+
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+        },
+        (r) {
+          // Konversi TicketEntity ke AddonEntity
+          final tickets = r.data ?? [];
+          for (final ticket in tickets) {
+            final addon = _convertTicketToAddon(ticket);
+            collected.add(addon);
+            
+            // Simpan ticketPriceTimes untuk digunakan saat kalkulasi harga
+            final ticketId = ticket.ticketId;
+            final priceTimes = ticket.ticketPriceTimes;
+            if (ticketId != null && priceTimes != null) {
+              _ticketPriceTimesMap[ticketId] = priceTimes;
+            }
+          }
+        },
+      );
     } catch (e) {
       logger.safeLog(e);
     }
     return collected;
+  }
+
+  /// Konversi TicketEntity ke AddonEntity agar bisa dipakai di UI lapangan.
+  AddonEntity _convertTicketToAddon(dynamic ticket) {
+    return AddonEntity(
+      productId: ticket.ticketId,
+      productName: ticket.ticketName,
+      productType: 'L', // L = Lapangan (dari tiket)
+      productPrice: ticket.ticketPrice,
+      productLoc: ticket.ticketLocation,
+      productLocName: ticket.ticketLocationName,
+      productState: ticket.ticketState,
+      pathImg: ticket.pathImg,
+      minRentPrd: ticket.ticketMinimum,
+      productRentType: 'H', // Hourly
+    );
   }
 
   /// Tandai slot yang sudah terisi untuk lapangan aktif pada hari ini.
@@ -212,9 +263,8 @@ class SaleLapanganPageController extends GetxController {
     isLoadingSchedule.value = true;
     bookedSlot.clear();
 
-    final List<TransactionEntity> collected = LapanganDummy.enabled
-        ? lapanganDummy.bookedTransactionList(productId)
-        : await _fetchBookedTransactionList(productId);
+    final List<TransactionEntity> collected =
+        await _fetchBookedTransactionList(productId);
 
     bookedSlot
       ..clear()
@@ -233,10 +283,9 @@ class SaleLapanganPageController extends GetxController {
       int page = 0;
       int totalPage = 1;
       while (page < totalPage && page < _maxPage) {
-        var result;
-        result = await _service.transaction.getTransactionRentalHistory(
+        final result = await _service.transaction.getTransactionRentalHistory(
           authToken: _authToken,
-          locId: sessionUtil.getLocationId()!,
+          locParam: sessionUtil.getLocationIdsQueryParam(),
           prodId: productId,
           page: page,
         );
@@ -405,9 +454,8 @@ class SaleLapanganPageController extends GetxController {
     isSyncingCart.value = true;
     for (final group in groups) {
       final hours = group.length;
-      final double? price = LapanganDummy.enabled
-          ? lapanganDummy.priceRental(hours: hours)
-          : await _fetchPriceRental(productId: productId, hours: hours);
+      final double? price =
+          await _fetchPriceRental(productId: productId, hours: hours);
       if (price == null) continue;
 
       // Pakai salinan entity supaya harga per jam pada chip tidak ikut tertimpa.
@@ -432,14 +480,33 @@ class SaleLapanganPageController extends GetxController {
   }
 
   /// Harga total untuk [hours] jam, `null` bila gagal diambil.
+  /// 
+  /// Untuk produk (product_type='H'), ambil dari endpoint mst_product_time/range.
+  /// Untuk tiket lapangan (product_type='L'), hitung dari ticketPriceTimes.
   Future<double?> _fetchPriceRental({
     required int productId,
     required int hours,
   }) async {
     double? price;
+    
+    // Cek apakah ini tiket lapangan atau produk hourly
+    final court = courtList.firstWhere(
+      (c) => c.productId == productId,
+      orElse: () => AddonEntity(),
+    );
+    
+    // Jika ini tiket lapangan (type='L'), hitung harga dari ticketPriceTimes
+    if (court.productType == 'L') {
+      price = _calculateTicketPrice(productId);
+      if (price == null) {
+        alert.error('Error', 'Harga untuk durasi $hours jam tidak ditemukan');
+      }
+      return price;
+    }
+    
+    // Jika ini produk hourly, ambil dari backend seperti biasa
     try {
-      var result;
-      result = await _service.rental.getPriceRental(
+      final result = await _service.rental.getPriceRental(
         authToken: _authToken,
         hours: hours,
         productId: productId,
@@ -458,5 +525,63 @@ class SaleLapanganPageController extends GetxController {
       logger.safeLog(e);
     }
     return price;
+  }
+  
+  /// Hitung harga booking tiket lapangan berdasarkan jam yang dipilih.
+  /// 
+  /// Menggunakan data ticketPriceTimes yang sudah diambil dari backend.
+  /// Logic mengikuti backend resolveBookPrice(): untuk setiap jam,
+  /// cari rentang harga yang cocok (startHour <= hour < endHour).
+  double? _calculateTicketPrice(int ticketId) {
+    try {
+      // Ambil ticketPriceTimes dari map
+      final priceTimes = _ticketPriceTimesMap[ticketId];
+      if (priceTimes == null || priceTimes.isEmpty) {
+        logger.safeLog('ticketPriceTimes tidak ditemukan untuk ticket $ticketId');
+        return null;
+      }
+      
+      // Ambil slot yang dipilih
+      final selectedSlots = selectionByCourt[ticketId] ?? [];
+      if (selectedSlots.isEmpty) return null;
+      
+      double totalPrice = 0;
+      
+      // Loop setiap jam yang dipilih untuk menghitung harga
+      for (final slotIndex in selectedSlots) {
+        // Konversi slot index ke jam (0 = 06:00, 1 = 07:00, dst)
+        final hour = startHour + slotIndex;
+        
+        // Cari harga yang cocok dengan jam ini
+        double? hourPrice;
+        for (final priceTime in priceTimes) {
+          final startHourPrice = priceTime.startHour;
+          final endHourPrice = priceTime.endHour;
+          final priceValue = priceTime.price;
+          
+          if (startHourPrice == null || endHourPrice == null || priceValue == null) {
+            continue;
+          }
+          
+          // Semantik: hour cocok jika startHour <= hour < endHour
+          if (startHourPrice <= hour && hour < endHourPrice) {
+            hourPrice = priceValue;
+            break;
+          }
+        }
+        
+        if (hourPrice == null) {
+          logger.safeLog('Harga untuk jam $hour:00 tidak ditemukan di ticketPriceTimes');
+          return null;
+        }
+        
+        totalPrice += hourPrice;
+      }
+      
+      return totalPrice;
+    } catch (e) {
+      logger.safeLog('Error calculating ticket price: $e');
+      return null;
+    }
   }
 }

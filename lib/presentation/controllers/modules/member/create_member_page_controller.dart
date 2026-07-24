@@ -43,6 +43,30 @@ class CreateMemberPageController extends GetxController {
 
   var listRelation = <CustomIdNameEntity>[].obs;
 
+  /// Check In & Check Out transaksi Member.
+  ///
+  /// Untuk sekarang nilainya hanya ditampung di aplikasi dan sengaja belum
+  /// ikut dikirim lewat [getFormBodyOrder] — field-nya belum tersedia di API,
+  /// jadi mengirimnya hanya akan diabaikan backend.
+  final checkInTime = Rxn<DateTime>(null);
+  final checkOutTime = Rxn<DateTime>(null);
+
+  void doSelectCheckIn(DateTime value) {
+    checkInTime.value = value;
+    // Check Out yang terlanjur dipilih lebih awal ikut dikosongkan, supaya
+    // tidak tertinggal sebagai rentang waktu mundur yang lolos diam-diam.
+    final DateTime? checkOut = checkOutTime.value;
+    if (checkOut != null && !checkOut.isAfter(value)) {
+      checkOutTime.value = null;
+    }
+    update();
+  }
+
+  void doSelectCheckOut(DateTime value) {
+    checkOutTime.value = value;
+    update();
+  }
+
   @override
   void onInit() {
     // TODO: implement onInit

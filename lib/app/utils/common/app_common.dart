@@ -247,11 +247,11 @@ class AppCommon {
     logger.safeLog("Start getImagePromo ----------------------------- ");
     final _service = MainService();
     try {
-      var locId = sessionUtil.getLocationId();
-      if (locId != null) {
+      var locParam = sessionUtil.getLocationIdsQueryParam();
+      if (locParam.isNotEmpty) {
         var result = await _service.promo.getPromoByLoc(
           authToken: authToken,
-          locId: locId,
+          locParam: locParam,
         );
         result.fold((l) {
           logger.safeLog(l);
@@ -279,11 +279,11 @@ class AppCommon {
     logger.safeLog("Start getImagePromo ----------------------------- ");
     final _service = MainService();
     try {
-      var locId = sessionUtil.getLocationId();
-      if (locId != null) {
+      var locParam = sessionUtil.getLocationIdsQueryParam();
+      if (locParam.isNotEmpty) {
         var result = await _service.promo.getPromoByLoc(
           authToken: authToken,
-          locId: locId,
+          locParam: locParam,
         );
         result.fold((l) {
           logger.safeLog(l);

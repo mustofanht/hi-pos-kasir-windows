@@ -269,7 +269,8 @@ class SaleVoucherPageController extends GetxController {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'flMobile': 'Y',
-        'locationId': sessionUtil.getLocationId().toString(),
+        // Kirim seluruh lokasi user agar voucher semua lokasi tampil sekaligus.
+        'locationId': sessionUtil.getLocationIdsQueryParam(),
       };
 
       result = await _service.sale.voucherService.getAllPotongan(

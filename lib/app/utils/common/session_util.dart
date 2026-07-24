@@ -33,6 +33,11 @@ class AppSessionUtil {
       _store.remove(constant.authentication);
     }
 
+    // Hanya dipanggil saat login, jadi aman membuang pilihan lokasi di sini:
+    // tanpa ini, lokasi aktif milik user sebelumnya terbawa ke user yang baru
+    // masuk di perangkat yang sama.
+    _store.remove(constant.activeLocation);
+
     logger.safeLog(
         'JWT updateToken : ${JwtDecoder.decode(authToken.token ?? "")}');
     _store.write(constant.authentication, authToken.toJson());
@@ -70,7 +75,22 @@ class AppSessionUtil {
     return unitId;
   }
 
+  /// Lokasi yang dipakai seluruh pemanggilan API.
+  ///
+  /// Ini satu-satunya sumber lokasi di aplikasi — 12 pemanggil di berbagai
+  /// modul semuanya lewat sini. Karena itu dukungan multi-lokasi cukup
+  /// diterapkan dengan mengganti isi fungsi ini, tanpa menyentuh pemanggilnya
+  /// satu per satu.
+  ///
+  /// Urutannya: lokasi aktif pilihan kasir bila ada dan sah, selain itu
+  /// lokasi utama dari token.
   int? getLocationId() {
+    return getActiveLocationId() ?? getDefaultLocationId();
+  }
+
+  /// Lokasi utama (`locId`) dari token — perilaku aplikasi sebelum ada
+  /// konsep lokasi aktif.
+  int? getDefaultLocationId() {
     int? unitId = null;
     try {
       Map<String, dynamic> data = _store.read(constant.authentication);
@@ -84,6 +104,99 @@ class AppSessionUtil {
       logger.safeLog(e);
     }
     return unitId;
+  }
+
+  /// Seluruh lokasi yang boleh diakses user (`locIds`).
+  ///
+  /// Daftar kosong berarti tanpa pembatasan — bukan berarti user tidak punya
+  /// lokasi. Perbedaan ini menentukan arti kembalian [isLocationAllowed].
+  List<int> getAllowedLocationIdList() {
+    List<int> locationIdList = [];
+    try {
+      Map<String, dynamic> data = _store.read(constant.authentication);
+      AuthToken authToken = AuthToken.fromJson(data);
+
+      final dynamic claim =
+          JwtDecoder.decode(authToken.token ?? "")['user']['locIds'];
+      if (claim is List) {
+        for (final dynamic item in claim) {
+          final int? value = item is int ? item : int.tryParse('$item');
+          if (value != null) {
+            locationIdList.add(value);
+          }
+        }
+      }
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    return locationIdList;
+  }
+
+  bool isLocationAllowed(int locationId) {
+    final List<int> allowed = getAllowedLocationIdList();
+    // Daftar kosong = tanpa pembatasan, jadi lokasi mana pun sah.
+    return allowed.isEmpty || allowed.contains(locationId);
+  }
+
+  /// Daftar lokasi yang dikirim ke endpoint pembacaan multi-lokasi (kasir).
+  ///
+  /// Untuk menampilkan data seluruh lokasi milik user sekaligus, kirim daftar
+  /// dari klaim `locIds`. Bila user tidak dibatasi (`locIds` kosong), aplikasi
+  /// tidak dapat menyebut "semua lokasi" satu per satu, jadi jatuh ke lokasi
+  /// utama saja. Backend tetap memotong daftar ini terhadap hak akses user
+  /// (lihat BACKEND_MULTI_LOKASI.md bagian 5).
+  List<int> getLocationIdListForQuery() {
+    final List<int> allowed = getAllowedLocationIdList();
+    if (allowed.isNotEmpty) return allowed;
+    final int? fallback = getDefaultLocationId();
+    return fallback != null ? [fallback] : [];
+  }
+
+  /// Bentuk siap-kirim daftar lokasi sebagai satu query param, mis. `"1,2,5"`.
+  ///
+  /// Backend (`List<Integer> locationId`) menerima format koma ini. Untuk user
+  /// satu lokasi hasilnya sama seperti sebelumnya (`"5"`), jadi aman dipakai
+  /// menggantikan pengiriman lokasi tunggal pada endpoint query-param.
+  String getLocationIdsQueryParam() {
+    return getLocationIdListForQuery().join(",");
+  }
+
+  /// Lokasi aktif yang dipilih kasir, atau null bila belum memilih.
+  ///
+  /// Pilihan yang tidak lagi sah — misalnya hak akses user dicabut sejak
+  /// terakhir memilih — sengaja diabaikan dan ikut dibersihkan, supaya
+  /// aplikasi jatuh kembali ke lokasi utama alih-alih memakai lokasi
+  /// terlarang secara diam-diam.
+  int? getActiveLocationId() {
+    try {
+      final dynamic stored = _store.read(constant.activeLocation);
+      if (stored == null) return null;
+
+      final int? locationId =
+          stored is int ? stored : int.tryParse('$stored');
+      if (locationId == null) return null;
+
+      if (!isLocationAllowed(locationId)) {
+        _store.remove(constant.activeLocation);
+        return null;
+      }
+      return locationId;
+    } catch (e) {
+      logger.safeLog(e);
+      return null;
+    }
+  }
+
+  void setActiveLocationId(int? locationId) {
+    if (locationId == null) {
+      _store.remove(constant.activeLocation);
+      return;
+    }
+    if (!isLocationAllowed(locationId)) {
+      logger.safeLog('Lokasi $locationId di luar hak akses user, diabaikan.');
+      return;
+    }
+    _store.write(constant.activeLocation, locationId);
   }
 
   int? getRoleId() {

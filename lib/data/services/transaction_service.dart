@@ -5,7 +5,8 @@ class TransactionService {
       getTransactionRentalHistory({
     required AuthToken authToken,
     String? search,
-    required int locId,
+    // Daftar lokasi siap-kirim, mis. "1,2,5". Backend menerima List<Integer>.
+    required String locParam,
     int? prodId,
     required int page,
   }) async {
@@ -16,7 +17,9 @@ class TransactionService {
     if (prodId != null) {
       path += "prodId=$prodId&";
     }
-    path += "locId=$locId&";
+    if (locParam.isNotEmpty) {
+      path += "locId=$locParam&";
+    }
     path += "page=$page&size=${PAGINATIONS_CONSTANT.LIMIT_PAGE.toString()}";
 
     final uri = source.baseUri(

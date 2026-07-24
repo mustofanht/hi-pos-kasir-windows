@@ -8,12 +8,6 @@ enum Environment {
 }
 
 extension EnvironmentExt on Environment {
-  // CATATAN: local, dev, dan production sengaja menunjuk host yang sama karena
-  // saat ini backend-nya memang tunggal. Begitu server produksi berdiri
-  // sendiri, ketiganya harus dipisah — sekaligus ganti cara pemilihan
-  // environment di network_source.dart, yang sekarang masih berupa baris
-  // komentar yang ditukar manual sehingga build dev bisa ter-commit dalam
-  // keadaan menunjuk produksi.
   String get url {
     switch (this) {
       case Environment.local:

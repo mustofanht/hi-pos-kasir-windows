@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 // import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_payment.dart';
+import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/create_member_page_controller.dart';
@@ -273,6 +275,72 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
             );
     }
 
+    Widget _leftCheckInOutSection() {
+      return Obx(
+        () => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CustomDateTimePicker(
+                firstState: false,
+                type: DateTimePickerType.OnlyTime,
+                dateFormat: 'HH:mm',
+                newDate: controller.checkInTime.value,
+                onDateChanged: controller.doSelectCheckIn,
+                padding: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin,
+                  vertical: layoutStyle.defaultMargin / 4,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                label: Text(
+                  'Check In',
+                  style: textStyle.greyText.copyWith(
+                    fontSize: fontSize.small,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: CustomDateTimePicker(
+                firstState: false,
+                type: DateTimePickerType.OnlyTime,
+                dateFormat: 'HH:mm',
+                newDate: controller.checkOutTime.value,
+                onDateChanged: controller.doSelectCheckOut,
+                // Komponennya sendiri menolak jam sebelum Check In lengkap
+                // dengan peringatan, jadi rentang mundur tidak perlu dijaga
+                // ulang di sini.
+                minDateTime: controller.checkInTime.value,
+                padding: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin,
+                  vertical: layoutStyle.defaultMargin / 4,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                label: Text(
+                  'Check Out',
+                  style: textStyle.greyText.copyWith(
+                    fontSize: fontSize.small,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     Widget _leftFormSection() {
       return Expanded(
         child: SingleChildScrollView(
@@ -474,6 +542,7 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                   border: InputBorder.none,
                 ),
               ),
+              _leftCheckInOutSection(),
               _leftAnggotaSection(),
               _leftFormPaymentMethod(),
             ],
