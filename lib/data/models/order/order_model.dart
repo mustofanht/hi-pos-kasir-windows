@@ -1,4 +1,5 @@
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_booked_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
@@ -31,6 +32,10 @@ class OrderModel {
   List<OrderDepositModel> listDepositUse;
   List<ResponseCreateTicketNoEntity>? listCreateTicket;
 
+  /// Booking lapangan per jam. Kosong/null untuk order non-lapangan (blok
+  /// aditif di backend — order biasa tidak terpengaruh).
+  List<OrderBookedModel>? trnOrderBookeds;
+
   OrderModel({
     this.orderName,
     this.orderPhoneNumber,
@@ -56,6 +61,7 @@ class OrderModel {
     required this.listVoucherPrice,
     required this.listDepositUse,
     this.listCreateTicket,
+    this.trnOrderBookeds,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -91,6 +97,11 @@ class OrderModel {
       listCreateTicket: json['listCreateTicket']
           .map((e) => ResponseCreateTicketNoEntity.fromJson(e))
           .toList(),
+      trnOrderBookeds: json['trnOrderBookeds'] == null
+          ? null
+          : (json['trnOrderBookeds'] as List)
+              .map((e) => OrderBookedModel.fromJson(e))
+              .toList(),
     );
   }
 
@@ -121,6 +132,9 @@ class OrderModel {
       "listCreateTicket": listCreateTicket == null
           ? []
           : listCreateTicket?.map((e) => e.toJson()).toList(),
+      "trnOrderBookeds": trnOrderBookeds == null
+          ? []
+          : trnOrderBookeds!.map((e) => e.toJson()).toList(),
     };
   }
 }

@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_booked_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
@@ -277,6 +278,7 @@ class SalePageController extends GetxController
     List<OrderPotonganModel> listPotongan = [];
     List<OrderVoucherModel> listVoucher = [];
     List<OrderDepositModel> listDeposit = [];
+    List<OrderBookedModel> listBooked = [];
 
     double totalPrice = 0;
     int countTotal = 0;
@@ -298,30 +300,55 @@ class SalePageController extends GetxController
       );
     }
     if (addonList.isNotEmpty) {
-      listProduct.addAll(
-        addonList.map(
-          (element) {
-            totalPrice += element.totalPrice!;
-            countTotal += element.qtyOrder ?? 0;
-            return OrderAddonModel(
-              addOn: element.addon,
-              ordadAddonId: element.addon?.productId,
-              ordadTotalAddon: element.qtyOrder!,
-              ordadTotalAmount: element.totalPrice!,
-              rentHdrDtl: element.rentModel == null
-                  ? null
-                  : OrderRentalModel(
-                      hour: element.rentModel!.totalHours!,
-                      amount: element.rentModel!.newBuyPrice,
-                      startDate: element.rentModel!.startDate,
-                      endDate: element.rentModel!.endDate,
-                      orderNumberExtra:
-                          element.rentModel!.transactionExtra?.orderNumber,
-                    ),
-            );
-          },
-        ),
-      );
+      for (final element in addonList) {
+        totalPrice += element.totalPrice!;
+        countTotal += element.qtyOrder ?? 0;
+
+        // Booking lapangan (tiket, productType 'L') dikirim sebagai
+        // trnOrderBookeds — 1 elemen per jam — bukan sebagai produk/addon.
+        // Backend menghitung harga otoritatif, memvalidasi anti dobel-booking,
+        // dan menerbitkan e-tiket (QR). Lihat BOOKING_LAPANGAN_CEK_BACKEND.md §2.2.
+        final bool isLapanganBooking =
+            element.rentModel != null && element.addon?.productType == 'L';
+
+        if (isLapanganBooking) {
+          final int? ticketId = element.addon?.productId;
+          final DateTime? start = element.rentModel!.startDate;
+          final int hours = element.rentModel!.totalHours ?? 0;
+          if (ticketId != null && start != null) {
+            for (int i = 0; i < hours; i++) {
+              final DateTime slot = start.add(Duration(hours: i));
+              listBooked.add(
+                OrderBookedModel(
+                  bookTicketid: ticketId,
+                  bookHour: slot.hour,
+                  bookDate: DateTime(slot.year, slot.month, slot.day),
+                ),
+              );
+            }
+          }
+          continue;
+        }
+
+        listProduct.add(
+          OrderAddonModel(
+            addOn: element.addon,
+            ordadAddonId: element.addon?.productId,
+            ordadTotalAddon: element.qtyOrder!,
+            ordadTotalAmount: element.totalPrice!,
+            rentHdrDtl: element.rentModel == null
+                ? null
+                : OrderRentalModel(
+                    hour: element.rentModel!.totalHours!,
+                    amount: element.rentModel!.newBuyPrice,
+                    startDate: element.rentModel!.startDate,
+                    endDate: element.rentModel!.endDate,
+                    orderNumberExtra:
+                        element.rentModel!.transactionExtra?.orderNumber,
+                  ),
+          ),
+        );
+      }
     }
     // if (voucherList.isNotEmpty) {
     //   int count = 0;
@@ -527,6 +554,7 @@ class SalePageController extends GetxController
       listVoucher: listPotongan,
       listVoucherPrice: listVoucher,
       listDepositUse: listDeposit,
+      trnOrderBookeds: listBooked,
     );
   }
 

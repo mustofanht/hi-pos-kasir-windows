@@ -13,6 +13,7 @@ class TrnOrderEntity {
   String? orderPaidByName;
   String? orderSource;
   String? orderStatus;
+  String? locationName;
   dynamic voucher;
   dynamic ppn;
   TrnOrderCustomerDetail? customerDetail;
@@ -31,6 +32,7 @@ class TrnOrderEntity {
     this.orderPaidByName,
     this.orderSource,
     this.orderStatus,
+    this.locationName,
     this.voucher,
     this.ppn,
     this.customerDetail,
@@ -52,6 +54,7 @@ class TrnOrderEntity {
       orderPaidByName: json['orderPaidByName'],
       orderSource: json['orderSource'],
       orderStatus: json['orderStatus'],
+      locationName: json['locationName'],
       voucher: json['voucher'],
       ppn: json['ppn'],
       customerDetail: TrnOrderCustomerDetail.fromJson(json['customerDetail']),
@@ -73,6 +76,7 @@ class TrnOrderEntity {
       'orderPaidByName': orderPaidByName,
       'orderSource': orderSource,
       'orderStatus': orderStatus,
+      'locationName': locationName,
       'voucher': voucher,
       'ppn': ppn,
       'customerDetail': customerDetail?.toJson(),

@@ -10,7 +10,6 @@ import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
-import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
@@ -56,9 +55,6 @@ class SaleLapanganPageController extends GetxController {
     if (minStart == null || maxEnd == null || maxEnd <= minStart) return null;
     return [minStart, maxEnd];
   }
-
-  /// Batas halaman yang ditarik saat mengambil daftar lapangan / riwayat rental.
-  static const int _maxPage = 6;
 
   final courtList = <AddonEntity>[].obs;
   final activeCourtIndex = 0.obs;
@@ -263,66 +259,53 @@ class SaleLapanganPageController extends GetxController {
     isLoadingSchedule.value = true;
     bookedSlot.clear();
 
-    final List<TransactionEntity> collected =
-        await _fetchBookedTransactionList(productId);
+    final List<int> bookedHours = await _fetchBookedHours(productId);
 
     bookedSlot
       ..clear()
-      ..addAll(_mapBookedSlot(collected));
+      ..addAll(_hoursToSlotIndexes(bookedHours));
 
     _dropSelectionOnBookedSlot();
     isLoadingSchedule.value = false;
     update();
   }
 
-  Future<List<TransactionEntity>> _fetchBookedTransactionList(
-    int productId,
-  ) async {
-    final List<TransactionEntity> collected = [];
+  /// Ambil jam terisi court dari endpoint booking yang benar
+  /// (`mst_ticket/lapangan/booked`, membaca `trn_order_booked`). Ini sumber
+  /// yang tepat untuk booking berbasis tiket — endpoint rental-history lama
+  /// menyasar `trn_order_addon` sehingga tak pernah menandai slot lapangan.
+  Future<List<int>> _fetchBookedHours(int productId) async {
     try {
-      int page = 0;
-      int totalPage = 1;
-      while (page < totalPage && page < _maxPage) {
-        final result = await _service.transaction.getTransactionRentalHistory(
-          authToken: _authToken,
-          locParam: sessionUtil.getLocationIdsQueryParam(),
-          prodId: productId,
-          page: page,
-        );
+      final now = DateTime.now();
+      final String date =
+          '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-        bool stop = false;
-        result.fold(
-          (l) {
-            logger.safeLog(l);
-            stop = true;
-          },
-          (r) {
-            collected.addAll(r.data ?? <TransactionEntity>[]);
-            totalPage = r.pagination?.totalPage ?? 1;
-          },
-        );
-        if (stop) break;
-        page++;
-      }
+      final result = await _service.sale.ticketService.getBookedHours(
+        authToken: _authToken,
+        ticketId: productId,
+        date: date,
+      );
+
+      List<int> hours = <int>[];
+      result.fold(
+        (l) => logger.safeLog(l),
+        (r) => hours = r,
+      );
+      return hours;
     } catch (e) {
       logger.safeLog(e);
+      return <int>[];
     }
-    return collected;
   }
 
-  /// Sebuah slot dianggap terisi bila beririsan dengan salah satu transaksi.
-  Set<int> _mapBookedSlot(List<TransactionEntity> transactionList) {
+  /// Konversi jam absolut dari server (mis. 15) ke index sel grid
+  /// (`jam - startHour`). Jam di luar rentang jadwal aktif diabaikan.
+  Set<int> _hoursToSlotIndexes(List<int> hours) {
     final booked = <int>{};
-    for (final trx in transactionList) {
-      final start = trx.startDate;
-      final end = trx.endDate;
-      if (start == null || end == null) continue;
-      for (var index = 0; index < totalSlot; index++) {
-        final slotStart = slotStartDate(index);
-        final slotEnd = slotEndDate(index);
-        if (start.isBefore(slotEnd) && end.isAfter(slotStart)) {
-          booked.add(index);
-        }
+    for (final hour in hours) {
+      final index = hour - startHour;
+      if (index >= 0 && index < totalSlot) {
+        booked.add(index);
       }
     }
     return booked;

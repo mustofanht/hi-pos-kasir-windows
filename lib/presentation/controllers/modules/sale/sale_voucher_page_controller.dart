@@ -162,15 +162,14 @@ class SaleVoucherPageController extends GetxController {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'flMobile': 'Y',
-        // 'locationId': sessionUtil.getLocationId().toString(),
       };
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'vpLocId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getLocationId().toString(),
-        )!,
-      );
+      // Filter lokasi lewat param khusus `locationId` (backend memecahnya jadi
+      // List<Integer>), bukan lewat `filter`. Kosong = seluruh lokasi hak akses
+      // user (REKAP_PENYESUAIAN_MOBILE.md §2).
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
+      if (locationIds.isNotEmpty) {
+        param['locationId'] = locationIds;
+      }
       dataFilter.add(
         apiFilterUtil.addSearch(
           'vpState',
@@ -311,16 +310,14 @@ class SaleVoucherPageController extends GetxController {
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'search': search,
         // 'flMobile': 'Y',
-        // 'locationId': sessionUtil.getLocationId().toString(),
       };
+      // Filter lokasi lewat param khusus `locationId` (backend → List<Integer>),
+      // bukan lewat `filter`. Kosong = seluruh lokasi hak akses user.
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
+      if (locationIds.isNotEmpty) {
+        param['locationId'] = locationIds;
+      }
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'dpLocId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getLocationId().toString(),
-        )!,
-      );
       dataFilter.add(
         apiFilterUtil.addSearch(
           'dpState',

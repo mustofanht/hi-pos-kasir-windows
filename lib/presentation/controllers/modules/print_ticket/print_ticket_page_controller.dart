@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 
 class PrintTicketPageController extends GetxController
@@ -117,6 +118,13 @@ class PrintTicketPageController extends GetxController
     );
     listColumnHeader.add(
       CustomTableData(
+        id: 'locName',
+        columnName: 'Lokasi',
+        alignment: Alignment.centerLeft,
+      ),
+    );
+    listColumnHeader.add(
+      CustomTableData(
         id: 'orderSource',
         columnName: 'Source Order',
         alignment: Alignment.center,
@@ -185,14 +193,14 @@ class PrintTicketPageController extends GetxController
         'desc': 'orderDate',
       };
 
-      // Filter by location ID
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'locId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getLocationId(),
-        )!,
-      );
+      // Filter lokasi lewat param khusus `locationId` (backend memecahnya jadi
+      // List<Integer>), bukan lewat `filter` — koma pada IN akan dipotong Spring
+      // dan menghasilkan 400 "Filter Invalid format". Kosong = seluruh lokasi
+      // hak akses user (aturan backend, lihat REKAP_PENYESUAIAN_MOBILE.md §2).
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
+      if (locationIds.isNotEmpty) {
+        param['locationId'] = locationIds;
+      }
 
       if (search != '' && search != null) {
         // If there's a search term, filter by order number
@@ -230,6 +238,8 @@ class PrintTicketPageController extends GetxController
       result.fold(
         (l) {
           logger.safeLog(l);
+          // Tampilkan pesan backend (mis. 403 akses lokasi) saat load awal.
+          if (page == 0) alert.warning('Perhatian', l.toString());
         },
         (r) {
           if (r.data != null) {

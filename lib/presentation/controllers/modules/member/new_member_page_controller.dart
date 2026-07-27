@@ -8,6 +8,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 
@@ -54,13 +55,14 @@ class NewMemberPageController extends GetxController {
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
       };
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'membLocId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getLocationId(),
-        )!,
-      );
+      // Filter lokasi lewat param khusus `locationId` (backend memecahnya jadi
+      // List<Integer>), bukan lewat `filter`. Kosong = seluruh lokasi hak akses
+      // user (REKAP_PENYESUAIAN_MOBILE.md §2).
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
+      if (locationIds.isNotEmpty) {
+        param['locationId'] = locationIds;
+      }
+
       dataFilter.add(
         apiFilterUtil.addSearch(
           'membState',
@@ -78,6 +80,8 @@ class NewMemberPageController extends GetxController {
       result.fold((l) {
         logger.safeLog(l);
         isLoading.value = false;
+        // Tampilkan pesan backend (mis. 403 akses lokasi) saat load awal.
+        if (page == 0) alert.warning('Perhatian', l.toString());
       }, (r) {
         if (page == 0) {
           dataList.value = r.data!;

@@ -376,17 +376,34 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(model.orderNumber ?? ''),
+                                    Text(
+                                      model.orderNumber ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                     SizedBox(
-                                      height: layoutStyle.defaultMargin,
+                                      height: layoutStyle.defaultMargin / 2,
                                     ),
                                     Text(
                                       model.orderName ?? '',
                                       // model.customerDetail?.custName ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontWeight: fontWeight.bold,
                                       ),
                                     ),
+                                    if (model.locationName != null &&
+                                        model.locationName!.isNotEmpty)
+                                      Text(
+                                        model.locationName!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: fontSize.small,
+                                          color: colorStyle.grey,
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -396,14 +413,20 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(dateTimeUtil.getFormattedDate(
-                                      date: model.orderDate!,
-                                      format: dateFormat.hourMinutes)),
+                                  Text(
+                                    dateTimeUtil.getFormattedDate(
+                                        date: model.orderDate!,
+                                        format: dateFormat.hourMinutes),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   SizedBox(
-                                    height: layoutStyle.defaultMargin,
+                                    height: layoutStyle.defaultMargin / 2,
                                   ),
                                   Text(
                                     'Rp.${common.currencyFormat(model.orderTotalAmt ?? 0)}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: colorStyle.primary,
                                     ),
