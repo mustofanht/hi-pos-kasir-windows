@@ -43,11 +43,11 @@ class CreateMemberPageController extends GetxController {
 
   var listRelation = <CustomIdNameEntity>[].obs;
 
-  /// Check In & Check Out transaksi Member.
+  /// Jadwal les renang: jam Check In & Check Out mingguan member.
   ///
-  /// Untuk sekarang nilainya hanya ditampung di aplikasi dan sengaja belum
-  /// ikut dikirim lewat [getFormBodyOrder] — field-nya belum tersedia di API,
-  /// jadi mengirimnya hanya akan diabaikan backend.
+  /// Dikirim lewat [getFormBodyOrder] sebagai "HH:mm" dan disimpan di enrollment
+  /// (`OrderRegmember.reg_check_in/out`) oleh backend. Hanya relevan untuk
+  /// membership les renang; membership lain membiarkannya null.
   final checkInTime = Rxn<DateTime>(null);
   final checkOutTime = Rxn<DateTime>(null);
 
@@ -310,7 +310,15 @@ class CreateMemberPageController extends GetxController {
       orderPaidBy: paymentMethod,
       membership: membership,
       listMember: getSelectedRelations(),
+      checkIn: _formatTime(checkInTime.value),
+      checkOut: _formatTime(checkOutTime.value),
       // orderEmail: '',
     );
+  }
+
+  /// Format jam ke "HH:mm" untuk payload jadwal les renang; null bila kosong.
+  String? _formatTime(DateTime? value) {
+    if (value == null) return null;
+    return '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
   }
 }

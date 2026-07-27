@@ -73,7 +73,7 @@ class HomePage extends GetView<HomePageController> {
                     child: Container(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        controller.user.value.locationName ?? '',
+                        controller.topbarLocationLabel,
                         style: textStyle.whiteText.copyWith(
                           fontSize: fontSize.title,
                           fontWeight: fontWeight.bold,

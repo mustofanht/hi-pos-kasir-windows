@@ -50,6 +50,22 @@ class HomePageController extends GetxController {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  /// Label lokasi di topbar.
+  ///
+  /// User multi-lokasi (punya >1 lokasi hak akses, atau tanpa pembatasan)
+  /// menampilkan **nama unit** — mewakili gabungan lokasi. User satu lokasi
+  /// tetap menampilkan nama lokasinya. Nama semua lokasi tidak tersedia di sisi
+  /// mobile (token hanya membawa id lokasi), jadi nama unit dipakai sebagai
+  /// wakilnya.
+  String get topbarLocationLabel {
+    final allowed = sessionUtil.getAllowedLocationIdList();
+    final bool isMultiLocation = allowed.length != 1;
+    if (isMultiLocation) {
+      return user.value.unitName ?? user.value.locationName ?? '';
+    }
+    return user.value.locationName ?? '';
+  }
+
   @override
   void onInit() {
     // TODO: implement onInit
