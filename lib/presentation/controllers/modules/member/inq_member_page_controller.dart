@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -19,7 +18,12 @@ class InqMemberPageController extends GetxController
   InqMemberPageController();
 
   final _service = MainService();
-  final _authToken = Get.arguments[argConstant.authToken];
+
+  // Ambil token dari MemberPageController (header) yang menyimpannya saat halaman
+  // dibuka, bukan dari Get.arguments — controller ini bisa di-recreate lewat
+  // clearAndRefreshMenu (mis. selesai transaksi member) saat Get.arguments null,
+  // sehingga Get.arguments[...] melempar NoSuchMethodError ("[]" on null).
+  final _authToken = Get.find<MemberPageController>().authToken;
 
   final searchController = TextEditingController();
   final listColumnHeader = <CustomTableData>[].obs;
