@@ -43,30 +43,6 @@ class CreateMemberPageController extends GetxController {
 
   var listRelation = <CustomIdNameEntity>[].obs;
 
-  /// Jadwal les renang: jam Check In & Check Out mingguan member.
-  ///
-  /// Dikirim lewat [getFormBodyOrder] sebagai "HH:mm" dan disimpan di enrollment
-  /// (`OrderRegmember.reg_check_in/out`) oleh backend. Hanya relevan untuk
-  /// membership les renang; membership lain membiarkannya null.
-  final checkInTime = Rxn<DateTime>(null);
-  final checkOutTime = Rxn<DateTime>(null);
-
-  void doSelectCheckIn(DateTime value) {
-    checkInTime.value = value;
-    // Check Out yang terlanjur dipilih lebih awal ikut dikosongkan, supaya
-    // tidak tertinggal sebagai rentang waktu mundur yang lolos diam-diam.
-    final DateTime? checkOut = checkOutTime.value;
-    if (checkOut != null && !checkOut.isAfter(value)) {
-      checkOutTime.value = null;
-    }
-    update();
-  }
-
-  void doSelectCheckOut(DateTime value) {
-    checkOutTime.value = value;
-    update();
-  }
-
   @override
   void onInit() {
     // TODO: implement onInit
@@ -310,15 +286,7 @@ class CreateMemberPageController extends GetxController {
       orderPaidBy: paymentMethod,
       membership: membership,
       listMember: getSelectedRelations(),
-      checkIn: _formatTime(checkInTime.value),
-      checkOut: _formatTime(checkOutTime.value),
       // orderEmail: '',
     );
-  }
-
-  /// Format jam ke "HH:mm" untuk payload jadwal les renang; null bila kosong.
-  String? _formatTime(DateTime? value) {
-    if (value == null) return null;
-    return '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
   }
 }

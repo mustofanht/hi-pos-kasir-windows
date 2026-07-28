@@ -10,6 +10,11 @@ class MemberDetail {
   String? regNextReset;
   DateTime? regEffFrom;
   DateTime? regEffTo;
+
+  /// Jadwal les renang tersimpan (format backend "HH:mm:ss"); null bila belum
+  /// pernah diatur. Dipakai untuk pre-fill dialog "Member Detail" saat kasir.
+  String? regCheckIn;
+  String? regCheckOut;
   String? regCreatedDate;
   String? regCreatedBy;
   String? regUpdatedDate;
@@ -28,6 +33,8 @@ class MemberDetail {
     this.regNextReset,
     this.regEffFrom,
     this.regEffTo,
+    this.regCheckIn,
+    this.regCheckOut,
     this.regCreatedDate,
     this.regCreatedBy,
     this.regUpdatedDate,
@@ -54,6 +61,8 @@ class MemberDetail {
       regEffTo: json['regEffTo'] != null
           ? DateTime.parse(json['regEffTo']).toLocal()
           : null,
+      regCheckIn: json['regCheckIn']?.toString(),
+      regCheckOut: json['regCheckOut']?.toString(),
       regCreatedDate: json['regCreatedDate'],
       regCreatedBy: json['regCreatedBy'],
       regUpdatedDate: json['regUpdatedDate'],
@@ -75,6 +84,8 @@ class MemberDetail {
       'regNextReset': regNextReset,
       'regEffFrom': regEffFrom?.toIso8601String(),
       'regEffTo': regEffTo?.toIso8601String(),
+      'regCheckIn': regCheckIn,
+      'regCheckOut': regCheckOut,
       'regCreatedDate': regCreatedDate,
       'regCreatedBy': regCreatedBy,
       'regUpdatedDate': regUpdatedDate,

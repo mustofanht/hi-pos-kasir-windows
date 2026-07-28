@@ -88,6 +88,12 @@ class SalePageController extends GetxController
 
   final memberNo = TextEditingController();
 
+  /// Jadwal les renang yang dipilih kasir di dialog "Member Detail" (format
+  /// "HH:mm"). Dikirim di [OrderModel.checkIn]/[OrderModel.checkOut]; backend
+  /// menyimpannya ke enrollment aktif member. Null bila jadwal tidak diaktifkan.
+  String? memberCheckIn;
+  String? memberCheckOut;
+
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
   final orderNo = Rxn<String>(null);
@@ -112,6 +118,8 @@ class SalePageController extends GetxController
     alamatController.text = '';
     keteranganVoucher.text = '';
     memberNo.text = '';
+    memberCheckIn = null;
+    memberCheckOut = null;
     doInitialValueDropdown();
     doSelectPaymentType(
       CustomIdNameEntity(
@@ -555,6 +563,8 @@ class SalePageController extends GetxController
       listVoucherPrice: listVoucher,
       listDepositUse: listDeposit,
       trnOrderBookeds: listBooked,
+      checkIn: memberCheckIn,
+      checkOut: memberCheckOut,
     );
   }
 
@@ -614,8 +624,12 @@ class SalePageController extends GetxController
           logger.safeLog('DATA : ${memberValid.toJson()}');
 
           await dialog.paymentMember(
-            onNext: (selectedMemberAnggotas) async {
+            onNext: (selectedMemberAnggotas, checkIn, checkOut) async {
               String memberNoStr = memberNo.text;
+              // Simpan jadwal les yang dipilih kasir agar ikut terkirim di
+              // body order (getBodyOrder) → backend update enrollment member.
+              memberCheckIn = checkIn;
+              memberCheckOut = checkOut;
               // logger.safeLog(
               //   'qtyVoucher ==========================================================> $qtyVoucher',
               // );

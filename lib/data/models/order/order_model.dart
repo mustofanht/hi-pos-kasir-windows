@@ -36,6 +36,13 @@ class OrderModel {
   /// aditif di backend — order biasa tidak terpengaruh).
   List<OrderBookedModel>? trnOrderBookeds;
 
+  /// Jadwal les renang (opsional): jam check-in/out mingguan, format "HH:mm".
+  /// Diisi saat kasir "cek member" bila jadwal diaktifkan; backend menyimpannya
+  /// ke enrollment aktif member (reg_check_in/reg_check_out). Null untuk order
+  /// non-member atau saat jadwal tidak diaktifkan.
+  String? checkIn;
+  String? checkOut;
+
   OrderModel({
     this.orderName,
     this.orderPhoneNumber,
@@ -62,6 +69,8 @@ class OrderModel {
     required this.listDepositUse,
     this.listCreateTicket,
     this.trnOrderBookeds,
+    this.checkIn,
+    this.checkOut,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -102,6 +111,8 @@ class OrderModel {
           : (json['trnOrderBookeds'] as List)
               .map((e) => OrderBookedModel.fromJson(e))
               .toList(),
+      checkIn: json['checkIn'],
+      checkOut: json['checkOut'],
     );
   }
 
@@ -135,6 +146,8 @@ class OrderModel {
       "trnOrderBookeds": trnOrderBookeds == null
           ? []
           : trnOrderBookeds!.map((e) => e.toJson()).toList(),
+      "checkIn": checkIn,
+      "checkOut": checkOut,
     };
   }
 }
