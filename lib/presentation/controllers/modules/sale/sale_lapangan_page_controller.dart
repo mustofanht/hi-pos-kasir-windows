@@ -71,6 +71,12 @@ class SaleLapanganPageController extends GetxController {
   /// supaya pindah chip tidak menghapus pesanan lapangan lain di keranjang.
   final selectionByCourt = <int, List<int>>{}.obs;
 
+  /// Slot yang paling terakhir disentuh kasir, dipakai untuk menentukan harga
+  /// yang ditampilkan di label "Harga Rp .. / jam" — supaya saat mengklik jam
+  /// dengan tarif berbeda (mis. 19:00), label ikut berubah. Null = belum ada
+  /// interaksi (pakai tarif rentang paling awal sebagai acuan).
+  final lastPricedSlot = Rxn<int>(null);
+
   final isLoading = false.obs;
   final isLoadingSchedule = false.obs;
   final isSyncingCart = false.obs;
@@ -106,18 +112,47 @@ class SaleLapanganPageController extends GetxController {
 
   /// Harga per jam untuk label ringkas di header jadwal. Diambil dari setup
   /// harga per sesi tiket (ticket_price_time), BUKAN harga umum tiket yang bisa
-  /// 0. Bila ada beberapa rentang, dipakai harga rentang paling awal sebagai
-  /// acuan; harga aktual per jam tetap dihitung akurat di [_calculateTicketPrice].
+  /// 0. Mengikuti jam yang paling terakhir disentuh kasir supaya saat mengklik
+  /// jam bertarif berbeda (mis. 19:00), label ikut menyesuaikan. Bila belum ada
+  /// interaksi, dipakai tarif rentang paling awal sebagai acuan.
   double get pricePerHour {
     final productId = activeCourt?.productId;
-    if (productId != null) {
-      final priceTimes = _ticketPriceTimesMap[productId];
-      if (priceTimes != null && priceTimes.isNotEmpty) {
-        final price = priceTimes.first.price;
-        if (price != null) return price;
-      }
+    if (productId == null) return activeCourt?.productPrice ?? 0;
+
+    // Jam acuan: slot terakhir disentuh, kalau tidak ada pakai slot terpilih
+    // terakhir; kalau masih kosong, biarkan null → pakai rentang paling awal.
+    int? refSlot = lastPricedSlot.value;
+    if (refSlot == null) {
+      final selected = selectionByCourt[productId];
+      if (selected != null && selected.isNotEmpty) refSlot = selected.last;
+    }
+
+    if (refSlot != null) {
+      final price = _priceAtHour(productId, startHour + refSlot);
+      if (price != null) return price;
+    }
+
+    final priceTimes = _ticketPriceTimesMap[productId];
+    if (priceTimes != null && priceTimes.isNotEmpty) {
+      final price = priceTimes.first.price;
+      if (price != null) return price;
     }
     return activeCourt?.productPrice ?? 0;
+  }
+
+  /// Harga satu jam [hour] pada [productId] dari ticket_price_time; null bila
+  /// tidak ada rentang yang cocok. Semantik: startHour <= hour < endHour
+  /// (sama dengan backend resolveBookPrice & [_calculateTicketPrice]).
+  double? _priceAtHour(int productId, int hour) {
+    final priceTimes = _ticketPriceTimesMap[productId];
+    if (priceTimes == null || priceTimes.isEmpty) return null;
+    for (final pt in priceTimes) {
+      final s = pt.startHour;
+      final e = pt.endHour;
+      if (s == null || e == null || pt.price == null) continue;
+      if (s <= hour && hour < e) return pt.price;
+    }
+    return null;
   }
 
   /// Contoh: "Selasa, 14 Jul 2026".
@@ -345,6 +380,9 @@ class SaleLapanganPageController extends GetxController {
     // Tulis dulu pilihan lapangan lama ke keranjang sebelum pindah chip.
     _flushSyncCart();
     activeCourtIndex.value = index;
+    // Acuan harga ikut lapangan aktif; jam terpilih di lapangan baru (bila ada)
+    // akan mengisi ulang lewat getter pricePerHour.
+    lastPricedSlot.value = null;
     update();
     doPrepareSchedule();
   }
@@ -364,8 +402,14 @@ class SaleLapanganPageController extends GetxController {
     final current = List<int>.from(selectedSlot);
     if (current.contains(index)) {
       current.remove(index);
+      // Kalau jam yang jadi acuan harga dilepas, alihkan ke jam terpilih
+      // terakhir (atau kosong) supaya label harga tetap masuk akal.
+      if (lastPricedSlot.value == index) {
+        lastPricedSlot.value = current.isNotEmpty ? current.last : null;
+      }
     } else {
       current.add(index);
+      lastPricedSlot.value = index;
     }
     current.sort();
     selectionByCourt[productId] = current;
