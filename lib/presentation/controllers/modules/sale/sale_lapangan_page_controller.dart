@@ -104,7 +104,21 @@ class SaleLapanganPageController extends GetxController {
 
   String get courtLabel => activeCourt?.productName ?? '-';
 
-  double get pricePerHour => activeCourt?.productPrice ?? 0;
+  /// Harga per jam untuk label ringkas di header jadwal. Diambil dari setup
+  /// harga per sesi tiket (ticket_price_time), BUKAN harga umum tiket yang bisa
+  /// 0. Bila ada beberapa rentang, dipakai harga rentang paling awal sebagai
+  /// acuan; harga aktual per jam tetap dihitung akurat di [_calculateTicketPrice].
+  double get pricePerHour {
+    final productId = activeCourt?.productId;
+    if (productId != null) {
+      final priceTimes = _ticketPriceTimesMap[productId];
+      if (priceTimes != null && priceTimes.isNotEmpty) {
+        final price = priceTimes.first.price;
+        if (price != null) return price;
+      }
+    }
+    return activeCourt?.productPrice ?? 0;
+  }
 
   /// Contoh: "Selasa, 14 Jul 2026".
   String get dateLabel {
