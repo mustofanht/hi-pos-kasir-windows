@@ -22,7 +22,9 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
       //   bebas disewakan untuk jam kosong lain → tap = jual normal.
       // - available (hijau): kosong.
       final bool occupiedNow = e.isBooked == 'Y';
-      final bool bookedLater = !occupiedNow && e.upcomingBookStart != null;
+      final bool bookedLater = !occupiedNow &&
+          e.upcomingBookingsText != null &&
+          e.upcomingBookingsText!.isNotEmpty;
       final Color statusBorder = occupiedNow
           ? colorStyle.red
           : bookedLater
@@ -177,12 +179,11 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                                         ),
                                       ),
                                       AutoSizeText(
-                                        // Okupansi terbuka (jam tutup sentinel 9999)
-                                        // ditampilkan sebagai "Mulai HH:mm" saja.
-                                        (e.upcomingBookEnd != null &&
-                                                e.upcomingBookEnd!.year >= 9999)
-                                            ? 'Mulai ${dateTimeUtil.dateFormat(e.upcomingBookStart!, 'HH:mm')}'
-                                            : '${dateTimeUtil.dateFormat(e.upcomingBookStart!, 'HH:mm')} - ${dateTimeUtil.dateFormat(e.upcomingBookEnd!, 'HH:mm')}',
+                                        // Semua booking hari ini, sudah dirangkai
+                                        // backend (WIB), mis. "15:00-16:00, 19:00-20:00".
+                                        e.upcomingBookingsText!,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 3,
                                         style: textStyle.blackText.copyWith(
                                             fontSize: fontSize.small),
                                       ),
