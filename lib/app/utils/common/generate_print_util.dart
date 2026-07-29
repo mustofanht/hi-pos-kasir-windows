@@ -212,6 +212,11 @@ class GeneratePrintUtil {
         );
       }
     }
+    // Booking lapangan: dicetak dengan format yang SAMA seperti sewa item
+    // (nama court + rentang jam + durasi + harga) lewat buildListRentalPayment.
+    for (var element in body.lapanganPrintLines ?? <OrderAddonModel>[]) {
+      bytes += buildListRentalPayment(generator, element);
+    }
     // List voucher Order
     // double totalPotongan = 0;
     for (var element in body.listVoucher) {

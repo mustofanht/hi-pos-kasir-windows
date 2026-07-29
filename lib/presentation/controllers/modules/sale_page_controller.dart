@@ -331,6 +331,9 @@ class SalePageController extends GetxController
     List<OrderVoucherModel> listVoucher = [];
     List<OrderDepositModel> listDeposit = [];
     List<OrderBookedModel> listBooked = [];
+    // Baris lapangan HANYA untuk cetak struk (tidak dikirim ke backend),
+    // diformat sama seperti sewa item.
+    List<OrderAddonModel> listBookedPrint = [];
 
     double totalPrice = 0;
     int countTotal = 0;
@@ -379,6 +382,22 @@ class SalePageController extends GetxController
               );
             }
           }
+          // Baris cetak lapangan: diformat seperti sewa item (nama + rentang jam
+          // + durasi + harga) lewat buildListRentalPayment yang sama.
+          listBookedPrint.add(
+            OrderAddonModel(
+              addOn: element.addon,
+              ordadAddonId: ticketId,
+              ordadTotalAddon: hours,
+              ordadTotalAmount: element.totalPrice!,
+              rentHdrDtl: OrderRentalModel(
+                hour: hours,
+                amount: element.rentModel!.newBuyPrice,
+                startDate: element.rentModel!.startDate,
+                endDate: element.rentModel!.endDate,
+              ),
+            ),
+          );
           continue;
         }
 
@@ -607,6 +626,7 @@ class SalePageController extends GetxController
       listVoucherPrice: listVoucher,
       listDepositUse: listDeposit,
       trnOrderBookeds: listBooked,
+      lapanganPrintLines: listBookedPrint,
       checkIn: memberCheckIn,
       checkOut: memberCheckOut,
     );

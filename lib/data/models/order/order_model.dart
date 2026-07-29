@@ -36,6 +36,12 @@ class OrderModel {
   /// aditif di backend — order biasa tidak terpengaruh).
   List<OrderBookedModel>? trnOrderBookeds;
 
+  /// HANYA untuk cetak struk: baris booking lapangan yang sudah diformat seperti
+  /// sewa item (nama court + rentang jam + durasi + harga). TIDAK dikirim ke
+  /// backend (booking sebenarnya lewat [trnOrderBookeds]); diisi di getBodyOrder
+  /// dan tidak masuk toJson.
+  List<OrderAddonModel>? lapanganPrintLines;
+
   /// Jadwal les renang (opsional): jam check-in/out mingguan, format "HH:mm".
   /// Diisi saat kasir "cek member" bila jadwal diaktifkan; backend menyimpannya
   /// ke enrollment aktif member (reg_check_in/reg_check_out). Null untuk order
@@ -69,6 +75,7 @@ class OrderModel {
     required this.listDepositUse,
     this.listCreateTicket,
     this.trnOrderBookeds,
+    this.lapanganPrintLines,
     this.checkIn,
     this.checkOut,
   });
