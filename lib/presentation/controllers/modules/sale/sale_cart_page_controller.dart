@@ -22,7 +22,10 @@ import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 
 class SaleCartPageController extends GetxController {
@@ -214,6 +217,34 @@ class SaleCartPageController extends GetxController {
       Get.isRegistered<SaleLapanganPageController>()
           ? Get.find<SaleLapanganPageController>()
           : null;
+
+  /// Muat ulang daftar semua tab penjualan (Ticket, Lapangan, Potongan, Item)
+  /// langsung dari server supaya status/stok/harga tersinkron tanpa perlu
+  /// logout ulang. Dipanggil setiap transaksi selesai (lihat [clearCartOrder]):
+  /// mis. status item aula berubah "Terpakai" atau slot lapangan jadi terisi
+  /// akan langsung terlihat begitu order beres.
+  void refreshSaleLists() {
+    try {
+      if (Get.isRegistered<SaleTicketPageController>()) {
+        Get.find<SaleTicketPageController>().doPrepareList(page: 0);
+      }
+      if (Get.isRegistered<SaleLapanganPageController>()) {
+        Get.find<SaleLapanganPageController>().doPrepareCourtList();
+      }
+      if (Get.isRegistered<SaleVoucherPageController>()) {
+        Get.find<SaleVoucherPageController>().doPrepareList(page: 0);
+      }
+      if (Get.isRegistered<SaleAddonPageController>()) {
+        final addonController = Get.find<SaleAddonPageController>();
+        addonController.doPrepareList(
+          page: 0,
+          typeProduct: addonController.selectedTypeItemList.value.id ?? 'H',
+        );
+      }
+    } catch (e) {
+      logger.safeLog(e);
+    }
+  }
 
   addpotongan(PotonganEntity potongan) {
     if (memberVoucher.isTrue) {
@@ -587,6 +618,9 @@ class SaleCartPageController extends GetxController {
       salePageController.openPayment(false);
       salePageController.refreshForm();
       salePageController.update();
+      // Transaksi selesai: muat ulang daftar semua tab agar status/stok/harga
+      // langsung sinkron (mis. item aula jadi "Terpakai") tanpa perlu logout.
+      refreshSaleLists();
     } catch (e) {
       logger.safeLog(e);
     }

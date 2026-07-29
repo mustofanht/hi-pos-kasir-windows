@@ -30,7 +30,11 @@ import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 
 class SalePageController extends GetxController
     with SingleGetTickerProviderMixin {
@@ -68,6 +72,46 @@ class SalePageController extends GetxController
   var tabIndex = 0.obs;
   void changeTabIndex(int index) {
     tabIndex.value = index;
+    // Setiap pindah tab, muat ulang daftar tab tujuan dari server supaya data
+    // selalu terkini tanpa perlu logout (mis. booking/okupansi dari device lain
+    // atau transaksi sebelumnya langsung terlihat).
+    _refreshTab(index);
+  }
+
+  /// Muat ulang daftar untuk tab tertentu berdasarkan indeks:
+  /// 0=Ticket, 1=Lapangan, 2=Potongan, 3=Item. Aman dipanggil walau controller
+  /// tab belum terdaftar (di-skip; controller memuat sendiri saat pertama dibuka).
+  void _refreshTab(int index) {
+    try {
+      switch (index) {
+        case 0:
+          if (Get.isRegistered<SaleTicketPageController>()) {
+            Get.find<SaleTicketPageController>().doPrepareList(page: 0);
+          }
+          break;
+        case 1:
+          if (Get.isRegistered<SaleLapanganPageController>()) {
+            Get.find<SaleLapanganPageController>().doPrepareCourtList();
+          }
+          break;
+        case 2:
+          if (Get.isRegistered<SaleVoucherPageController>()) {
+            Get.find<SaleVoucherPageController>().doPrepareList(page: 0);
+          }
+          break;
+        case 3:
+          if (Get.isRegistered<SaleAddonPageController>()) {
+            final addonController = Get.find<SaleAddonPageController>();
+            addonController.doPrepareList(
+              page: 0,
+              typeProduct: addonController.selectedTypeItemList.value.id ?? 'H',
+            );
+          }
+          break;
+      }
+    } catch (e) {
+      logger.safeLog(e);
+    }
   }
 
   final orderNameController = TextEditingController();
