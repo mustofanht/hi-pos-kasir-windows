@@ -277,6 +277,12 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
       return Expanded(
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
+          // Beri ruang ekstra setinggi keyboard supaya field paling bawah
+          // (Alamat/Anggota/metode bayar) bisa di-scroll naik di atas keyboard,
+          // sama seperti halaman penjualan (SalePaymentPage).
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
