@@ -495,8 +495,12 @@ class SaleLapanganPageController extends GetxController {
     isSyncingCart.value = true;
     for (final group in groups) {
       final hours = group.length;
+      // Harga dihitung HANYA untuk jam pada grup ini (blok jam berurutan),
+      // bukan seluruh pilihan court — supaya jam yang meloncat (mis. 14:00 lalu
+      // 18:00) menghasilkan 2 baris @1 jam, bukan 2 baris yang masing-masing
+      // menagih total semua jam.
       final double? price =
-          await _fetchPriceRental(productId: productId, hours: hours);
+          await _fetchPriceRental(productId: productId, slotIndexes: group);
       if (price == null) continue;
 
       // Pakai salinan entity supaya harga per jam pada chip tidak ikut tertimpa.
@@ -526,19 +530,20 @@ class SaleLapanganPageController extends GetxController {
   /// Untuk tiket lapangan (product_type='L'), hitung dari ticketPriceTimes.
   Future<double?> _fetchPriceRental({
     required int productId,
-    required int hours,
+    required List<int> slotIndexes,
   }) async {
     double? price;
-    
+    final int hours = slotIndexes.length;
+
     // Cek apakah ini tiket lapangan atau produk hourly
     final court = courtList.firstWhere(
       (c) => c.productId == productId,
       orElse: () => AddonEntity(),
     );
-    
+
     // Jika ini tiket lapangan (type='L'), hitung harga dari ticketPriceTimes
     if (court.productType == 'L') {
-      price = _calculateTicketPrice(productId);
+      price = _calculateTicketPrice(productId, slotIndexes);
       if (price == null) {
         alert.error('Error', 'Harga untuk durasi $hours jam tidak ditemukan');
       }
@@ -568,12 +573,16 @@ class SaleLapanganPageController extends GetxController {
     return price;
   }
   
-  /// Hitung harga booking tiket lapangan berdasarkan jam yang dipilih.
-  /// 
+  /// Hitung harga booking tiket lapangan untuk jam-jam pada [slotIndexes].
+  ///
+  /// [slotIndexes] adalah blok jam yang sedang dihitung (satu baris keranjang),
+  /// BUKAN seluruh pilihan court — supaya jam yang meloncat menghasilkan harga
+  /// per baris yang benar (tidak menjumlah semua jam ke tiap baris).
+  ///
   /// Menggunakan data ticketPriceTimes yang sudah diambil dari backend.
   /// Logic mengikuti backend resolveBookPrice(): untuk setiap jam,
   /// cari rentang harga yang cocok (startHour <= hour < endHour).
-  double? _calculateTicketPrice(int ticketId) {
+  double? _calculateTicketPrice(int ticketId, List<int> slotIndexes) {
     try {
       // Ambil ticketPriceTimes dari map
       final priceTimes = _ticketPriceTimesMap[ticketId];
@@ -581,15 +590,13 @@ class SaleLapanganPageController extends GetxController {
         logger.safeLog('ticketPriceTimes tidak ditemukan untuk ticket $ticketId');
         return null;
       }
-      
-      // Ambil slot yang dipilih
-      final selectedSlots = selectionByCourt[ticketId] ?? [];
-      if (selectedSlots.isEmpty) return null;
-      
+
+      if (slotIndexes.isEmpty) return null;
+
       double totalPrice = 0;
-      
-      // Loop setiap jam yang dipilih untuk menghitung harga
-      for (final slotIndex in selectedSlots) {
+
+      // Loop setiap jam pada blok ini untuk menghitung harga
+      for (final slotIndex in slotIndexes) {
         // Konversi slot index ke jam (0 = 06:00, 1 = 07:00, dst)
         final hour = startHour + slotIndex;
         
