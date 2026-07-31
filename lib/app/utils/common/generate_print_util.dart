@@ -686,6 +686,41 @@ class GeneratePrintUtil {
     }
 
     bytes += generator.hr();
+    // Print Thank You Message (sama seperti struk penjualan biasa)
+    bytes += generator.text(
+      '>>>PERHATIAN<<<',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    bytes += generator.text(
+      '1.Jagalah barang-barang anda',
+      styles: const PosStyles(
+        align: PosAlign.left,
+      ),
+    );
+    bytes += generator.text(
+      '2.Harap struk ini disimpan dengan baik',
+      styles: const PosStyles(
+        align: PosAlign.left,
+      ),
+    );
+    bytes += generator.emptyLines(1);
+    bytes += generator.text(
+      'TIKET YANG SUDAH DI BELI',
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
+    bytes += generator.text(
+      'TIDAK DAPAT DITUKAR/DIKEMBALIKAN',
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
+    bytes += generator.text(
+      'TERIMA KASIH ATAS KUNJUNGAN ANDA',
+      styles: const PosStyles(
+        align: PosAlign.center,
+      ),
+    );
     bytes += generator.cut();
 
     return bytes;
