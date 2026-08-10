@@ -506,7 +506,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                 ),
                 Flexible(
                   child: Text(
-                    'Atur Jadwal Check In / Check Out',
+                    'Tampilkan Jadwal Ke TV ?',
                     style: textStyle.blackText.copyWith(
                       fontWeight: fontWeight.medium,
                     ),
