@@ -75,11 +75,48 @@ class CartMemberController extends GetxController {
   }
 
   updateCustomer() {
+    // Ambil nama peserta/pendaftar dari form registrasi jika tersedia
+    String? registrantName;
+    if (Get.isRegistered<CreateMemberPageController>()) {
+      final createMemberController = Get.find<CreateMemberPageController>();
+      registrantName = createMemberController.nameController.text;
+    }
+
+    // Sertakan nama peserta pada setiap item membership yang dikirim ke TV
+    final memberListWithName = membershipList.map((m) {
+      return Membership(
+        membId: m.membId,
+        membName: m.membName,
+        membDesc: m.membDesc,
+        membState: m.membState,
+        membPeriod: m.membPeriod,
+        membResetPeriod: m.membResetPeriod,
+        membResetFirstdate: m.membResetFirstdate,
+        membStartFirstdate: m.membStartFirstdate,
+        membFlSunday: m.membFlSunday,
+        membFlMonday: m.membFlMonday,
+        membFlTuesday: m.membFlTuesday,
+        membFlWednesday: m.membFlWednesday,
+        membFlThursday: m.membFlThursday,
+        membFlFriday: m.membFlFriday,
+        membFlSaturday: m.membFlSaturday,
+        membMaxType: m.membMaxType,
+        membCheckName: m.membCheckName,
+        membLocId: m.membLocId,
+        memLocName: m.memLocName,
+        membVpId: m.membVpId,
+        membKuota: m.membKuota,
+        membMaxKuota: m.membMaxKuota,
+        membRegPrice: m.membRegPrice,
+        registrantName: registrantName,
+      );
+    }).toList();
+
     displayUtil.updateSecondDisplay(
       CustomerDisplay(
         key: CustomerDisplayAction.MEMBER_ADD_CART,
         value: CustomerSaleCart(
-          memberList: membershipList,
+          memberList: memberListWithName,
           totalOrder: finalTotalOrderAmt.value,
           paymentFee: getPricePayemntFee(),
         ).toJson(),

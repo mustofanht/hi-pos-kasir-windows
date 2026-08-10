@@ -32,11 +32,12 @@ class SaleLapanganPageController extends GetxController {
   /// tiket belum punya rentang harga, jadwal kosong ([totalSlot] = 0).
   int get startHour => _activeCourtHourRange()?[0] ?? 0;
   int get closeHour => _activeCourtHourRange()?[1] ?? 0;
-  int get totalSlot => closeHour > startHour ? closeHour - startHour : 0;
+  int get totalSlot => closeHour >= startHour ? closeHour - startHour + 1 : 0;
 
   /// `[startHour, endHour]` dari rentang harga tiket lapangan aktif, atau `null`
-  /// bila tidak ada. endHour bersifat eksklusif (jam tutup), sejalan dengan
-  /// semantik harga `startHour <= jam < endHour` di [_calculateTicketPrice].
+  /// bila tidak ada. endHour bersifat inklusif (jam tutup = slot terakhir),
+  /// sejalan dengan semantik harga `startHour <= jam <= endHour` di
+  /// [_calculateTicketPrice].
   List<int>? _activeCourtHourRange() {
     final productId = activeCourt?.productId;
     if (productId == null) return null;
@@ -141,7 +142,7 @@ class SaleLapanganPageController extends GetxController {
   }
 
   /// Harga satu jam [hour] pada [productId] dari ticket_price_time; null bila
-  /// tidak ada rentang yang cocok. Semantik: startHour <= hour < endHour
+  /// tidak ada rentang yang cocok. Semantik: startHour <= hour <= endHour
   /// (sama dengan backend resolveBookPrice & [_calculateTicketPrice]).
   double? _priceAtHour(int productId, int hour) {
     final priceTimes = _ticketPriceTimesMap[productId];
@@ -150,7 +151,7 @@ class SaleLapanganPageController extends GetxController {
       final s = pt.startHour;
       final e = pt.endHour;
       if (s == null || e == null || pt.price == null) continue;
-      if (s <= hour && hour < e) return pt.price;
+      if (s <= hour && hour <= e) return pt.price;
     }
     return null;
   }
@@ -581,7 +582,7 @@ class SaleLapanganPageController extends GetxController {
   ///
   /// Menggunakan data ticketPriceTimes yang sudah diambil dari backend.
   /// Logic mengikuti backend resolveBookPrice(): untuk setiap jam,
-  /// cari rentang harga yang cocok (startHour <= hour < endHour).
+  /// cari rentang harga yang cocok (startHour <= hour <= endHour).
   double? _calculateTicketPrice(int ticketId, List<int> slotIndexes) {
     try {
       // Ambil ticketPriceTimes dari map
@@ -611,8 +612,8 @@ class SaleLapanganPageController extends GetxController {
             continue;
           }
           
-          // Semantik: hour cocok jika startHour <= hour < endHour
-          if (startHourPrice <= hour && hour < endHourPrice) {
+          // Semantik: hour cocok jika startHour <= hour <= endHour
+          if (startHourPrice <= hour && hour <= endHourPrice) {
             hourPrice = priceValue;
             break;
           }

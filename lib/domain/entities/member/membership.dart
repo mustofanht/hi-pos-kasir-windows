@@ -22,6 +22,8 @@ class Membership {
   int? membKuota;
   int? membMaxKuota;
   double? membRegPrice;
+  // Nama peserta/pendaftar membership (diisi saat registrasi, untuk ditampilkan di TV Customer)
+  String? registrantName;
 
   Membership({
     this.membId,
@@ -47,6 +49,7 @@ class Membership {
     this.membKuota,
     this.membMaxKuota,
     this.membRegPrice,
+    this.registrantName,
   });
 
   factory Membership.fromJson(Map<String, dynamic> json) {
@@ -76,6 +79,7 @@ class Membership {
       membRegPrice: json['membRegPrice'] != null
           ? (json['membRegPrice'] as num).toDouble()
           : null,
+      registrantName: json['registrantName'],
     );
   }
 
@@ -104,6 +108,7 @@ class Membership {
       'membKuota': membKuota,
       'membMaxKuota': membMaxKuota,
       'membRegPrice': membRegPrice,
+      'registrantName': registrantName,
     };
   }
 }

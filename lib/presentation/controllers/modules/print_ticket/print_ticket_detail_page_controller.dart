@@ -498,13 +498,13 @@ class PrintTicketDetailPageController extends GetxController {
   }
 
   /// Harga satu jam dari setup ticket_price_time; null bila tak ada rentang
-  /// yang cocok. Semantik: startHour <= hour < endHour (sama dengan backend).
+  /// yang cocok. Semantik: startHour <= hour <= endHour (sama dengan backend).
   double? _priceAtHour(List<TicketPriceTimeEntity> priceTimes, int hour) {
     for (final pt in priceTimes) {
       final s = pt.startHour;
       final e = pt.endHour;
       if (s == null || e == null || pt.price == null) continue;
-      if (s <= hour && hour < e) return pt.price;
+      if (s <= hour && hour <= e) return pt.price;
     }
     return null;
   }

@@ -11,13 +11,13 @@ extension EnvironmentExt on Environment {
   String get url {
     switch (this) {
       case Environment.local:
-        return "https://be-jaya.nht01.cloud/syspos-service/api/v1";
+        return "http://localhost:8080/syspos-service/api/v1";
         break;
       case Environment.dev:
-        return "https://be-jaya.nht01.cloud/syspos-service/api/v1";
+        return "http://localhost:8080/syspos-service/api/v1";
         break;
       case Environment.production:
-        return "https://be-jaya.nht01.cloud/syspos-service/api/v1";
+        return "http://localhost:8080/syspos-service/api/v1";
         break;
       case Environment.chatbot:
         return "https://chatbot.com/";
