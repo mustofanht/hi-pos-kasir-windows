@@ -45,6 +45,9 @@ class TicketEntity {
   String? pathImg;
   TicketDaysEntity? ticketDays;
   String? ticketFlLapangan;
+  // Kategori tiket (setup transaction) untuk membedakan setup per kategori pada
+  // satu lokasi multi-kategori, mis. KLMRG/LPNGN/WC.
+  String? ticketCategory;
   List<TicketPriceTimeEntity>? ticketPriceTimes;
 
   TicketEntity({
@@ -59,6 +62,7 @@ class TicketEntity {
     this.pathImg,
     this.ticketDays,
     this.ticketFlLapangan,
+    this.ticketCategory,
     this.ticketPriceTimes,
   });
 
@@ -76,6 +80,7 @@ class TicketEntity {
       ticketMinimum = json['ticketMinimum'];
       pathImg = json['pathImg'];
       ticketFlLapangan = json['ticketFlLapangan'];
+      ticketCategory = json['ticketCategory'];
 
       if (json['ticketDays'] != null) {
         if (json['ticketDays'] is Map<Object?, Object?>) {
@@ -112,6 +117,7 @@ class TicketEntity {
       "pathImg": pathImg,
       "ticketDays": ticketDays?.toJson(),
       "ticketFlLapangan": ticketFlLapangan,
+      "ticketCategory": ticketCategory,
       "ticketPriceTimes": ticketPriceTimes?.map((v) => v.toJson()).toList(),
     };
   }

@@ -9,6 +9,16 @@ import 'package:get/get.dart';
 class SaleTicketPage extends GetView<SaleTicketPageController> {
   const SaleTicketPage({super.key});
 
+  static const Map<String, String> _categoryLabels = {
+    'KLMRG': 'Kolam Renang',
+    'LPNGN': 'Lapangan',
+    'WC': 'Toilet',
+  };
+
+  String _categoryLabel(String code) {
+    return _categoryLabels[code] ?? code;
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget emptyData() {
@@ -170,6 +180,38 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                             );
                                           },
                                         ),
+                                        if (e.ticketCategory != null &&
+                                            e.ticketCategory!.isNotEmpty) ...[
+                                          SizedBox(
+                                            height: layoutStyle.defaultMargin /
+                                                2,
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal:
+                                                  layoutStyle.defaultMargin / 2,
+                                              vertical:
+                                                  layoutStyle.defaultMargin / 5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: colorStyle.primary
+                                                  .withOpacity(0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                layoutStyle.defaultMargin / 2,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              _categoryLabel(e.ticketCategory!),
+                                              style: TextStyle(
+                                                fontSize: fontSize.superSmall,
+                                                fontWeight: fontWeight.semiBold,
+                                                color: colorStyle.primary,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
