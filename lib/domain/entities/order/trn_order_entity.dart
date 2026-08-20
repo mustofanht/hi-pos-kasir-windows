@@ -57,9 +57,13 @@ class TrnOrderEntity {
       locationName: json['locationName'],
       voucher: json['voucher'],
       ppn: json['ppn'],
-      customerDetail: TrnOrderCustomerDetail.fromJson(json['customerDetail']),
+      customerDetail: json['customerDetail'] != null
+          ? TrnOrderCustomerDetail.fromJson(json['customerDetail'])
+          : null,
       detailOrderModels: json['detailOrderModels'],
-      paymentDetail: TrnOrderPaymentDetail.fromJson(json['paymentDetail']),
+      paymentDetail: json['paymentDetail'] != null
+          ? TrnOrderPaymentDetail.fromJson(json['paymentDetail'])
+          : null,
     );
   }
 
