@@ -62,6 +62,48 @@ class SaleCartPageController extends GetxController {
     return ticketControllers[id]!;
   }
 
+  // ── Playground: input nama anak per tiket ────────────────────────────────
+  // Muncul bila ada tiket berkategori PLGRD dan total qty tiket > 1. Nama anak
+  // dikirim ke backend (childNames) dan ditampilkan per gelang di papan TV.
+  final List<TextEditingController> childNameControllers = [];
+
+  bool get isPlaygroundCart =>
+      ticketList.isNotEmpty &&
+      ticketList
+          .any((e) => (e.ticket?.ticketLocationCategory ?? '') == 'PLGRD');
+
+  int get totalTicketQty =>
+      ticketList.fold(0, (sum, e) => sum + (e.qtyOrder ?? 0));
+
+  bool get needChildNames => isPlaygroundCart && totalTicketQty > 1;
+
+  // Grow-only: hindari dispose saat rebuild/focus. Dibersihkan di clearCartOrder.
+  TextEditingController childNameControllerAt(int index) {
+    while (childNameControllers.length <= index) {
+      childNameControllers.add(TextEditingController());
+    }
+    return childNameControllers[index];
+  }
+
+  // Nama anak sepanjang jumlah tiket (urut sesuai ekspansi listTicket di backend).
+  List<String> get childNames =>
+      List.generate(totalTicketQty, (i) => childNameControllerAt(i).text.trim());
+
+  bool validateChildNames() {
+    if (!needChildNames) return true;
+    for (int i = 0; i < totalTicketQty; i++) {
+      if (childNameControllerAt(i).text.trim().isEmpty) return false;
+    }
+    return true;
+  }
+
+  void _disposeChildNameControllers() {
+    for (final c in childNameControllers) {
+      c.dispose();
+    }
+    childNameControllers.clear();
+  }
+
   addTicket(TicketEntity ticket) {
     ticketList.add(
       CartTicket(
@@ -563,6 +605,7 @@ class SaleCartPageController extends GetxController {
       potonganList.clear();
       voucherList.clear();
       depositList.clear();
+      _disposeChildNameControllers();
       calculateTotalOrder();
       updateCustomer();
       // clear and back payment page

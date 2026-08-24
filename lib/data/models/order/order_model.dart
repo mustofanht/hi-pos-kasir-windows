@@ -30,6 +30,8 @@ class OrderModel {
   List<OrderVoucherModel> listVoucherPrice;
   List<OrderDepositModel> listDepositUse;
   List<ResponseCreateTicketNoEntity>? listCreateTicket;
+  // Playground: nama anak per tiket berbayar (urut). Null bila bukan playground / order 1 tiket.
+  List<String>? childNames;
 
   OrderModel({
     this.orderName,
@@ -56,6 +58,7 @@ class OrderModel {
     required this.listVoucherPrice,
     required this.listDepositUse,
     this.listCreateTicket,
+    this.childNames,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -121,6 +124,7 @@ class OrderModel {
       "listCreateTicket": listCreateTicket == null
           ? []
           : listCreateTicket?.map((e) => e.toJson()).toList(),
+      "childNames": childNames,
     };
   }
 }

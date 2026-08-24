@@ -1,5 +1,6 @@
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
@@ -10,6 +11,7 @@ import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
 class SalePaymentPage extends StatefulWidget {
   const SalePaymentPage({
@@ -456,6 +458,63 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                             ),
                           )
                         ],
+                      ),
+                      // Playground: input nama anak per tiket (muncul bila tiket PLGRD & qty > 1).
+                      GetBuilder<SaleCartPageController>(
+                        init: Get.find<SaleCartPageController>(),
+                        builder: (cart) {
+                          if (!cart.needChildNames) {
+                            return const SizedBox.shrink();
+                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: layoutStyle.defaultMargin,
+                                ),
+                                child: Text(
+                                  'Nama Anak',
+                                  style: textStyle.greyText.copyWith(
+                                    fontSize: fontSize.small,
+                                  ),
+                                ),
+                              ),
+                              ...List.generate(
+                                cart.totalTicketQty,
+                                (i) => CustomTextBox(
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: layoutStyle.defaultMargin,
+                                    vertical: layoutStyle.defaultMargin / 4,
+                                  ),
+                                  obscureText: false,
+                                  border: Border.all(
+                                    color: colorStyle.grey,
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    layoutStyle.defaultMargin / 2,
+                                  ),
+                                  label: Text(
+                                    'Nama Anak ${i + 1}',
+                                    style: textStyle.greyText.copyWith(
+                                      fontSize: fontSize.small,
+                                    ),
+                                  ),
+                                  controller: cart.childNameControllerAt(i),
+                                  decoration: InputDecoration(
+                                    hintText: 'Masukkan nama anak ke-${i + 1}',
+                                    hintStyle: textStyle.greyText,
+                                    border: InputBorder.none,
+                                  ),
+                                  keyboardType: TextInputType.text,
+                                ),
+                              ),
+                              SizedBox(height: layoutStyle.defaultMargin / 2),
+                            ],
+                          );
+                        },
                       ),
                       SizedBox(
                         height: layoutStyle.defaultMargin / 2,

@@ -209,6 +209,17 @@ class SalePageController extends GetxController
       isValid = false;
       alert.error('Warning', 'Pilih Pembayaran terlebih dahulu!');
     }
+    // Playground >1 tiket: nama anak wajib lengkap sebelum order dibuat.
+    if (isValid) {
+      final SaleCartPageController saleCart = Get.find<SaleCartPageController>();
+      if (!saleCart.validateChildNames()) {
+        isValid = false;
+        alert.error(
+          'Nama Anak Belum Lengkap',
+          'Mohon isi nama anak untuk setiap tiket.',
+        );
+      }
+    }
     return isValid;
   }
 
@@ -527,6 +538,10 @@ class SalePageController extends GetxController
       listVoucher: listPotongan,
       listVoucherPrice: listVoucher,
       listDepositUse: listDeposit,
+      // Playground >1 tiket: kirim nama anak per tiket (urut). Selain itu null.
+      childNames: saleCartPageController.needChildNames
+          ? saleCartPageController.childNames
+          : null,
     );
   }
 

@@ -9,6 +9,8 @@ class TicketEntity {
   String? ticketType;
   int? ticketLocation;
   String? ticketLocationName;
+  // Kategori lokasi tiket (mis. 'PLGRD' = playground). Dipakai untuk memicu input nama anak.
+  String? ticketLocationCategory;
   double? ticketPrice;
   String? ticketState;
   int? ticketMinimum;
@@ -21,6 +23,7 @@ class TicketEntity {
     this.ticketType,
     this.ticketLocation,
     this.ticketLocationName,
+    this.ticketLocationCategory,
     this.ticketPrice,
     this.ticketState,
     this.ticketMinimum,
@@ -35,6 +38,7 @@ class TicketEntity {
       ticketType = json['ticketType'];
       ticketLocation = json['ticketLocation'];
       ticketLocationName = json['ticketLocationName'];
+      ticketLocationCategory = json['ticketLocationCategory'];
       ticketPrice = json['ticketPrice'] != null
           ? (json['ticketPrice'] as num).toDouble()
           : null;
@@ -62,6 +66,7 @@ class TicketEntity {
       "ticketType": ticketType,
       "ticketLocation": ticketLocation,
       "ticketLocationName": ticketLocationName,
+      "ticketLocationCategory": ticketLocationCategory,
       "ticketPrice": ticketPrice,
       "ticketState": ticketState,
       "ticketMinimum": ticketMinimum,

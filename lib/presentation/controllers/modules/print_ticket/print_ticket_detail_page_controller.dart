@@ -336,6 +336,7 @@ class PrintTicketDetailPageController extends GetxController {
                   format: dateFormat.dateDDMMMMYYYY,
                 ),
                 ticketName: element.ticketName,
+                isCompanion: element.isCompanion, // Pass flag pendamping
                 paymentDate: parentModel.value.orderDate ?? DateTime.now(),
               );
               data.addAll(dataPrint);

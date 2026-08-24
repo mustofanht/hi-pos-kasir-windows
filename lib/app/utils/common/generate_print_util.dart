@@ -478,6 +478,7 @@ class GeneratePrintUtil {
     required String expiredAt,
     // required OrderTicketModel ticketModel,
     String? ticketName,
+    String? isCompanion, // Y = pendamping, N = berbayar
   }) async {
     List<int> bytes = [];
     // Using default profile
@@ -537,6 +538,20 @@ class GeneratePrintUtil {
         align: PosAlign.center,
       ),
     );
+    
+    // Tambahkan text "TIKET PENDAMPING (GRATIS)" jika ini QR pendamping
+    if (isCompanion == 'Y') {
+      bytes += generator.text(
+        'TIKET PENDAMPING (GRATIS)',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          width: PosTextSize.size2,
+          height: PosTextSize.size2,
+        ),
+      );
+    }
+    
     bytes += generator.text(
       '$pakOf of $pakTotal PAK',
       styles: const PosStyles(
