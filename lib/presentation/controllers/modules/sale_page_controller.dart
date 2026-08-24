@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/voucher_unit.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_booked_model.dart';
@@ -512,44 +513,38 @@ class SalePageController extends GetxController
     // }
     if (voucherList.isNotEmpty) {
       double totalDiscountAmount = 0;
-      final Map<CartTicket, int> remainingTicketQtyMap = {
-        for (var ticket in ticketList) ticket: ticket.qtyOrder!
-      };
+      // Basis unit voucher = tiket + jam booking lapangan (1 voucher = 1 unit).
+      // Harus konsisten dengan calculateTotalOrder di SaleCartPageController agar
+      // ovpTotalAmount (nominal diskon yang disimpan) cocok dengan orderTotalAmt.
+      final List<VoucherUnit> voucherUnits = buildVoucherUnits(
+        ticketList: ticketList,
+        addonList: addonList,
+      );
 
       for (var element in voucherList) {
         int remainingVoucherQty = element.qtyOrder ?? 0;
         double voucherDiscountAmount = 0;
 
-        if (remainingVoucherQty > 0) {
-          for (var ticket in ticketList) {
-            int remainingTicketQty = remainingTicketQtyMap[ticket] ?? 0;
-            if (remainingVoucherQty == 0 || remainingTicketQty == 0) continue;
+        for (var unit in voucherUnits) {
+          if (remainingVoucherQty == 0) break;
+          if (unit.remaining == 0) continue;
 
-            int applicableQty = remainingTicketQty < remainingVoucherQty
-                ? remainingTicketQty
-                : remainingVoucherQty;
+          int applicableQty = unit.remaining < remainingVoucherQty
+              ? unit.remaining
+              : remainingVoucherQty;
+          unit.remaining -= applicableQty;
+          remainingVoucherQty -= applicableQty;
 
-            remainingTicketQtyMap[ticket] = remainingTicketQty - applicableQty;
-            remainingVoucherQty -= applicableQty;
-
-            double discountPerUnit = 0;
-            if (element.entity!.vpUnitType == UnitType.PERCENT) {
-              logger.safeLog(
-                'PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}',
-              );
-              discountPerUnit = (ticket.ticket?.ticketPrice ?? 0) *
-                  (element.entity!.vpUnitValue ?? 0) /
-                  100;
-            } else {
-              logger.safeLog(
-                'NOT PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}',
-              );
-              discountPerUnit = element.entity!.vpUnitValue ?? 0;
-            }
-            double discountAmount = applicableQty * discountPerUnit;
-            voucherDiscountAmount += discountAmount;
-            totalPrice -= discountAmount;
+          double discountPerUnit;
+          if (element.entity!.vpUnitType == UnitType.PERCENT) {
+            discountPerUnit =
+                unit.unitPrice * (element.entity!.vpUnitValue ?? 0) / 100;
+          } else {
+            discountPerUnit = element.entity!.vpUnitValue ?? 0;
           }
+          double discountAmount = applicableQty * discountPerUnit;
+          voucherDiscountAmount += discountAmount;
+          totalPrice -= discountAmount;
         }
 
         totalDiscountAmount += voucherDiscountAmount;
@@ -687,6 +682,28 @@ class SalePageController extends GetxController
 
           logger.safeLog('DATA : ${memberValid.toJson()}');
 
+          // Kunci voucher member ke kategorinya: member kolam renang (KLMRG)
+          // tak boleh dipakai untuk transaksi lapangan, begitu pula sebaliknya.
+          // Kategori transaksi diambil dari isi keranjang (tiket = ticketCategory,
+          // booking lapangan = LPNGN). Bila kategori member tidak ada pada
+          // keranjang, voucher member tidak dimunculkan.
+          final SaleCartPageController cartCtrl =
+              Get.find<SaleCartPageController>();
+          final String? membCategory =
+              memberValid.mstMembership?.membCategory;
+          final Set<String> cartCategories = _cartCategories(cartCtrl);
+          if (membCategory != null &&
+              membCategory.isNotEmpty &&
+              cartCategories.isNotEmpty &&
+              !cartCategories.contains(membCategory)) {
+            alert.warning(
+              'Warning',
+              'Voucher member ${_categoryLabel(membCategory)} tidak bisa dipakai '
+              'untuk transaksi ${cartCategories.map(_categoryLabel).join(' / ')}.',
+            );
+            return;
+          }
+
           await dialog.paymentMember(
             onNext: (selectedMemberAnggotas, checkIn, checkOut) async {
               String memberNoStr = memberNo.text;
@@ -756,6 +773,37 @@ class SalePageController extends GetxController
       );
     } catch (e) {
       logger.safeLog(e);
+    }
+  }
+
+  /// Kumpulan kategori yang ada di keranjang saat ini (mis. {KLMRG}, {LPNGN}).
+  /// Tiket → [TicketEntity.ticketCategory]; booking lapangan (addon dengan
+  /// rentModel & productType 'L') → 'LPNGN'. Dipakai gate voucher member.
+  Set<String> _cartCategories(SaleCartPageController cart) {
+    final Set<String> cats = {};
+    for (final t in cart.ticketList) {
+      final String? c = t.ticket?.ticketCategory;
+      if (c != null && c.isNotEmpty) cats.add(c);
+    }
+    for (final a in cart.addonList) {
+      final bool isLapangan =
+          a.rentModel != null && a.addon?.productType == 'L';
+      if (isLapangan) cats.add('LPNGN');
+    }
+    return cats;
+  }
+
+  /// Label kategori yang ramah dibaca untuk pesan peringatan.
+  String _categoryLabel(String? code) {
+    switch (code) {
+      case 'KLMRG':
+        return 'Kolam Renang';
+      case 'LPNGN':
+        return 'Lapangan';
+      case 'WC':
+        return 'WC';
+      default:
+        return code ?? '-';
     }
   }
 

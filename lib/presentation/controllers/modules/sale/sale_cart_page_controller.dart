@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/voucher_unit.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -282,11 +283,12 @@ class SaleCartPageController extends GetxController {
     }
 
     if (voucherList.isNotEmpty) {
-      int qtyAllTiket = 0;
+      // Unit eligible voucher = tiket + jam booking lapangan (1 voucher = 1 jam).
+      int qtyAllTiket = countVoucherUnits(
+        ticketList: ticketList,
+        addonList: addonList,
+      );
       int qtyAllVoucher = 0;
-      for (var element in ticketList) {
-        qtyAllTiket += (element.qtyOrder ?? 0);
-      }
       for (var element in voucherList) {
         qtyAllVoucher += (element.qtyOrder ?? 0);
       }
@@ -451,42 +453,44 @@ class SaleCartPageController extends GetxController {
       totalAmnt += ticketList.fold(0, (sum, val) => sum + val.totalPrice!);
       ticketTotalQtyVal +=
           ticketList.fold(0, (sum, val) => sum + val.qtyOrder!);
+    }
 
-      if (voucherList.isNotEmpty) {
+    if (addonList.isNotEmpty) {
+      totalAmnt += addonList.fold(0, (sum, val) => sum + val.totalPrice!);
+      ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
+    }
+
+    // Diskon voucher berlaku untuk tiket DAN booking lapangan. 1 voucher = 1 unit
+    // (1 tiket ATAU 1 jam booking lapangan). Pool digabung supaya voucher ikut
+    // memotong harga booking lapangan, bukan hanya tiket (sebelumnya blok ini
+    // dibungkus `if (ticketList.isNotEmpty)` sehingga lapangan tak pernah kena).
+    if (voucherList.isNotEmpty) {
+      final List<VoucherUnit> voucherUnits = buildVoucherUnits(
+        ticketList: ticketList,
+        addonList: addonList,
+      );
+      if (voucherUnits.isNotEmpty) {
         double discountAmount = 0;
-        final Map<CartTicket, int> remainingTicketQtyMap = {
-          for (var ticket in ticketList) ticket: ticket.qtyOrder!
-        };
-
         for (var element in voucherList) {
           int remainingVoucherQty = element.qtyOrder ?? 0;
+          for (var unit in voucherUnits) {
+            if (remainingVoucherQty == 0) break;
+            if (unit.remaining == 0) continue;
 
-          if (remainingVoucherQty > 0) {
-            for (var ticket in ticketList) {
-              int remainingTicketQty = remainingTicketQtyMap[ticket] ?? 0;
-              if (remainingVoucherQty == 0 || remainingTicketQty == 0) continue;
+            int applicableQty = unit.remaining < remainingVoucherQty
+                ? unit.remaining
+                : remainingVoucherQty;
+            unit.remaining -= applicableQty;
+            remainingVoucherQty -= applicableQty;
 
-              int applicableQty = remainingTicketQty < remainingVoucherQty
-                  ? remainingTicketQty
-                  : remainingVoucherQty;
-
-              remainingTicketQtyMap[ticket] =
-                  remainingTicketQty - applicableQty;
-              remainingVoucherQty -= applicableQty;
-
-              if (element.entity!.vpUnitType == UnitType.PERCENT) {
-                logger.safeLog(
-                    'PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}');
-                discountAmount += applicableQty *
-                    (ticket.totalPrice! / ticket.qtyOrder!) *
-                    (element.entity!.vpUnitValue ?? 0) /
-                    100;
-              } else {
-                logger.safeLog(
-                    'NOT PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}');
-                discountAmount +=
-                    applicableQty * (element.entity!.vpUnitValue ?? 0);
-              }
+            if (element.entity!.vpUnitType == UnitType.PERCENT) {
+              discountAmount += applicableQty *
+                  unit.unitPrice *
+                  (element.entity!.vpUnitValue ?? 0) /
+                  100;
+            } else {
+              discountAmount +=
+                  applicableQty * (element.entity!.vpUnitValue ?? 0);
             }
           }
         }
@@ -495,11 +499,6 @@ class SaleCartPageController extends GetxController {
             voucherList.fold(0, (sum, val) => sum + val.qtyOrder!);
         totalAmnt = totalAmnt - discountAmount;
       }
-    }
-
-    if (addonList.isNotEmpty) {
-      totalAmnt += addonList.fold(0, (sum, val) => sum + val.totalPrice!);
-      ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
     }
 
     totalAmntFinal = totalAmnt;
