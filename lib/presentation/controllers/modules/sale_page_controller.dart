@@ -538,7 +538,7 @@ class SalePageController extends GetxController
       listVoucher: listPotongan,
       listVoucherPrice: listVoucher,
       listDepositUse: listDeposit,
-      // Playground >1 tiket: kirim nama anak per tiket (urut). Selain itu null.
+      // Playground: kirim nama anak per tiket playground (urut). Selain itu null.
       childNames: saleCartPageController.needChildNames
           ? saleCartPageController.childNames
           : null,

@@ -63,8 +63,10 @@ class SaleCartPageController extends GetxController {
   }
 
   // ── Playground: input nama anak per tiket ────────────────────────────────
-  // Muncul bila ada tiket berkategori PLGRD dan total qty tiket > 1. Nama anak
-  // dikirim ke backend (childNames) dan ditampilkan per gelang di papan TV.
+  // Muncul HANYA untuk tiket berkategori PLGRD (playground), berapa pun qty-nya
+  // (termasuk 1 tiket). Tiket non-playground TIDAK pernah minta nama anak,
+  // walau qty > 1. Nama anak dikirim ke backend (childNames) dan ditampilkan
+  // per gelang di papan TV.
   final List<TextEditingController> childNameControllers = [];
 
   bool get isPlaygroundCart =>
@@ -75,7 +77,12 @@ class SaleCartPageController extends GetxController {
   int get totalTicketQty =>
       ticketList.fold(0, (sum, e) => sum + (e.qtyOrder ?? 0));
 
-  bool get needChildNames => isPlaygroundCart && totalTicketQty > 1;
+  // Jumlah unit tiket khusus kategori playground (non-playground diabaikan).
+  int get playgroundTicketQty => ticketList
+      .where((e) => (e.ticket?.ticketLocationCategory ?? '') == 'PLGRD')
+      .fold(0, (sum, e) => sum + (e.qtyOrder ?? 0));
+
+  bool get needChildNames => playgroundTicketQty > 0;
 
   // Grow-only: hindari dispose saat rebuild/focus. Dibersihkan di clearCartOrder.
   TextEditingController childNameControllerAt(int index) {
@@ -85,13 +92,15 @@ class SaleCartPageController extends GetxController {
     return childNameControllers[index];
   }
 
-  // Nama anak sepanjang jumlah tiket (urut sesuai ekspansi listTicket di backend).
+  // Nama anak sepanjang jumlah tiket PLAYGROUND (urut sesuai ekspansi listTicket
+  // di backend; backend hanya memetakan childNames saat lokasi order = PLGRD).
   List<String> get childNames =>
-      List.generate(totalTicketQty, (i) => childNameControllerAt(i).text.trim());
+      List.generate(
+          playgroundTicketQty, (i) => childNameControllerAt(i).text.trim());
 
   bool validateChildNames() {
     if (!needChildNames) return true;
-    for (int i = 0; i < totalTicketQty; i++) {
+    for (int i = 0; i < playgroundTicketQty; i++) {
       if (childNameControllerAt(i).text.trim().isEmpty) return false;
     }
     return true;

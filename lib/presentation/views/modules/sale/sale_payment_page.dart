@@ -459,7 +459,7 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                           )
                         ],
                       ),
-                      // Playground: input nama anak per tiket (muncul bila tiket PLGRD & qty > 1).
+                      // Playground: input nama anak per tiket (hanya tiket PLGRD, tiap unit).
                       GetBuilder<SaleCartPageController>(
                         init: Get.find<SaleCartPageController>(),
                         builder: (cart) {
@@ -481,7 +481,7 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                 ),
                               ),
                               ...List.generate(
-                                cart.totalTicketQty,
+                                cart.playgroundTicketQty,
                                 (i) => CustomTextBox(
                                   height: layoutStyle.blockVertical * 6.5,
                                   margin: EdgeInsets.symmetric(
