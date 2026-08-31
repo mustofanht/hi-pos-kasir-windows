@@ -1,0 +1,44 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master, kasir-playground ]
+  workflow_dispatch:          # bisa dijalankan manual dari tab Actions
+
+jobs:
+  build:
+    runs-on: windows-2022   # image teruji: Visual Studio 2022 + Desktop C++ built-in
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Diagnostik toolchain (cek deteksi Visual Studio)
+        run: flutter doctor -v
+        continue-on-error: true
+
+      # Folder windows/ sudah di-commit (dengan icon & nama HI-POS Kasir),
+      # jadi TIDAK perlu 'flutter create' lagi supaya kustomisasi tidak tertimpa.
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Upload EXE (folder Release lengkap)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hipos-kasir-windows
+          path: build/windows/x64/runner/Release/
+          if-no-files-found: error
