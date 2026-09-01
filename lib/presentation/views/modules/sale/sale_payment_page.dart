@@ -189,6 +189,11 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                   color: colorStyle.white,
                 ),
                 child: SingleChildScrollView(
+                  // Beri ruang ekstra setinggi keyboard supaya field paling
+                  // bawah (mis. No Member) bisa di-scroll naik di atas keyboard.
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -416,16 +421,18 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                         controller.onCheckMember();
                                       },
                                       style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStateProperty.resolveWith(
-                                          (states) => colorStyle.blue,
-                                        ),
-                                        padding: MaterialStateProperty.all<
-                                            EdgeInsetsGeometry>(
+                                        // Padding default ElevatedButton (~16px/sisi)
+                                        // menyisakan ruang teks terlalu sempit pada
+                                        // tombol kecil ini, membuat "Cek" turun baris.
+                                        padding: MaterialStateProperty.all(
                                           EdgeInsets.symmetric(
                                             horizontal:
                                                 layoutStyle.defaultMargin / 4,
                                           ),
+                                        ),
+                                        backgroundColor:
+                                            MaterialStateProperty.resolveWith(
+                                          (states) => colorStyle.blue,
                                         ),
                                         minimumSize:
                                             MaterialStateProperty.all<Size>(
@@ -449,7 +456,11 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                       ),
                                       label: Text(
                                         'Cek',
-                                        style: textStyle.whiteText,
+                                        maxLines: 1,
+                                        textAlign: TextAlign.center,
+                                        style: textStyle.whiteText.copyWith(
+                                          fontSize: fontSize.small,
+                                        ),
                                       ),
                                     ),
                                   ],

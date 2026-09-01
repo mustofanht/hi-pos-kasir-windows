@@ -165,10 +165,19 @@ class OrderUtil {
         body: body,
       );
       if (body.listCreateTicket != null) {
+        // E-tiket booking lapangan TIDAK dicetak QR gate-nya (booking lapangan
+        // tidak perlu QR). Dikenali dari nama tiket = nama court pada struk.
+        final lapanganNames = <String>{
+          for (final l in (body.lapanganPrintLines ?? []))
+            if (l.addOn?.productName != null) l.addOn!.productName!
+        };
+        final ticketsToPrint = body.listCreateTicket!
+            .where((e) => !lapanganNames.contains(e.ticketName))
+            .toList();
         int count = 1;
-        int totalPak = body.listCreateTicket!.length;
+        int totalPak = ticketsToPrint.length;
         String reffNo = body.orderReffno ?? '';
-        for (var element in body.listCreateTicket!) {
+        for (var element in ticketsToPrint) {
           // String reffNo = element.ticketNo ?? '';
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
             locationName: locationName,

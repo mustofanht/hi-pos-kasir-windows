@@ -515,10 +515,22 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
+                          // Nama Peserta/Pendaftar (bukan nama paket membership)
+                          Text(
+                            e.registrantName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          // Nama paket membership ditampilkan sebagai keterangan
                           Text(
                             e.membName ?? '',
                             style: TextStyle(
-                              fontSize: fontSize.title,
+                              color: colorStyle.grey,
+                              fontSize: fontSize.subtitle,
                             ),
                           ),
                         ],

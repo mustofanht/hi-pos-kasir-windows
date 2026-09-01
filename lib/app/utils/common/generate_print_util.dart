@@ -212,6 +212,11 @@ class GeneratePrintUtil {
         );
       }
     }
+    // Booking lapangan: dicetak dengan format yang SAMA seperti sewa item
+    // (nama court + rentang jam + durasi + harga) lewat buildListRentalPayment.
+    for (var element in body.lapanganPrintLines ?? <OrderAddonModel>[]) {
+      bytes += buildListRentalPayment(generator, element);
+    }
     // List voucher Order
     // double totalPotongan = 0;
     for (var element in body.listVoucher) {
@@ -611,6 +616,148 @@ class GeneratePrintUtil {
 
     return bytes;
   }
+
+  /// Cetak tiket booking lapangan pada alur REPRINT (menu Cek Order) dengan
+  /// format yang SAMA seperti struk penjualan — nama court + rentang jam +
+  /// durasi + harga — dan TANPA QR. Booking lapangan tidak perlu QR gate,
+  /// konsisten dengan alur penjualan biasa yang mengecualikan lapangan dari
+  /// cetak QR.
+  Future<List<int>> dataLapanganTicketPrint({
+    String? locationName,
+    required PaperSize paperSize,
+    required String orderNo,
+    required String reffNo,
+    DateTime? paymentDate,
+    required List<LapanganPrintLine> lines,
+  }) async {
+    List<int> bytes = [];
+    final profile = await CapabilityProfile.load();
+    final generator = Generator(paperSize, profile);
+    bytes += generator.setGlobalFont(PosFontType.fontA);
+    bytes += generator.reset();
+
+    if (locationName != null) {
+      bytes += generator.text(
+        locationName,
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          width: PosTextSize.size2,
+          height: PosTextSize.size2,
+        ),
+      );
+      bytes += generator.emptyLines(1);
+    }
+
+    bytes += generator.text(
+      'No Reff. $reffNo',
+      styles: const PosStyles(align: PosAlign.left, bold: true),
+    );
+    bytes += generator.text(
+      'Order ID : $orderNo',
+      styles: const PosStyles(align: PosAlign.left, bold: true),
+    );
+    bytes += generator.text(
+      paymentDate != null
+          ? dateTimeUtil.getFormattedDate(
+              date: paymentDate,
+              format: dateFormat.fullTimePrinted,
+            )
+          : dateTimeUtil.now(format: dateFormat.fullTimePrinted),
+      styles: const PosStyles(align: PosAlign.left, bold: true),
+    );
+    bytes += generator.hr();
+    bytes += generator.text(
+      'BOOKING LAPANGAN',
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
+    bytes += generator.emptyLines(1);
+
+    for (final line in lines) {
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: line.courtName,
+            width: 12,
+            styles: const PosStyles(align: PosAlign.left),
+          ),
+        ],
+      );
+      bytes += generator.row(
+        [
+          PosColumn(
+            text:
+                '(${dateTimeUtil.getFormattedDate(date: line.startDate, format: dateFormat.hourMinutes)} - ${dateTimeUtil.getFormattedDate(date: line.endDate, format: dateFormat.hourMinutes)}) (${line.hours} Jam)',
+            width: 7,
+            styles: const PosStyles(align: PosAlign.left),
+          ),
+          PosColumn(
+            text: common.currencyFormat(line.price),
+            width: 5,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+        ],
+      );
+    }
+
+    bytes += generator.hr();
+    // Print Thank You Message (sama seperti struk penjualan biasa)
+    bytes += generator.text(
+      '>>>PERHATIAN<<<',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    bytes += generator.text(
+      '1.Jagalah barang-barang anda',
+      styles: const PosStyles(
+        align: PosAlign.left,
+      ),
+    );
+    bytes += generator.text(
+      '2.Harap struk ini disimpan dengan baik',
+      styles: const PosStyles(
+        align: PosAlign.left,
+      ),
+    );
+    bytes += generator.emptyLines(1);
+    bytes += generator.text(
+      'TIKET YANG SUDAH DI BELI',
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
+    bytes += generator.text(
+      'TIDAK DAPAT DITUKAR/DIKEMBALIKAN',
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
+    bytes += generator.text(
+      'TERIMA KASIH ATAS KUNJUNGAN ANDA',
+      styles: const PosStyles(
+        align: PosAlign.center,
+      ),
+    );
+    bytes += generator.cut();
+
+    return bytes;
+  }
+}
+
+/// Satu baris booking lapangan untuk cetak reprint: satu blok jam berurutan
+/// pada satu court (nama court, rentang jam, durasi, dan total harga blok).
+class LapanganPrintLine {
+  final String courtName;
+  final DateTime startDate;
+  final DateTime endDate;
+  final int hours;
+  final double price;
+
+  LapanganPrintLine({
+    required this.courtName,
+    required this.startDate,
+    required this.endDate,
+    required this.hours,
+    required this.price,
+  });
 }
 
 GeneratePrintUtil generatePrintUtil = GeneratePrintUtil();

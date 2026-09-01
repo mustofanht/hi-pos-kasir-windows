@@ -118,7 +118,13 @@ class OrderController extends GetxController {
       var isSuccess = await _checkPaymentStatus(body);
       if (isSuccess) {
         Get.back();
-        orderUtil.showPaymentSuccessAlert(_authToken, body, orderNo);
+        // Transaksi selesai: kosongkan orderNo bersama agar transaksi berikutnya
+        // dapat nomor baru; nomor yang selesai tetap dipakai untuk cetak/kirim
+        // bukti lewat salinan tersendiri.
+        final String? completedOrderNo = orderNo?.value;
+        orderNo?.value = null;
+        orderUtil.showPaymentSuccessAlert(
+            _authToken, body, Rxn<String>(completedOrderNo));
         // _showPaymentSuccessAlert(body);
         displayUtil.updateSecondDisplay(
           CustomerDisplay(
@@ -219,11 +225,18 @@ class OrderPaymentController extends GetxController {
               orderNo: orderNo,
             );
             if (isSuccess) {
+              // Transaksi selesai: simpan nomor yang barusan dibuat, lalu
+              // KOSONGKAN orderNo bersama supaya transaksi berikutnya minta
+              // nomor baru (tidak menimpa order ini). Nomor yang sudah selesai
+              // tetap dipakai untuk cetak/kirim bukti lewat salinan tersendiri.
+              final String? completedOrderNo = orderNo?.value;
+              orderNo?.value = null;
+
               await displayUtil.updateSecondDisplay(
                 CustomerDisplay(
                   key: CustomerDisplayAction.PAYMENT,
                   value: CustomerPayment(
-                    orderNo: orderNo?.value,
+                    orderNo: completedOrderNo,
                     type: PaymentMethod.QRIS,
                     isSuccess: false,
                   ).toJson(),
@@ -236,7 +249,7 @@ class OrderPaymentController extends GetxController {
               Get.back();
               // await orderUtil.handleOnPrintOrder(body);
               await orderUtil.showPaymentSuccessAlert(
-                  _authToken, body, orderNo);
+                  _authToken, body, Rxn<String>(completedOrderNo));
               // alert.success('Success', 'Payment Success');
 
               // isProcessing.value = false;

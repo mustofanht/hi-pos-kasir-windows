@@ -33,6 +33,7 @@ class MemberPageController extends GetxController {
       if (existspage == null) {
         pageHistory.add(menuMember.value);
       }
+      _releasePageController();
       menuMember.value = pageName;
       update();
     }
@@ -42,12 +43,33 @@ class MemberPageController extends GetxController {
     logger.safeLog('[MEMBER]: CURR  ${menuMember.value}');
     if (pageHistory.isNotEmpty) {
       logger.safeLog('[MEMBER]: BACK TO ${pageHistory.last}');
+      _releasePageController();
       menuMember.value = pageHistory.last;
       if (pageHistory.length > 1) {
         pageHistory.removeLast();
       }
       update();
     }
+  }
+
+  /// Membuang controller halaman Member supaya halaman berikutnya mulai bersih.
+  ///
+  /// Hanya boleh dipanggil dari peristiwa pindah halaman. Sebelumnya
+  /// pembuangan ini dikerjakan di dalam getter [memberContent], yang ikut
+  /// terpanggil setiap kali widget dibangun ulang — termasuk saat keyboard
+  /// muncul dan mengubah MediaQuery. Akibatnya
+  /// [CreateMemberPageController] — pemilik seluruh TextEditingController
+  /// formulir — ikut terhapus di tengah pengisian, dan semua isian kasir
+  /// hilang begitu ia berpindah ke field berikutnya.
+  void _releasePageController() {
+    // Nilai yang masih dibutuhkan halaman berikutnya dipanen dulu, karena
+    // sesudah ini sumbernya sudah tidak ada.
+    callInqMembership();
+    callNewMembership();
+
+    Get.delete<InqMemberPageController>();
+    Get.delete<NewMemberPageController>();
+    Get.delete<CreateMemberPageController>();
   }
 
   Widget? get memberContent {
@@ -59,9 +81,10 @@ class MemberPageController extends GetxController {
     callInqMembership();
     callNewMembership();
 
-    Get.delete<InqMemberPageController>();
-    Get.delete<NewMemberPageController>();
-    Get.delete<CreateMemberPageController>();
+    // Getter ini ikut terpanggil setiap rebuild, jadi isinya wajib idempoten.
+    // lazyPut aman diulang — GetX tidak menimpa factory yang sudah ada — tapi
+    // Get.delete tidak, karena itu pembuangan controller dipindahkan ke
+    // _releasePageController() yang hanya jalan saat pindah halaman.
     switch (menuMember.value) {
       case MemberRouteName.inqMember:
         Get.lazyPut(() => InqMemberPageController());

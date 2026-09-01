@@ -12,6 +12,7 @@ import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
+import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
@@ -24,7 +25,11 @@ class MembershipPayment extends StatefulWidget {
     required this.memberNo,
   });
 
-  final Function(List<MemberListResponse> selectedMemberAnggota) onNext;
+  final Function(
+    List<MemberListResponse> selectedMemberAnggota,
+    String? checkIn,
+    String? checkOut,
+  ) onNext;
   final AuthToken authToken;
   final MemberValid memberValid;
   final String memberNo;
@@ -42,9 +47,21 @@ class _MembershipPaymentState extends State<MembershipPayment> {
   final maxController = TextEditingController();
   List<MemberListResponse> selectedMemberAnggota = [];
 
+  /// Jadwal les renang (opsional). Aktif hanya bila [_isScheduleEnabled] dicentang;
+  /// saat non-aktif nilainya tidak dikirim (kasir tidak mengubah jadwal member).
+  bool _isScheduleEnabled = false;
+  DateTime? _checkInTime;
+  DateTime? _checkOutTime;
+
   @override
   void initState() {
     super.initState();
+    // Pre-fill jadwal tersimpan (bila ada) supaya kasir tinggal menyesuaikan;
+    // jika terisi, checkbox otomatis aktif.
+    _checkInTime = _parseTimeToDate(widget.memberValid.memberDetail?.regCheckIn);
+    _checkOutTime =
+        _parseTimeToDate(widget.memberValid.memberDetail?.regCheckOut);
+    _isScheduleEnabled = _checkInTime != null || _checkOutTime != null;
     if (widget.memberValid.mstMembership != null) {
       Membership membership = widget.memberValid.mstMembership!;
       MemberDetail? memberDetail = widget.memberValid.memberDetail;
@@ -79,6 +96,25 @@ class _MembershipPaymentState extends State<MembershipPayment> {
         });
       }
     }
+  }
+
+  /// Parse jam backend ("HH:mm" atau "HH:mm:ss") ke DateTime (tanggal dummy)
+  /// untuk komponen picker. Null bila kosong/format tak dikenal.
+  DateTime? _parseTimeToDate(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    final parts = raw.split(':');
+    if (parts.length < 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day, hour, minute);
+  }
+
+  /// Format jam ke "HH:mm" untuk payload; null bila kosong.
+  String? _formatTime(DateTime? value) {
+    if (value == null) return null;
+    return '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -394,9 +430,21 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                     isValid = false;
                   }
                 }
+                // Bila jadwal diaktifkan, Check In & Check Out wajib lengkap.
+                if (isValid && _isScheduleEnabled) {
+                  if (_checkInTime == null || _checkOutTime == null) {
+                    alert.warning(
+                        'Warning', 'Isi jam Check In dan Check Out!');
+                    isValid = false;
+                  }
+                }
                 if (isValid) {
                   Get.back();
-                  widget.onNext(selectedMemberAnggota);
+                  widget.onNext(
+                    selectedMemberAnggota,
+                    _isScheduleEnabled ? _formatTime(_checkInTime) : null,
+                    _isScheduleEnabled ? _formatTime(_checkOutTime) : null,
+                  );
                 }
               },
               style: ButtonStyle(
@@ -422,6 +470,127 @@ class _MembershipPaymentState extends State<MembershipPayment> {
             ),
           ),
         ],
+      );
+    }
+
+    // Jadwal les renang (opsional): checkbox mengaktifkan/menonaktifkan input
+    // jam Check In & Check Out. Saat non-aktif, jam tidak dikirim ke backend.
+    Widget scheduleSection() {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: layoutStyle.defaultMargin,
+          vertical: layoutStyle.defaultMargin / 4,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Checkbox(
+                  value: _isScheduleEnabled,
+                  activeColor: colorStyle.primary,
+                  checkColor: colorStyle.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  side: BorderSide(
+                    color: colorStyle.primary,
+                    width: 2,
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _isScheduleEnabled = val ?? false;
+                    });
+                  },
+                ),
+                Flexible(
+                  child: Text(
+                    'Tampilkan Jadwal Ke TV ?',
+                    style: textStyle.blackText.copyWith(
+                      fontWeight: fontWeight.medium,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomDateTimePicker(
+                    firstState: false,
+                    enable: _isScheduleEnabled,
+                    type: DateTimePickerType.OnlyTime,
+                    dateFormat: 'HH:mm',
+                    newDate: _checkInTime,
+                    onDateChanged: (value) {
+                      setState(() {
+                        _checkInTime = value;
+                        // Check Out yang lebih awal dari Check In baru ikut
+                        // dikosongkan agar tidak tertinggal sebagai rentang mundur.
+                        if (_checkOutTime != null &&
+                            !_checkOutTime!.isAfter(value)) {
+                          _checkOutTime = null;
+                        }
+                      });
+                    },
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 0,
+                      vertical: layoutStyle.defaultMargin / 4,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      layoutStyle.defaultMargin / 2,
+                    ),
+                    border: Border.all(
+                      color: colorStyle.grey,
+                      width: 1,
+                    ),
+                    label: Text(
+                      'Check In',
+                      style: textStyle.greyText.copyWith(
+                        fontSize: fontSize.small,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: layoutStyle.defaultMargin),
+                Expanded(
+                  child: CustomDateTimePicker(
+                    firstState: false,
+                    enable: _isScheduleEnabled,
+                    type: DateTimePickerType.OnlyTime,
+                    dateFormat: 'HH:mm',
+                    newDate: _checkOutTime,
+                    minDateTime: _checkInTime,
+                    onDateChanged: (value) {
+                      setState(() {
+                        _checkOutTime = value;
+                      });
+                    },
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 0,
+                      vertical: layoutStyle.defaultMargin / 4,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      layoutStyle.defaultMargin / 2,
+                    ),
+                    border: Border.all(
+                      color: colorStyle.grey,
+                      width: 1,
+                    ),
+                    label: Text(
+                      'Check Out',
+                      style: textStyle.greyText.copyWith(
+                        fontSize: fontSize.small,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
     }
 
@@ -648,6 +817,7 @@ class _MembershipPaymentState extends State<MembershipPayment> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ...formSection(),
+                  scheduleSection(),
                   if (widget.memberValid.memberListResponses != null &&
                       widget.memberValid.memberListResponses!.isNotEmpty)
                     anggotaSection(widget.memberValid.memberListResponses!),

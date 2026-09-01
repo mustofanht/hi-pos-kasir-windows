@@ -10,8 +10,10 @@ import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_ticket_mode.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/cart/voucher_unit.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
+import 'package:jaya_propertiy/data/models/order/order_booked_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
@@ -29,7 +31,11 @@ import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/order/order_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 
 class SalePageController extends GetxController
     with SingleGetTickerProviderMixin {
@@ -46,7 +52,7 @@ class SalePageController extends GetxController
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
   }
 
@@ -67,6 +73,46 @@ class SalePageController extends GetxController
   var tabIndex = 0.obs;
   void changeTabIndex(int index) {
     tabIndex.value = index;
+    // Setiap pindah tab, muat ulang daftar tab tujuan dari server supaya data
+    // selalu terkini tanpa perlu logout (mis. booking/okupansi dari device lain
+    // atau transaksi sebelumnya langsung terlihat).
+    _refreshTab(index);
+  }
+
+  /// Muat ulang daftar untuk tab tertentu berdasarkan indeks:
+  /// 0=Ticket, 1=Lapangan, 2=Potongan, 3=Item. Aman dipanggil walau controller
+  /// tab belum terdaftar (di-skip; controller memuat sendiri saat pertama dibuka).
+  void _refreshTab(int index) {
+    try {
+      switch (index) {
+        case 0:
+          if (Get.isRegistered<SaleTicketPageController>()) {
+            Get.find<SaleTicketPageController>().doPrepareList(page: 0);
+          }
+          break;
+        case 1:
+          if (Get.isRegistered<SaleLapanganPageController>()) {
+            Get.find<SaleLapanganPageController>().doPrepareCourtList();
+          }
+          break;
+        case 2:
+          if (Get.isRegistered<SaleVoucherPageController>()) {
+            Get.find<SaleVoucherPageController>().doPrepareList(page: 0);
+          }
+          break;
+        case 3:
+          if (Get.isRegistered<SaleAddonPageController>()) {
+            final addonController = Get.find<SaleAddonPageController>();
+            addonController.doPrepareList(
+              page: 0,
+              typeProduct: addonController.selectedTypeItemList.value.id ?? 'H',
+            );
+          }
+          break;
+      }
+    } catch (e) {
+      logger.safeLog(e);
+    }
   }
 
   final orderNameController = TextEditingController();
@@ -86,6 +132,12 @@ class SalePageController extends GetxController
   final depositList = RxList<CartDeposit>([]);
 
   final memberNo = TextEditingController();
+
+  /// Jadwal les renang yang dipilih kasir di dialog "Member Detail" (format
+  /// "HH:mm"). Dikirim di [OrderModel.checkIn]/[OrderModel.checkOut]; backend
+  /// menyimpannya ke enrollment aktif member. Null bila jadwal tidak diaktifkan.
+  String? memberCheckIn;
+  String? memberCheckOut;
 
   var orderEntity = Rxn<ResponseOrderEntity>(null);
 
@@ -111,6 +163,8 @@ class SalePageController extends GetxController
     alamatController.text = '';
     keteranganVoucher.text = '';
     memberNo.text = '';
+    memberCheckIn = null;
+    memberCheckOut = null;
     doInitialValueDropdown();
     doSelectPaymentType(
       CustomIdNameEntity(
@@ -288,6 +342,10 @@ class SalePageController extends GetxController
     List<OrderPotonganModel> listPotongan = [];
     List<OrderVoucherModel> listVoucher = [];
     List<OrderDepositModel> listDeposit = [];
+    List<OrderBookedModel> listBooked = [];
+    // Baris lapangan HANYA untuk cetak struk (tidak dikirim ke backend),
+    // diformat sama seperti sewa item.
+    List<OrderAddonModel> listBookedPrint = [];
 
     double totalPrice = 0;
     int countTotal = 0;
@@ -309,30 +367,71 @@ class SalePageController extends GetxController
       );
     }
     if (addonList.isNotEmpty) {
-      listProduct.addAll(
-        addonList.map(
-          (element) {
-            totalPrice += element.totalPrice!;
-            countTotal += element.qtyOrder ?? 0;
-            return OrderAddonModel(
+      for (final element in addonList) {
+        totalPrice += element.totalPrice!;
+        countTotal += element.qtyOrder ?? 0;
+
+        // Booking lapangan (tiket, productType 'L') dikirim sebagai
+        // trnOrderBookeds — 1 elemen per jam — bukan sebagai produk/addon.
+        // Backend menghitung harga otoritatif, memvalidasi anti dobel-booking,
+        // dan menerbitkan e-tiket (QR). Lihat BOOKING_LAPANGAN_CEK_BACKEND.md §2.2.
+        final bool isLapanganBooking =
+            element.rentModel != null && element.addon?.productType == 'L';
+
+        if (isLapanganBooking) {
+          final int? ticketId = element.addon?.productId;
+          final DateTime? start = element.rentModel!.startDate;
+          final int hours = element.rentModel!.totalHours ?? 0;
+          if (ticketId != null && start != null) {
+            for (int i = 0; i < hours; i++) {
+              final DateTime slot = start.add(Duration(hours: i));
+              listBooked.add(
+                OrderBookedModel(
+                  bookTicketid: ticketId,
+                  bookHour: slot.hour,
+                  bookDate: DateTime(slot.year, slot.month, slot.day),
+                ),
+              );
+            }
+          }
+          // Baris cetak lapangan: diformat seperti sewa item (nama + rentang jam
+          // + durasi + harga) lewat buildListRentalPayment yang sama.
+          listBookedPrint.add(
+            OrderAddonModel(
               addOn: element.addon,
-              ordadAddonId: element.addon?.productId,
-              ordadTotalAddon: element.qtyOrder!,
+              ordadAddonId: ticketId,
+              ordadTotalAddon: hours,
               ordadTotalAmount: element.totalPrice!,
-              rentHdrDtl: element.rentModel == null
-                  ? null
-                  : OrderRentalModel(
-                      hour: element.rentModel!.totalHours!,
-                      amount: element.rentModel!.newBuyPrice,
-                      startDate: element.rentModel!.startDate,
-                      endDate: element.rentModel!.endDate,
-                      orderNumberExtra:
-                          element.rentModel!.transactionExtra?.orderNumber,
-                    ),
-            );
-          },
-        ),
-      );
+              rentHdrDtl: OrderRentalModel(
+                hour: hours,
+                amount: element.rentModel!.newBuyPrice,
+                startDate: element.rentModel!.startDate,
+                endDate: element.rentModel!.endDate,
+              ),
+            ),
+          );
+          continue;
+        }
+
+        listProduct.add(
+          OrderAddonModel(
+            addOn: element.addon,
+            ordadAddonId: element.addon?.productId,
+            ordadTotalAddon: element.qtyOrder!,
+            ordadTotalAmount: element.totalPrice!,
+            rentHdrDtl: element.rentModel == null
+                ? null
+                : OrderRentalModel(
+                    hour: element.rentModel!.totalHours!,
+                    amount: element.rentModel!.newBuyPrice,
+                    startDate: element.rentModel!.startDate,
+                    endDate: element.rentModel!.endDate,
+                    orderNumberExtra:
+                        element.rentModel!.transactionExtra?.orderNumber,
+                  ),
+          ),
+        );
+      }
     }
     // if (voucherList.isNotEmpty) {
     //   int count = 0;
@@ -425,44 +524,38 @@ class SalePageController extends GetxController
     // }
     if (voucherList.isNotEmpty) {
       double totalDiscountAmount = 0;
-      final Map<CartTicket, int> remainingTicketQtyMap = {
-        for (var ticket in ticketList) ticket: ticket.qtyOrder!
-      };
+      // Basis unit voucher = tiket + jam booking lapangan (1 voucher = 1 unit).
+      // Harus konsisten dengan calculateTotalOrder di SaleCartPageController agar
+      // ovpTotalAmount (nominal diskon yang disimpan) cocok dengan orderTotalAmt.
+      final List<VoucherUnit> voucherUnits = buildVoucherUnits(
+        ticketList: ticketList,
+        addonList: addonList,
+      );
 
       for (var element in voucherList) {
         int remainingVoucherQty = element.qtyOrder ?? 0;
         double voucherDiscountAmount = 0;
 
-        if (remainingVoucherQty > 0) {
-          for (var ticket in ticketList) {
-            int remainingTicketQty = remainingTicketQtyMap[ticket] ?? 0;
-            if (remainingVoucherQty == 0 || remainingTicketQty == 0) continue;
+        for (var unit in voucherUnits) {
+          if (remainingVoucherQty == 0) break;
+          if (unit.remaining == 0) continue;
 
-            int applicableQty = remainingTicketQty < remainingVoucherQty
-                ? remainingTicketQty
-                : remainingVoucherQty;
+          int applicableQty = unit.remaining < remainingVoucherQty
+              ? unit.remaining
+              : remainingVoucherQty;
+          unit.remaining -= applicableQty;
+          remainingVoucherQty -= applicableQty;
 
-            remainingTicketQtyMap[ticket] = remainingTicketQty - applicableQty;
-            remainingVoucherQty -= applicableQty;
-
-            double discountPerUnit = 0;
-            if (element.entity!.vpUnitType == UnitType.PERCENT) {
-              logger.safeLog(
-                'PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}',
-              );
-              discountPerUnit = (ticket.ticket?.ticketPrice ?? 0) *
-                  (element.entity!.vpUnitValue ?? 0) /
-                  100;
-            } else {
-              logger.safeLog(
-                'NOT PERCENT HITUNG TIKET : ${ticket.ticket?.ticketName} -> VOUCHER : ${element.entity?.vpName}',
-              );
-              discountPerUnit = element.entity!.vpUnitValue ?? 0;
-            }
-            double discountAmount = applicableQty * discountPerUnit;
-            voucherDiscountAmount += discountAmount;
-            totalPrice -= discountAmount;
+          double discountPerUnit;
+          if (element.entity!.vpUnitType == UnitType.PERCENT) {
+            discountPerUnit =
+                unit.unitPrice * (element.entity!.vpUnitValue ?? 0) / 100;
+          } else {
+            discountPerUnit = element.entity!.vpUnitValue ?? 0;
           }
+          double discountAmount = applicableQty * discountPerUnit;
+          voucherDiscountAmount += discountAmount;
+          totalPrice -= discountAmount;
         }
 
         totalDiscountAmount += voucherDiscountAmount;
@@ -542,6 +635,10 @@ class SalePageController extends GetxController
       childNames: saleCartPageController.needChildNames
           ? saleCartPageController.childNames
           : null,
+      trnOrderBookeds: listBooked,
+      lapanganPrintLines: listBookedPrint,
+      checkIn: memberCheckIn,
+      checkOut: memberCheckOut,
     );
   }
 
@@ -600,9 +697,35 @@ class SalePageController extends GetxController
 
           logger.safeLog('DATA : ${memberValid.toJson()}');
 
+          // Kunci voucher member ke kategorinya: member kolam renang (KLMRG)
+          // tak boleh dipakai untuk transaksi lapangan, begitu pula sebaliknya.
+          // Kategori transaksi diambil dari isi keranjang (tiket = ticketCategory,
+          // booking lapangan = LPNGN). Bila kategori member tidak ada pada
+          // keranjang, voucher member tidak dimunculkan.
+          final SaleCartPageController cartCtrl =
+              Get.find<SaleCartPageController>();
+          final String? membCategory =
+              memberValid.mstMembership?.membCategory;
+          final Set<String> cartCategories = _cartCategories(cartCtrl);
+          if (membCategory != null &&
+              membCategory.isNotEmpty &&
+              cartCategories.isNotEmpty &&
+              !cartCategories.contains(membCategory)) {
+            alert.warning(
+              'Warning',
+              'Voucher member ${_categoryLabel(membCategory)} tidak bisa dipakai '
+              'untuk transaksi ${cartCategories.map(_categoryLabel).join(' / ')}.',
+            );
+            return;
+          }
+
           await dialog.paymentMember(
-            onNext: (selectedMemberAnggotas) async {
+            onNext: (selectedMemberAnggotas, checkIn, checkOut) async {
               String memberNoStr = memberNo.text;
+              // Simpan jadwal les yang dipilih kasir agar ikut terkirim di
+              // body order (getBodyOrder) → backend update enrollment member.
+              memberCheckIn = checkIn;
+              memberCheckOut = checkOut;
               // logger.safeLog(
               //   'qtyVoucher ==========================================================> $qtyVoucher',
               // );
@@ -665,6 +788,37 @@ class SalePageController extends GetxController
       );
     } catch (e) {
       logger.safeLog(e);
+    }
+  }
+
+  /// Kumpulan kategori yang ada di keranjang saat ini (mis. {KLMRG}, {LPNGN}).
+  /// Tiket → [TicketEntity.ticketCategory]; booking lapangan (addon dengan
+  /// rentModel & productType 'L') → 'LPNGN'. Dipakai gate voucher member.
+  Set<String> _cartCategories(SaleCartPageController cart) {
+    final Set<String> cats = {};
+    for (final t in cart.ticketList) {
+      final String? c = t.ticket?.ticketCategory;
+      if (c != null && c.isNotEmpty) cats.add(c);
+    }
+    for (final a in cart.addonList) {
+      final bool isLapangan =
+          a.rentModel != null && a.addon?.productType == 'L';
+      if (isLapangan) cats.add('LPNGN');
+    }
+    return cats;
+  }
+
+  /// Label kategori yang ramah dibaca untuk pesan peringatan.
+  String _categoryLabel(String? code) {
+    switch (code) {
+      case 'KLMRG':
+        return 'Kolam Renang';
+      case 'LPNGN':
+        return 'Lapangan';
+      case 'WC':
+        return 'WC';
+      default:
+        return code ?? '-';
     }
   }
 

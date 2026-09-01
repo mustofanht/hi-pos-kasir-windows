@@ -151,6 +151,18 @@ class NewMemberPage extends GetView<NewMemberPageController> {
                                       },
                                     ),
                                   ),
+                                  if (e.memLocName != null &&
+                                      e.memLocName!.isNotEmpty)
+                                    Text(
+                                      e.memLocName!,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: fontSize.small,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),

@@ -18,6 +18,7 @@ import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/pri
 import 'package:jaya_propertiy/presentation/controllers/modules/proofofpayment/bukti_pembayaran_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
@@ -48,6 +49,22 @@ class HomePageController extends GetxController {
   final user = UserEntity().obs;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  /// Label lokasi di topbar.
+  ///
+  /// User multi-lokasi (punya >1 lokasi hak akses, atau tanpa pembatasan)
+  /// menampilkan **nama unit** — mewakili gabungan lokasi. User satu lokasi
+  /// tetap menampilkan nama lokasinya. Nama semua lokasi tidak tersedia di sisi
+  /// mobile (token hanya membawa id lokasi), jadi nama unit dipakai sebagai
+  /// wakilnya.
+  String get topbarLocationLabel {
+    final allowed = sessionUtil.getAllowedLocationIdList();
+    final bool isMultiLocation = allowed.length != 1;
+    if (isMultiLocation) {
+      return user.value.unitName ?? user.value.locationName ?? '';
+    }
+    return user.value.locationName ?? '';
+  }
 
   @override
   void onInit() {
@@ -212,6 +229,7 @@ class HomePageController extends GetxController {
       case 1:
         Get.lazyPut(() => SalePageController());
         Get.lazyPut(() => SaleTicketPageController());
+        Get.lazyPut(() => SaleLapanganPageController());
         Get.lazyPut(() => SaleVoucherPageController());
         Get.lazyPut(() => SaleAddonPageController());
         Get.lazyPut(() => SaleCartPageController());

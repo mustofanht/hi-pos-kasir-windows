@@ -43,7 +43,8 @@ class SaleTicketPageController extends GetxController {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'flMobile': 'Y',
-        'locationId': sessionUtil.getLocationId().toString(),
+        // Kirim seluruh lokasi user agar tiket semua lokasi tampil sekaligus.
+        'locationId': sessionUtil.getLocationIdsQueryParam(),
       };
 
       result = await _service.sale.ticketService.getAll(

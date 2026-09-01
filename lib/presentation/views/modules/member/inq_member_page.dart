@@ -61,6 +61,8 @@ class InqMemberPage extends GetView<InqMemberPageController> {
             style: ButtonStyle(
               minimumSize: MaterialStateProperty.all(Size.zero),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              // Tombol ikon ini sempit, padding bawaan ElevatedButton (16px
+              // kiri-kanan) tidak menyisakan ruang untuk ikonnya.
               padding: MaterialStateProperty.all(EdgeInsets.zero),
               backgroundColor: MaterialStateProperty.resolveWith(
                 (states) => colorStyle.blue,
@@ -94,6 +96,8 @@ class InqMemberPage extends GetView<InqMemberPageController> {
             style: ButtonStyle(
               minimumSize: MaterialStateProperty.all(Size.zero),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              // Tombol ikon ini sempit, padding bawaan ElevatedButton (16px
+              // kiri-kanan) tidak menyisakan ruang untuk ikonnya.
               padding: MaterialStateProperty.all(EdgeInsets.zero),
               backgroundColor: MaterialStateProperty.resolveWith(
                 (states) => colorStyle.blue,

@@ -18,8 +18,18 @@ class HomePage extends GetView<HomePageController> {
       initState: (state) {},
       builder: (context) {
         return Scaffold(
-          // resizeToAvoidBottomInset: false,
-          resizeToAvoidBottomInset: true,
+          // Keyboard dibiarkan menimpa layar, bukan memampatkannya.
+          //
+          // Layout kasir bertumpu pada panel tetap di kanan (keranjang) yang
+          // tingginya mengikuti layar. Saat Scaffold memampatkan badan halaman
+          // demi keyboard, panel itu kehilangan ruang sampai header dan
+          // footer-nya saling berebut dan memicu RenderFlex overflow.
+          //
+          // Konsekuensinya field di bagian bawah formulir tidak lagi ikut
+          // tergulir otomatis saat difokuskan — formulirnya sendiri sudah
+          // berada di dalam SingleChildScrollView, jadi masih bisa digulir
+          // manual.
+          resizeToAvoidBottomInset: false,
           key: controller.scaffoldKey,
           appBar: AppBar(
             toolbarHeight: layoutStyle.blockVertical * 10,
@@ -63,7 +73,7 @@ class HomePage extends GetView<HomePageController> {
                     child: Container(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        controller.user.value.locationName ?? '',
+                        controller.topbarLocationLabel,
                         style: textStyle.whiteText.copyWith(
                           fontSize: fontSize.title,
                           fontWeight: fontWeight.bold,

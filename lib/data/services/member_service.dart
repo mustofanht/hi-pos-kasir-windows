@@ -5,12 +5,18 @@ class MemberService {
     required AuthToken authToken,
     required int page,
     String? search,
+    String? locationId,
   }) async {
     var path = "member_card/inquiry?";
     path += 'size=${PAGINATIONS_CONSTANT.LIMIT_PAGE}';
     path += '&page=$page';
     if (search != null && path.isNotEmpty) {
       path += '&search=$search';
+    }
+    // Kirim daftar lokasi (mis. "1,2,5"). Kosong = seluruh lokasi hak akses
+    // user (backend member_card/inquiry, REKAP_PENYESUAIAN_MOBILE.md §1).
+    if (locationId != null && locationId.isNotEmpty) {
+      path += '&locationId=$locationId';
     }
 
     final uri = source.baseUri(

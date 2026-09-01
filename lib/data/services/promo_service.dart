@@ -3,9 +3,11 @@ part of 'main_service.dart';
 class PromoService {
   Future<Either<String, BaseResponse<List<PromoEntity>>>> getPromoByLoc({
     required AuthToken authToken,
-    required int locId,
+    // Daftar lokasi siap-kirim, mis. "1,2,5". Memakai endpoint query-param
+    // multi-lokasi yang baru; endpoint path-param lama (satu lokasi) ditinggalkan.
+    required String locParam,
   }) async {
-    var path = "mst_promo/images/$locId/Y";
+    var path = "mst_promo/images?locId=$locParam&isActive=Y";
 
     final uri = source.baseUri(
       path: path,

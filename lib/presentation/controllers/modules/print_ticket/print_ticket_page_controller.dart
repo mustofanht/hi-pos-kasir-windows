@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/print_ticket/print_ticket_detail_page_controller.dart';
 
 class PrintTicketPageController extends GetxController
@@ -32,6 +33,7 @@ class PrintTicketPageController extends GetxController
 
   final dataList = <VwOrderEntity>[].obs;
   final isLoading = false.obs;
+  final isLoadingMore = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -57,27 +59,44 @@ class PrintTicketPageController extends GetxController
   }
 
   void _onScroll() {
+    // Auto-load when scroll reaches bottom
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
       logger.safeLog('CURR PAGE : ${pagination.value.currentPage}');
-      // logger.safeLog('DATA LIST : ${dataList.length}');
-      if (dataList.isNotEmpty &&
-          pagination.value.currentPage! < dataList.length) {
+      logger.safeLog('TOTAL PAGE : ${pagination.value.totalPage}');
+
+      // Load next page if available and not already loading
+      if (hasMorePages && !isLoadingMore.value) {
         loadNextPage();
       }
     }
   }
 
+  // Check if there are more pages to load
+  bool get hasMorePages {
+    if (pagination.value.currentPage == null ||
+        pagination.value.totalPage == null) {
+      return false;
+    }
+    return pagination.value.currentPage! < (pagination.value.totalPage! - 1);
+  }
+
   loadNextPage() async {
-    isLoading.value = true;
-    animationController.repeat(reverse: true);
+    // Prevent double-click
+    if (!hasMorePages || isLoadingMore.value) {
+      logger.safeLog('No more pages or already loading more');
+      return;
+    }
+
+    isLoadingMore.value = true;
     logger.safeLog("NEXT PAGE : ${((pagination.value.currentPage ?? 0) + 1)}");
-    doPrepareList(
+
+    await doPrepareList(
       page: ((pagination.value.currentPage ?? 0) + 1),
       search: searchController.text,
     );
-    isLoading.value = false;
-    update();
+
+    isLoadingMore.value = false;
   }
 
   setListHeaderColumn() {
@@ -94,6 +113,13 @@ class PrintTicketPageController extends GetxController
       CustomTableData(
         id: 'ticketName',
         columnName: 'Nama',
+        alignment: Alignment.centerLeft,
+      ),
+    );
+    listColumnHeader.add(
+      CustomTableData(
+        id: 'locName',
+        columnName: 'Lokasi',
         alignment: Alignment.centerLeft,
       ),
     );
@@ -137,23 +163,26 @@ class PrintTicketPageController extends GetxController
 
   doSearch() async {
     logger.safeLog('SEARCH -- : ${searchController.text}');
+    isLoading.value = true;
     setListHeaderColumn();
     dataList.clear();
     await doPrepareList(page: 0, search: searchController.text);
+    isLoading.value = false;
     update();
   }
 
   doRefresh() async {
+    isLoading.value = true;
     setListHeaderColumn();
     dataList.clear();
     await doPrepareList(page: 0);
+    isLoading.value = false;
     update();
   }
 
   doPrepareList({required int page, String? search}) async {
     logger.safeLog("PAGE : $page");
     logger.safeLog("SEARCH : $search");
-    isLoading.value = true;
 
     try {
       var result;
@@ -164,15 +193,17 @@ class PrintTicketPageController extends GetxController
         'desc': 'orderDate',
       };
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'locId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getLocationId(),
-        )!,
-      );
+      // Filter lokasi lewat param khusus `locationId` (backend memecahnya jadi
+      // List<Integer>), bukan lewat `filter` — koma pada IN akan dipotong Spring
+      // dan menghasilkan 400 "Filter Invalid format". Kosong = seluruh lokasi
+      // hak akses user (aturan backend, lihat REKAP_PENYESUAIAN_MOBILE.md §2).
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
+      if (locationIds.isNotEmpty) {
+        param['locationId'] = locationIds;
+      }
 
       if (search != '' && search != null) {
+        // If there's a search term, filter by order number
         dataFilter.add(
           apiFilterUtil.addSearch(
             'orderNumber',
@@ -180,6 +211,23 @@ class PrintTicketPageController extends GetxController
             search,
           )!,
         );
+      } else {
+        // If no search term, filter by current month to reduce load
+        final now = DateTime.now();
+        final firstDayOfMonth = DateTime(now.year, now.month, 1);
+        final formattedDate =
+            '${firstDayOfMonth.year}-${firstDayOfMonth.month.toString().padLeft(2, '0')}-${firstDayOfMonth.day.toString().padLeft(2, '0')}';
+
+        dataFilter.add(
+          apiFilterUtil.addSearch(
+            'orderDate',
+            OPERATOR_CONSTANTS.GREATHER_THAN_OR_EQUALS,
+            formattedDate,
+          )!,
+        );
+
+        logger.safeLog(
+            'Applied default date filter: orderDate >= $formattedDate');
       }
 
       result = await _service.order.orderService.getVwOrderTicket(
@@ -190,7 +238,8 @@ class PrintTicketPageController extends GetxController
       result.fold(
         (l) {
           logger.safeLog(l);
-          isLoading.value = false;
+          // Tampilkan pesan backend (mis. 403 akses lokasi) saat load awal.
+          if (page == 0) alert.warning('Perhatian', l.toString());
         },
         (r) {
           if (r.data != null) {
@@ -201,12 +250,10 @@ class PrintTicketPageController extends GetxController
             }
           }
           pagination.value = r.pagination!;
-          isLoading.value = false;
         },
       );
     } catch (e) {
       logger.safeLog(e);
-      isLoading.value = false;
     }
     logger.safeLog('LENGHT DATA CEK ORDER : ${dataList.length}');
     update();

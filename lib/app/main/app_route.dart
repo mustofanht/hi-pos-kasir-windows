@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/presentation/bindings/modules/print_ticket/print_
 import 'package:jaya_propertiy/presentation/bindings/modules/print_ticket/print_ticket_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/proofofpayment/bukti_pembayaran_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_cart_page_binding.dart';
+import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_lapangan_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_voucher_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale_page_binding.dart';
 import 'package:jaya_propertiy/presentation/bindings/modules/sale/sale_ticket_page_binding.dart';
@@ -22,6 +23,7 @@ import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_tic
 import 'package:jaya_propertiy/presentation/views/modules/print_ticket/print_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/proofofpayment/bukti_pembayaran_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_cart_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/sale/sale_lapangan_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_voucher_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_ticket_page.dart';
@@ -87,6 +89,14 @@ class AppRoute {
       name: RouteName.saleTicketPage,
       page: () => const SaleTicketPage(),
       binding: SaleTicketPageBinding(),
+      curve: Curves.easeInOut,
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 1000),
+    ),
+    GetPage(
+      name: RouteName.saleLapanganPage,
+      page: () => const SaleLapanganPage(),
+      binding: SaleLapanganPageBinding(),
       curve: Curves.easeInOut,
       transition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 1000),
@@ -185,6 +195,7 @@ abstract class RouteName {
   // module
   static const salePage = '/sale-page';
   static const saleTicketPage = '/sale-ticket-page';
+  static const saleLapanganPage = '/sale-lapangan-page';
   static const saleVoucherPage = '/sale-voucher-page';
   static const saleAddonPage = '/sale-addon-page';
   static const saleCartPage = '/sale-cart-page';

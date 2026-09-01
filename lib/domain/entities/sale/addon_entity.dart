@@ -16,6 +16,12 @@ class AddonEntity {
   DateTime? endDate;
   DateTime? closeDate;
 
+  /// Daftar SEMUA booking terjadwal hari ini yang belum mulai, sudah dirangkai
+  /// backend dalam WIB, mis. "15:00-16:00, 19:00-20:00" (okupansi terbuka =
+  /// "Mulai HH:mm"). Dipakai badge "Sudah Dibooking". Item TIDAK terkunci —
+  /// tetap bisa disewakan untuk jam kosong lain. null/kosong = tidak ada booking.
+  String? upcomingBookingsText;
+
   AddonEntity({
     this.productId,
     this.productName,
@@ -31,6 +37,7 @@ class AddonEntity {
     this.startDate,
     this.endDate,
     this.closeDate,
+    this.upcomingBookingsText,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -57,6 +64,7 @@ class AddonEntity {
       closeDate = json['closeDate'] != null
           ? DateTime.parse(json['closeDate']).toLocal()
           : null;
+      upcomingBookingsText = json['upcomingBookingsText'];
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -78,6 +86,7 @@ class AddonEntity {
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
       'closeDate': closeDate?.toIso8601String(),
+      'upcomingBookingsText': upcomingBookingsText,
     };
   }
 }

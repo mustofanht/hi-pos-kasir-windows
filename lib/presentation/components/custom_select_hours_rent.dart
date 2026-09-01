@@ -205,30 +205,40 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    controller.doCheckIsExtraTime();
-                  },
+                  onTap: controller.isZeroMinRent
+                      ? null
+                      : () {
+                          controller.doCheckIsExtraTime();
+                        },
                   child: Row(
                     children: [
                       Checkbox(
                         value: controller.isExtraTime.value,
-                        onChanged: (v) {
-                          controller.doCheckIsExtraTime();
-                        },
+                        // onChanged null membuat Checkbox tampil abu-abu, jadi
+                        // kasir langsung tahu field ini memang dimatikan.
+                        onChanged: controller.isZeroMinRent
+                            ? null
+                            : (v) {
+                                controller.doCheckIsExtraTime();
+                              },
                         activeColor: colorStyle.blue,
                       ),
                       Text(
                         'Extra Time',
-                        style: textStyle.blackText,
+                        style: controller.isZeroMinRent
+                            ? textStyle.greyText
+                            : textStyle.blackText,
                       )
                     ],
                   ),
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  controller.doSelectTransactionBefore();
-                },
+                onTap: controller.isZeroMinRent
+                    ? null
+                    : () {
+                        controller.doSelectTransactionBefore();
+                      },
                 child: Text(
                   'Transaksi Sebelumnya',
                   style: (controller.isExtraTime.value
@@ -422,14 +432,18 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                           Row(
                             children: [
                               GestureDetector(
-                                onTap: controller.doMinHours,
+                                onTap: controller.isZeroMinRent
+                                    ? null
+                                    : controller.doMinHours,
                                 child: Container(
                                   width: layoutStyle.blockVertical * 6.5,
                                   height: layoutStyle.blockVertical * 6.5,
                                   padding: EdgeInsets.all(
                                       layoutStyle.defaultMargin / 2),
                                   decoration: BoxDecoration(
-                                    color: colorStyle.black,
+                                    color: controller.isZeroMinRent
+                                        ? colorStyle.grey
+                                        : colorStyle.black,
                                     borderRadius: BorderRadius.circular(
                                       layoutStyle.defaultMargin / 2,
                                     ),
@@ -473,14 +487,18 @@ class _CustomSelectHoursRentState extends State<CustomSelectHoursRent> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: controller.doAddHours,
+                                onTap: controller.isZeroMinRent
+                                    ? null
+                                    : controller.doAddHours,
                                 child: Container(
                                   width: layoutStyle.blockVertical * 6.5,
                                   height: layoutStyle.blockVertical * 6.5,
                                   padding: EdgeInsets.all(
                                       layoutStyle.defaultMargin / 2),
                                   decoration: BoxDecoration(
-                                    color: colorStyle.black,
+                                    color: controller.isZeroMinRent
+                                        ? colorStyle.grey
+                                        : colorStyle.black,
                                     borderRadius: BorderRadius.circular(
                                       layoutStyle.defaultMargin / 2,
                                     ),

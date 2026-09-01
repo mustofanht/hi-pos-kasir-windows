@@ -18,6 +18,11 @@ class OrderMemberModel {
   Membership? membership;
   List<MemberListResponse>? listMember;
 
+  /// Jadwal les renang (opsional): jam check-in/out mingguan, format "HH:mm".
+  /// Diisi hanya untuk membership les renang; null untuk member biasa.
+  String? checkIn;
+  String? checkOut;
+
   OrderMemberModel({
     this.qrCode,
     this.orderName,
@@ -34,6 +39,8 @@ class OrderMemberModel {
     this.adminFeeAmt,
     this.membership,
     this.listMember,
+    this.checkIn,
+    this.checkOut,
   });
 
   factory OrderMemberModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +66,8 @@ class OrderMemberModel {
       listMember: (json['listMember'] as List<dynamic>?)
           ?.map((e) => MemberListResponse.fromJson(e as Map<String, dynamic>))
           .toList(),
+      checkIn: json['checkIn'],
+      checkOut: json['checkOut'],
     );
   }
 
@@ -79,6 +88,8 @@ class OrderMemberModel {
       'adminFeeAmt': adminFeeAmt,
       'membership': membership?.toJson(),
       'listMember': listMember?.map((e) => e.toJson()).toList(),
+      'checkIn': checkIn,
+      'checkOut': checkOut,
     };
   }
 }

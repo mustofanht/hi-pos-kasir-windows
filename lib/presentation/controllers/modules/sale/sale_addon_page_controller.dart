@@ -73,7 +73,8 @@ class SaleAddonPageController extends GetxController {
         'page': page.toString(),
         'size': PAGINATIONS_CONSTANT.LIMIT_PAGE.toString(),
         'flMobile': 'Y',
-        'locationId': sessionUtil.getLocationId().toString(),
+        // Kirim seluruh lokasi user agar produk semua lokasi tampil sekaligus.
+        'locationId': sessionUtil.getLocationIdsQueryParam(),
         'typeProduct': typeProduct,
       };
 
@@ -107,7 +108,7 @@ class SaleAddonPageController extends GetxController {
       var result;
       result = await _service.sale.addonService.getHourly(
         authToken: _authToken,
-        locationId: sessionUtil.getLocationId(),
+        locationParam: sessionUtil.getLocationIdsQueryParam(),
         page: page,
       );
 
@@ -147,19 +148,35 @@ class SaleAddonPageController extends GetxController {
     AddonEntity val,
     CartAddon? exists,
   ) async {
-    if (cartRentModel.totalHours == 0) {
+    // Aula = Sewa Per Jam dengan Minimal Lama Sewa 0. Boleh totalHours 0
+    // (okupansi tanpa batas jam, diakhiri lewat Manual Out). Untuk item non-aula,
+    // total jam 0 tetap tidak valid. Lihat MANUAL_OUT_AULA_MOBILE.md §2.
+    final bool isAula = (val.minRentPrd ?? -1) == 0;
+
+    if (!isAula && cartRentModel.totalHours == 0) {
       alert.error('Error', 'Total Jam tidak boleh kosong!');
       return;
     }
 
     Get.back();
 
-    var result;
     val.productPrice = 0;
 
     if (exists != null) {
       saleCartPageController.addonList.remove(exists);
     }
+
+    if (isAula) {
+      // Harga aula flat 0 (backend menyetel amount=0 & status Terpakai saat
+      // hour==0); tidak perlu hitung harga per jam.
+      cartRentModel.newBuyPrice = 0;
+      saleCartPageController.addAddonRent(val, cartRentModel);
+      saleCartPageController.update();
+      update();
+      return;
+    }
+
+    var result;
 
     result = await _service.rental.getPriceRental(
       authToken: _authToken,
@@ -208,7 +225,15 @@ class SaleAddonPageController extends GetxController {
       (e) => e.addon!.productId == val.productId,
     );
 
+    // Aula = Sewa Per Jam dengan Minimal Lama Sewa 0 (MANUAL_OUT_AULA_MOBILE.md).
+    // Alurnya beda: mulai okupansi tanpa pilih jam, dan diakhiri lewat Manual Out.
+    final bool isAula = (val.minRentPrd ?? -1) == 0;
+
     if (val.isBooked == 'Y') {
+      if (isAula) {
+        await doManualOut(val);
+        return;
+      }
       closedRental(
         addonEntity: val,
         saleCartPageController: saleCartPageController,
@@ -253,6 +278,33 @@ class SaleAddonPageController extends GetxController {
       saleCartPageController.update();
       update();
     }
+  }
+
+  /// Manual Out item aula (Sewa Per Jam minimal 0): mengakhiri okupansi berjalan
+  /// dan mengembalikan status item ke Available. Lihat MANUAL_OUT_AULA_MOBILE.md §4.
+  Future<void> doManualOut(AddonEntity val) async {
+    await dialog.closedRent(
+      entitiy: val,
+      authToken: _authToken,
+      onNext: () async {
+        try {
+          final result = await _service.sale.addonService.manualOut(
+            authToken: _authToken,
+            productId: val.productId!,
+          );
+          result.fold((l) {
+            logger.safeLog(l);
+            alert.error('Error', l);
+          }, (r) {
+            logger.safeLog('manualOut: ${r.message}');
+          });
+        } catch (e) {
+          logger.safeLog(e);
+        }
+        Get.back();
+        doPrepareList(page: 0, typeProduct: 'H');
+      },
+    );
   }
 
   Future<void> closedRental({

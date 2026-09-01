@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_card.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_member_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 
@@ -17,7 +18,12 @@ class InqMemberPageController extends GetxController
   InqMemberPageController();
 
   final _service = MainService();
-  final _authToken = Get.arguments[argConstant.authToken];
+
+  // Ambil token dari MemberPageController (header) yang menyimpannya saat halaman
+  // dibuka, bukan dari Get.arguments — controller ini bisa di-recreate lewat
+  // clearAndRefreshMenu (mis. selesai transaksi member) saat Get.arguments null,
+  // sehingga Get.arguments[...] melempar NoSuchMethodError ("[]" on null).
+  final _authToken = Get.find<MemberPageController>().authToken;
 
   final searchController = TextEditingController();
   final listColumnHeader = <CustomTableData>[].obs;
@@ -105,6 +111,13 @@ class InqMemberPageController extends GetxController
     );
     listColumnHeader.add(
       CustomTableData(
+        id: 'locName',
+        columnName: 'Lokasi',
+        alignment: Alignment.centerLeft,
+      ),
+    );
+    listColumnHeader.add(
+      CustomTableData(
         id: 'expiredDate',
         columnName: 'Masa Berlaku',
         alignment: Alignment.center,
@@ -154,15 +167,20 @@ class InqMemberPageController extends GetxController
     isLoading.value = true;
     try {
       var result;
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
       result = await _service.member.getMemberCardInq(
         authToken: _authToken,
         page: page,
         search: search,
+        locationId: locationIds.isNotEmpty ? locationIds : null,
       );
       result.fold(
         (l) {
           logger.safeLog(l);
           isLoading.value = false;
+          // Tampilkan pesan backend (mis. 403 "Tidak memiliki akses ke lokasi
+          // yang diminta") saat load awal, jadi bukan sekadar "data kosong".
+          if (page == 0) alert.warning('Perhatian', l.toString());
         },
         (r) {
           if (r.data != null) {

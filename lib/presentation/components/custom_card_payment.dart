@@ -31,6 +31,19 @@ class CustomCardPayment extends StatelessWidget {
         );
         String img = mstPayment.pymntImgPath ?? '';
         String label = mstPayment.pymntName ?? '-';
+
+        // Ukuran ikon dikunci di satu tempat supaya jalur cadangan tidak lagi
+        // memakai ukuran asli aset. Tinggi sel grid sudah dipatok
+        // childAspectRatio, jadi ikon sebesar aslinya membuat isi kartu
+        // meluber ke bawah (bottom overflowed).
+        final double iconWidth = layoutStyle.blockHorizontal * 3;
+        final double iconHeight = layoutStyle.blockVertical * 3;
+        final Widget fallbackIcon = Image.asset(
+          assetsConstant.icPaymentEdc,
+          width: iconWidth,
+          height: iconHeight,
+          fit: BoxFit.contain,
+        );
         // logger.safeLog('IMG : $img');
         return GestureDetector(
           onTap: () {
@@ -62,16 +75,13 @@ class CustomCardPayment extends StatelessWidget {
                 img.isNotEmpty
                     ? Image.network(
                         img,
-                        width: layoutStyle.blockHorizontal * 3,
-                        height: layoutStyle.blockVertical * 3,
+                        width: iconWidth,
+                        height: iconHeight,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
-                            Image.asset(
-                          assetsConstant.icPaymentEdc,
-                        ),
+                            fallbackIcon,
                       )
-                    : Image.asset(
-                        assetsConstant.icPaymentEdc,
-                      ),
+                    : fallbackIcon,
                 if (label.isNotEmpty) ...[
                   SizedBox(
                     width: layoutStyle.defaultMargin / 2,

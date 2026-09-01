@@ -2285,7 +2285,11 @@ class CustomDialog {
   }
 
   paymentMember({
-    required Function(List<MemberListResponse> selectedMemberAnggota) onNext,
+    required Function(
+      List<MemberListResponse> selectedMemberAnggota,
+      String? checkIn,
+      String? checkOut,
+    ) onNext,
     required AuthToken authToken,
     required MemberValid memberValid,
     required String memberNo,

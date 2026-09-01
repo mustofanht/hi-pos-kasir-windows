@@ -139,13 +139,14 @@ class BuktiPembayaranPageController extends GetxController
         'desc': 'orderDate',
       };
 
-      dataFilter.add(
-        apiFilterUtil.addSearch(
-          'orderLoacationId',
-          OPERATOR_CONSTANTS.EQUALS,
-          sessionUtil.getLocationId(),
-        )!,
-      );
+      // Filter lokasi lewat param khusus `locationId` (backend memecahnya jadi
+      // List<Integer>), bukan lewat `filter` — koma pada IN dipotong Spring dan
+      // memicu 400. Kosong = seluruh lokasi hak akses user
+      // (REKAP_PENYESUAIAN_MOBILE.md §2).
+      final locationIds = sessionUtil.getLocationIdsQueryParam();
+      if (locationIds.isNotEmpty) {
+        param['locationId'] = locationIds;
+      }
 
       dataFilter.add(
         apiFilterUtil.addSearch(
@@ -191,6 +192,8 @@ class BuktiPembayaranPageController extends GetxController
         logger.safeLog(l);
         isLoading.value = false;
         isLoadMore.value = false;
+        // Tampilkan pesan backend (mis. 403 akses lokasi) saat load awal.
+        if (page == 0) alert.warning('Perhatian', l.toString());
       }, (r) {
         // if (page == 0) {
         //   dataList.value = r.data!;

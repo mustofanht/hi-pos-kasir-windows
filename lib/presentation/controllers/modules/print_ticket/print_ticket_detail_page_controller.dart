@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/custom_table_data.dart';
@@ -14,6 +15,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/vw_order_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
@@ -307,6 +309,11 @@ class PrintTicketDetailPageController extends GetxController {
             return;
           }
 
+          if (listCreateTicket.isEmpty) {
+            alert.error('Error', 'Data Empty');
+            return;
+          }
+
           String locationName = "";
           UserEntity? user = await common.getUser(
             authToken: _authToken,
@@ -315,37 +322,71 @@ class PrintTicketDetailPageController extends GetxController {
             locationName = user.locationName!;
           }
 
+          // Ambil daftar tiket lapangan (ticket_fl_lapangan='Y') beserta setup
+          // harga per jam, untuk memisahkan booking lapangan dari tiket gate.
+          // Booking lapangan dicetak seperti struk penjualan (court + jam +
+          // durasi + harga) TANPA QR; hanya tiket non-lapangan yang ber-QR.
+          final lapanganPriceTimes = await _fetchLapanganPriceTimes();
+
+          final String reffNo = model.value.paymentDetail?.pymntReffno ?? '';
+          final String orderNo = parentModel.value.orderNumber ?? '';
+          final DateTime paymentDate =
+              parentModel.value.orderDate ?? DateTime.now();
+
+          final lapanganTickets = listCreateTicket
+              .where((e) => lapanganPriceTimes.containsKey(e.ticketName))
+              .toList();
+          final gateTickets = listCreateTicket
+              .where((e) => !lapanganPriceTimes.containsKey(e.ticketName))
+              .toList();
+
           List<int> data = [];
-          if (listCreateTicket.isNotEmpty) {
-            int count = 1;
-            int totalPak = listCreateTicket.length;
-            String reffNo = model.value.paymentDetail?.pymntReffno ?? '';
-            for (var element in listCreateTicket) {
-              // String reffNo = element.ticketNo ?? '';
-              List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+
+          // Tiket non-lapangan → QR gate (perilaku lama).
+          int count = 1;
+          int totalPak = gateTickets.length;
+          for (var element in gateTickets) {
+            List<int> dataPrint = await generatePrintUtil.dataGatePrint(
+              locationName: locationName,
+              paperSize: PaperSize.mm80,
+              orderNo: orderNo,
+              reffNo: reffNo,
+              pakOf: count,
+              pakTotal: totalPak,
+              qrCode: element.ticketNo!,
+              expiredAt: dateTimeUtil.getFormattedDate(
+                date: element.ticketActiveDate!.toLocal(),
+                format: dateFormat.dateDDMMMMYYYY,
+              ),
+              ticketName: element.ticketName,
+              isCompanion: element.isCompanion, // Pass flag pendamping
+              paymentDate: paymentDate,
+            );
+            data.addAll(dataPrint);
+            count++;
+          }
+
+          // Booking lapangan → format struk penjualan, tanpa QR.
+          final lapanganLines =
+              _buildLapanganPrintLines(lapanganTickets, lapanganPriceTimes);
+          if (lapanganLines.isNotEmpty) {
+            data.addAll(
+              await generatePrintUtil.dataLapanganTicketPrint(
                 locationName: locationName,
                 paperSize: PaperSize.mm80,
-                orderNo: parentModel.value.orderNumber ?? '',
+                orderNo: orderNo,
                 reffNo: reffNo,
-                pakOf: count,
-                pakTotal: totalPak,
-                qrCode: element.ticketNo!,
-                // expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
-                expiredAt: dateTimeUtil.getFormattedDate(
-                  date: element.ticketActiveDate!.toLocal(),
-                  format: dateFormat.dateDDMMMMYYYY,
-                ),
-                ticketName: element.ticketName,
-                isCompanion: element.isCompanion, // Pass flag pendamping
-                paymentDate: parentModel.value.orderDate ?? DateTime.now(),
-              );
-              data.addAll(dataPrint);
-              count++;
-            }
-            await printerUtil.print(printerUtil.currPrinter!, data);
-          } else {
-            alert.error('Error', 'Data Empty');
+                paymentDate: paymentDate,
+                lines: lapanganLines,
+              ),
+            );
           }
+
+          if (data.isEmpty) {
+            alert.error('Error', 'Data Empty');
+            return;
+          }
+          await printerUtil.print(printerUtil.currPrinter!, data);
         } else {
           alert.error('Error', 'please check connection printer');
           printerUtil.connectPrinter();
@@ -355,6 +396,118 @@ class PrintTicketDetailPageController extends GetxController {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
     }
+  }
+
+  /// Ambil tiket lapangan (ticket_fl_lapangan='Y') untuk lokasi kasir aktif,
+  /// dipetakan dari nama tiket ke setup harga per jam (ticket_price_time).
+  /// Dipakai untuk mengenali baris booking lapangan pada order dan menghitung
+  /// harganya saat cetak reprint.
+  Future<Map<String, List<TicketPriceTimeEntity>>>
+      _fetchLapanganPriceTimes() async {
+    final Map<String, List<TicketPriceTimeEntity>> map = {};
+    try {
+      final Map<String, dynamic> param = {
+        'locationId': sessionUtil.getLocationIdsQueryParam(),
+      };
+      final result = await _service.sale.ticketService.getLapangan(
+        authToken: _authToken,
+        paramsFilter: param,
+      );
+      result.fold(
+        (l) => logger.safeLog(l),
+        (r) {
+          for (final TicketEntity t in (r.data ?? <TicketEntity>[])) {
+            if (t.ticketName != null) {
+              map[t.ticketName!] =
+                  t.ticketPriceTimes ?? <TicketPriceTimeEntity>[];
+            }
+          }
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    return map;
+  }
+
+  /// Susun baris cetak booking lapangan dari daftar slot (tiap slot = 1 jam,
+  /// dikenali dari [ResponseCreateTicketNoEntity.ticketActiveDate]). Slot
+  /// dikelompokkan per court lalu dipecah menjadi blok jam yang berurutan,
+  /// sehingga jam yang meloncat menghasilkan baris terpisah — konsisten dengan
+  /// alur penjualan. Harga tiap blok dijumlah dari setup harga per jam.
+  List<LapanganPrintLine> _buildLapanganPrintLines(
+    List<ResponseCreateTicketNoEntity> tickets,
+    Map<String, List<TicketPriceTimeEntity>> priceTimesByName,
+  ) {
+    final List<LapanganPrintLine> lines = [];
+
+    final Map<String, List<ResponseCreateTicketNoEntity>> byCourt = {};
+    for (final t in tickets) {
+      if (t.ticketName == null || t.ticketActiveDate == null) continue;
+      byCourt.putIfAbsent(t.ticketName!, () => []).add(t);
+    }
+
+    byCourt.forEach((courtName, slots) {
+      slots.sort(
+        (a, b) => a.ticketActiveDate!.compareTo(b.ticketActiveDate!),
+      );
+      final priceTimes = priceTimesByName[courtName] ?? const [];
+
+      List<ResponseCreateTicketNoEntity> group = [];
+      void flush() {
+        if (group.isEmpty) return;
+        final start = group.first.ticketActiveDate!.toLocal();
+        final end = group.last.ticketActiveDate!.toLocal().add(
+              const Duration(hours: 1),
+            );
+        double price = 0;
+        for (final s in group) {
+          price += _priceAtHour(priceTimes, s.ticketActiveDate!.toLocal().hour) ??
+              0;
+        }
+        lines.add(
+          LapanganPrintLine(
+            courtName: courtName,
+            startDate: start,
+            endDate: end,
+            hours: group.length,
+            price: price,
+          ),
+        );
+        group = [];
+      }
+
+      for (final s in slots) {
+        if (group.isEmpty) {
+          group.add(s);
+        } else {
+          final prev = group.last.ticketActiveDate!.toLocal();
+          final curr = s.ticketActiveDate!.toLocal();
+          // Berurutan bila selisih tepat 1 jam.
+          if (curr.difference(prev).inMinutes == 60) {
+            group.add(s);
+          } else {
+            flush();
+            group.add(s);
+          }
+        }
+      }
+      flush();
+    });
+
+    return lines;
+  }
+
+  /// Harga satu jam dari setup ticket_price_time; null bila tak ada rentang
+  /// yang cocok. Semantik: startHour <= hour <= endHour (sama dengan backend).
+  double? _priceAtHour(List<TicketPriceTimeEntity> priceTimes, int hour) {
+    for (final pt in priceTimes) {
+      final s = pt.startHour;
+      final e = pt.endHour;
+      if (s == null || e == null || pt.price == null) continue;
+      if (s <= hour && hour <= e) return pt.price;
+    }
+    return null;
   }
 
   Future<List<ResponseCreateTicketNoEntity>> createTicketNo({

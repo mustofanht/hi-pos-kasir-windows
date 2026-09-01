@@ -1,5 +1,6 @@
 class MemberCard {
   int? cardLocId;
+  String? locName;
   String? cardNo;
   String? cardName;
   String? membName;
@@ -13,6 +14,7 @@ class MemberCard {
 
   MemberCard({
     this.cardLocId,
+    this.locName,
     this.cardNo,
     this.cardName,
     this.membName,
@@ -28,6 +30,7 @@ class MemberCard {
   factory MemberCard.fromJson(Map<String, dynamic> json) {
     return MemberCard(
       cardLocId: json['cardLocId'],
+      locName: json['locName'],
       cardNo: json['cardNo'],
       cardName: json['cardName'],
       membName: json['membName'],
@@ -48,6 +51,7 @@ class MemberCard {
   Map<String, dynamic> toJson() {
     return {
       'cardLocId': cardLocId,
+      'locName': locName,
       'cardNo': cardNo,
       'cardName': cardName,
       'membName': membName,

@@ -16,6 +16,29 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
   @override
   Widget build(BuildContext context) {
     Widget cardItem(AddonEntity e) {
+      // Tiga status kartu item:
+      // - occupiedNow (merah): sedang dipakai SEKARANG → tap = Manual Out/akhiri.
+      // - bookedLater (oranye): ada booking terjadwal nanti, TAPI item masih
+      //   bebas disewakan untuk jam kosong lain → tap = jual normal.
+      // - available (hijau): kosong.
+      final bool occupiedNow = e.isBooked == 'Y';
+      final bool bookedLater = !occupiedNow &&
+          e.upcomingBookingsText != null &&
+          e.upcomingBookingsText!.isNotEmpty;
+      final Color statusBorder = occupiedNow
+          ? colorStyle.red
+          : bookedLater
+              ? Colors.orange
+              : e.isBooked == null
+                  ? colorStyle.primary
+                  : colorStyle.green;
+      final Color statusBg = occupiedNow
+          ? colorStyle.red.withOpacity(0.20)
+          : bookedLater
+              ? Colors.orange.withOpacity(0.15)
+              : e.isBooked == null
+                  ? colorStyle.white
+                  : colorStyle.green.withOpacity(0.20);
       return InkWell(
         onTap: () {
           controller.addAddonToCart(val: e);
@@ -23,23 +46,9 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
         child: Container(
           height: 20,
           decoration: BoxDecoration(
-            border: e.isBooked == null
-                ? Border.all(
-                    color: colorStyle.primary,
-                  )
-                : e.isBooked == 'Y'
-                    ? Border.all(
-                        color: colorStyle.red,
-                      )
-                    : Border.all(
-                        color: colorStyle.green,
-                      ),
+            border: Border.all(color: statusBorder),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
-            color: e.isBooked == null
-                ? colorStyle.white
-                : e.isBooked == 'Y'
-                    ? colorStyle.red.withOpacity(0.20)
-                    : colorStyle.green.withOpacity(0.20),
+            color: statusBg,
           ),
           // padding: const EdgeInsets.all(2),
           child: Container(
@@ -104,7 +113,7 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                         SizedBox(
                           height: layoutStyle.defaultMargin / 2,
                         ),
-                        e.isBooked == 'Y'
+                        occupiedNow
                             ? Column(
                                 children: [
                                   // Row(
@@ -143,9 +152,14 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                                         style: textStyle.blackText
                                             .copyWith(fontSize: fontSize.small),
                                       ),
+                                      // Aula (okupansi terbuka): jam selesai bernilai
+                                      // sentinel 9999 — tampilkan status "Terpakai",
+                                      // bukan jam palsu. Lihat MANUAL_OUT_AULA_MOBILE.md §3.
                                       AutoSizeText(
-                                        dateTimeUtil.dateFormat(
-                                            e.endDate!, 'HH:mm'),
+                                        e.endDate!.year >= 9999
+                                            ? 'Terpakai'
+                                            : dateTimeUtil.dateFormat(
+                                                e.endDate!, 'HH:mm'),
                                         style: textStyle.blackText
                                             .copyWith(fontSize: fontSize.small),
                                       ),
@@ -153,7 +167,29 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                                   ),
                                 ],
                               )
-                            : Container()
+                            : bookedLater
+                                ? Column(
+                                    children: [
+                                      AutoSizeText(
+                                        'Sudah Dibooking',
+                                        style: textStyle.blackText.copyWith(
+                                          fontSize: fontSize.small,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange[800],
+                                        ),
+                                      ),
+                                      AutoSizeText(
+                                        // Semua booking hari ini, sudah dirangkai
+                                        // backend (WIB), mis. "15:00-16:00, 19:00-20:00".
+                                        e.upcomingBookingsText!,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 3,
+                                        style: textStyle.blackText.copyWith(
+                                            fontSize: fontSize.small),
+                                      ),
+                                    ],
+                                  )
+                                : Container()
                       ],
                     );
                   },
