@@ -25,20 +25,27 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
       final bool bookedLater = !occupiedNow &&
           e.upcomingBookingsText != null &&
           e.upcomingBookingsText!.isNotEmpty;
-      final Color statusBorder = occupiedNow
-          ? colorStyle.red
-          : bookedLater
-              ? Colors.orange
-              : e.isBooked == null
-                  ? colorStyle.primary
-                  : colorStyle.green;
-      final Color statusBg = occupiedNow
-          ? colorStyle.red.withOpacity(0.20)
-          : bookedLater
-              ? Colors.orange.withOpacity(0.15)
-              : e.isBooked == null
-                  ? colorStyle.white
-                  : colorStyle.green.withOpacity(0.20);
+      // Inventory (V86): barang dagangan yang stoknya habis tidak boleh dijual.
+      // Kartunya diredupkan dan tap-nya hanya memunculkan peringatan.
+      final bool outOfStock = e.isOutOfStock;
+      final Color statusBorder = outOfStock
+          ? colorStyle.grey
+          : occupiedNow
+              ? colorStyle.red
+              : bookedLater
+                  ? Colors.orange
+                  : e.isBooked == null
+                      ? colorStyle.primary
+                      : colorStyle.green;
+      final Color statusBg = outOfStock
+          ? colorStyle.grey.withOpacity(0.20)
+          : occupiedNow
+              ? colorStyle.red.withOpacity(0.20)
+              : bookedLater
+                  ? Colors.orange.withOpacity(0.15)
+                  : e.isBooked == null
+                      ? colorStyle.white
+                      : colorStyle.green.withOpacity(0.20);
       return InkWell(
         onTap: () {
           controller.addAddonToCart(val: e);
@@ -189,7 +196,29 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                                       ),
                                     ],
                                   )
-                                : Container()
+                                : Container(),
+                        // Inventory (V86): sisa stok hanya tampil untuk produk
+                        // yang memang di-track; produk sewa/tiket tidak berubah.
+                        if (e.isInventoryTracked)
+                          Padding(
+                            padding: EdgeInsets.only(
+                                top: layoutStyle.defaultMargin / 2),
+                            child: AutoSizeText(
+                              outOfStock
+                                  ? 'Stok Habis'
+                                  : 'Sisa ${e.stockAvailable!.toStringAsFixed(0)} ${e.stockUom ?? 'pcs'}',
+                              maxLines: 1,
+                              style: textStyle.blackText.copyWith(
+                                fontSize: fontSize.small,
+                                fontWeight: FontWeight.bold,
+                                color: outOfStock
+                                    ? colorStyle.red
+                                    : e.isLowStock
+                                        ? Colors.orange[800]
+                                        : colorStyle.green,
+                              ),
+                            ),
+                          ),
                       ],
                     );
                   },

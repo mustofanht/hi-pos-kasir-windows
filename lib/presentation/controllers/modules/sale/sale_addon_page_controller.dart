@@ -225,6 +225,24 @@ class SaleAddonPageController extends GetxController {
       (e) => e.addon!.productId == val.productId,
     );
 
+    // Inventory (V86): barang dagangan yang stoknya di-track tidak boleh dijual
+    // melebihi sisa stok. Backend tetap memvalidasi ulang saat order disimpan —
+    // pengecekan di sini hanya supaya kasir tahu lebih awal, sebelum bayar.
+    if (val.isInventoryTracked) {
+      final double sisa = val.stockAvailable ?? 0;
+      final double diKeranjang = (exists?.qtyOrder ?? 0).toDouble();
+      if (sisa <= 0) {
+        alert.error('Stok Habis',
+            '${val.productName} sedang kosong dan tidak bisa dijual.');
+        return;
+      }
+      if (diKeranjang + 1 > sisa) {
+        alert.warning('Stok Tidak Cukup',
+            'Sisa ${val.productName} tinggal ${sisa.toStringAsFixed(0)} ${val.stockUom ?? 'pcs'}.');
+        return;
+      }
+    }
+
     // Aula = Sewa Per Jam dengan Minimal Lama Sewa 0 (MANUAL_OUT_AULA_MOBILE.md).
     // Alurnya beda: mulai okupansi tanpa pilih jam, dan diakhiri lewat Manual Out.
     final bool isAula = (val.minRentPrd ?? -1) == 0;

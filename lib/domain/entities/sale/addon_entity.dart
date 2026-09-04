@@ -22,6 +22,34 @@ class AddonEntity {
   /// tetap bisa disewakan untuk jam kosong lain. null/kosong = tidak ada booking.
   String? upcomingBookingsText;
 
+  /// Inventory (V86). 'Y' = stok produk ini di-track backend; produk lain
+  /// (sewa, tiket) tetap unlimited dan keempat field di bawah bernilai null.
+  String? productFlInventory;
+
+  /// Sisa stok di lokasi produk. null = produk tidak di-track stok.
+  double? stockAvailable;
+
+  /// Ambang batas peringatan stok menipis.
+  double? stockMinStock;
+
+  /// Satuan stok (pcs, box, ...).
+  String? stockUom;
+
+  /// NORMAL / LOW_STOCK / OUT_OF_STOCK; null bila produk tidak di-track stok.
+  String? stockStatus;
+
+  /// true bila stok produk ini di-track backend.
+  bool get isInventoryTracked => productFlInventory == 'Y' && stockAvailable != null;
+
+  /// true bila stok habis — kasir tidak boleh menambahkannya ke keranjang.
+  bool get isOutOfStock => isInventoryTracked && (stockAvailable ?? 0) <= 0;
+
+  /// true bila stok sudah di bawah/ sama dengan batas minimum (masih bisa dijual).
+  bool get isLowStock =>
+      isInventoryTracked &&
+      !isOutOfStock &&
+      (stockAvailable ?? 0) <= (stockMinStock ?? 0);
+
   AddonEntity({
     this.productId,
     this.productName,
@@ -38,6 +66,11 @@ class AddonEntity {
     this.endDate,
     this.closeDate,
     this.upcomingBookingsText,
+    this.productFlInventory,
+    this.stockAvailable,
+    this.stockMinStock,
+    this.stockUom,
+    this.stockStatus,
   });
 
   AddonEntity.fromJson(Map<String, dynamic> json) {
@@ -65,6 +98,15 @@ class AddonEntity {
           ? DateTime.parse(json['closeDate']).toLocal()
           : null;
       upcomingBookingsText = json['upcomingBookingsText'];
+      productFlInventory = json['productFlInventory'];
+      stockAvailable = json['stockAvailable'] != null
+          ? (json['stockAvailable'] as num).toDouble()
+          : null;
+      stockMinStock = json['stockMinStock'] != null
+          ? (json['stockMinStock'] as num).toDouble()
+          : null;
+      stockUom = json['stockUom'];
+      stockStatus = json['stockStatus'];
     } catch (e) {
       logger.safeLog('error $e');
     }
@@ -87,6 +129,11 @@ class AddonEntity {
       'endDate': endDate?.toIso8601String(),
       'closeDate': closeDate?.toIso8601String(),
       'upcomingBookingsText': upcomingBookingsText,
+      'productFlInventory': productFlInventory,
+      'stockAvailable': stockAvailable,
+      'stockMinStock': stockMinStock,
+      'stockUom': stockUom,
+      'stockStatus': stockStatus,
     };
   }
 }
