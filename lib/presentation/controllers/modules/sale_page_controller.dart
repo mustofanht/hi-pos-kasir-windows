@@ -127,6 +127,10 @@ class SalePageController extends GetxController
   final totalOrderAmnt = RxDouble(0);
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
+
+  /// Merchandise yang ikut karena tiketnya dibundel; disalin dari
+  /// SaleCartPageController setiap kali total dihitung ulang.
+  final bundleList = RxList<CartAddon>([]);
   final potonganList = RxList<CartPotongan>([]);
   final voucherList = RxList<CartVoucher>([]);
   final depositList = RxList<CartDeposit>([]);
@@ -433,6 +437,25 @@ class SalePageController extends GetxController
         );
       }
     }
+    // Merchandise bundling dikirim sebagai item order biasa, lengkap dengan
+    // ordadBundleId. Penanda itu membuat backend TIDAK menyisipkannya lagi —
+    // tanpa penanda, item yang sudah ditagih kasir akan dihitung dua kali.
+    if (bundleList.isNotEmpty) {
+      for (final element in bundleList) {
+        totalPrice += element.totalPrice ?? 0;
+        countTotal += element.qtyOrder ?? 0;
+        listProduct.add(
+          OrderAddonModel(
+            addOn: element.addon,
+            ordadAddonId: element.addon?.productId,
+            ordadTotalAddon: element.qtyOrder ?? 0,
+            ordadTotalAmount: element.totalPrice ?? 0,
+            ordadBundleId: element.bundleId,
+          ),
+        );
+      }
+    }
+
     // if (voucherList.isNotEmpty) {
     //   int count = 0;
     //   listVoucher.addAll(

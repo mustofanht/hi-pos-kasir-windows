@@ -9,11 +9,19 @@ class CartAddon {
   CartRentModel? rentModel;
   AddonEntity? addon;
 
+  /// mst_ticket_bundle.bundle_id bila baris ini lahir dari bundling tiket.
+  /// null = item yang dipilih kasir sendiri. Baris bundling tidak bisa diubah
+  /// qty-nya di keranjang — ia mengikuti jumlah tiketnya.
+  int? bundleId;
+
+  bool get isBundle => bundleId != null;
+
   CartAddon({
     this.qtyOrder,
     this.totalPrice,
     this.rentModel,
     this.addon,
+    this.bundleId,
   });
 
   Map<String, dynamic> toJson() {
@@ -22,6 +30,7 @@ class CartAddon {
       "totalPrice": totalPrice,
       "rentModel": rentModel != null ? rentModel!.toJson() : {},
       "addon": addon != null ? addon!.toJson() : [],
+      "bundleId": bundleId,
     };
   }
 
@@ -29,6 +38,7 @@ class CartAddon {
     try {
       qtyOrder = json['qtyOrder'];
       totalPrice = json['totalPrice'];
+      bundleId = json['bundleId'];
       // rentModel = json['rentModel'];
 
       if (json['rentModel'] is Map<Object?, Object?>) {

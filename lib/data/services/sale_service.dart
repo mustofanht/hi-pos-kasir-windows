@@ -4,4 +4,5 @@ class SaleService {
   final ticketService = TicketService();
   final voucherService = VoucherService();
   final addonService = AddOnService();
+  final ticketBundleService = TicketBundleService();
 }

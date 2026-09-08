@@ -19,6 +19,7 @@ import 'package:jaya_propertiy/domain/entities/member/member_valid.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/ticket_bundle_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -42,6 +43,15 @@ class SaleCartPageController extends GetxController {
 
   final addonList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
+
+  /// Merchandise yang otomatis ikut karena tiketnya dibundel (mst_ticket_bundle,
+  /// tipe MANDATORY). Dipisah dari [addonList] supaya tidak bisa diubah/dihapus
+  /// kasir — isinya selalu turunan dari tiket yang ada di keranjang.
+  final bundleList = RxList<CartAddon>([]);
+
+  /// Cache aturan bundling per tiket, agar keranjang tidak memanggil backend
+  /// setiap kali qty tiket berubah.
+  final Map<int, List<TicketBundleEntity>> _aturanBundle = {};
   final potonganList = RxList<CartPotongan>([]);
   final voucherList = RxList<CartVoucher>([]);
   final depositList = RxList<CartDeposit>([]);
@@ -194,7 +204,119 @@ class SaleCartPageController extends GetxController {
     childNameControllers.clear();
   }
 
-  addTicket(TicketEntity ticket) {
+  // ── Tiket Bundling Merchandise ───────────────────────────────────────────
+  // Sebagian tiket menempel merchandise (mis. snack / goodie bag). Kasir harus
+  // menampilkan & menagihnya, karena bila hanya server yang menyisipkan, total
+  // di layar kasir akan lebih kecil dari yang dibukukan untuk bundling BERBAYAR.
+  // Harga tetap dihitung ulang backend; yang di sini semata agar angka di layar
+  // sama dengan angka yang ditagih.
+
+  /// Ambil (dan cache) aturan bundling satu tiket.
+  Future<List<TicketBundleEntity>> _muatAturanBundle(int ticketId) async {
+    final tersimpan = _aturanBundle[ticketId];
+    if (tersimpan != null) return tersimpan;
+
+    final hasil = await _service.sale.ticketBundleService.getByTicket(
+      authToken: _authToken,
+      ticketId: ticketId,
+    );
+    final aturan = hasil.fold<List<TicketBundleEntity>>(
+      (error) {
+        // Bundling gagal dimuat bukan alasan menahan penjualan tiket: server
+        // tetap menyisipkan merchandise wajibnya saat order disimpan.
+        logger.safeLog('Gagal memuat bundling tiket $ticketId: $error');
+        return <TicketBundleEntity>[];
+      },
+      (response) => response.data ?? <TicketBundleEntity>[],
+    );
+    _aturanBundle[ticketId] = aturan;
+    return aturan;
+  }
+
+  /// Jumlah tiket terbanyak yang masih bisa dijual dengan stok merchandise yang
+  /// ada. null = tidak dibatasi stok.
+  int? _batasTiketDariStok(List<TicketBundleEntity> aturan) {
+    int? batas;
+    for (final r in aturan) {
+      if (!r.isMandatory) continue;
+      final maks = r.maxTicketByStock();
+      if (maks == null) continue;
+      batas = batas == null || maks < batas ? maks : batas;
+    }
+    return batas;
+  }
+
+  /// true bila tiket boleh dijual sebanyak [qtyTiket]. Menampilkan peringatan
+  /// dan mengembalikan false bila stok merchandise bundlingnya tidak cukup.
+  Future<bool> _stokBundleCukup(TicketEntity ticket, int qtyTiket) async {
+    final id = ticket.ticketId;
+    if (id == null || qtyTiket <= 0) return true;
+    final aturan = await _muatAturanBundle(id);
+    final batas = _batasTiketDariStok(aturan);
+    if (batas == null || qtyTiket <= batas) return true;
+
+    final kurang = aturan.firstWhere(
+      (r) => r.isMandatory && (r.maxTicketByStock() ?? 1 << 30) < qtyTiket,
+      orElse: () => aturan.first,
+    );
+    alert.warning(
+      'Stok Bundling Tidak Cukup',
+      batas <= 0
+          ? 'Stok ${kurang.bundleProductName} habis, sedangkan tiket '
+              '${ticket.ticketName} wajib disertai item tersebut. '
+              'Tiket ini belum bisa dijual.'
+          : 'Stok ${kurang.bundleProductName} hanya cukup untuk $batas tiket '
+              '${ticket.ticketName}.',
+    );
+    return false;
+  }
+
+  /// Susun ulang [bundleList] dari isi keranjang tiket saat ini.
+  ///
+  /// Satu produk hanya boleh satu baris (kunci order+produk di backend), jadi
+  /// merchandise yang sama dari dua tiket berbeda DIGABUNG qty & nominalnya.
+  Future<void> refreshBundle() async {
+    final Map<int, CartAddon> gabungan = {};
+
+    for (final t in ticketList) {
+      final ticketId = t.ticket?.ticketId;
+      final qtyTiket = t.qtyOrder ?? 0;
+      if (ticketId == null || qtyTiket <= 0) continue;
+
+      for (final r in await _muatAturanBundle(ticketId)) {
+        final productId = r.bundleProductId;
+        if (!r.isMandatory || productId == null) continue;
+
+        final qty = qtyTiket * (r.bundleQty ?? 1);
+        final nominal = r.unitPrice * qty;
+        final adaSebelumnya = gabungan[productId];
+        if (adaSebelumnya == null) {
+          gabungan[productId] = CartAddon(
+            qtyOrder: qty,
+            totalPrice: nominal,
+            bundleId: r.bundleId,
+            addon: AddonEntity(
+              productId: productId,
+              productName: r.bundleProductName,
+              productType: 'J',
+              productPrice: r.unitPrice,
+              productFlInventory: r.bundleProductFlInventory,
+              stockAvailable: r.bundleProductStock,
+            ),
+          );
+        } else {
+          adaSebelumnya.qtyOrder = (adaSebelumnya.qtyOrder ?? 0) + qty;
+          adaSebelumnya.totalPrice = (adaSebelumnya.totalPrice ?? 0) + nominal;
+        }
+      }
+    }
+
+    bundleList.assignAll(gabungan.values.toList());
+    calculateTotalOrder();
+  }
+
+  addTicket(TicketEntity ticket) async {
+    if (!await _stokBundleCukup(ticket, ticket.ticketMinimum ?? 1)) return;
     ticketList.add(
       CartTicket(
         qtyOrder: ticket.ticketMinimum,
@@ -205,6 +327,7 @@ class SaleCartPageController extends GetxController {
     ticketControllers[ticket.ticketId]?.text = ticket.ticketMinimum.toString();
     checkQtyMemberVocuher();
     calculateTotalOrder();
+    await refreshBundle();
   }
 
   onCompleteQtyTicketCart(CartTicket ticket) {
@@ -218,18 +341,23 @@ class SaleCartPageController extends GetxController {
     calculateTotalOrder();
   }
 
-  onChangeQtyTicketCart(CartTicket ticket, int qty) {
+  onChangeQtyTicketCart(CartTicket ticket, int qty) async {
     logger.safeLog('QTY: ${qty}');
     logger.safeLog('MINIMUM: ${ticket.ticket?.ticketMinimum}');
     if (qty < (ticket.ticket?.ticketMinimum ?? 0)) {
       return;
     }
+    if (!await _stokBundleCukup(ticket.ticket!, qty)) return;
     ticket.qtyOrder = qty;
     ticket.totalPrice = ((ticket.ticket!.ticketPrice ?? 0) * qty);
     calculateTotalOrder();
+    await refreshBundle();
   }
 
-  addTicketCart(CartTicket ticket) {
+  addTicketCart(CartTicket ticket) async {
+    if (!await _stokBundleCukup(ticket.ticket!, (ticket.qtyOrder ?? 0) + 1)) {
+      return;
+    }
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
     ticket.totalPrice =
         ((ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0));
@@ -237,6 +365,7 @@ class SaleCartPageController extends GetxController {
         ticket.qtyOrder.toString();
     checkQtyMemberVocuher();
     calculateTotalOrder();
+    await refreshBundle();
   }
 
   removeTicket(CartTicket ticket) {
@@ -283,12 +412,14 @@ class SaleCartPageController extends GetxController {
         ticket.qtyOrder.toString();
     checkQtyMemberVocuher();
     calculateTotalOrder();
+    refreshBundle();
   }
 
   removeListTicket(CartTicket ticket) {
     ticketControllers[ticket.ticket?.ticketId]?.clear();
     ticketList.remove(ticket);
     calculateTotalOrder();
+    refreshBundle();
   }
 
   addAddon(AddonEntity val) {
@@ -596,6 +727,15 @@ class SaleCartPageController extends GetxController {
       ticketTotalQtyVal += addonList.fold(0, (sum, val) => sum + val.qtyOrder!);
     }
 
+    // Merchandise bundling. Ditambahkan SEBELUM voucher supaya voucher tetap
+    // memotong nilai tiket saja — sama seperti perhitungan di e-ticketing.
+    // Bundling gratis bernilai 0 sehingga tidak mengubah total sama sekali.
+    if (bundleList.isNotEmpty) {
+      totalAmnt += bundleList.fold(0, (sum, val) => sum + (val.totalPrice ?? 0));
+      ticketTotalQtyVal +=
+          bundleList.fold(0, (sum, val) => sum + (val.qtyOrder ?? 0));
+    }
+
     // Diskon voucher berlaku untuk tiket DAN booking lapangan. 1 voucher = 1 unit
     // (1 tiket ATAU 1 jam booking lapangan). Pool digabung supaya voucher ikut
     // memotong harga booking lapangan, bukan hanya tiket (sebelumnya blok ini
@@ -688,6 +828,7 @@ class SaleCartPageController extends GetxController {
     salePageController.totalOrderQty(totalOrderQty.value);
     salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
     salePageController.addonList(addonList);
+    salePageController.bundleList(bundleList);
     salePageController.potonganList(potonganList);
     salePageController.voucherList(voucherList);
     salePageController.depositList(depositList);
@@ -720,6 +861,7 @@ class SaleCartPageController extends GetxController {
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
+      salePageController.bundleList(bundleList);
       salePageController.potonganList(potonganList);
       salePageController.voucherList(voucherList);
       salePageController.depositList(depositList);
@@ -736,6 +878,8 @@ class SaleCartPageController extends GetxController {
       selectedMstPayment.value = MstPayment();
       ticketList.clear();
       addonList.clear();
+      bundleList.clear();
+      _aturanBundle.clear();
       potonganList.clear();
       voucherList.clear();
       depositList.clear();
@@ -747,6 +891,7 @@ class SaleCartPageController extends GetxController {
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);
       salePageController.addonList(addonList);
+      salePageController.bundleList(bundleList);
       salePageController.potonganList(potonganList);
       salePageController.voucherList(voucherList);
       salePageController.depositList(depositList);

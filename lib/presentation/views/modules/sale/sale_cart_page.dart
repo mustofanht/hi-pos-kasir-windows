@@ -174,6 +174,39 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       ),
                     ] else
                       Container(),
+                    // Merchandise yang menempel pada tiket. Ditampilkan terpisah
+                    // dan tanpa tombol ubah/hapus: jumlahnya mengikuti tiketnya.
+                    if (controller.bundleList.isNotEmpty) ...[
+                      Container(
+                        width: layoutStyle.screenWidth,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin),
+                        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: colorStyle.lightGrey,
+                              width: 1.0,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Bundling Tiket',
+                          style: TextStyle(
+                            fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin,
+                      ),
+                      bundleListComponent(controller),
+                      SizedBox(
+                        height: layoutStyle.defaultMargin,
+                      ),
+                    ] else
+                      Container(),
                     if (controller.voucherList.isNotEmpty) ...[
                       Container(
                         width: layoutStyle.screenWidth,
@@ -578,6 +611,73 @@ class SaleCartPage extends GetView<SaleCartPageController> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Merchandise bundling: baris baca-saja. Qty-nya turunan dari jumlah tiket,
+  /// jadi tidak ada kotak qty maupun tombol hapus — mengubahnya harus lewat
+  /// tiketnya, dan aturannya sendiri diatur di back-office.
+  Widget bundleListComponent(SaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.bundleList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 10,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: layoutStyle.safeBlockHorizontal * 4,
+                            child: Text(
+                              '${e.qtyOrder ?? 0}',
+                              textAlign: TextAlign.center,
+                              style: textStyle.blackText,
+                            ),
+                          ),
+                          Text('X ', style: textStyle.blackText),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  e.addon?.productName ?? '',
+                                  softWrap: true,
+                                ),
+                                Text(
+                                  (e.totalPrice ?? 0) <= 0
+                                      ? 'Gratis — ikut tiket'
+                                      : 'Ikut tiket',
+                                  style: textStyle.greyText.copyWith(
+                                    fontSize: fontSize.superSmall,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }

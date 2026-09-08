@@ -8,12 +8,18 @@ class OrderAddonModel {
   double ordadTotalAmount;
   OrderRentalModel? rentHdrDtl;
 
+  /// mst_ticket_bundle.bundle_id bila item ini datang dari bundling tiket.
+  /// Backend memakainya sebagai penanda bahwa kasir SUDAH menghitung item ini,
+  /// sehingga tidak disisipkan (dan ditagih) untuk kedua kalinya di server.
+  int? ordadBundleId;
+
   OrderAddonModel({
     this.addOn,
     this.ordadAddonId,
     required this.ordadTotalAddon,
     required this.ordadTotalAmount,
     this.rentHdrDtl,
+    this.ordadBundleId,
   });
 
   factory OrderAddonModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +28,7 @@ class OrderAddonModel {
       ordadTotalAddon: json['ordadTotalAddon'],
       ordadTotalAmount: json['ordadTotalAmount'],
       rentHdrDtl: json['rentHdrDtl'],
+      ordadBundleId: json['ordadBundleId'],
     );
   }
 
@@ -31,6 +38,7 @@ class OrderAddonModel {
       "ordadTotalAddon": ordadTotalAddon,
       "ordadTotalAmount": ordadTotalAmount,
       "rentHdrDtl": rentHdrDtl?.toJson(),
+      "ordadBundleId": ordadBundleId,
     };
   }
 }
