@@ -16,6 +16,10 @@ class AppStringConstant {
   final String pathTranslations = "assets/translations/";
   final bool testingMode = true;
   final String refreshAds = 'REFRESH_ADS';
+
+  // Mode simulasi perangkat (lihat DeviceSimulationUtil)
+  final String simulatePrinter = "simulate_printer";
+  final String simulateCustomerDisplay = "simulate_customer_display";
 }
 
 class ArgumentsConstant {
@@ -65,6 +69,15 @@ class CustomerDisplayAction {
   static String MEMBER_ADD_CART = 'member-add-cart';
   static String ADD_CART = 'add-cart';
   static String PAYMENT = 'payment';
+
+  /// Minta layar pelanggan menampilkan survei kepuasan.
+  ///
+  /// Dibuat sebagai aksi tersendiri, bukan menumpang `PAYMENT.isSuccess`.
+  /// Kolom itu tidak konsisten dipakai: jalur EDC/tunai mengirim
+  /// `isSuccess: false` justru SETELAH pembayaran berhasil, karena di sana
+  /// maknanya "bersihkan layar", bukan "pembayaran gagal". Menumpanginya berarti
+  /// survei hanya muncul pada pembayaran QRIS.
+  static String SURVEY = 'survey';
 }
 
 class PaymentMethod {

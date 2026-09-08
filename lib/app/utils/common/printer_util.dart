@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/print_capture_util.dart';
 import 'package:jaya_propertiy/data/models/common/printer_model.dart';
 import 'package:thermal_printer/thermal_printer.dart';
 
@@ -75,6 +77,11 @@ class PrinterUtil {
 
   Future<void> connect(PrinterModel selectedPrinter) async {
     logger.safeLog('CONNECT TO : ${selectedPrinter.toJson()}');
+    if (isSimulated(selectedPrinter)) {
+      currPrinter = selectedPrinter;
+      _isConnected = true;
+      return;
+    }
     switch (selectedPrinter.typePrinter) {
       case PrinterType.usb:
         await printerManager.connect(
@@ -110,6 +117,11 @@ class PrinterUtil {
   }
 
   Future<void> disconnect(PrinterModel selectedPrinter) async {
+    if (isSimulated(selectedPrinter)) {
+      currPrinter = null;
+      _isConnected = false;
+      return;
+    }
     printerManager.disconnect(type: selectedPrinter.typePrinter);
     _isConnected = false;
     pendingTask = null;
@@ -131,6 +143,12 @@ class PrinterUtil {
 
   Future<List<PrinterModel>> getListDevices() async {
     List<PrinterModel> deviceList = [];
+    // Ditaruh paling depan supaya jadi pilihan pertama saat mengembangkan tanpa
+    // perangkat; pemindaian USB/Bluetooth tetap jalan agar printer sungguhan
+    // yang kebetulan terpasang tidak hilang dari daftar.
+    if (deviceSimulation.printer) {
+      deviceList.add(simulatedPrinter);
+    }
     _subscription = printerManager
         .discovery(type: defaultPrinterType, isBle: _isBle)
         .listen((device) {
@@ -167,6 +185,9 @@ class PrinterUtil {
 
   Future<List<PrinterModel>> getListDevicesUsb() async {
     List<PrinterModel> deviceList = [];
+    if (deviceSimulation.printer) {
+      deviceList.add(simulatedPrinter);
+    }
     _subscription = printerManager
         .discovery(type: defaultPrinterType, isBle: _isBle)
         .listen((device) {
@@ -285,7 +306,27 @@ class PrinterUtil {
     return Future.value(_isConnected);
   }
 
+  /// Printer tiruan yang ditawarkan saat mode simulasi menyala, supaya alur
+  /// "pilih printer lalu cetak" bisa dijalani utuh tanpa perangkat.
+  static final PrinterModel simulatedPrinter = PrinterModel(
+    deviceName: 'Printer Simulasi',
+    address: 'simulasi',
+    typePrinter: PrinterType.network,
+    state: true,
+  );
+
+  static bool isSimulated(PrinterModel? printer) =>
+      printer?.address == simulatedPrinter.address;
+
   Future<void> print(PrinterModel selectedPrinter, List<int> bytes) async {
+    // Mode simulasi memutus jalur ke perangkat sepenuhnya: byte-nya ditangkap,
+    // tidak ada yang dikirim ke USB/Bluetooth/TCP. Diperiksa paling awal supaya
+    // tidak ada cabang di bawah yang bisa lolos ke perangkat.
+    if (deviceSimulation.printer || isSimulated(selectedPrinter)) {
+      await printCapture.capture(bytes);
+      return;
+    }
+
     // logger.safeLog('_currentStatus : $_currentStatus');
     // logger.safeLog('selectedPrinter : ${selectedPrinter.typePrinter}');
     // logger.safeLog('Platform.isAndroid : ${Platform.isAndroid}');

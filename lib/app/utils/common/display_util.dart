@@ -1,4 +1,7 @@
+import 'package:jaya_propertiy/app/utils/common/customer_display_bus.dart';
+import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_sale_cart_page_controller.dart';
 import 'package:presentation_displays/display.dart';
 import 'package:presentation_displays/displays_manager.dart';
 
@@ -34,6 +37,14 @@ class DisplayUtil {
   }
 
   transferData(Object? data) async {
+    // Saat disimulasikan, "layar kedua" adalah jendela di dalam aplikasi ini,
+    // jadi datanya dilewatkan lewat bus — bukan method channel yang tidak akan
+    // dijawab siapa pun bila memang tidak ada perangkat kedua.
+    if (deviceSimulation.customerDisplay) {
+      _terapkanSimulasi(data);
+      logger.safeLog('Send To Second Display (SIMULASI) : $data');
+      return;
+    }
     await displayManager
         .transferDataToPresentation(data)!
         .then((value) => logger.safeLog('Send To Second Display : ${value}'))
@@ -42,6 +53,10 @@ class DisplayUtil {
   }
 
   displayCustomer(Object? val) async {
+    if (deviceSimulation.customerDisplay) {
+      _terapkanSimulasi(val);
+      return;
+    }
     await getDisplay();
     logger.safeLog('list display : ${displays}');
     if (displays.isNotEmpty) {
@@ -60,6 +75,22 @@ class DisplayUtil {
         }
       }
     }
+  }
+
+  /// Terapkan data ke layar pelanggan versi simulasi.
+  ///
+  /// Datanya dimasukkan LANGSUNG ke controller, bukan sekadar dititipkan ke bus.
+  /// Pada perangkat sungguhan layar kedua selalu menyala; di simulasi, satu-satunya
+  /// layar dipakai bergantian — jendela layar pelanggan hampir selalu tertutup
+  /// tepat ketika kasir mengirim datanya. Kalau penerapannya menunggu jendela itu
+  /// terbuka, seluruh transaksi akan terlewat dan jendelanya tampak kosong saat
+  /// akhirnya dibuka.
+  ///
+  /// Bus tetap diisi untuk penghitung "n pembaruan diterima" di jendela simulator.
+  void _terapkanSimulasi(Object? data) {
+    customerDisplayBus.push(data);
+    if (data == null) return;
+    CustomerSaleCartPageController.instance.updateDataCustomer(data);
   }
 
   updateSecondDisplay(Object val) async {

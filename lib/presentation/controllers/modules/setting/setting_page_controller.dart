@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -50,8 +52,14 @@ class SettingPageController extends GetxController
 
   final currentPrinterConnect = RxString('');
 
+  // Mode simulasi perangkat (printer gelang & layar pelanggan belum ada di tangan)
+  final simulatePrinter = false.obs;
+  final simulateCustomerDisplay = false.obs;
+
   @override
   Future<void> onInit() async {
+    simulatePrinter.value = deviceSimulation.printer;
+    simulateCustomerDisplay.value = deviceSimulation.customerDisplay;
     doPrepared();
     await doInitializeScreen();
     await doInitializePrinter();
@@ -245,6 +253,32 @@ class SettingPageController extends GetxController
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
     }
   }
+
+  /// Menyalakan simulasi printer sekaligus menyegarkan daftar perangkat, supaya
+  /// "Printer Simulasi" langsung muncul di dropdown tanpa perlu keluar-masuk menu.
+  Future<void> doToggleSimulatePrinter(bool value) async {
+    deviceSimulation.setPrinter(value);
+    simulatePrinter.value = value;
+    if (!value && PrinterUtil.isSimulated(printerUtil.currPrinter)) {
+      // Jangan tinggalkan printer tiruan sebagai perangkat aktif setelah
+      // simulasinya dimatikan — pencetakan berikutnya akan diam tanpa hasil.
+      await printerUtil.disconnectAll();
+      currentPrinterConnect.value = '';
+    }
+    await doInitializePrinter();
+    update();
+  }
+
+  void doToggleSimulateCustomerDisplay(bool value) {
+    deviceSimulation.setCustomerDisplay(value);
+    simulateCustomerDisplay.value = value;
+    update();
+  }
+
+  void doOpenPrintPreview() => Get.toNamed(RouteName.printPreviewPage);
+
+  void doOpenCustomerSimulator() =>
+      Get.toNamed(RouteName.customerDisplaySimulatorPage);
 
   doDisconnectPrinter() async {
     isLoadingPrinterDiconect.value = true;

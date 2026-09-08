@@ -34,6 +34,7 @@ import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
+import 'package:jaya_propertiy/domain/entities/survey/survey_reason_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
 
@@ -54,6 +55,7 @@ part 'reason_void_service.dart';
 part 'rental_service.dart';
 part 'transaction_service.dart';
 part 'member_service.dart';
+part 'survey_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -68,4 +70,5 @@ class MainService {
   final rental = RentalService();
   final transaction = TransactionService();
   final member = MemberService();
+  final survey = SurveyService();
 }

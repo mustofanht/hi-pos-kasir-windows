@@ -18,9 +18,18 @@ import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart'
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_survey_controller.dart';
 
 class CustomerSaleCartPageController extends GetxController {
   CustomerSaleCartPageController();
+
+  /// Satu-satunya pintu untuk mendapatkan controller ini — permanen, dengan
+  /// alasan yang sama seperti [CustomerSurveyController.instance]: isi layar
+  /// pelanggan tidak boleh hilang hanya karena jendelanya ditutup sebentar.
+  static CustomerSaleCartPageController get instance =>
+      Get.isRegistered<CustomerSaleCartPageController>()
+          ? Get.find<CustomerSaleCartPageController>()
+          : Get.put(CustomerSaleCartPageController(), permanent: true);
 
   var totalOrder = RxDouble(0);
   var paymentFee = RxDouble(0);
@@ -98,14 +107,21 @@ class CustomerSaleCartPageController extends GetxController {
         if (customerDisplay.value != null) {
           if (customerDisplay.key == CustomerDisplayAction.MEMBER_ADD_CART) {
             logger.safeLog('MEMBER ADD CART');
+            _tutupSurvei();
             doMemberAddCart(customerDisplay.value!);
           } else if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
             logger.safeLog('ADD CART');
+            _tutupSurvei();
             doAddCart(customerDisplay.value!);
           } else if (customerDisplay.key == CustomerDisplayAction.PAYMENT) {
             logger.safeLog('PAYMENT QRIS');
             doShowPaymentQris(customerDisplay.value!);
             // showBarcode.value = true;
+          } else if (customerDisplay.key == CustomerDisplayAction.SURVEY) {
+            logger.safeLog('SURVEY');
+            CustomerSurveyController.instance.buka(
+              orderNo: customerDisplay.value!['orderNo']?.toString(),
+            );
           }
         }
       }
@@ -114,6 +130,16 @@ class CustomerSaleCartPageController extends GetxController {
     // }
     await loadImages();
     update();
+  }
+
+  /// Survei ditutup saat keranjang transaksi BERIKUTNYA muncul — bukan pada
+  /// setiap kiriman data. Payload pembayaran masih bagian dari transaksi yang
+  /// sama; menutup survei di situ membuatnya hilang tepat setelah dibuka, karena
+  /// pada jalur QRIS payload "pembayaran berhasil" justru dikirim paling akhir.
+  void _tutupSurvei() {
+    if (Get.isRegistered<CustomerSurveyController>()) {
+      CustomerSurveyController.instance.tutup();
+    }
   }
 
   doShowPaymentQris(Map<String, dynamic> val) {

@@ -301,234 +301,149 @@ class SettingPage extends GetView<SettingPageController> {
                   width: layoutStyle.defaultMargin,
                 ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Others Information',
-                        style: textStyle.blackText.copyWith(
-                          fontSize: fontSize.header,
-                        ),
-                      ),
-                      Container(
-                        width: layoutStyle.screenWidth,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            top: BorderSide(
-                              color: colorStyle.grey,
-                              width: 1,
-                            ),
+                  // Kolom ini tingginya terkunci setinggi layar. Tanpa dibuat
+                  // bisa digulir, isian yang paling bawah terpotong di layar
+                  // pendek dan tampak seperti tidak ada.
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Others Information',
+                          style: textStyle.blackText.copyWith(
+                            fontSize: fontSize.header,
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: layoutStyle.defaultMargin,
-                      ),
-                      // CustomDropdownButton<CustomIdNameEntity>(
-                      //   height: layoutStyle.blockVertical * 6.5,
-                      //   items: controller.listScreens
-                      //       .map(
-                      //         (e) => DropdownMenuItem(
-                      //           value: e,
-                      //           child: Text("${e.name}"),
-                      //         ),
-                      //       )
-                      //       .toList(),
-                      //   value: controller.selectedScreens.value,
-                      //   label: Text(
-                      //     'List Screen Connect',
-                      //     style: textStyle.greyText.copyWith(
-                      //       fontSize: fontSize.small,
-                      //     ),
-                      //   ),
-                      //   border: Border.all(
-                      //     color: colorStyle.lightGrey,
-                      //     width: 1,
-                      //   ),
-                      //   margin: EdgeInsets.symmetric(
-                      //     vertical: layoutStyle.defaultMargin / 4,
-                      //     horizontal: layoutStyle.defaultMargin,
-                      //   ),
-                      //   onChanged: (val) {
-                      //     controller.selectedCurrPrinter.value = val!;
-                      //     controller.update();
-                      //   },
-                      // ),
-                      CustomButton(
-                        margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 2,
-                          horizontal: layoutStyle.defaultMargin,
-                        ),
-                        onPressed: () {
-                          controller.doRefreshCustomerPage();
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.blue,
-                          ),
-                          overlayColor: MaterialStateProperty.resolveWith(
-                            (states) => colorStyle.black.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.resolveWith(
-                            (states) => RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                layoutStyle.defaultMargin / 2,
+                        Container(
+                          width: layoutStyle.screenWidth,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(
+                                color: colorStyle.grey,
+                                width: 1,
                               ),
                             ),
                           ),
                         ),
-                        prefixIcon: controller.isLoadingRefreshCustScreeen.value
-                            ? Container()
-                            : Icon(Icons.refresh_outlined, color: colorStyle.white),
-                        label: Padding(
-                          padding: EdgeInsets.symmetric(
+                        SizedBox(
+                          height: layoutStyle.defaultMargin,
+                        ),
+                        // CustomDropdownButton<CustomIdNameEntity>(
+                        //   height: layoutStyle.blockVertical * 6.5,
+                        //   items: controller.listScreens
+                        //       .map(
+                        //         (e) => DropdownMenuItem(
+                        //           value: e,
+                        //           child: Text("${e.name}"),
+                        //         ),
+                        //       )
+                        //       .toList(),
+                        //   value: controller.selectedScreens.value,
+                        //   label: Text(
+                        //     'List Screen Connect',
+                        //     style: textStyle.greyText.copyWith(
+                        //       fontSize: fontSize.small,
+                        //     ),
+                        //   ),
+                        //   border: Border.all(
+                        //     color: colorStyle.lightGrey,
+                        //     width: 1,
+                        //   ),
+                        //   margin: EdgeInsets.symmetric(
+                        //     vertical: layoutStyle.defaultMargin / 4,
+                        //     horizontal: layoutStyle.defaultMargin,
+                        //   ),
+                        //   onChanged: (val) {
+                        //     controller.selectedCurrPrinter.value = val!;
+                        //     controller.update();
+                        //   },
+                        // ),
+                        CustomButton(
+                          margin: EdgeInsets.symmetric(
+                            vertical: layoutStyle.defaultMargin / 2,
                             horizontal: layoutStyle.defaultMargin,
                           ),
-                          child: controller.isLoadingRefreshCustScreeen.value
-                              ? loading.buttonLoading()
-                              : Text(
-                                  'Refresh Customer Page',
-                                  style: textStyle.whiteText,
+                          onPressed: () {
+                            controller.doRefreshCustomerPage();
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.resolveWith(
+                              (states) => colorStyle.blue,
+                            ),
+                            overlayColor: MaterialStateProperty.resolveWith(
+                              (states) => colorStyle.black.withOpacity(0.1),
+                            ),
+                            shape: MaterialStateProperty.resolveWith(
+                              (states) => RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  layoutStyle.defaultMargin / 2,
                                 ),
+                              ),
+                            ),
+                          ),
+                          prefixIcon:
+                              controller.isLoadingRefreshCustScreeen.value
+                                  ? Container()
+                                  : Icon(Icons.refresh_outlined,
+                                      color: colorStyle.white),
+                          label: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin,
+                            ),
+                            child: controller.isLoadingRefreshCustScreeen.value
+                                ? loading.buttonLoading()
+                                : Text(
+                                    'Refresh Customer Page',
+                                    style: textStyle.whiteText,
+                                  ),
+                          ),
+                          height: layoutStyle.blockVertical * 6.5,
                         ),
-                        height: layoutStyle.blockVertical * 6.5,
-                      ),
-                      // controller.isLoadingPrinter.value
-                      //     ? Center(
-                      //         child: SizedBox(
-                      //           width: layoutStyle.blockVertical * 6.5,
-                      //           height: layoutStyle.blockVertical * 6.5,
-                      //           child: loading.simpleLoading(),
-                      //         ),
-                      //       )
-                      //     :
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Obx(
-                              () => CustomDropdownButton<CustomIdNameEntity>(
-                                isLoading: controller.isLoadingPrinter.value,
-                                height: layoutStyle.blockVertical * 6.5,
-                                items: controller.listPrinter
-                                    .map(
-                                      (e) => DropdownMenuItem(
-                                        value: e,
-                                        child: Text("${e.name}"),
-                                      ),
-                                    )
-                                    .toList(),
-                                value: controller.selectedCurrPrinter.value,
-                                label: Text(
-                                  'Pilih Printer',
-                                  style: textStyle.greyText.copyWith(
-                                    fontSize: fontSize.small,
-                                  ),
-                                ),
-                                border: Border.all(
-                                  color: colorStyle.lightGrey,
-                                  width: 1,
-                                ),
-                                margin: EdgeInsets.symmetric(
-                                  vertical: layoutStyle.defaultMargin / 4,
-                                  horizontal: layoutStyle.defaultMargin,
-                                ),
-                                onChanged:
-                                    controller.isLoadingConnectPrinter.value
-                                        ? null
-                                        : controller.doUpdateConnectedPrinter,
-                              ),
-                            ),
-                          ),
-                          CustomButton(
-                            width: layoutStyle.blockVertical * 6.5,
-                            height: layoutStyle.blockVertical * 6.5,
-                            margin: EdgeInsets.symmetric(
-                              vertical: layoutStyle.defaultMargin / 2,
-                              horizontal: layoutStyle.defaultMargin / 5,
-                            ),
-                            onPressed: () {
-                              controller.doInitializePrinter();
-                            },
-                            style: ButtonStyle(
-                              minimumSize: MaterialStateProperty.all(Size.zero),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              padding: MaterialStateProperty.all(EdgeInsets.zero),
-                              backgroundColor:
-                                  MaterialStateProperty.resolveWith(
-                                (states) => colorStyle.blue,
-                              ),
-                              overlayColor: MaterialStateProperty.resolveWith(
-                                (states) => colorStyle.black.withOpacity(0.1),
-                              ),
-                              shape: MaterialStateProperty.resolveWith(
-                                (states) => RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    layoutStyle.defaultMargin / 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            label: Icon(Icons.refresh, color: colorStyle.white),
-                          ),
-                          CustomButton(
-                            width: layoutStyle.blockVertical * 6.5,
-                            height: layoutStyle.blockVertical * 6.5,
-                            margin: EdgeInsets.symmetric(
-                              vertical: layoutStyle.defaultMargin / 2,
-                              horizontal: layoutStyle.defaultMargin / 5,
-                            ),
-                            onPressed: () {
-                              controller.testPrint();
-                            },
-                            style: ButtonStyle(
-                              minimumSize: MaterialStateProperty.all(Size.zero),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              padding: MaterialStateProperty.all(EdgeInsets.zero),
-                              backgroundColor:
-                                  MaterialStateProperty.resolveWith(
-                                (states) => colorStyle.blue,
-                              ),
-                              overlayColor: MaterialStateProperty.resolveWith(
-                                (states) => colorStyle.black.withOpacity(0.1),
-                              ),
-                              shape: MaterialStateProperty.resolveWith(
-                                (states) => RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    layoutStyle.defaultMargin / 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            label: Icon(Icons.print, color: colorStyle.white),
-                            // suffixIcon: const Icon(Icons.print),
-                            // prefixIcon: const Icon(Icons.print),
-                            // label: controller.isLoading.value
-                            //     ? loading.buttonLoading()
-                            //     : Padding(
-                            //         padding: EdgeInsets.symmetric(
-                            //           horizontal: layoutStyle.defaultMargin,
-                            //         ),
-                            //         child: Text(
-                            //           'Test',
-                            //           style: textStyle.whiteText,
-                            //         ),
-                            //       ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: layoutStyle.defaultMargin / 5,
-                        ),
-                        child: Row(
+                        // controller.isLoadingPrinter.value
+                        //     ? Center(
+                        //         child: SizedBox(
+                        //           width: layoutStyle.blockVertical * 6.5,
+                        //           height: layoutStyle.blockVertical * 6.5,
+                        //           child: loading.simpleLoading(),
+                        //         ),
+                        //       )
+                        //     :
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Expanded(
                               child: Obx(
-                                () => Text(
-                                  'Printer Connected : ${controller.currentPrinterConnect}',
-                                  style: textStyle.blackText,
+                                () => CustomDropdownButton<CustomIdNameEntity>(
+                                  isLoading: controller.isLoadingPrinter.value,
+                                  height: layoutStyle.blockVertical * 6.5,
+                                  items: controller.listPrinter
+                                      .map(
+                                        (e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text("${e.name}"),
+                                        ),
+                                      )
+                                      .toList(),
+                                  value: controller.selectedCurrPrinter.value,
+                                  label: Text(
+                                    'Pilih Printer',
+                                    style: textStyle.greyText.copyWith(
+                                      fontSize: fontSize.small,
+                                    ),
+                                  ),
+                                  border: Border.all(
+                                    color: colorStyle.lightGrey,
+                                    width: 1,
+                                  ),
+                                  margin: EdgeInsets.symmetric(
+                                    vertical: layoutStyle.defaultMargin / 4,
+                                    horizontal: layoutStyle.defaultMargin,
+                                  ),
+                                  onChanged:
+                                      controller.isLoadingConnectPrinter.value
+                                          ? null
+                                          : controller.doUpdateConnectedPrinter,
                                 ),
                               ),
                             ),
@@ -540,12 +455,14 @@ class SettingPage extends GetView<SettingPageController> {
                                 horizontal: layoutStyle.defaultMargin / 5,
                               ),
                               onPressed: () {
-                                controller.doDisconnectPrinter();
+                                controller.doInitializePrinter();
                               },
                               style: ButtonStyle(
-                                minimumSize: MaterialStateProperty.all(Size.zero),
+                                minimumSize:
+                                    MaterialStateProperty.all(Size.zero),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                padding: MaterialStateProperty.all(EdgeInsets.zero),
+                                padding:
+                                    MaterialStateProperty.all(EdgeInsets.zero),
                                 backgroundColor:
                                     MaterialStateProperty.resolveWith(
                                   (states) => colorStyle.blue,
@@ -561,25 +478,128 @@ class SettingPage extends GetView<SettingPageController> {
                                   ),
                                 ),
                               ),
-                              label: controller.isLoadingPrinterDiconect.value
-                                  ? Container(
-                                      alignment: Alignment.center,
-                                      padding: EdgeInsets.all(
-                                        layoutStyle.defaultMargin / 10,
-                                      ),
-                                      width: layoutStyle.blockHorizontal * 3,
-                                      height: layoutStyle.blockVertical * 3,
-                                      child: CircularProgressIndicator(
-                                        color: colorStyle.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Icon(Icons.link_off, color: colorStyle.white),
+                              label:
+                                  Icon(Icons.refresh, color: colorStyle.white),
+                            ),
+                            CustomButton(
+                              width: layoutStyle.blockVertical * 6.5,
+                              height: layoutStyle.blockVertical * 6.5,
+                              margin: EdgeInsets.symmetric(
+                                vertical: layoutStyle.defaultMargin / 2,
+                                horizontal: layoutStyle.defaultMargin / 5,
+                              ),
+                              onPressed: () {
+                                controller.testPrint();
+                              },
+                              style: ButtonStyle(
+                                minimumSize:
+                                    MaterialStateProperty.all(Size.zero),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                padding:
+                                    MaterialStateProperty.all(EdgeInsets.zero),
+                                backgroundColor:
+                                    MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.blue,
+                                ),
+                                overlayColor: MaterialStateProperty.resolveWith(
+                                  (states) => colorStyle.black.withOpacity(0.1),
+                                ),
+                                shape: MaterialStateProperty.resolveWith(
+                                  (states) => RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              label: Icon(Icons.print, color: colorStyle.white),
+                              // suffixIcon: const Icon(Icons.print),
+                              // prefixIcon: const Icon(Icons.print),
+                              // label: controller.isLoading.value
+                              //     ? loading.buttonLoading()
+                              //     : Padding(
+                              //         padding: EdgeInsets.symmetric(
+                              //           horizontal: layoutStyle.defaultMargin,
+                              //         ),
+                              //         child: Text(
+                              //           'Test',
+                              //           style: textStyle.whiteText,
+                              //         ),
+                              //       ),
                             ),
                           ],
                         ),
-                      )
-                    ],
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: layoutStyle.defaultMargin / 5,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Obx(
+                                  () => Text(
+                                    'Printer Connected : ${controller.currentPrinterConnect}',
+                                    style: textStyle.blackText,
+                                  ),
+                                ),
+                              ),
+                              CustomButton(
+                                width: layoutStyle.blockVertical * 6.5,
+                                height: layoutStyle.blockVertical * 6.5,
+                                margin: EdgeInsets.symmetric(
+                                  vertical: layoutStyle.defaultMargin / 2,
+                                  horizontal: layoutStyle.defaultMargin / 5,
+                                ),
+                                onPressed: () {
+                                  controller.doDisconnectPrinter();
+                                },
+                                style: ButtonStyle(
+                                  minimumSize:
+                                      MaterialStateProperty.all(Size.zero),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  padding: MaterialStateProperty.all(
+                                      EdgeInsets.zero),
+                                  backgroundColor:
+                                      MaterialStateProperty.resolveWith(
+                                    (states) => colorStyle.blue,
+                                  ),
+                                  overlayColor:
+                                      MaterialStateProperty.resolveWith(
+                                    (states) =>
+                                        colorStyle.black.withOpacity(0.1),
+                                  ),
+                                  shape: MaterialStateProperty.resolveWith(
+                                    (states) => RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        layoutStyle.defaultMargin / 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                label: controller.isLoadingPrinterDiconect.value
+                                    ? Container(
+                                        alignment: Alignment.center,
+                                        padding: EdgeInsets.all(
+                                          layoutStyle.defaultMargin / 10,
+                                        ),
+                                        width: layoutStyle.blockHorizontal * 3,
+                                        height: layoutStyle.blockVertical * 3,
+                                        child: CircularProgressIndicator(
+                                          color: colorStyle.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Icon(Icons.link_off,
+                                        color: colorStyle.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: layoutStyle.defaultMargin),
+                        _simulasiPerangkat(controller),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -587,6 +607,81 @@ class SettingPage extends GetView<SettingPageController> {
           ),
         );
       },
+    );
+  }
+
+  /// Mode simulasi perangkat: printer gelang dan layar pelanggan bisa diuji
+  /// tanpa perangkatnya. Ditaruh di menu Setting, bukan disembunyikan di balik
+  /// gerakan rahasia, supaya siapa pun di tim bisa menyalakannya sendiri — dan
+  /// supaya sama jelasnya saat harus dimatikan lagi.
+  Widget _simulasiPerangkat(SettingPageController controller) {
+    return Obx(
+      () => Container(
+        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+        decoration: BoxDecoration(
+          color: controller.simulatePrinter.value ||
+                  controller.simulateCustomerDisplay.value
+              ? colorStyle.yellow.withOpacity(0.15)
+              : colorStyle.transparent,
+          border: Border.all(color: colorStyle.grey.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Simulasi Perangkat',
+              style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
+            ),
+            Text(
+              'Untuk pengembangan tanpa printer & layar pelanggan. '
+              'Matikan lagi sebelum dipakai di outlet.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              value: controller.simulatePrinter.value,
+              onChanged: controller.doToggleSimulatePrinter,
+              title: Text('Simulasi Printer', style: textStyle.blackText),
+              subtitle: Text(
+                'Hasil cetak ditangkap, tidak dikirim ke perangkat',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              value: controller.simulateCustomerDisplay.value,
+              onChanged: controller.doToggleSimulateCustomerDisplay,
+              title:
+                  Text('Simulasi Layar Pelanggan', style: textStyle.blackText),
+              subtitle: Text(
+                'Layar kedua dibuka sebagai jendela di aplikasi ini',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: controller.doOpenPrintPreview,
+                    icon: const Icon(Icons.receipt_long, size: 18),
+                    label: const Text('Hasil Cetak'),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: controller.doOpenCustomerSimulator,
+                    icon: const Icon(Icons.desktop_windows, size: 18),
+                    label: const Text('Layar Pelanggan'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

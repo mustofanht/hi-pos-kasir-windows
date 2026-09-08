@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/customer/customer_sale_cart_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer/customer_sale_cart_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/customer/customer_survey_panel.dart';
 import 'package:presentation_displays/secondary_display.dart';
 
 class CustomerPage extends StatefulWidget {
@@ -23,14 +24,14 @@ class _CustomerPageState extends State<CustomerPage> {
   void initState() {
     logger.safeLog('CUSTOMER PAGE');
     super.initState();
-    Get.put(CustomerSaleCartPageController());
+    CustomerSaleCartPageController.instance;
   }
 
   @override
   Widget build(BuildContext context) {
     layoutStyle.init(context);
     CustomerSaleCartPageController customerSaleCartPageController =
-        Get.put(CustomerSaleCartPageController());
+        CustomerSaleCartPageController.instance;
 
     Widget addsSection() {
       return Obx(
@@ -198,19 +199,29 @@ class _CustomerPageState extends State<CustomerPage> {
             width: layoutStyle.screenWidth,
             height: layoutStyle.screenHeight,
             color: colorStyle.lightGrey.withOpacity(0.70),
-            child: customerSaleCartPageController.showPaymentSuccess.value
-                ? paymentQrisSuccess()
-                : Row(
-                    children: [
-                      const CustomerSaleCartPage(),
-                      if (customerSaleCartPageController.qrCode.value !=
-                          null) ...[
-                        qrisSection(),
-                      ] else ...[
-                        addsSection(),
-                      ],
-                    ],
-                  ),
+            // Survei diletakkan sebagai lapisan di atas, bukan menggantikan isi
+            // layar. Pelanggan tetap bisa melihat bukti transaksinya sementara
+            // menilai, dan menutup survei tidak meninggalkan layar kosong.
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: customerSaleCartPageController.showPaymentSuccess.value
+                      ? paymentQrisSuccess()
+                      : Row(
+                          children: [
+                            const CustomerSaleCartPage(),
+                            if (customerSaleCartPageController.qrCode.value !=
+                                null) ...[
+                              qrisSection(),
+                            ] else ...[
+                              addsSection(),
+                            ],
+                          ],
+                        ),
+                ),
+                const Positioned.fill(child: CustomerSurveyPanel()),
+              ],
+            ),
           ),
         ),
       ),

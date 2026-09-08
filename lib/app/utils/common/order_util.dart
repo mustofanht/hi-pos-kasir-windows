@@ -36,6 +36,10 @@ class OrderUtil {
     Rxn<String>? orderNo,
   ) async {
     await _createTicket(authToken, body, orderNo, 'P');
+    // Satu-satunya tempat yang dilalui SEMUA penjualan yang berhasil — QRIS
+    // maupun EDC/tunai. Survei dipicu dari sini supaya tidak bergantung pada
+    // jalur pembayaran mana yang dipakai.
+    mintaSurvei(orderNo?.value);
     dialog.paymentQrSuccess(
       title: 'Success Pembayaran Telah Berhasil',
       msg: 'Terimakasih telah menggunakan layanan pembayaran kami.',
@@ -255,6 +259,16 @@ class OrderUtil {
       logger.safeLog(e.toString());
       return [];
     }
+  }
+
+  /// Minta layar pelanggan menampilkan survei kepuasan.
+  void mintaSurvei(String? orderNo) {
+    displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.SURVEY,
+        value: {'orderNo': orderNo},
+      ).toJson(),
+    );
   }
 
   doRefreshCustomerDisplay({required String paymentMethod}) {

@@ -558,16 +558,27 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            assetsConstant.imgEmptyBox,
-            // fit: BoxFit.contain,
-            width: layoutStyle.blockHorizontal * 30,
-            height: layoutStyle.blockVertical * 30,
-            errorBuilder: (BuildContext context, Object exception,
-                StackTrace? stackTrace) {
-              return const Text('Img Not Found');
-            },
+          // Gambarnya dibuat lentur: ukuran 30% tinggi layar dipertahankan bila
+          // ruangnya cukup, tetapi mengecil bila tidak. Sebelumnya ukurannya
+          // tetap, sehingga di layar yang lebih pendek — termasuk layar
+          // pelanggan pada perangkat kecil — seluruh kolom ini melimpah.
+          Flexible(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: layoutStyle.blockHorizontal * 30,
+                maxHeight: layoutStyle.blockVertical * 30,
+              ),
+              child: Image.asset(
+                assetsConstant.imgEmptyBox,
+                fit: BoxFit.contain,
+                errorBuilder: (BuildContext context, Object exception,
+                    StackTrace? stackTrace) {
+                  return const Text('Img Not Found');
+                },
+              ),
+            ),
           ),
           SizedBox(
             height: layoutStyle.defaultMargin,
@@ -599,7 +610,7 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
   Widget build(BuildContext context) {
     layoutStyle.init(context);
 
-    Get.put(CustomerSaleCartPageController());
+    CustomerSaleCartPageController.instance;
 
     return GetBuilder(
       init: controller,
