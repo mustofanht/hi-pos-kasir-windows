@@ -34,6 +34,7 @@ import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_bundle_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
+import 'package:jaya_propertiy/domain/entities/gate/gate_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/survey/survey_reason_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
@@ -58,6 +59,7 @@ part 'rental_service.dart';
 part 'transaction_service.dart';
 part 'member_service.dart';
 part 'survey_service.dart';
+part 'gate_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -73,4 +75,5 @@ class MainService {
   final transaction = TransactionService();
   final member = MemberService();
   final survey = SurveyService();
+  final gate = GateService();
 }

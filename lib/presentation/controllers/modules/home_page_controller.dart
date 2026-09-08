@@ -22,6 +22,8 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapang
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/gate/manual_exit_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/gate/take_out_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/setting/setting_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/shift/shift_page_controller.dart';
 import 'package:jaya_propertiy/presentation/views/modules/member/member_page.dart';
@@ -30,6 +32,8 @@ import 'package:jaya_propertiy/presentation/views/modules/proofofpayment/bukti_p
 import 'package:jaya_propertiy/presentation/views/modules/sale_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/presentation/views/modules/gate/manual_exit_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/gate/take_out_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/setting/setting_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/shift/shift_page.dart';
 
@@ -142,6 +146,10 @@ class HomePageController extends GetxController {
     MenuItem(id: 4, name: 'Member', icon: Icons.person),
     MenuItem(id: 5, name: 'Shift', icon: Icons.confirmation_num_outlined),
     MenuItem(id: 6, name: 'Pengaturan', icon: Icons.settings),
+    // Poin 5 & 9 (PRD gate). Ditaruh sebelum Logout supaya tombol keluar tetap
+    // paling bawah — kasir terbiasa menekan yang paling bawah untuk logout.
+    MenuItem(id: 8, name: 'TakeOut', icon: Icons.logout_outlined),
+    MenuItem(id: 9, name: 'Keluar\nManual', icon: Icons.door_front_door_outlined),
     MenuItem(id: 7, name: 'Logout', icon: Icons.logout),
   ];
 
@@ -252,6 +260,12 @@ class HomePageController extends GetxController {
       case 6:
         Get.lazyPut(() => SettingPageController());
         return const SettingPage();
+      case 8:
+        Get.lazyPut(() => TakeOutPageController());
+        return const TakeOutPage();
+      case 9:
+        Get.lazyPut(() => ManualExitPageController());
+        return const ManualExitPage();
       case 7:
         return null;
       default:
