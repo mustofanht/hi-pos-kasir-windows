@@ -67,6 +67,82 @@ class SaleCartPageController extends GetxController {
     return ticketControllers[id]!;
   }
 
+  /// Kotak qty untuk barang (addon), sejajar dengan tiket. Satu barang hanya
+  /// pernah muncul sekali di keranjang (lihat `addAddonToCart`), jadi aman
+  /// dikunci dengan productId.
+  final Map<int, TextEditingController> addonControllers = {};
+
+  TextEditingController getAddonController(int id, int qtyOrder) {
+    if (!addonControllers.containsKey(id)) {
+      addonControllers[id] = TextEditingController(text: qtyOrder.toString());
+    }
+    return addonControllers[id]!;
+  }
+
+  // ── Batas stok di keranjang ──────────────────────────────────────────────
+  // Pengecekan di layar pilih barang saja tidak cukup: dari keranjang, tombol
+  // "+" dan kotak qty bisa menaikkan jumlah tanpa melewati layar itu lagi.
+  // Backend tetap memvalidasi ulang saat order disimpan; pemeriksaan di sini
+  // supaya kasir tahu sebelum menagih, bukan setelahnya.
+
+  /// Sisa stok yang boleh dipesan, atau null bila barangnya tidak dipantau.
+  double? _sisaStok(AddonEntity? addon) {
+    if (addon == null || !addon.isInventoryTracked) return null;
+    return addon.stockAvailable ?? 0;
+  }
+
+  void _peringatanStok(AddonEntity addon, double sisa) {
+    alert.warning(
+      'Stok Tidak Cukup',
+      'Sisa ${addon.productName} tinggal '
+          '${sisa.toStringAsFixed(0)} ${addon.stockUom ?? 'pcs'}.',
+    );
+  }
+
+  /// Samakan isi kotak qty dengan nilai sesungguhnya, tanpa memindahkan kursor
+  /// ke awal — kalau kursornya melompat, mengetik angka dua digit jadi kacau.
+  void _sinkronKotakAddon(CartAddon val) {
+    final id = val.addon?.productId;
+    if (id == null) return;
+    final teks = (val.qtyOrder ?? 0).toString();
+    final kotak = addonControllers[id];
+    if (kotak == null || kotak.text == teks) return;
+    kotak.value = TextEditingValue(
+      text: teks,
+      selection: TextSelection.collapsed(offset: teks.length),
+    );
+  }
+
+  /// Qty diketik langsung di keranjang. Nilai yang melebihi sisa stok dipangkas
+  /// ke sisa yang ada, bukan ditolak — operator sudah tahu mau berapa, yang
+  /// perlu diberi tahu adalah batasnya.
+  onChangeQtyAddonCart(CartAddon val, int qty) {
+    if (qty < 1) return;
+    final sisa = _sisaStok(val.addon);
+    if (sisa != null && qty > sisa) {
+      qty = sisa.toInt();
+      _peringatanStok(val.addon!, sisa);
+    }
+    val.qtyOrder = qty;
+    val.totalPrice = (val.addon?.productPrice ?? 0) * qty;
+    _sinkronKotakAddon(val);
+    calculateTotalOrder();
+  }
+
+  /// Dipanggil saat selesai mengetik: kotak yang dikosongkan dikembalikan ke 1
+  /// supaya keranjang tidak pernah menyimpan baris berjumlah nol.
+  onCompleteQtyAddonCart(CartAddon val) {
+    final id = val.addon?.productId;
+    final teks = id == null ? null : addonControllers[id]?.text;
+    final qty = int.tryParse(teks ?? '') ?? 0;
+    if (qty < 1) {
+      val.qtyOrder = 1;
+      val.totalPrice = val.addon?.productPrice ?? 0;
+      _sinkronKotakAddon(val);
+      calculateTotalOrder();
+    }
+  }
+
   // ── Playground: input nama anak per tiket ────────────────────────────────
   // Muncul HANYA untuk tiket berkategori PLGRD (playground), berapa pun qty-nya
   // (termasuk 1 tiket). Tiket non-playground TIDAK pernah minta nama anak,
@@ -241,8 +317,14 @@ class SaleCartPageController extends GetxController {
   addAddonCart(CartAddon val) {
     if (val.rentModel != null) {
     } else {
+      final sisa = _sisaStok(val.addon);
+      if (sisa != null && (val.qtyOrder ?? 0) + 1 > sisa) {
+        _peringatanStok(val.addon!, sisa);
+        return;
+      }
       val.qtyOrder = (val.qtyOrder ?? 0) + 1;
       val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
+      _sinkronKotakAddon(val);
       calculateTotalOrder();
     }
   }
@@ -252,11 +334,14 @@ class SaleCartPageController extends GetxController {
     val.totalPrice = (val.totalPrice ?? 0) - (val.addon!.productPrice ?? 0);
     if (val.qtyOrder == 0) {
       removeListAddon(val);
+    } else {
+      _sinkronKotakAddon(val);
     }
     calculateTotalOrder();
   }
 
   removeListAddon(CartAddon val) {
+    addonControllers.remove(val.addon?.productId)?.dispose();
     addonList.remove(val);
     if (val.rentModel != null) {
       // Lepas juga pilihan jam pada tab Booking Lapangan.

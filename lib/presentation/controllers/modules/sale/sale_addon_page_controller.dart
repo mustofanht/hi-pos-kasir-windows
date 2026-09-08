@@ -285,10 +285,10 @@ class SaleAddonPageController extends GetxController {
         // );
 
         if (exists != null) {
-          exists.qtyOrder = (exists.qtyOrder ?? 0) + 1;
-          exists.totalPrice =
-              (exists.totalPrice ?? 0) + (val.productPrice ?? 0);
-          saleCartPageController.calculateTotalOrder();
+          // Lewat addAddonCart, bukan menaikkan qty langsung: di sanalah batas
+          // stok diperiksa dan kotak qty di keranjang ikut disamakan. Menaikkan
+          // sendiri di sini berarti dua salinan aturan yang cepat menyimpang.
+          saleCartPageController.addAddonCart(exists);
         } else {
           saleCartPageController.addAddon(val);
         }

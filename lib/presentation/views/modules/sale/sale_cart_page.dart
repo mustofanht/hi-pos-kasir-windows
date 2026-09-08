@@ -601,11 +601,54 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                           Expanded(
                             child: Row(
                               children: [
-                                Text('${e.qtyOrder} X '),
+                                // Qty bisa diketik langsung, sama seperti tiket.
+                                // Menambah 50 barang lewat tombol "+" berarti 50
+                                // ketukan; angka yang bisa diketik menghilangkan
+                                // seluruh pekerjaan itu.
+                                SizedBox(
+                                  width: layoutStyle.safeBlockHorizontal * 4,
+                                  child: TextField(
+                                    controller: controller.getAddonController(
+                                      e.addon!.productId!,
+                                      e.qtyOrder ?? 1,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    onChanged: (val) => val.isNotEmpty
+                                        ? controller.onChangeQtyAddonCart(
+                                            e,
+                                            int.parse(val),
+                                          )
+                                        : null,
+                                    onEditingComplete: () =>
+                                        controller.onCompleteQtyAddonCart(e),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                  ),
+                                ),
+                                Text('X ', style: textStyle.blackText),
                                 Expanded(
-                                  child: Text(
-                                    e.addon!.productName ?? '',
-                                    softWrap: true,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        e.addon!.productName ?? '',
+                                        softWrap: true,
+                                      ),
+                                      // Batasnya ditulis di samping barangnya,
+                                      // supaya kasir tahu sebelum mengetik —
+                                      // bukan baru diberi tahu setelah ditolak.
+                                      if (e.addon!.isInventoryTracked)
+                                        Text(
+                                          'Sisa ${(e.addon!.stockAvailable ?? 0).toStringAsFixed(0)} '
+                                          '${e.addon!.stockUom ?? 'pcs'}',
+                                          style: textStyle.greyText.copyWith(
+                                            fontSize: fontSize.superSmall,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ],
