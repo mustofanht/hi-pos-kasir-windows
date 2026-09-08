@@ -1,3 +1,15 @@
+/// Ubah tanggal dari server menjadi waktu setempat.
+///
+/// `DateTime.parse` pada teks berzona waktu ("...+07:00") menghasilkan objek
+/// **UTC**. Menampilkannya apa adanya membuat jam masuk tampil 7 jam lebih awal
+/// dari kenyataan — dan yang paling menyesatkan, jam itu tidak cocok dengan
+/// papan TV maupun struk.
+DateTime? _waktuSetempat(dynamic nilai) {
+  if (nilai == null) return null;
+  final waktu = DateTime.tryParse(nilai.toString());
+  return waktu?.toLocal();
+}
+
 /// Satu pilihan alasan keluar manual, dari katalog server.
 class ManualExitReasonEntity {
   final String code;
@@ -61,8 +73,7 @@ class ManualExitEntity {
       : expiresDate!.difference(DateTime.now());
 
   factory ManualExitEntity.fromJson(Map<String, dynamic> json) {
-    DateTime? tgl(String key) =>
-        json[key] == null ? null : DateTime.tryParse(json[key].toString());
+    DateTime? tgl(String key) => _waktuSetempat(json[key]);
 
     return ManualExitEntity(
       requestId: json['requestId'] as int?,
@@ -117,8 +128,7 @@ class TakeOutCustomerEntity {
   });
 
   factory TakeOutCustomerEntity.fromJson(Map<String, dynamic> json) {
-    DateTime? tgl(String key) =>
-        json[key] == null ? null : DateTime.tryParse(json[key].toString());
+    DateTime? tgl(String key) => _waktuSetempat(json[key]);
 
     return TakeOutCustomerEntity(
       ticketNo: json['ticketNo']?.toString(),

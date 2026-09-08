@@ -4,7 +4,10 @@ import 'dart:io';
 import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/print_capture_util.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/printer_model.dart';
+import 'package:jaya_propertiy/data/models/common/wristband_config_model.dart';
 import 'package:thermal_printer/thermal_printer.dart';
 
 class PrinterUtil {
@@ -21,6 +24,57 @@ class PrinterUtil {
   final _isBle = false;
   final _reconnect = false;
   List<PrinterModel> printerList = [];
+
+  static final GetStorage _store = GetStorage("sessions");
+
+  /// Printer gelang — perangkat kedua, terpisah dari printer struk.
+  ///
+  /// Berbeda dari printer struk yang dipilih ulang tiap aplikasi dijalankan
+  /// (`connectPrinterFirst`), pilihan ini **disimpan**: satu outlet punya dua
+  /// printer sekaligus, dan menebak mana yang mana setiap pagi adalah cara pasti
+  /// mencetak gelang di atas kertas struk.
+  ///
+  /// Null berarti belum diatur — alur cetak kembali ke perilaku lama, yaitu QR
+  /// dicetak sebagai sambungan struk. Itu penting supaya outlet yang belum punya
+  /// printer gelang tidak berhenti bisa mencetak tiket.
+  PrinterModel? wristbandPrinter;
+
+  WristbandConfigModel wristbandConfig = WristbandConfigModel();
+
+  bool get punyaPrinterGelang => wristbandPrinter != null;
+
+  /// Membaca setelan gelang yang tersimpan. Dipanggil sekali saat aplikasi mulai.
+  void muatSetelanGelang() {
+    try {
+      final printer = _store.read(constant.wristbandPrinter);
+      if (printer is Map) wristbandPrinter = PrinterModel.fromJson(printer);
+      final config = _store.read(constant.wristbandConfig);
+      if (config is Map) wristbandConfig = WristbandConfigModel.fromJson(config);
+    } catch (e) {
+      // Setelan rusak tidak boleh menggagalkan aplikasi mulai; kembali ke
+      // bawaan, dan kasir tinggal memilih ulang printernya.
+      logger.safeLog('Setelan gelang gagal dibaca : $e');
+      wristbandPrinter = null;
+      wristbandConfig = WristbandConfigModel();
+    }
+    logger.safeLog('PRINTER GELANG : ${wristbandPrinter?.deviceName ?? "(belum diatur)"}');
+  }
+
+  void simpanPrinterGelang(PrinterModel? printer) {
+    wristbandPrinter = printer;
+    if (printer == null) {
+      _store.remove(constant.wristbandPrinter);
+    } else {
+      _store.write(constant.wristbandPrinter, printer.toJson());
+    }
+    logger.safeLog('PRINTER GELANG DISIMPAN : ${printer?.deviceName ?? "(dihapus)"}');
+  }
+
+  void simpanSetelanGelang(WristbandConfigModel config) {
+    wristbandConfig = config;
+    _store.write(constant.wristbandConfig, config.toJson());
+    logger.safeLog('SETELAN GELANG : ${config.toJson()}');
+  }
 
   Future<void> init() async {
     logger.safeLog(' ---- PRINTER ---- ');
@@ -333,6 +387,10 @@ class PrinterUtil {
     // logger.safeLog('printerManager : ${printerManager.currentStatusUSB}');
     // logger.safeLog('printerManager : ${printerManager.currentStatusBT}');
     // logger.safeLog('printerManager : ${printerManager.currentStatusTCP}');
+    await _kirim(selectedPrinter, bytes);
+  }
+
+  Future<void> _kirim(PrinterModel selectedPrinter, List<int> bytes) async {
     if (selectedPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
       // logger.safeLog('PRINT USB 1 ----- ');
@@ -352,6 +410,49 @@ class PrinterUtil {
       var isPrinted = await printerManager.send(
           type: selectedPrinter.typePrinter, bytes: bytes);
       logger.safeLog('IS PRINT : $isPrinted ');
+    }
+  }
+
+  /// Mencetak ke printer gelang, lalu mengembalikan sambungan ke printer struk.
+  ///
+  /// Perlu tarian sambung–putus karena `PrinterManager` menyimpan **satu**
+  /// sambungan per jenis: dua printer USB tidak bisa tersambung bersamaan, dan
+  /// `send(type: usb)` akan pergi ke printer USB mana pun yang sedang aktif.
+  /// Kalau printer gelang dan printer struk berbeda jenis (mis. struk USB,
+  /// gelang jaringan), tidak ada yang perlu diputus dan jalurnya lebih cepat.
+  ///
+  /// Mengembalikan false bila printer gelang belum diatur — pemanggil memakai
+  /// itu untuk jatuh kembali ke cetak QR di kertas struk.
+  Future<bool> printWristband(List<int> bytes) async {
+    final target = wristbandPrinter;
+    if (target == null) return false;
+
+    if (deviceSimulation.printer || isSimulated(target)) {
+      await printCapture.capture(bytes);
+      return true;
+    }
+
+    final printerStruk = currPrinter;
+    final bentrok = printerStruk != null &&
+        printerStruk.typePrinter == target.typePrinter &&
+        printerStruk.kunci != target.kunci;
+
+    try {
+      if (bentrok) await disconnect(printerStruk);
+      await connect(target);
+      await _kirim(target, bytes);
+      if (bentrok) {
+        await disconnect(target);
+        await connect(printerStruk);
+      }
+      return true;
+    } catch (e) {
+      logger.safeLog('CETAK GELANG GAGAL : $e');
+      return false;
+    } finally {
+      // `connect()` menggeser penanda printer aktif; kembalikan ke printer struk
+      // supaya cetakan struk berikutnya tidak diam-diam pergi ke printer gelang.
+      currPrinter = printerStruk;
     }
   }
 }

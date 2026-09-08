@@ -7,12 +7,14 @@ import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/printer_model.dart';
+import 'package:jaya_propertiy/data/models/common/wristband_config_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
@@ -56,6 +58,20 @@ class SettingPageController extends GetxController
   final simulatePrinter = false.obs;
   final simulateCustomerDisplay = false.obs;
 
+  // --- Printer gelang -------------------------------------------------------
+  // Perangkat kedua, memakai bahasa TSPL, terpisah dari printer struk.
+  final selectedPrinterGelang = CustomIdNameEntity().obs;
+  final isLoadingTesGelang = false.obs;
+
+  final lebarGelangController = TextEditingController();
+  final tinggiGelangController = TextEditingController();
+  final jarakGelangController = TextEditingController();
+  final marginGelangController = TextEditingController();
+  final dpiGelang = 203.obs;
+  final kerapatanGelang = 8.obs;
+  final kecepatanGelang = 4.obs;
+  final arahGelang = 1.obs;
+
   @override
   Future<void> onInit() async {
     simulatePrinter.value = deviceSimulation.printer;
@@ -64,6 +80,7 @@ class SettingPageController extends GetxController
     await doInitializeScreen();
     await doInitializePrinter();
     super.onInit();
+    muatSetelanGelang();
     tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
     currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
@@ -251,6 +268,136 @@ class SettingPageController extends GetxController
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+    }
+  }
+
+  // --- Printer gelang -------------------------------------------------------
+
+  /// Menampilkan setelan gelang yang tersimpan ke dalam formulir.
+  void muatSetelanGelang() {
+    final c = printerUtil.wristbandConfig;
+    lebarGelangController.text = _angka(c.widthMm);
+    tinggiGelangController.text = _angka(c.heightMm);
+    jarakGelangController.text = _angka(c.gapMm);
+    marginGelangController.text = _angka(c.marginMm);
+    dpiGelang.value = c.dpi;
+    kerapatanGelang.value = c.density;
+    kecepatanGelang.value = c.speed;
+    arahGelang.value = c.direction;
+
+    final tersimpan = printerUtil.wristbandPrinter;
+    selectedPrinterGelang.value = tersimpan == null
+        ? CustomIdNameEntity(id: null, name: '--- Belum diatur ---')
+        : CustomIdNameEntity(id: tersimpan.kunci, name: tersimpan.deviceName);
+  }
+
+  String _angka(double v) =>
+      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+
+  /// Daftar pilihan printer gelang: perangkat yang sama yang terdeteksi untuk
+  /// printer struk, ditambah pilihan kosong untuk melepasnya kembali.
+  List<CustomIdNameEntity> get listPrinterGelang => [
+        CustomIdNameEntity(id: null, name: '--- Belum diatur ---'),
+        ...printers.map(
+          (e) => CustomIdNameEntity(id: e.kunci, name: e.deviceName),
+        ),
+      ];
+
+  void doPilihPrinterGelang(CustomIdNameEntity? val) {
+    if (val == null || val.id == null) {
+      printerUtil.simpanPrinterGelang(null);
+      selectedPrinterGelang.value =
+          CustomIdNameEntity(id: null, name: '--- Belum diatur ---');
+      alert.success('Tersimpan',
+          'Printer gelang dilepas. QR kembali dicetak menyambung struk.');
+      update();
+      return;
+    }
+
+    final pilihan = printers.firstWhereOrNull((e) => e.kunci == val.id);
+    if (pilihan == null) {
+      alert.error('Error', 'Printer tidak ditemukan, coba segarkan daftarnya.');
+      return;
+    }
+
+    // Printer gelang dan printer struk tidak boleh perangkat yang sama —
+    // gelang akan keluar di atas kertas struk dan sebaliknya.
+    if (printerUtil.currPrinter != null &&
+        printerUtil.currPrinter!.kunci == pilihan.kunci) {
+      alert.warning('Perangkat Sama',
+          'Printer ini sudah dipakai sebagai printer struk. Pilih perangkat lain.');
+      return;
+    }
+
+    printerUtil.simpanPrinterGelang(pilihan);
+    selectedPrinterGelang.value = val;
+    alert.success('Tersimpan', 'Printer gelang : ${pilihan.deviceName}');
+    update();
+  }
+
+  /// Menyimpan ukuran media. Nilai yang tidak masuk akal ditolak di sini juga,
+  /// bukan hanya saat dibaca ulang — kasir berhak tahu angkanya salah saat itu
+  /// juga, bukan menemukannya lewat printer yang diam tak mencetak.
+  void doSimpanSetelanGelang() {
+    final lebar = double.tryParse(lebarGelangController.text.replaceAll(',', '.'));
+    final tinggi = double.tryParse(tinggiGelangController.text.replaceAll(',', '.'));
+    final jarak = double.tryParse(jarakGelangController.text.replaceAll(',', '.'));
+    final margin = double.tryParse(marginGelangController.text.replaceAll(',', '.'));
+
+    if (lebar == null || lebar < 10 || lebar > 200) {
+      alert.warning('Ukuran Salah', 'Lebar media harus 10-200 mm.');
+      return;
+    }
+    if (tinggi == null || tinggi < 10 || tinggi > 400) {
+      alert.warning('Ukuran Salah', 'Tinggi media harus 10-400 mm.');
+      return;
+    }
+    if (jarak == null || jarak < 0 || jarak > 20) {
+      alert.warning('Ukuran Salah', 'Jarak antar label harus 0-20 mm.');
+      return;
+    }
+    if (margin == null || margin < 0 || margin > 20) {
+      alert.warning('Ukuran Salah', 'Margin harus 0-20 mm.');
+      return;
+    }
+
+    printerUtil.simpanSetelanGelang(WristbandConfigModel(
+      dpi: dpiGelang.value,
+      widthMm: lebar,
+      heightMm: tinggi,
+      gapMm: jarak,
+      marginMm: margin,
+      density: kerapatanGelang.value,
+      speed: kecepatanGelang.value,
+      direction: arahGelang.value,
+    ));
+    alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
+    update();
+  }
+
+  /// Cetak uji: bingkai batas media + QR contoh. Dipakai untuk mencocokkan
+  /// ukuran pada setelan dengan media yang benar-benar terpasang.
+  Future<void> doTesCetakGelang() async {
+    if (!printerUtil.punyaPrinterGelang) {
+      alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
+      return;
+    }
+    isLoadingTesGelang.value = true;
+    try {
+      final bytes =
+          generateWristbandUtil.testPrint(printerUtil.wristbandConfig);
+      final berhasil = await printerUtil.printWristband(bytes);
+      if (berhasil) {
+        alert.success('Terkirim',
+            'Cetak uji dikirim. Periksa bingkainya utuh dan QR-nya bisa dipindai.');
+      } else {
+        alert.error('Gagal', 'Cetak uji gagal dikirim ke printer gelang.');
+      }
+    } catch (e) {
+      logger.safeLog('TES CETAK GELANG : $e');
+      alert.error('Gagal', 'Cetak uji gagal, periksa sambungan printer.');
+    } finally {
+      isLoadingTesGelang.value = false;
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/gelang_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -342,10 +343,18 @@ class PrintTicketDetailPageController extends GetxController {
 
           List<int> data = [];
 
-          // Tiket non-lapangan → QR gate (perilaku lama).
+          // Tiket non-lapangan -> QR gate. Bila printer gelang sudah diatur,
+          // QR-nya keluar di sana; kalau belum, tetap ikut tercetak di struk
+          // seperti perilaku lama.
+          final gelangTercetak = await gelangUtil.cetak(gateTickets);
+
           int count = 1;
           int totalPak = gateTickets.length;
-          for (var element in gateTickets) {
+          // Sudah keluar sebagai gelang -> tidak diulang di kertas struk.
+          final tiketDiStruk = gelangTercetak
+              ? <ResponseCreateTicketNoEntity>[]
+              : gateTickets;
+          for (var element in tiketDiStruk) {
             List<int> dataPrint = await generatePrintUtil.dataGatePrint(
               locationName: locationName,
               paperSize: PaperSize.mm80,
@@ -383,7 +392,10 @@ class PrintTicketDetailPageController extends GetxController {
           }
 
           if (data.isEmpty) {
-            alert.error('Error', 'Data Empty');
+            // Tidak ada yang perlu keluar di printer struk. Itu hasil yang benar
+            // bila seluruh tiketnya sudah tercetak sebagai gelang; hanya di luar
+            // itu ia berarti tidak ada data.
+            if (!gelangTercetak) alert.error('Error', 'Data Empty');
             return;
           }
           await printerUtil.print(printerUtil.currPrinter!, data);

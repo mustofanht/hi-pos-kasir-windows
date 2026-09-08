@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_member_print_util.dart';
+import 'package:jaya_propertiy/app/utils/common/gelang_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -178,10 +179,21 @@ class OrderUtil {
         final ticketsToPrint = body.listCreateTicket!
             .where((e) => !lapanganNames.contains(e.ticketName))
             .toList();
+
+        // QR gate keluar di printer gelang bila outlet punya. Kalau belum,
+        // `cetak` mengembalikan false dan QR kembali dicetak sebagai sambungan
+        // struk seperti sebelumnya — outlet tanpa printer gelang tidak boleh
+        // ikut berhenti bisa menjual tiket.
+        final gelangTercetak = await gelangUtil.cetak(ticketsToPrint);
+
         int count = 1;
         int totalPak = ticketsToPrint.length;
         String reffNo = body.orderReffno ?? '';
-        for (var element in ticketsToPrint) {
+        // Sudah keluar sebagai gelang -> tidak diulang di kertas struk.
+        final tiketDiStruk = gelangTercetak
+            ? <ResponseCreateTicketNoEntity>[]
+            : ticketsToPrint;
+        for (var element in tiketDiStruk) {
           // String reffNo = element.ticketNo ?? '';
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(
             locationName: locationName,

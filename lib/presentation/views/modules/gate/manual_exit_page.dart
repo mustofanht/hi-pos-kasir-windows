@@ -71,6 +71,18 @@ class _ManualExitPageState extends State<ManualExitPage> {
         return _kartuKode(controller, diajukan);
       }
       return SingleChildScrollView(
+        // Ruang setinggi keyboard ditambahkan di bawah isi formulir.
+        //
+        // HomePage memakai `resizeToAvoidBottomInset: false` (keyboard menimpa
+        // layar, tidak memampatkannya), jadi tinggi area ini tidak berubah saat
+        // keyboard muncul. Tanpa ruang tambahan, isi formulir masih lebih pendek
+        // daripada areanya sehingga tidak ada yang bisa digulir sama sekali —
+        // kolom Catatan dan tombol Ajukan tertutup keyboard tanpa jalan keluar.
+        //
+        // Dengan ruang ini formulir menjadi lebih tinggi dari areanya, sehingga
+        // bisa digulir, dan Flutter juga bisa menggeser sendiri kolom yang
+        // sedang difokuskan ke atas keyboard.
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -114,6 +126,7 @@ class _ManualExitPageState extends State<ManualExitPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 4),
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -201,13 +214,16 @@ class _ManualExitPageState extends State<ManualExitPage> {
   }
 
   Widget _antreanPersetujuan(ManualExitPageController controller) {
-    return Column(
+    return Obx(() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Expanded(
-              child: Text('2. Menunggu Persetujuan',
+              child: Text(
+                  controller.bolehMemutuskan.value
+                      ? '2. Menunggu Persetujuan Anda'
+                      : '2. Menunggu Persetujuan',
                   style: textStyle.blackText.copyWith(
                       fontSize: fontSize.subtitle, fontWeight: FontWeight.bold)),
             ),
@@ -218,6 +234,15 @@ class _ManualExitPageState extends State<ManualExitPage> {
             ),
           ],
         ),
+        if (!controller.bolehMemutuskan.value)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Anda hanya bisa melihat daftar ini. Persetujuan dilakukan oleh '
+              'petugas yang berwenang.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+          ),
         Expanded(
           child: Obx(() {
             if (controller.pending.isEmpty) {
@@ -234,7 +259,7 @@ class _ManualExitPageState extends State<ManualExitPage> {
           }),
         ),
       ],
-    );
+    ));
   }
 
   Widget _kartuPending(ManualExitPageController controller, ManualExitEntity e) {
@@ -258,28 +283,35 @@ class _ManualExitPageState extends State<ManualExitPage> {
                     date: e.requestedDate!, format: dateFormat.onlyTime),
                 style: textStyle.greyText.copyWith(fontSize: fontSize.superSmall),
               ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _dialogKeputusan(controller, e, false),
-                    child: const Text('Tolak'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _dialogKeputusan(controller, e, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorStyle.green,
-                      foregroundColor: colorStyle.white,
+            // Tombol keputusan hanya muncul untuk yang berwenang. Menampilkannya
+            // ke semua orang berarti sebagian besar penekanan berakhir dengan
+            // penolakan dari server — di depan pelanggan yang sedang menunggu.
+            // Server tetap memeriksa hal yang sama; ini soal tidak menawarkan
+            // sesuatu yang pasti gagal.
+            if (controller.bolehMemutuskan.value) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _dialogKeputusan(controller, e, false),
+                      child: const Text('Tolak'),
                     ),
-                    child: const Text('Setujui'),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _dialogKeputusan(controller, e, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorStyle.green,
+                        foregroundColor: colorStyle.white,
+                      ),
+                      child: const Text('Setujui'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -294,34 +326,39 @@ class _ManualExitPageState extends State<ManualExitPage> {
     Get.dialog(
       AlertDialog(
         title: Text(setuju ? 'Setujui Keluar Manual' : 'Tolak Permintaan'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Tiket ${e.ticketNo}', style: textStyle.blackText),
-            Text(e.reasonLabel ?? '-', style: textStyle.greyText),
-            const SizedBox(height: 12),
-            TextField(
-              controller: kodeController,
-              textCapitalization: TextCapitalization.characters,
-              maxLength: 6,
-              decoration: const InputDecoration(
-                labelText: 'Kode dari operator *',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-            ),
-            if (!setuju)
+        // Dialog ini selalu dibuka bersama keyboard (penyetuju mengetik kode).
+        // Pada tablet mendatar sisa tinggi layar tinggal sedikit, jadi isinya
+        // harus bisa digulir alih-alih meluber.
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tiket ${e.ticketNo}', style: textStyle.blackText),
+              Text(e.reasonLabel ?? '-', style: textStyle.greyText),
+              const SizedBox(height: 12),
               TextField(
-                controller: alasanController,
-                maxLength: 200,
+                controller: kodeController,
+                textCapitalization: TextCapitalization.characters,
+                maxLength: 6,
                 decoration: const InputDecoration(
-                  labelText: 'Alasan penolakan *',
+                  labelText: 'Kode dari operator *',
                   border: OutlineInputBorder(),
                   isDense: true,
                 ),
               ),
-          ],
+              if (!setuju)
+                TextField(
+                  controller: alasanController,
+                  maxLength: 200,
+                  decoration: const InputDecoration(
+                    labelText: 'Alasan penolakan *',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Batal')),

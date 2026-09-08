@@ -106,6 +106,34 @@ class AppSessionUtil {
     return unitId;
   }
 
+  /// Apakah user yang login berwenang menyetujui (mis. keluar manual).
+  ///
+  /// Dibaca dari klaim JWT, bukan ditebak dari nama role: daftar nama role bisa
+  /// berubah kapan saja lewat halaman Data Roles, sedangkan flag ini memang
+  /// dibuat untuk menandai kewenangan itu. Super admin selalu berwenang.
+  ///
+  /// Server tetap memeriksa hal yang sama saat permintaan disetujui — pemeriksaan
+  /// di sini hanya untuk menyembunyikan tombol yang pasti ditolak, supaya tidak
+  /// ada yang menekannya di depan pelanggan lalu mendapat penolakan.
+  bool isVerificator() {
+    try {
+      Map<String, dynamic> data = _store.read(constant.authentication);
+      AuthToken authToken = AuthToken.fromJson(data);
+      final user = JwtDecoder.decode(authToken.token ?? "")['user'];
+      if (user == null) return false;
+      final superAdmin = user['isSuperAdmin'];
+      if (superAdmin is String && superAdmin.toUpperCase() == 'Y') return true;
+      if (superAdmin is bool && superAdmin) return true;
+      return user['isVerificator'] == true;
+    } catch (e) {
+      logger.safeLog(e);
+      // Ragu berarti tidak berwenang: menyembunyikan tombol yang seharusnya ada
+      // hanya merepotkan, menampilkan tombol yang seharusnya tidak ada memberi
+      // kesan wewenang yang tidak dimiliki.
+      return false;
+    }
+  }
+
   /// Seluruh lokasi yang boleh diakses user (`locIds`).
   ///
   /// Daftar kosong berarti tanpa pembatasan — bukan berarti user tidak punya

@@ -20,6 +20,11 @@ class AppStringConstant {
   // Mode simulasi perangkat (lihat DeviceSimulationUtil)
   final String simulatePrinter = "simulate_printer";
   final String simulateCustomerDisplay = "simulate_customer_display";
+
+  // Printer gelang (lihat PrinterUtil) — disimpan agar pilihan perangkat dan
+  // ukuran medianya bertahan setelah aplikasi ditutup.
+  final String wristbandPrinter = "wristband_printer";
+  final String wristbandConfig = "wristband_config";
 }
 
 class ArgumentsConstant {

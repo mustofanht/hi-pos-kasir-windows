@@ -103,6 +103,12 @@ class PrintPreviewPage extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: ExpansionTile(
+        // Struk dan gelang keluar di daftar yang sama; penandanya dipasang di
+        // depan judul karena keduanya mudah tertukar saat menelusuri masalah.
+        leading: Icon(
+          item.gelang ? Icons.badge_outlined : Icons.receipt_long_outlined,
+          color: colorStyle.grey,
+        ),
         title: Text(
           item.ringkasan,
           maxLines: 1,
@@ -110,7 +116,8 @@ class PrintPreviewPage extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
-          '#${item.id} · $jam · ${item.jumlahByte} byte'
+          '#${item.id} · $jam · ${item.jumlahByte} byte · ${item.bahasa}'
+          '${item.gelang ? " (gelang)" : ""}'
           '${item.adaQr ? " · berisi QR" : ""}',
           style: TextStyle(fontSize: 11, color: colorStyle.grey),
         ),

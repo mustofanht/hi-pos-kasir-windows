@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/escpos_decoder_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/tspl_decoder_util.dart';
 import 'package:jaya_propertiy/data/models/common/print_capture_model.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -29,7 +30,11 @@ class PrintCaptureUtil {
 
   Future<void> capture(List<int> bytes) async {
     _urutan++;
-    final baris = EscPosDecoder.decode(bytes);
+    // Struk memakai ESC/POS, gelang memakai TSPL. Bahasanya dikenali dari isi
+    // byte-nya, bukan dari siapa yang memanggil — supaya pratinjau tetap benar
+    // dari jalur mana pun cetakan itu datang.
+    final tspl = TsplDecoder.sepertinyaTspl(bytes);
+    final baris = tspl ? TsplDecoder.decode(bytes) : EscPosDecoder.decode(bytes);
     final berkas = await _tulisBerkas(_urutan, bytes);
 
     final item = PrintCaptureModel(
@@ -37,7 +42,9 @@ class PrintCaptureUtil {
       waktu: DateTime.now(),
       jumlahByte: bytes.length,
       baris: baris,
-      ringkasan: EscPosDecoder.ringkasan(bytes),
+      ringkasan:
+          tspl ? TsplDecoder.ringkasan(bytes) : EscPosDecoder.ringkasan(bytes),
+      bahasa: tspl ? 'TSPL' : 'ESC/POS',
       berkas: berkas,
     );
 
@@ -47,7 +54,7 @@ class PrintCaptureUtil {
     }
 
     logger.safeLog(
-        'CETAK SIMULASI #${item.id} : ${item.jumlahByte} byte -> ${berkas ?? "(tanpa berkas)"}');
+        'CETAK SIMULASI #${item.id} : ${item.bahasa}, ${item.jumlahByte} byte -> ${berkas ?? "(tanpa berkas)"}');
   }
 
   void clear() {

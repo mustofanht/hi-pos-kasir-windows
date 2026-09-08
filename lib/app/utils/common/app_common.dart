@@ -24,6 +24,9 @@ class AppCommon {
   globalInitialize() async {
     // await GetStorage.init("sessions");
     await printerUtil.init();
+    // Dibaca sebelum menyambung supaya printer gelang yang tersimpan sudah
+    // dikenali saat cetakan pertama datang.
+    printerUtil.muatSetelanGelang();
     await printerUtil.connectPrinterFirst();
     logger.safeLog('CURR PRINTER : ${printerUtil.currPrinter?.deviceName}');
   }

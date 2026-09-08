@@ -19,6 +19,11 @@ class ManualExitPageController extends GetxController {
   final isLoading = false.obs;
   final isProcessing = false.obs;
 
+  /// Apakah user yang login boleh memutuskan. Dibaca sekali saat controller
+  /// dibuat — kewenangan tidak berubah di tengah sesi; kalau role diubah admin,
+  /// user harus login ulang, dan server tetap memeriksanya sendiri.
+  final bolehMemutuskan = sessionUtil.isVerificator().obs;
+
   // Pengajuan
   final reasons = <ManualExitReasonEntity>[].obs;
   final reasonCode = RxnString(null);

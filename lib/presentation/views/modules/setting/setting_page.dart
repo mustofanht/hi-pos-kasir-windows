@@ -597,6 +597,8 @@ class SettingPage extends GetView<SettingPageController> {
                           ),
                         ),
                         SizedBox(height: layoutStyle.defaultMargin),
+                        _printerGelang(controller),
+                        SizedBox(height: layoutStyle.defaultMargin),
                         _simulasiPerangkat(controller),
                       ],
                     ),
@@ -607,6 +609,178 @@ class SettingPage extends GetView<SettingPageController> {
           ),
         );
       },
+    );
+  }
+
+  /// Printer gelang — perangkat kedua di samping printer struk.
+  ///
+  /// Ukuran medianya bisa diubah di sini karena tidak ada satu ukuran yang
+  /// benar: label 50x25mm dan gulungan gelang 25x220mm sama-sama dipakai, dan
+  /// printer yang salah setelan ukurannya tidak mengeluh — ia mencetak sebagian
+  /// lalu memotong sisanya diam-diam. Karena itu ada tombol cetak uji.
+  Widget _printerGelang(SettingPageController controller) {
+    return Obx(
+      () => Container(
+        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+        decoration: BoxDecoration(
+          border: Border.all(color: colorStyle.grey.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Printer Gelang',
+              style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
+            ),
+            Text(
+              controller.selectedPrinterGelang.value.id == null
+                  ? 'Belum diatur — QR tiket masih dicetak menyambung struk.'
+                  : 'QR tiket dicetak sebagai gelang di perangkat ini (TSPL).',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            DropdownButtonFormField<String?>(
+              value: controller.selectedPrinterGelang.value.id?.toString(),
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Perangkat',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              items: controller.listPrinterGelang
+                  .map((e) => DropdownMenuItem<String?>(
+                        value: e.id?.toString(),
+                        child: Text('${e.name}'),
+                      ))
+                  .toList(),
+              onChanged: (val) => controller.doPilihPrinterGelang(
+                controller.listPrinterGelang.firstWhere(
+                  (e) => e.id?.toString() == val,
+                  orElse: () => CustomIdNameEntity(id: null),
+                ),
+              ),
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            Row(
+              children: [
+                _kotakAngka('Lebar (mm)', controller.lebarGelangController),
+                _kotakAngka('Tinggi (mm)', controller.tinggiGelangController),
+                _kotakAngka('Jarak (mm)', controller.jarakGelangController),
+                _kotakAngka('Margin (mm)', controller.marginGelangController),
+              ],
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            Row(
+              children: [
+                _kotakPilihan<int>(
+                  'Resolusi',
+                  controller.dpiGelang.value,
+                  const [203, 300],
+                  (v) => controller.dpiGelang.value = v,
+                  teks: (v) => '$v dpi',
+                ),
+                _kotakPilihan<int>(
+                  'Kerapatan',
+                  controller.kerapatanGelang.value,
+                  List<int>.generate(16, (i) => i),
+                  (v) => controller.kerapatanGelang.value = v,
+                ),
+                _kotakPilihan<int>(
+                  'Kecepatan',
+                  controller.kecepatanGelang.value,
+                  const [1, 2, 3, 4, 5, 6],
+                  (v) => controller.kecepatanGelang.value = v,
+                ),
+                _kotakPilihan<int>(
+                  'Arah',
+                  controller.arahGelang.value,
+                  const [0, 1],
+                  (v) => controller.arahGelang.value = v,
+                ),
+              ],
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: controller.doSimpanSetelanGelang,
+                    icon: const Icon(Icons.save_outlined, size: 18),
+                    label: const Text('Simpan Ukuran'),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: controller.isLoadingTesGelang.value
+                        ? null
+                        : controller.doTesCetakGelang,
+                    icon: const Icon(Icons.print_outlined, size: 18),
+                    label: Text(controller.isLoadingTesGelang.value
+                        ? 'Mengirim...'
+                        : 'Cetak Uji'),
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              'Cetak uji menggambar bingkai tepat di batas margin. Bila '
+              'bingkainya terpotong, ukuran media di atas belum cocok dengan '
+              'media yang terpasang.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _kotakAngka(String label, TextEditingController controller) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _kotakPilihan<T>(
+    String label,
+    T nilai,
+    List<T> pilihan,
+    void Function(T) onPilih, {
+    String Function(T)? teks,
+  }) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: DropdownButtonFormField<T>(
+          value: nilai,
+          isExpanded: true,
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            isDense: true,
+          ),
+          items: pilihan
+              .map((e) => DropdownMenuItem<T>(
+                    value: e,
+                    child: Text(teks == null ? '$e' : teks(e)),
+                  ))
+              .toList(),
+          onChanged: (v) {
+            if (v != null) onPilih(v);
+          },
+        ),
+      ),
     );
   }
 
