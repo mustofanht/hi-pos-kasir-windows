@@ -67,6 +67,8 @@ class SettingPageController extends GetxController
   final tinggiGelangController = TextEditingController();
   final jarakGelangController = TextEditingController();
   final marginGelangController = TextEditingController();
+  final geserXGelangController = TextEditingController();
+  final geserYGelangController = TextEditingController();
   final dpiGelang = 203.obs;
   final kerapatanGelang = 8.obs;
   final kecepatanGelang = 4.obs;
@@ -281,6 +283,8 @@ class SettingPageController extends GetxController
     tinggiGelangController.text = _angka(c.heightMm);
     jarakGelangController.text = _angka(c.gapMm);
     marginGelangController.text = _angka(c.marginMm);
+    geserXGelangController.text = _angka(c.geserXMm);
+    geserYGelangController.text = _angka(c.geserYMm);
     dpiGelang.value = c.dpi;
     kerapatanGelang.value = c.density;
     kecepatanGelang.value = c.speed;
@@ -351,6 +355,8 @@ class SettingPageController extends GetxController
     final tinggi = double.tryParse(tinggiGelangController.text.replaceAll(',', '.'));
     final jarak = double.tryParse(jarakGelangController.text.replaceAll(',', '.'));
     final margin = double.tryParse(marginGelangController.text.replaceAll(',', '.'));
+    final geserX = double.tryParse(geserXGelangController.text.replaceAll(',', '.'));
+    final geserY = double.tryParse(geserYGelangController.text.replaceAll(',', '.'));
 
     if (lebar == null || lebar < 10 || lebar > 200) {
       alert.warning('Ukuran Salah', 'Lebar media harus 10-200 mm.');
@@ -369,6 +375,15 @@ class SettingPageController extends GetxController
       return;
     }
 
+    if (geserX == null || geserX < -100 || geserX > 100) {
+      alert.warning('Ukuran Salah', 'Geser X harus -100 sampai 100 mm.');
+      return;
+    }
+    if (geserY == null || geserY < -100 || geserY > 100) {
+      alert.warning('Ukuran Salah', 'Geser Y harus -100 sampai 100 mm.');
+      return;
+    }
+
     printerUtil.simpanSetelanGelang(WristbandConfigModel(
       dpi: dpiGelang.value,
       widthMm: lebar,
@@ -379,6 +394,8 @@ class SettingPageController extends GetxController
       speed: kecepatanGelang.value,
       direction: arahGelang.value,
       potong: potongGelang.value,
+      geserXMm: geserX,
+      geserYMm: geserY,
     ));
     alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
     update();

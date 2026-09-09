@@ -64,12 +64,18 @@ class GenerateWristbandUtil {
   }) {
     final perintah = _kepala(config);
 
-    perintah.addAll(_tataLetak(
-      config: config,
-      qrCode: qrCode,
-      ticketNo: ticketNo,
-      berlakuSampai: berlakuSampai,
-      pendamping: pendamping,
+    final atur = _ruangDanGeser(config);
+    perintah.addAll(_geser(
+      _tataLetak(
+        config: atur.ruang,
+        qrCode: qrCode,
+        ticketNo: ticketNo,
+        berlakuSampai: berlakuSampai,
+        pendamping: pendamping,
+      ),
+      config,
+      atur.dx,
+      atur.dy,
     ));
 
     perintah.add('PRINT ${salinan < 1 ? 1 : salinan},1');
@@ -97,17 +103,136 @@ class GenerateWristbandUtil {
       'BAR ${w - m - tebal},$m,$tebal,${h - 2 * m}',
       ]);
 
-    perintah.addAll(_tataLetak(
-      config: config,
-      qrCode: 'TES-GELANG',
-      ticketNo: 'TES GELANG',
-      berlakuSampai: '${config.widthMm.toStringAsFixed(0)}x'
-          '${config.heightMm.toStringAsFixed(0)}mm ${config.dpi}dpi',
+    final atur = _ruangDanGeser(config);
+    perintah.addAll(_geser(
+      _tataLetak(
+        config: atur.ruang,
+        qrCode: 'TES-GELANG',
+        ticketNo: 'TES GELANG',
+        berlakuSampai: '${config.widthMm.toStringAsFixed(0)}x'
+            '${config.heightMm.toStringAsFixed(0)}mm ${config.dpi}dpi',
+      ),
+      config,
+      atur.dx,
+      atur.dy,
     ));
 
     perintah.add('PRINT 1,1');
 
     return _bytes(perintah);
+  }
+
+  /// Ruang untuk menata isi, beserta geseran yang akan diterapkan setelahnya.
+  ///
+  /// Isi ditata **di tengah**, jadi ruang kosong yang tersisa terbagi rata ke
+  /// kiri dan kanan — dan itu semua yang tersedia untuk digeser. Pada media yang
+  /// pas, sisanya hanya beberapa milimeter, sehingga tombol geser terasa tidak
+  /// berfungsi.
+  ///
+  /// Karena itu ruang tata letaknya **dikecilkan dua kali geseran** lebih dulu.
+  /// Isi lalu digeser dua kali lipat, dan hasil akhirnya persis: menepi sejauh
+  /// yang diminta, tanpa satu pun elemen keluar lembar. Yang dikorbankan adalah
+  /// lebar teks — bukan ukuran QR, karena QR dibatasi tinggi lembar dan geseran
+  /// tegak biasanya nol.
+  ({WristbandConfigModel ruang, int dx, int dy}) _ruangDanGeser(
+      WristbandConfigModel c) {
+    final dx = c.dots(c.geserXMm);
+    final dy = c.dots(c.geserYMm);
+    if (dx == 0 && dy == 0) return (ruang: c, dx: 0, dy: 0);
+
+    final lebar = c.widthMm - 2 * c.geserXMm.abs();
+    final tinggi = c.heightMm - 2 * c.geserYMm.abs();
+
+    // Geseran yang menelan hampir seluruh media tidak bisa dipenuhi. Pakai
+    // lembar penuh dan biarkan [_geser] memangkasnya seadanya — lebih baik
+    // bergeser sedikit daripada tidak mencetak apa-apa.
+    if (lebar < 10 || tinggi < 10) return (ruang: c, dx: dx, dy: dy);
+
+    return (
+      ruang: c.salin(widthMm: lebar, heightMm: tinggi),
+      dx: dx + dx.abs(),
+      dy: dy + dy.abs(),
+    );
+  }
+
+  /// Menggeser seluruh gambar, **tanpa membiarkannya keluar lembar**.
+  ///
+  /// Geseran diminta operator untuk menjauhkan cetakan dari perekat gelang.
+  /// Tapi geseran yang membuat QR menyentuh tepi lebih buruk daripada cetakan
+  /// yang terlalu dekat perekat: TSPL memotong apa pun yang melewati tepi tanpa
+  /// mengeluh, dan yang hilang biasanya sudut QR. Pemangkasan di sini jaring
+  /// pengaman terakhir; yang seharusnya membuat geserannya muat adalah
+  /// [_ruangDanGeser].
+  ///
+  /// Bekerja di atas perintah yang sudah jadi supaya kedua susunan
+  /// (berdampingan dan bertumpuk) memakai jalur yang sama persis — aturan batas
+  /// yang ditulis dua kali adalah aturan yang suatu saat berbeda.
+  List<String> _geser(
+      List<String> gambar, WristbandConfigModel config, int dxMinta, int dyMinta) {
+    if (dxMinta == 0 && dyMinta == 0) return gambar;
+
+    final kotak = gambar.map(_kotakDari).whereType<_Kotak>().toList();
+    if (kotak.isEmpty) return gambar;
+
+    int kecil(Iterable<int> v) => v.reduce((a, b) => a < b ? a : b);
+    int besar(Iterable<int> v) => v.reduce((a, b) => a > b ? a : b);
+
+    final kiri = kecil(kotak.map((k) => k.x));
+    final kanan = besar(kotak.map((k) => k.x + k.w));
+    final atas = kecil(kotak.map((k) => k.y));
+    final bawah = besar(kotak.map((k) => k.y + k.h));
+
+    final dx = dxMinta.clamp(-kiri, config.widthDots - kanan);
+    final dy = dyMinta.clamp(-atas, config.heightDots - bawah);
+    if (dx == 0 && dy == 0) return gambar;
+
+    return gambar.map((b) => _pindah(b, dx, dy)).toList();
+  }
+
+  /// Kotak yang ditempati satu perintah gambar, atau null bila bukan gambar.
+  _Kotak? _kotakDari(String baris) {
+    if (baris.startsWith('QRCODE')) {
+      final bagian = baris.substring(6).split(',');
+      final sel = int.parse(bagian[3].trim());
+      final isi = _isiTerakhir(baris);
+      final sisi = modulQr(isi.length) * sel;
+      return _Kotak(
+          int.parse(bagian[0].trim()), int.parse(bagian[1].trim()), sisi, sisi);
+    }
+    if (baris.startsWith('TEXT')) {
+      final bagian = baris.substring(4).split(',');
+      final font = bagian[2].trim().replaceAll('"', '');
+      final ukuran = fontDots[font];
+      if (ukuran == null) return null;
+      final isi = _isiTerakhir(baris);
+      return _Kotak(int.parse(bagian[0].trim()), int.parse(bagian[1].trim()),
+          isi.length * ukuran[0], ukuran[1]);
+    }
+    return null;
+  }
+
+  String _pindah(String baris, int dx, int dy) {
+    final nama = baris.startsWith('QRCODE')
+        ? 'QRCODE'
+        : baris.startsWith('TEXT')
+            ? 'TEXT'
+            : null;
+    if (nama == null) return baris;
+    final sisa = baris.substring(nama.length).trimLeft();
+    final koma1 = sisa.indexOf(',');
+    final koma2 = sisa.indexOf(',', koma1 + 1);
+    final x = int.parse(sisa.substring(0, koma1).trim()) + dx;
+    final y = int.parse(sisa.substring(koma1 + 1, koma2).trim()) + dy;
+    return '$nama $x,$y${sisa.substring(koma2)}';
+  }
+
+  /// Isi di dalam pasangan kutip terakhir — sama seperti yang ditulis [_kutip].
+  String _isiTerakhir(String baris) {
+    final akhir = baris.lastIndexOf('"');
+    if (akhir <= 0) return '';
+    final awal = baris.lastIndexOf('"', akhir - 1);
+    if (awal < 0) return '';
+    return baris.substring(awal + 1, akhir);
   }
 
   /// Perintah pembuka satu lembar: ukuran media, kerapatan, dan cara memisahkan.
@@ -158,6 +283,11 @@ class GenerateWristbandUtil {
   /// - **bertumpuk** — QR di atas, teks di bawah. Cadangan untuk media sempit
   ///   seperti gulungan gelang 25mm, di mana kolom teks di samping QR tidak
   ///   menyisakan ruang yang berguna.
+  ///
+  /// Yang digambar **dipusatkan sebagai satu kesatuan**, bukan ditempelkan ke
+  /// margin. Menempel ke margin membuat cetakan terlihat terdorong ke satu tepi
+  /// padahal separuh medianya kosong — dan pada gelang yang dipakai di
+  /// pergelangan tangan, itu terlihat jelas.
   ///
   /// Sel QR selalu dibatasi lebar **dan** tinggi lembar sekaligus. Membatasi
   /// satu sisi saja terlihat benar pada label mendatar lalu meleset jauh pada
@@ -217,27 +347,45 @@ class GenerateWristbandUtil {
 
     if (selSamping >= 2) {
       final sisi = selSamping * modul;
-      final qrY = ((h - sisi) / 2).round();
-      return [
-        _qr(m, qrY < m ? m : qrY, selSamping, isi),
-        ..._kolomTeks(
-          x: m + sisi + m,
-          lebar: w - (m + sisi + m) - m,
-          tinggiTersedia: h - 2 * m,
-          atasLembar: m,
-          teks: baris,
-        ),
-      ];
+      final teks = _pilihTeks(
+        baris,
+        lebarMaks: w - 3 * m - sisi,
+        tinggiMaks: h - 2 * m,
+      );
+      if (teks.isNotEmpty) {
+        final lebarTeks = _lebarBlok(teks);
+        final tinggiTeks = _tinggiBlok(teks);
+        // Komposisi = QR + jarak + teks, dipusatkan mendatar sebagai satu blok.
+        final komposisi = sisi + m + lebarTeks;
+        final xQr = ((w - komposisi) / 2).round().clamp(0, w - komposisi);
+
+        return [
+          _qr(xQr, ((h - sisi) / 2).round().clamp(0, h - sisi), selSamping, isi),
+          ..._tulis(
+            teks,
+            x: xQr + sisi + m,
+            y: ((h - tinggiTeks) / 2).round().clamp(0, h - tinggiTeks),
+            lebarBlok: lebarTeks,
+          ),
+        ];
+      }
     }
 
     // --- Bertumpuk ----------------------------------------------------------
     // Kurangi baris teks satu per satu (yang paling tidak penting duluan)
     // sampai QR mendapat sel yang masih layak dipindai.
-    final tinggiBaris = fontDots['1']![1] + _jarakBaris;
     var dipakai = baris.length;
     var sel = 1;
+    var teks = <_TeksJadi>[];
     while (dipakai >= 0) {
-      final ruang = h - 2 * m - dipakai * tinggiBaris;
+      teks = dipakai == 0
+          ? <_TeksJadi>[]
+          : _pilihTeks(
+              baris.take(dipakai).toList(),
+              lebarMaks: w - 2 * m,
+              tinggiMaks: h - 2 * m,
+            );
+      final ruang = h - 2 * m - _tinggiBlok(teks) - (teks.isEmpty ? 0 : m);
       final selRuang = (ruang / modul).floor();
       sel = selRuang < selMaksLebar ? selRuang : selMaksLebar;
       if (sel >= 2 || dipakai == 0) break;
@@ -246,83 +394,125 @@ class GenerateWristbandUtil {
     if (sel < 1) sel = 1;
 
     final sisi = sel * modul;
-    final atasTeks = m + sisi + 2;
+    final tinggiTeks = _tinggiBlok(teks);
+    // Seluruh susunan (QR + jarak + teks) dipusatkan tegak, bukan menempel atas.
+    final tinggiSusun = sisi + (teks.isEmpty ? 0 : m + tinggiTeks);
+    final yAtas = ((h - tinggiSusun) / 2).round().clamp(0, h - tinggiSusun);
 
     return [
-      _qr(((w - sisi) / 2).round().clamp(0, w), m, sel, isi),
-      ..._kolomTeks(
-        x: m,
-        lebar: w - 2 * m,
-        tinggiTersedia: h - m - atasTeks,
-        atasLembar: atasTeks,
-        teks: baris.take(dipakai).toList(),
-        diTengah: true,
-      ),
+      _qr(((w - sisi) / 2).round().clamp(0, w), yAtas, sel, isi),
+      if (teks.isNotEmpty)
+        ..._tulis(
+          teks,
+          x: m,
+          y: yAtas + sisi + m,
+          lebarBlok: w - 2 * m,
+          diTengah: true,
+        ),
     ];
   }
 
-  static const int _jarakBaris = 4;
+  /// Jarak bawah satu baris, sepertiga tinggi hurufnya.
+  ///
+  /// Dulu tetap 4 titik untuk semua ukuran, dan itu terlalu rapat: pada huruf
+  /// besar baris-barisnya nyaris bersinggungan, dan bila ukuran huruf yang
+  /// sebenarnya dicetak printer lebih besar dari tabel di sini, barisnya
+  /// benar-benar saling menimpa sampai nomor tiketnya tidak terbaca.
+  static int _jarak(String font) {
+    final j = fontDots[font]![1] ~/ 3;
+    return j < 6 ? 6 : j;
+  }
 
-  /// Menempatkan baris teks, memilih huruf terbesar yang muat di [lebar].
+  int _tinggiBlok(List<_TeksJadi> teks) {
+    if (teks.isEmpty) return 0;
+    var total = 0;
+    for (var i = 0; i < teks.length; i++) {
+      total += fontDots[teks[i].font]![1];
+      if (i < teks.length - 1) total += _jarak(teks[i].font);
+    }
+    return total;
+  }
+
+  int _lebarBlok(List<_TeksJadi> teks) => teks.isEmpty
+      ? 0
+      : teks
+          .map((t) => t.isi.length * fontDots[t.font]![0])
+          .reduce((a, b) => a > b ? a : b);
+
+  /// Memilih huruf terbesar yang muat untuk tiap baris, lalu memastikan
+  /// seluruhnya muat tinggi.
   ///
   /// Teks yang tetap tidak muat **dipotong**, dan baris yang tidak kebagian
   /// tinggi **dibuang** — keduanya disengaja. TSPL tidak memenggal baris dan
   /// tidak mengeluh: apa pun yang melewati tepi lembar hilang tanpa jejak.
   /// Lebih baik memutuskan sendiri apa yang dikorbankan daripada menyerahkannya
   /// pada tepi kertas.
-  List<String> _kolomTeks({
-    required int x,
-    required int lebar,
-    required int tinggiTersedia,
-    required int atasLembar,
-    required List<_BarisTeks> teks,
-    bool diTengah = false,
+  List<_TeksJadi> _pilihTeks(
+    List<_BarisTeks> baris, {
+    required int lebarMaks,
+    required int tinggiMaks,
   }) {
-    if (teks.isEmpty || lebar <= 0 || tinggiTersedia <= 0) return const [];
+    if (baris.isEmpty || lebarMaks <= 0 || tinggiMaks <= 0) return const [];
 
     // Urutkan kembali ke urutan tampil setelah penyaringan menurut kepentingan.
-    final urut = [...teks]..sort((a, b) => a.tampil.compareTo(b.tampil));
+    final urut = [...baris]..sort((a, b) => a.tampil.compareTo(b.tampil));
 
     final terpilih = <_TeksJadi>[];
     for (var i = 0; i < urut.length; i++) {
-      // Baris pertama boleh besar; sisanya dibatasi agar tidak menyaingi dan
-      // tetap muat bersama-sama.
-      final kandidat = i == 0 ? _fontMenurun : const ['3', '2', '1'];
-      var font = kandidat.last;
-      for (final f in kandidat) {
-        if (urut[i].isi.length * fontDots[f]![0] <= lebar) {
+      // Semua baris boleh memakai huruf terbesar yang muat lebarnya; yang
+      // menyaring berikutnya adalah tinggi, di bawah. Membatasi baris kedua dan
+      // seterusnya ke huruf kecil sejak awal membuat cetakan mengecil tanpa
+      // alasan pada media yang sebenarnya lapang.
+      var font = _fontMenurun.last;
+      for (final f in _fontMenurun) {
+        if (urut[i].isi.length * fontDots[f]![0] <= lebarMaks) {
           font = f;
           break;
         }
       }
-      terpilih.add(_TeksJadi(_potong(urut[i].isi, lebar, font), font));
+      terpilih.add(_TeksJadi(_potong(urut[i].isi, lebarMaks, font), font));
     }
 
-    int tinggiTotal(List<_TeksJadi> t) =>
-        t.fold<int>(0, (a, b) => a + fontDots[b.font]![1] + _jarakBaris) -
-        _jarakBaris;
-
-    // Terlalu tinggi: kecilkan huruf dulu, buang baris hanya bila terpaksa.
-    while (terpilih.isNotEmpty && tinggiTotal(terpilih) > tinggiTersedia) {
-      final besar = terpilih.indexWhere((t) => t.font != '1');
-      if (besar >= 0) {
-        terpilih[besar] = _TeksJadi(_potong(terpilih[besar].isi, lebar, '1'), '1');
-      } else {
-        terpilih.removeLast();
+    // Terlalu tinggi: kecilkan huruf terbesar dulu, buang baris hanya bila
+    // sudah tidak ada yang bisa dikecilkan lagi.
+    while (terpilih.isNotEmpty && _tinggiBlok(terpilih) > tinggiMaks) {
+      var besar = -1;
+      for (var i = 0; i < terpilih.length; i++) {
+        if (terpilih[i].font == '1') continue;
+        if (besar < 0 ||
+            fontDots[terpilih[i].font]![1] > fontDots[terpilih[besar].font]![1]) {
+          besar = i;
+        }
       }
+      if (besar < 0) {
+        terpilih.removeLast();
+        continue;
+      }
+      final turun =
+          _fontMenurun[_fontMenurun.indexOf(terpilih[besar].font) + 1];
+      terpilih[besar] =
+          _TeksJadi(_potong(terpilih[besar].isi, lebarMaks, turun), turun);
     }
-    if (terpilih.isEmpty) return const [];
+    return terpilih;
+  }
 
-    var y = atasLembar + ((tinggiTersedia - tinggiTotal(terpilih)) / 2).round();
-    if (y < atasLembar) y = atasLembar;
-
+  /// Menuliskan baris yang sudah dipastikan huruf dan panjangnya.
+  List<String> _tulis(
+    List<_TeksJadi> teks, {
+    required int x,
+    required int y,
+    required int lebarBlok,
+    bool diTengah = false,
+  }) {
     final hasil = <String>[];
-    for (final t in terpilih) {
+    var baris = y;
+    for (var i = 0; i < teks.length; i++) {
+      final t = teks[i];
       final lebarTeks = t.isi.length * fontDots[t.font]![0];
-      final xPakai = diTengah ? x + ((lebar - lebarTeks) / 2).round() : x;
-      hasil.add('TEXT ${xPakai < 0 ? 0 : xPakai},$y,"${t.font}",0,1,1,'
+      final xPakai = diTengah ? x + ((lebarBlok - lebarTeks) / 2).round() : x;
+      hasil.add('TEXT ${xPakai < 0 ? 0 : xPakai},$baris,"${t.font}",0,1,1,'
           '"${_kutip(t.isi)}"');
-      y += fontDots[t.font]![1] + _jarakBaris;
+      baris += fontDots[t.font]![1] + _jarak(t.font);
     }
     return hasil;
   }
@@ -372,6 +562,16 @@ class _BarisTeks {
   final int penting;
 
   _BarisTeks(this.isi, {required this.tampil, required this.penting});
+}
+
+/// Kotak yang ditempati satu elemen di atas lembar, dalam titik.
+class _Kotak {
+  final int x;
+  final int y;
+  final int w;
+  final int h;
+
+  _Kotak(this.x, this.y, this.w, this.h);
 }
 
 /// Baris yang sudah dipastikan huruf dan panjangnya.

@@ -54,6 +54,17 @@ class WristbandConfigModel {
   /// Cara memisahkan gelang satu dari berikutnya. Lihat [ModePotong].
   ModePotong potong;
 
+  /// Geseran cetakan searah kolom **Lebar**, dalam milimeter. Boleh negatif.
+  ///
+  /// Ada karena bagian yang boleh dicetaki pada gelang jarang berada di tengah
+  /// medianya: satu ujungnya perekat, ujung lain lubang atau sambungan. Tanpa
+  /// geseran, satu-satunya cara menjauhkan cetakan dari perekat adalah
+  /// memalsukan ukuran media — yang lalu merusak perhitungan ukuran QR.
+  double geserXMm;
+
+  /// Geseran cetakan searah kolom **Tinggi**, dalam milimeter. Boleh negatif.
+  double geserYMm;
+
   WristbandConfigModel({
     this.dpi = 203,
     this.widthMm = 50,
@@ -64,6 +75,8 @@ class WristbandConfigModel {
     this.speed = 4,
     this.direction = 1,
     this.potong = ModePotong.sobek,
+    this.geserXMm = 0,
+    this.geserYMm = 0,
   });
 
   /// Titik per milimeter untuk resolusi ini.
@@ -85,6 +98,8 @@ class WristbandConfigModel {
     int? speed,
     int? direction,
     ModePotong? potong,
+    double? geserXMm,
+    double? geserYMm,
   }) {
     return WristbandConfigModel(
       dpi: dpi ?? this.dpi,
@@ -96,6 +111,8 @@ class WristbandConfigModel {
       speed: speed ?? this.speed,
       direction: direction ?? this.direction,
       potong: potong ?? this.potong,
+      geserXMm: geserXMm ?? this.geserXMm,
+      geserYMm: geserYMm ?? this.geserYMm,
     );
   }
 
@@ -109,6 +126,8 @@ class WristbandConfigModel {
         'speed': speed,
         'direction': direction,
         'potong': potong.name,
+        'geserXMm': geserXMm,
+        'geserYMm': geserYMm,
       };
 
   /// Nilai di luar akal dianggap tidak ada dan diganti bawaan. Berkas setelan
@@ -142,6 +161,8 @@ class WristbandConfigModel {
         (e) => e.name == json['potong'],
         orElse: () => ModePotong.sobek,
       ),
+      geserXMm: angka('geserXMm', 0, -100, 100),
+      geserYMm: angka('geserYMm', 0, -100, 100),
     );
   }
 }

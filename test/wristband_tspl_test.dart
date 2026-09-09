@@ -56,6 +56,23 @@ void main() {
 
     expect(digambar, isNotEmpty, reason: 'lembar kosong tidak berguna');
 
+    // Tidak ada yang boleh saling menimpa. Ini pernah terjadi sungguhan:
+    // "PENDAMPING", nomor tiket, dan masa berlaku tercetak bertindihan sampai
+    // nomornya tidak terbaca — jarak antar baris dulu tetap 4 titik untuk semua
+    // ukuran huruf, terlalu rapat begitu hurufnya membesar.
+    final urut = digambar.toList()..sort((a, b) => a.y.compareTo(b.y));
+    for (var i = 0; i < urut.length - 1; i++) {
+      for (var j = i + 1; j < urut.length; j++) {
+        final a = urut[i];
+        final b = urut[j];
+        final tumpangTegak = b.y < a.y + a.h;
+        final tumpangDatar = b.x < a.x + a.w && a.x < b.x + b.w;
+        expect(tumpangTegak && tumpangDatar, isFalse,
+            reason: '${a.jenis} "${a.isi}" di (${a.x},${a.y}) ${a.w}x${a.h} '
+                'menimpa ${b.jenis} "${b.isi}" di (${b.x},${b.y}) ${b.w}x${b.h}');
+      }
+    }
+
     for (final e in digambar) {
       expect(e.x, greaterThanOrEqualTo(0), reason: '${e.jenis} "${e.isi}"');
       expect(e.y, greaterThanOrEqualTo(0), reason: '${e.jenis} "${e.isi}"');
@@ -274,6 +291,51 @@ void main() {
           reason: 'baris tetap dicetak, hanya dipendekkan');
     });
 
+    test('susunannya dipusatkan, tidak menempel ke satu tepi', () {
+      // Cetakan yang menempel ke margin terlihat terdorong ke satu sisi padahal
+      // separuh medianya kosong — jelas terlihat di gelang yang dipakai.
+      final c = WristbandConfigModel(widthMm: 80, heightMm: 25);
+      final digambar = perintah(gen.dataWristbandPrint(
+        config: c,
+        qrCode: '300909260011',
+        ticketNo: '300909260011',
+        berlakuSampai: 's/d 09 Sep 2026',
+      ))
+          .where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT'))
+          .map(elemen)
+          .toList();
+
+      final kiri = digambar.map((e) => e.x).reduce((a, b) => a < b ? a : b);
+      final kanan =
+          digambar.map((e) => e.x + e.w).reduce((a, b) => a > b ? a : b);
+      final sisaKiri = kiri;
+      final sisaKanan = c.widthDots - kanan;
+
+      // Media 80mm jauh lebih lebar dari isinya; sisa kiri dan kanan harus
+      // seimbang, bukan menumpuk di satu sisi.
+      expect((sisaKiri - sisaKanan).abs(), lessThanOrEqualTo(c.dots(2)),
+          reason: 'sisa kiri $sisaKiri titik vs kanan $sisaKanan titik');
+    });
+
+    test('baris berikutnya boleh memakai huruf besar bila medianya lapang', () {
+      // Dulu semua baris selain yang pertama dipaksa maksimal huruf "3",
+      // membuat cetakan mengecil tanpa alasan pada media yang sebenarnya luas.
+      final p = perintah(gen.dataWristbandPrint(
+        config: WristbandConfigModel(widthMm: 100, heightMm: 50),
+        qrCode: '300909260011',
+        ticketNo: '300909260011',
+        berlakuSampai: '09 Sep',
+        pendamping: true,
+      ));
+      final fonts = p
+          .where((b) => b.startsWith('TEXT'))
+          .map((b) => b.split(',')[2].replaceAll('"', ''))
+          .toList();
+      expect(fonts.length, 3);
+      expect(fonts.skip(1).any((f) => int.parse(f) >= 4), isTrue,
+          reason: 'huruf: $fonts');
+    });
+
     test('media sempit beralih ke susunan bertumpuk', () {
       // Pada gelang 25mm tidak ada ruang berguna di samping QR; QR naik ke atas
       // dan teks turun ke bawah.
@@ -302,6 +364,116 @@ void main() {
           p.firstWhere((b) => b.startsWith('QRCODE')).substring(6).split(',')[3]);
       // 25mm - 2x2mm margin = 168 titik untuk 29 modul (21 + zona sunyi).
       expect(sel, greaterThanOrEqualTo(4));
+    });
+  });
+
+  group('Geser cetakan', () {
+    // Ada karena bagian yang boleh dicetaki pada gelang jarang di tengah
+    // medianya: satu ujungnya perekat.
+    //
+    // Yang dijaga di sini adalah **titik tengah** isi, bukan tepi kirinya. Isi
+    // ditata di tengah ruang yang tersisa, dan ruang itu mengecil saat digeser,
+    // jadi tepi kirinya berpindah lebih jauh daripada geseran yang diminta —
+    // sementara titik tengahnya berpindah persis sejauh yang diminta.
+    ({int x, int y}) tengah(List<int> bytes) {
+      final e = perintah(bytes)
+          .where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT'))
+          .map(elemen)
+          .toList();
+      int kecil(Iterable<int> v) => v.reduce((a, b) => a < b ? a : b);
+      int besar(Iterable<int> v) => v.reduce((a, b) => a > b ? a : b);
+      return (
+        x: ((kecil(e.map((v) => v.x)) + besar(e.map((v) => v.x + v.w))) / 2)
+            .round(),
+        y: ((kecil(e.map((v) => v.y)) + besar(e.map((v) => v.y + v.h))) / 2)
+            .round(),
+      );
+    }
+
+    List<int> cetak(WristbandConfigModel c) => gen.dataWristbandPrint(
+          config: c,
+          qrCode: '300909260011',
+          ticketNo: '300909260011',
+          berlakuSampai: 's/d 09 Sep 2026',
+        );
+
+    // Toleransi ~1,5mm. Bukan kelonggaran asal-asalan: mengecilkan ruang tata
+    // letak membuat huruf dan tinggi blok teks ikut berubah, jadi titik tengah
+    // isi bergeser satu-dua milimeter dari hitungan ideal. Yang penting bagi
+    // operator adalah cetakan benar-benar menepi sejauh yang diminta, bukan
+    // ketepatan sampai satu titik.
+    const toleransi = 12;
+
+    test('geser positif memindahkan isi sejauh yang diminta', () {
+      final asal = WristbandConfigModel(widthMm: 90, heightMm: 25);
+      final a = tengah(cetak(asal));
+      final b = tengah(cetak(asal.salin(geserXMm: 10)));
+      expect((b.x - a.x - asal.dots(10)).abs(), lessThanOrEqualTo(toleransi));
+      expect((b.y - a.y).abs(), lessThanOrEqualTo(toleransi),
+          reason: 'geser X tidak boleh memindahkan isi secara tegak');
+    });
+
+    test('geser negatif menarik ke arah sebaliknya', () {
+      final asal = WristbandConfigModel(widthMm: 90, heightMm: 25);
+      final a = tengah(cetak(asal));
+      final b = tengah(cetak(asal.salin(geserXMm: -8)));
+      expect((b.x - a.x + asal.dots(8)).abs(), lessThanOrEqualTo(toleransi));
+    });
+
+    test('geser tegak juga bekerja', () {
+      final asal = WristbandConfigModel(widthMm: 90, heightMm: 40);
+      final a = tengah(cetak(asal));
+      final b = tengah(cetak(asal.salin(geserYMm: 5)));
+      expect((b.y - a.y - asal.dots(5)).abs(), lessThanOrEqualTo(toleransi));
+    });
+
+    test('geser mendatar tidak mengecilkan QR', () {
+      // Yang dikorbankan lebar teks, bukan QR — QR dibatasi tinggi lembar, dan
+      // QR yang mengecil diam-diam adalah QR yang gagal dipindai di gate.
+      int selQr(List<int> bytes) => int.parse(perintah(bytes)
+          .firstWhere((b) => b.startsWith('QRCODE'))
+          .substring(6)
+          .split(',')[3]
+          .trim());
+
+      final asal = WristbandConfigModel(widthMm: 90, heightMm: 25);
+      expect(selQr(cetak(asal.salin(geserXMm: 15))), selQr(cetak(asal)));
+    });
+
+    test('geser berlebihan tidak melempar gambar keluar lembar', () {
+      // Ini yang paling penting: TSPL memotong apa pun yang melewati tepi tanpa
+      // mengeluh, dan yang hilang biasanya sudut QR.
+      for (final mm in [40.0, -40.0, 500.0, -500.0]) {
+        final c = WristbandConfigModel(
+            widthMm: 90, heightMm: 25, geserXMm: mm, geserYMm: mm / 4);
+        periksaMuat(cetak(c), c);
+      }
+    });
+
+    test('geser nol tidak mengubah apa pun', () {
+      final c = WristbandConfigModel(widthMm: 90, heightMm: 25);
+      expect(perintah(cetak(c.salin(geserXMm: 0, geserYMm: 0))),
+          perintah(cetak(c)));
+    });
+
+    test('cetak uji ikut tergeser, supaya mewakili cetak sungguhan', () {
+      final asal = WristbandConfigModel(widthMm: 90, heightMm: 25);
+      final a = tengah(gen.testPrint(asal));
+      final b = tengah(gen.testPrint(asal.salin(geserXMm: 10)));
+      expect((b.x - a.x - asal.dots(10)).abs(), lessThanOrEqualTo(toleransi));
+    });
+
+    test('geseran bertahan lewat penyimpanan setelan', () {
+      final ulang = WristbandConfigModel.fromJson(
+          WristbandConfigModel(geserXMm: 7.5, geserYMm: -2).toJson());
+      expect(ulang.geserXMm, 7.5);
+      expect(ulang.geserYMm, -2);
+    });
+
+    test('geseran mustahil ditolak dan kembali nol', () {
+      final c = WristbandConfigModel.fromJson({'geserXMm': 9999, 'geserYMm': 'x'});
+      expect(c.geserXMm, 0);
+      expect(c.geserYMm, 0);
     });
   });
 

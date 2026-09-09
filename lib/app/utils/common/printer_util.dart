@@ -27,6 +27,20 @@ class PrinterUtil {
 
   static final GetStorage _store = GetStorage("sessions");
 
+  /// Printer USB mana yang **benar-benar** sedang dipilih di sisi Android.
+  ///
+  /// Perlu dilacak sendiri karena `PrinterManager` tidak menyediakannya, dan
+  /// karena `connect()` untuk USB berbohong: di sisi Android ia memanggil
+  /// `selectDevice()` yang hanya **meminta izin** lalu langsung mengembalikan
+  /// true — perangkatnya baru benar-benar berpindah beberapa saat kemudian,
+  /// lewat siaran izin. Mengirim byte tepat setelah `connect()` berarti
+  /// mengirimnya ke printer yang lama.
+  ///
+  /// Itu bukan kemungkinan teoretis: perintah TSPL untuk gelang pernah tercetak
+  /// utuh sebagai teks di atas kertas struk POS80.
+  String? _usbAktif;
+
+
   /// Printer gelang — perangkat kedua, terpisah dari printer struk.
   ///
   /// Berbeda dari printer struk yang dipilih ulang tiap aplikasi dijalankan
@@ -397,6 +411,17 @@ class PrinterUtil {
   /// gagal, jadi ia melaporkan berhasil apa pun yang terjadi. Bluetooth Android
   /// bahkan tidak mengirim apa-apa saat belum tersambung — diam total.
   Future<bool> _kirim(PrinterModel selectedPrinter, List<int> bytes) async {
+    // Satu-satunya tempat yang memastikan byte pergi ke perangkat yang dimaksud.
+    // Diletakkan di sini, bukan di pemanggil, supaya tidak ada jalur cetak yang
+    // bisa melewatinya — struk maupun gelang.
+    if (selectedPrinter.typePrinter == PrinterType.usb && Platform.isAndroid) {
+      if (!await _pastikanUsbSiap(selectedPrinter)) {
+        logger.safeLog('KIRIM DIBATALKAN : printer USB '
+            '${selectedPrinter.deviceName} tidak jadi aktif');
+        return false;
+      }
+    }
+
     if (selectedPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
       if (_currentStatus != BTStatus.connected) {
@@ -417,13 +442,74 @@ class PrinterUtil {
     return isPrinted;
   }
 
+  /// Memastikan printer USB yang dimaksud benar-benar yang aktif di Android.
+  ///
+  /// `selectDevice()` di sisi Android menutup sambungan lama lalu **meminta
+  /// izin** untuk perangkat baru dan langsung mengembalikan true; perpindahannya
+  /// selesai belakangan lewat siaran izin, yang muncul di sini sebagai
+  /// `USBStatus.connected`. Jadi yang ditunggu adalah siaran itu, bukan nilai
+  /// balik `connect()`.
+  ///
+  /// Dua tenggat, dan bedanya disengaja:
+  /// - **Sedang berpindah** dari perangkat lain yang diketahui → habis waktu
+  ///   berarti **gagal**. Melanjutkan berarti mencetak ke printer yang salah,
+  ///   dan itu persis kesalahan yang mekanisme ini ada untuk mencegahnya.
+  /// - **Belum tahu apa-apa** (mis. setelah hot restart, saat sisi Android masih
+  ///   memegang perangkat yang sama) → `selectDevice` mengembalikan true tanpa
+  ///   menyiarkan apa pun, jadi habis waktu di sini wajar dan dilanjutkan.
+  Future<bool> _pastikanUsbSiap(PrinterModel target) async {
+    if (_usbAktif != null && _usbAktif == target.kunci) return true;
+
+    final berpindah = _usbAktif != null;
+    final menunggu = Completer<bool>();
+
+    StreamSubscription<USBStatus>? langganan;
+    try {
+      // Langganan sendiri, bukan yang dibuat init(): langganan itu dimatikan
+      // stopSubscription() setiap kali layar Pengaturan memilih printer.
+      langganan = printerManager.stateUSB.listen((status) {
+        if (status == USBStatus.connected && !menunggu.isCompleted) {
+          menunggu.complete(true);
+        }
+      });
+
+      final diterima = await printerManager.connect(
+        type: PrinterType.usb,
+        model: UsbPrinterInput(
+          name: target.deviceName,
+          productId: target.productId,
+          vendorId: target.vendorId,
+        ),
+      );
+      if (!diterima) {
+        logger.safeLog('USB ${target.deviceName} tidak ditemukan');
+        _usbAktif = null;
+        return false;
+      }
+
+      final siap = await menunggu.future.timeout(
+        Duration(seconds: berpindah ? 20 : 5),
+        onTimeout: () => !berpindah,
+      );
+      _usbAktif = siap ? target.kunci : null;
+      logger.safeLog('USB AKTIF : ${siap ? target.deviceName : "(gagal)"}');
+      return siap;
+    } catch (e) {
+      logger.safeLog('USB gagal disiapkan : $e');
+      _usbAktif = null;
+      return false;
+    } finally {
+      await langganan?.cancel();
+    }
+  }
+
   /// Mencetak ke printer gelang, lalu mengembalikan sambungan ke printer struk.
   ///
-  /// Perlu tarian sambung–putus karena `PrinterManager` menyimpan **satu**
-  /// sambungan per jenis: dua printer USB tidak bisa tersambung bersamaan, dan
-  /// `send(type: usb)` akan pergi ke printer USB mana pun yang sedang aktif.
-  /// Kalau printer gelang dan printer struk berbeda jenis (mis. struk USB,
-  /// gelang jaringan), tidak ada yang perlu diputus dan jalurnya lebih cepat.
+  /// `PrinterManager` menyimpan **satu** sambungan per jenis: dua printer USB
+  /// tidak bisa aktif bersamaan, dan `send(type: usb)` pergi ke printer USB mana
+  /// pun yang sedang dipegang sisi Android. Perpindahannya ditangani [_kirim]
+  /// lewat [_pastikanUsbSiap] — di sana, bukan di sini, supaya cetakan struk
+  /// berikutnya ikut terlindungi saat harus berpindah kembali.
   ///
   /// Mengembalikan false bila printer gelang belum diatur, atau bila byte-nya
   /// tidak sampai ke perangkat — pemanggil memakai itu untuk jatuh kembali ke
@@ -442,18 +528,12 @@ class PrinterUtil {
     }
 
     final printerStruk = currPrinter;
-    final bentrok = printerStruk != null &&
-        printerStruk.typePrinter == target.typePrinter &&
-        printerStruk.kunci != target.kunci;
 
     try {
-      if (bentrok) await disconnect(printerStruk);
-      await connect(target);
+      // Tidak ada tarian sambung–putus di sini. `disconnect()` untuk USB di
+      // Android tidak melakukan apa-apa (plugin hanya menutup sambungan di
+      // Windows), jadi mengandalkannya justru menyembunyikan masalah.
       final terkirim = await _kirim(target, bytes);
-      if (bentrok) {
-        await disconnect(target);
-        await connect(printerStruk);
-      }
       return terkirim ? HasilCetakGelang.terkirim : HasilCetakGelang.gagal;
     } catch (e) {
       logger.safeLog('CETAK GELANG GAGAL : $e');

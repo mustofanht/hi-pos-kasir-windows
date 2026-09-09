@@ -704,6 +704,13 @@ class SettingPage extends GetView<SettingPageController> {
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
+                _kotakAngka('Geser X (mm)', controller.geserXGelangController),
+                _kotakAngka('Geser Y (mm)', controller.geserYGelangController),
+              ],
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            Row(
+              children: [
                 _kotakPilihan<ModePotong>(
                   'Pemisah gelang',
                   controller.potongGelang.value,
@@ -755,6 +762,13 @@ class SettingPage extends GetView<SettingPageController> {
                   ),
                 ),
               ],
+            ),
+            Text(
+              'Geser X mengikuti arah kolom Lebar, Geser Y mengikuti kolom '
+              'Tinggi. Boleh negatif. Dipakai untuk menjauhkan cetakan dari '
+              'perekat gelang; geseran yang membuat cetakan keluar lembar '
+              'dipangkas otomatis.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
             Text(
               'Cetak uji menggambar bingkai tepat di batas margin. Bila '
