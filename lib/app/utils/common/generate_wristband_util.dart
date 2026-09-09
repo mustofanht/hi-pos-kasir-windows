@@ -62,16 +62,7 @@ class GenerateWristbandUtil {
     bool pendamping = false,
     int salinan = 1,
   }) {
-    final perintah = <String>[];
-
-    perintah.add('SIZE ${_mm(config.widthMm)} mm,${_mm(config.heightMm)} mm');
-    // GAP 0,0 berarti media menyambung tanpa jeda; printer memotong sesuai SIZE.
-    perintah.add('GAP ${_mm(config.gapMm)} mm,0 mm');
-    perintah.add('DIRECTION ${config.direction}');
-    perintah.add('REFERENCE 0,0');
-    perintah.add('DENSITY ${config.density}');
-    perintah.add('SPEED ${config.speed}');
-    perintah.add('CLS');
+    final perintah = _kepala(config);
 
     perintah.addAll(_tataLetak(
       config: config,
@@ -97,20 +88,14 @@ class GenerateWristbandUtil {
     final m = config.marginDots;
     final tebal = (config.titikPerMm * 0.3).round().clamp(1, 4);
 
-    final perintah = <String>[
-      'SIZE ${_mm(config.widthMm)} mm,${_mm(config.heightMm)} mm',
-      'GAP ${_mm(config.gapMm)} mm,0 mm',
-      'DIRECTION ${config.direction}',
-      'REFERENCE 0,0',
-      'DENSITY ${config.density}',
-      'SPEED ${config.speed}',
-      'CLS',
+    final perintah = _kepala(config)
+      ..addAll([
       // Bingkai batas margin.
       'BAR $m,$m,${w - 2 * m},$tebal',
       'BAR $m,${h - m - tebal},${w - 2 * m},$tebal',
       'BAR $m,$m,$tebal,${h - 2 * m}',
       'BAR ${w - m - tebal},$m,$tebal,${h - 2 * m}',
-    ];
+      ]);
 
     perintah.addAll(_tataLetak(
       config: config,
@@ -123,6 +108,45 @@ class GenerateWristbandUtil {
     perintah.add('PRINT 1,1');
 
     return _bytes(perintah);
+  }
+
+  /// Perintah pembuka satu lembar: ukuran media, kerapatan, dan cara memisahkan.
+  ///
+  /// Disatukan supaya cetak biasa dan cetak uji tidak bisa berbeda setelan —
+  /// cetak uji yang tidak mewakili cetak sungguhan adalah cetak uji yang
+  /// menyesatkan.
+  List<String> _kepala(WristbandConfigModel config) {
+    return <String>[
+      'SIZE ${_mm(config.widthMm)} mm,${_mm(config.heightMm)} mm',
+      // GAP 0 berarti media menyambung tanpa jeda; printer memotong sesuai SIZE.
+      'GAP ${_mm(config.gapMm)} mm,0 mm',
+      'DIRECTION ${config.direction}',
+      'REFERENCE 0,0',
+      'DENSITY ${config.density}',
+      'SPEED ${config.speed}',
+      ..._pemisah(config.potong),
+      'CLS',
+    ];
+  }
+
+  /// Cara media dipisahkan.
+  ///
+  /// Ini yang tidak ada di ESC/POS: di sana `cut()` menyatu dengan alur cetak,
+  /// sedangkan TSPL harus diberi tahu lebih dulu apakah pemotongnya dipakai.
+  /// Tanpa perintah ini printer mencetak lalu berhenti di situ — gelang
+  /// terakhir tertinggal setengah di dalam dan tidak bisa disobek rapi.
+  ///
+  /// `SET TEAR ON` dipakai saat tidak ada pemotong: media dimajukan ke bilah
+  /// sobek. Aman dikirim ke printer yang punya pemotong sekalipun.
+  List<String> _pemisah(ModePotong mode) {
+    switch (mode) {
+      case ModePotong.tiapGelang:
+        return const ['SET TEAR OFF', 'SET CUTTER 1'];
+      case ModePotong.akhirBatch:
+        return const ['SET TEAR OFF', 'SET CUTTER BATCH'];
+      case ModePotong.sobek:
+        return const ['SET CUTTER OFF', 'SET TEAR ON'];
+    }
   }
 
   /// Menata QR dan teks di atas lembar.

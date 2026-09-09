@@ -72,6 +72,17 @@ class TsplDecoder {
     if (besar.startsWith('REFERENCE')) {
       return '[titik acuan ${_setelah(baris, 'REFERENCE')}]';
     }
+    if (besar.startsWith('SET CUTTER')) {
+      final v = _setelah(besar, 'SET CUTTER');
+      if (v == 'OFF') return '[pemotong mati]';
+      if (v == 'BATCH') return '[potong sekali di akhir cetakan]';
+      return '[potong tiap $v lembar]';
+    }
+    if (besar.startsWith('SET TEAR')) {
+      return _setelah(besar, 'SET TEAR') == 'ON'
+          ? '[maju ke bilah sobek]'
+          : '[tidak maju ke bilah sobek]';
+    }
     if (besar.startsWith('CLS')) {
       return '[lembar baru]';
     }

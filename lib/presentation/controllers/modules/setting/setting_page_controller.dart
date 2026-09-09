@@ -71,6 +71,7 @@ class SettingPageController extends GetxController
   final kerapatanGelang = 8.obs;
   final kecepatanGelang = 4.obs;
   final arahGelang = 1.obs;
+  final potongGelang = ModePotong.sobek.obs;
 
   @override
   Future<void> onInit() async {
@@ -284,6 +285,7 @@ class SettingPageController extends GetxController
     kerapatanGelang.value = c.density;
     kecepatanGelang.value = c.speed;
     arahGelang.value = c.direction;
+    potongGelang.value = c.potong;
 
     final tersimpan = printerUtil.wristbandPrinter;
     selectedPrinterGelang.value = tersimpan == null
@@ -376,6 +378,7 @@ class SettingPageController extends GetxController
       density: kerapatanGelang.value,
       speed: kecepatanGelang.value,
       direction: arahGelang.value,
+      potong: potongGelang.value,
     ));
     alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
     update();

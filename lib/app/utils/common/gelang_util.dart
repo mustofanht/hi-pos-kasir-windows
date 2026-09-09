@@ -10,6 +10,15 @@ import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 /// keranjang (`TicketEntity.ticketLocationCategory`).
 const String kategoriPlayground = 'PLGRD';
 
+/// Akhiran yang dibubuhkan server pada nama tiket pendamping.
+///
+/// `TrnOrderService.createTicketNo` mengirim balik nama tiket pendamping sebagai
+/// `"<nama tiket> (Pendamping)"`, bukan nama aslinya. Tanpa memotong akhiran ini
+/// gelang pendamping tidak akan pernah cocok dengan katalog playground — yang
+/// berbayar keluar sebagai gelang, yang pendamping tertinggal di kertas struk,
+/// padahal keduanya dipakai anak yang sama masuk gate.
+const String _akhiranPendamping = ' (Pendamping)';
+
 /// Pembagian tiket setelah upaya cetak gelang: mana yang sudah keluar sebagai
 /// gelang, dan mana yang masih harus dicetak QR-nya di kertas struk.
 ///
@@ -49,12 +58,21 @@ class GelangUtil {
   }) async {
     final semuaKeStruk = HasilGelang(tercetak: const [], keStruk: semua);
 
-    if (!printerUtil.punyaPrinterGelang) return semuaKeStruk;
-
+    // Dipisah lebih dulu, bahkan saat printernya belum ada, supaya log bisa
+    // membedakan "tidak ada tiket playground" dari "ada tapi printernya belum
+    // diatur". Keduanya berakhir sama di kertas, tapi sebabnya jauh berbeda dan
+    // itulah yang dicari saat menelusuri gelang yang tidak keluar.
     final (:gelang, :struk) = pisahkan(semua, namaPlayground);
 
     if (gelang.isEmpty) {
-      logger.safeLog('CETAK GELANG : tidak ada tiket playground di order ini');
+      logger.safeLog('CETAK GELANG : tidak ada tiket playground di order ini '
+          '(${semua.length} tiket, katalog playground ${namaPlayground.length} nama)');
+      return semuaKeStruk;
+    }
+
+    if (!printerUtil.punyaPrinterGelang) {
+      logger.safeLog('CETAK GELANG : ${gelang.length} tiket playground, tapi '
+          'printer gelang BELUM DIATUR -> QR dicetak di struk');
       return semuaKeStruk;
     }
 
@@ -107,10 +125,20 @@ class GelangUtil {
       final nomor = t.ticketNo;
       final layak = nomor != null &&
           nomor.trim().isNotEmpty &&
-          namaPlayground.contains(t.ticketName);
+          namaPlayground.contains(namaDasar(t));
       (layak ? gelang : struk).add(t);
     }
     return (gelang: gelang, struk: struk);
+  }
+
+  /// Nama tiket seperti yang ada di katalog, tanpa hiasan yang ditambahkan
+  /// server. Lihat [_akhiranPendamping].
+  static String namaDasar(ResponseCreateTicketNoEntity t) {
+    final nama = t.ticketName ?? '';
+    if (t.isCompanion == 'Y' && nama.endsWith(_akhiranPendamping)) {
+      return nama.substring(0, nama.length - _akhiranPendamping.length);
+    }
+    return nama;
   }
 
   /// Masa berlaku yang dicetak di gelang.

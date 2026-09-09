@@ -114,6 +114,70 @@ void main() {
     });
   });
 
+  group('Pemisahan media', () {
+    // TSPL tidak punya perintah "potong" yang menyatu dengan cetak seperti
+    // ESC/POS. Tanpa perintah pemisah, printer mencetak lalu berhenti di situ —
+    // gelang terakhir tertinggal setengah di dalam dan tidak bisa disobek rapi.
+    test('bawaan: pemotong mati, media maju ke bilah sobek', () {
+      final p = perintah(gen.dataWristbandPrint(
+        config: WristbandConfigModel(),
+        qrCode: '290809260005',
+      ));
+      expect(p, contains('SET CUTTER OFF'));
+      expect(p, contains('SET TEAR ON'));
+    });
+
+    test('potong tiap gelang mematikan maju-sobek', () {
+      // Keduanya menyala bersama membuat printer memajukan media lalu memotong
+      // di tempat yang salah.
+      final p = perintah(gen.dataWristbandPrint(
+        config: WristbandConfigModel(potong: ModePotong.tiapGelang),
+        qrCode: '290809260005',
+      ));
+      expect(p, contains('SET CUTTER 1'));
+      expect(p, contains('SET TEAR OFF'));
+      expect(p, isNot(contains('SET TEAR ON')));
+    });
+
+    test('potong di akhir cetakan', () {
+      final p = perintah(gen.dataWristbandPrint(
+        config: WristbandConfigModel(potong: ModePotong.akhirBatch),
+        qrCode: '290809260005',
+      ));
+      expect(p, contains('SET CUTTER BATCH'));
+    });
+
+    test('perintah pemisah datang sebelum lembar dimulai', () {
+      // SET harus mendahului CLS; sesudahnya printer sudah menyiapkan lembar.
+      final p = perintah(gen.dataWristbandPrint(
+        config: WristbandConfigModel(),
+        qrCode: 'X',
+      ));
+      expect(p.indexOf('SET CUTTER OFF'), lessThan(p.indexOf('CLS')));
+      expect(p.indexOf('SET TEAR ON'), lessThan(p.indexOf('CLS')));
+    });
+
+    test('cetak uji memakai setelan pemisah yang sama', () {
+      // Cetak uji yang tidak mewakili cetak sungguhan adalah cetak uji yang
+      // menyesatkan.
+      final c = WristbandConfigModel(potong: ModePotong.tiapGelang);
+      expect(perintah(gen.testPrint(c)), contains('SET CUTTER 1'));
+    });
+
+    test('mode pemisah bertahan lewat penyimpanan setelan', () {
+      final ulang = WristbandConfigModel.fromJson(
+          WristbandConfigModel(potong: ModePotong.akhirBatch).toJson());
+      expect(ulang.potong, ModePotong.akhirBatch);
+    });
+
+    test('mode tidak dikenal kembali ke sobek manual', () {
+      // Sobek manual jalan di semua printer; memilih potong pada printer tanpa
+      // modul pemotong membuat cetakan menggantung.
+      expect(WristbandConfigModel.fromJson({'potong': 'entah'}).potong,
+          ModePotong.sobek);
+    });
+  });
+
   group('Isi gelang', () {
     test('QR berisi nomor tiket, dan nomornya juga dicetak sebagai teks', () {
       // Nomor teks itu yang diketik operator gate saat QR tidak terbaca —

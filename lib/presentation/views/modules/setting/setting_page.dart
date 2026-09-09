@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
+import 'package:jaya_propertiy/data/models/common/wristband_config_model.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
@@ -697,6 +698,22 @@ class SettingPage extends GetView<SettingPageController> {
                   controller.arahGelang.value,
                   const [0, 1],
                   (v) => controller.arahGelang.value = v,
+                ),
+              ],
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            Row(
+              children: [
+                _kotakPilihan<ModePotong>(
+                  'Pemisah gelang',
+                  controller.potongGelang.value,
+                  ModePotong.values,
+                  (v) => controller.potongGelang.value = v,
+                  teks: (v) => switch (v) {
+                    ModePotong.sobek => 'Sobek manual (tanpa pemotong)',
+                    ModePotong.tiapGelang => 'Potong tiap gelang',
+                    ModePotong.akhirBatch => 'Potong di akhir cetakan',
+                  },
                 ),
               ],
             ),

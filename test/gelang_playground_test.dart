@@ -99,6 +99,60 @@ void main() {
     });
   });
 
+  group('Gelang pendamping', () {
+    // Server mengirim balik nama tiket pendamping sebagai "<nama> (Pendamping)",
+    // bukan nama aslinya. Kalau akhiran itu tidak dipotong, gelang pendamping
+    // tertinggal di kertas struk sementara gelang berbayarnya keluar — padahal
+    // keduanya dipakai anak yang sama masuk gate.
+    ResponseCreateTicketNoEntity pendamping(String namaTiket) =>
+        ResponseCreateTicketNoEntity(
+          ticketNo: '300909260002',
+          ticketName: '$namaTiket (Pendamping)',
+          isCompanion: 'Y',
+        );
+
+    test('tiket pendamping playground ikut jadi gelang', () {
+      final hasil = GelangUtil.pisahkan([
+        tiket('Playground 2 Jam'),
+        pendamping('Playground 2 Jam'),
+      ], playground);
+
+      expect(hasil.gelang, hasLength(2));
+      expect(hasil.struk, isEmpty);
+    });
+
+    test('pendamping tiket non-playground tetap ke struk', () {
+      final hasil = GelangUtil.pisahkan([
+        pendamping('Kolam Renang Dewasa'),
+      ], playground);
+
+      expect(hasil.gelang, isEmpty);
+      expect(hasil.struk, hasLength(1));
+    });
+
+    test('akhiran hanya dipotong pada tiket berpenanda pendamping', () {
+      // Tiket berbayar yang kebetulan bernama begitu tidak boleh ikut dipotong;
+      // nama katalognya memang mengandung kata itu.
+      final hasil = GelangUtil.pisahkan([
+        ResponseCreateTicketNoEntity(
+          ticketNo: '300909260003',
+          ticketName: 'Playground 2 Jam (Pendamping)',
+          isCompanion: 'N',
+        ),
+      ], playground);
+
+      expect(hasil.gelang, isEmpty, reason: 'namanya utuh, tidak ada di katalog');
+      expect(hasil.struk, hasLength(1));
+    });
+
+    test('namaDasar mengembalikan nama katalog', () {
+      expect(GelangUtil.namaDasar(pendamping('Tiket 1 jam weekday')),
+          'Tiket 1 jam weekday');
+      expect(GelangUtil.namaDasar(tiket('Tiket 1 jam weekday')),
+          'Tiket 1 jam weekday');
+    });
+  });
+
   test('urutan asli dipertahankan di kedua daftar', () {
     // Nomor "1 of 3" pada struk dan urutan gelang mengikuti urutan ini.
     final hasil = GelangUtil.pisahkan([

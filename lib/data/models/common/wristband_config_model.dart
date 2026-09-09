@@ -1,3 +1,21 @@
+/// Cara media dipisahkan setelah dicetak.
+///
+/// TSPL tidak punya perintah "potong" yang menyatu dengan cetak seperti ESC/POS.
+/// Pemisahan diatur sendiri lewat `SET CUTTER` dan `SET TEAR`, dan pilihannya
+/// tergantung perangkat kerasnya: printer label tanpa modul pemotong hanya bisa
+/// memajukan media ke bilah sobek.
+enum ModePotong {
+  /// Tanpa pemotong. Media dimajukan ke bilah sobek agar gelang bisa disobek —
+  /// tanpa ini lembar terakhir tertinggal di dalam printer dan sulit diambil.
+  sobek,
+
+  /// Potong setiap satu gelang. Butuh modul pemotong terpasang.
+  tiapGelang,
+
+  /// Potong sekali di akhir seluruh cetakan. Butuh modul pemotong.
+  akhirBatch,
+}
+
 /// Ukuran dan setelan media gelang.
 ///
 /// Semuanya bisa diubah dari layar Pengaturan karena media gelang tidak
@@ -33,6 +51,9 @@ class WristbandConfigModel {
   /// cetak terbalik, inilah yang diubah.
   int direction;
 
+  /// Cara memisahkan gelang satu dari berikutnya. Lihat [ModePotong].
+  ModePotong potong;
+
   WristbandConfigModel({
     this.dpi = 203,
     this.widthMm = 50,
@@ -42,6 +63,7 @@ class WristbandConfigModel {
     this.density = 8,
     this.speed = 4,
     this.direction = 1,
+    this.potong = ModePotong.sobek,
   });
 
   /// Titik per milimeter untuk resolusi ini.
@@ -62,6 +84,7 @@ class WristbandConfigModel {
     int? density,
     int? speed,
     int? direction,
+    ModePotong? potong,
   }) {
     return WristbandConfigModel(
       dpi: dpi ?? this.dpi,
@@ -72,6 +95,7 @@ class WristbandConfigModel {
       density: density ?? this.density,
       speed: speed ?? this.speed,
       direction: direction ?? this.direction,
+      potong: potong ?? this.potong,
     );
   }
 
@@ -84,6 +108,7 @@ class WristbandConfigModel {
         'density': density,
         'speed': speed,
         'direction': direction,
+        'potong': potong.name,
       };
 
   /// Nilai di luar akal dianggap tidak ada dan diganti bawaan. Berkas setelan
@@ -113,6 +138,10 @@ class WristbandConfigModel {
       density: bulat('density', 8, 0, 15),
       speed: bulat('speed', 4, 1, 6),
       direction: bulat('direction', 1, 0, 1),
+      potong: ModePotong.values.firstWhere(
+        (e) => e.name == json['potong'],
+        orElse: () => ModePotong.sobek,
+      ),
     );
   }
 }
