@@ -180,19 +180,28 @@ class OrderUtil {
             .where((e) => !lapanganNames.contains(e.ticketName))
             .toList();
 
-        // QR gate keluar di printer gelang bila outlet punya. Kalau belum,
-        // `cetak` mengembalikan false dan QR kembali dicetak sebagai sambungan
-        // struk seperti sebelumnya — outlet tanpa printer gelang tidak boleh
-        // ikut berhenti bisa menjual tiket.
-        final gelangTercetak = await gelangUtil.cetak(ticketsToPrint);
+        // Hanya tiket playground yang dicetak sebagai gelang. Kategorinya
+        // diambil dari keranjang, tempat entitas tiketnya masih utuh; balasan
+        // pembuatan tiket hanya membawa namanya.
+        final namaPlayground = <String>{
+          for (final t in body.listTicket)
+            if ((t.ticket?.ticketLocationCategory ?? '') == kategoriPlayground &&
+                t.ticket?.ticketName != null)
+              t.ticket!.ticketName!
+        };
 
+        // Sisanya — kolam renang, kelas, dan lain-lain — QR-nya tetap keluar di
+        // kertas struk seperti sebelumnya. Begitu juga bila printer gelang belum
+        // diatur atau cetaknya gagal.
+        final hasilGelang = await gelangUtil.cetak(
+          ticketsToPrint,
+          namaPlayground: namaPlayground,
+        );
+
+        final tiketDiStruk = hasilGelang.keStruk;
         int count = 1;
-        int totalPak = ticketsToPrint.length;
+        int totalPak = tiketDiStruk.length;
         String reffNo = body.orderReffno ?? '';
-        // Sudah keluar sebagai gelang -> tidak diulang di kertas struk.
-        final tiketDiStruk = gelangTercetak
-            ? <ResponseCreateTicketNoEntity>[]
-            : ticketsToPrint;
         for (var element in tiketDiStruk) {
           // String reffNo = element.ticketNo ?? '';
           List<int> dataPrint = await generatePrintUtil.dataGatePrint(

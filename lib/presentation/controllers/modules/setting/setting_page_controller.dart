@@ -322,7 +322,13 @@ class SettingPageController extends GetxController
 
     // Printer gelang dan printer struk tidak boleh perangkat yang sama —
     // gelang akan keluar di atas kertas struk dan sebaliknya.
-    if (printerUtil.currPrinter != null &&
+    //
+    // Kecuali printer tiruan: ia bukan perangkat, hanya penampung hasil cetak,
+    // dan di mode simulasi ia satu-satunya pilihan yang ada. Melarangnya di sini
+    // membuat alur cetak gelang mustahil diuji tanpa membeli printernya dulu —
+    // persis kebalikan dari gunanya mode simulasi.
+    if (!PrinterUtil.isSimulated(pilihan) &&
+        printerUtil.currPrinter != null &&
         printerUtil.currPrinter!.kunci == pilihan.kunci) {
       alert.warning('Perangkat Sama',
           'Printer ini sudah dipakai sebagai printer struk. Pilih perangkat lain.');
@@ -386,12 +392,27 @@ class SettingPageController extends GetxController
     try {
       final bytes =
           generateWristbandUtil.testPrint(printerUtil.wristbandConfig);
-      final berhasil = await printerUtil.printWristband(bytes);
-      if (berhasil) {
-        alert.success('Terkirim',
-            'Cetak uji dikirim. Periksa bingkainya utuh dan QR-nya bisa dipindai.');
-      } else {
-        alert.error('Gagal', 'Cetak uji gagal dikirim ke printer gelang.');
+      final hasil = await printerUtil.printWristband(bytes);
+      switch (hasil) {
+        case HasilCetakGelang.terkirim:
+          alert.success('Terkirim',
+              'Cetak uji dikirim. Periksa bingkainya utuh dan QR-nya bisa dipindai.');
+          break;
+        case HasilCetakGelang.simulasi:
+          // Ini yang paling mudah disalahpahami: notifikasi berhasil muncul,
+          // printer diam. Sebutkan sebabnya sekaligus cara mematikannya.
+          alert.warning('Mode Simulasi Menyala',
+              'Tidak ada kertas yang keluar. Hasilnya ditangkap ke Hasil Cetak. '
+              'Matikan "Simulasi Printer" di bawah untuk mencetak sungguhan.');
+          break;
+        case HasilCetakGelang.belumDiatur:
+          alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
+          break;
+        case HasilCetakGelang.gagal:
+          alert.error('Gagal',
+              'Printer gelang tidak menerima cetakan. Periksa kabel/sambungan, '
+              'lalu segarkan daftar perangkat.');
+          break;
       }
     } catch (e) {
       logger.safeLog('TES CETAK GELANG : $e');

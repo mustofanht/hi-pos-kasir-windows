@@ -700,6 +700,22 @@ class SettingPage extends GetView<SettingPageController> {
                 ),
               ],
             ),
+            // Peringatan paling penting di kartu ini. Tanpanya, Cetak Uji
+            // melaporkan berhasil sementara printer diam — dan yang dicurigai
+            // orang pertama kali adalah kabelnya, bukan saklar simulasi.
+            if (controller.simulatePrinter.value)
+              Container(
+                width: double.infinity,
+                margin: EdgeInsets.only(top: layoutStyle.defaultMargin / 2),
+                padding: EdgeInsets.all(layoutStyle.defaultMargin / 3),
+                color: colorStyle.yellow.withOpacity(0.25),
+                child: Text(
+                  'Simulasi Printer sedang menyala — cetakan ditangkap ke '
+                  'Hasil Cetak, tidak ada kertas yang keluar. Matikan dulu '
+                  'untuk mencetak sungguhan.',
+                  style: textStyle.blackText.copyWith(fontSize: fontSize.small),
+                ),
+              ),
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [

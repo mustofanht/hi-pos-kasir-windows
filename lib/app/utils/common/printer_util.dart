@@ -390,27 +390,31 @@ class PrinterUtil {
     await _kirim(selectedPrinter, bytes);
   }
 
-  Future<void> _kirim(PrinterModel selectedPrinter, List<int> bytes) async {
+  /// Mengembalikan **apakah byte-nya benar-benar diterima perangkat**.
+  ///
+  /// Hasil ini dulu hanya dicatat ke log lalu dibuang, dan itu menyesatkan:
+  /// pemanggil tidak punya cara membedakan cetakan yang keluar dari cetakan yang
+  /// gagal, jadi ia melaporkan berhasil apa pun yang terjadi. Bluetooth Android
+  /// bahkan tidak mengirim apa-apa saat belum tersambung — diam total.
+  Future<bool> _kirim(PrinterModel selectedPrinter, List<int> bytes) async {
     if (selectedPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
-      // logger.safeLog('PRINT USB 1 ----- ');
-      // logger.safeLog(
-      //     'TO PRINT READY : ${(_currentStatus == BTStatus.connected)}');
-      // logger.safeLog('_currentStatus BT : $_currentStatus');
-      if (_currentStatus == BTStatus.connected) {
-        // logger.safeLog('PRINT USB 2 ----- ');
-        var isPrinted = await printerManager.send(
-            type: selectedPrinter.typePrinter, bytes: bytes);
-        pendingTask = null;
-        if (Platform.isAndroid) pendingTask = bytes;
-        logger.safeLog('IS PRINT : $isPrinted ');
+      if (_currentStatus != BTStatus.connected) {
+        logger.safeLog('KIRIM DIBATALKAN : bluetooth belum tersambung');
+        return false;
       }
-    } else {
-      // logger.safeLog('PRINT ${selectedPrinter.typePrinter} ----- ');
       var isPrinted = await printerManager.send(
           type: selectedPrinter.typePrinter, bytes: bytes);
+      pendingTask = null;
+      if (Platform.isAndroid) pendingTask = bytes;
       logger.safeLog('IS PRINT : $isPrinted ');
+      return isPrinted;
     }
+
+    var isPrinted = await printerManager.send(
+        type: selectedPrinter.typePrinter, bytes: bytes);
+    logger.safeLog('IS PRINT : $isPrinted ');
+    return isPrinted;
   }
 
   /// Mencetak ke printer gelang, lalu mengembalikan sambungan ke printer struk.
@@ -421,15 +425,20 @@ class PrinterUtil {
   /// Kalau printer gelang dan printer struk berbeda jenis (mis. struk USB,
   /// gelang jaringan), tidak ada yang perlu diputus dan jalurnya lebih cepat.
   ///
-  /// Mengembalikan false bila printer gelang belum diatur — pemanggil memakai
-  /// itu untuk jatuh kembali ke cetak QR di kertas struk.
-  Future<bool> printWristband(List<int> bytes) async {
+  /// Mengembalikan false bila printer gelang belum diatur, atau bila byte-nya
+  /// tidak sampai ke perangkat — pemanggil memakai itu untuk jatuh kembali ke
+  /// cetak QR di kertas struk, dan untuk tidak mengaku berhasil.
+  Future<HasilCetakGelang> printWristband(List<int> bytes) async {
     final target = wristbandPrinter;
-    if (target == null) return false;
+    if (target == null) return HasilCetakGelang.belumDiatur;
 
+    // Mode simulasi memutus jalur ke perangkat sepenuhnya. Dilaporkan sebagai
+    // hasil tersendiri, bukan sebagai "berhasil": tidak ada gelang yang keluar,
+    // dan menyebutnya berhasil membuat orang menunggu kertas yang tidak akan
+    // pernah datang.
     if (deviceSimulation.printer || isSimulated(target)) {
       await printCapture.capture(bytes);
-      return true;
+      return HasilCetakGelang.simulasi;
     }
 
     final printerStruk = currPrinter;
@@ -440,21 +449,41 @@ class PrinterUtil {
     try {
       if (bentrok) await disconnect(printerStruk);
       await connect(target);
-      await _kirim(target, bytes);
+      final terkirim = await _kirim(target, bytes);
       if (bentrok) {
         await disconnect(target);
         await connect(printerStruk);
       }
-      return true;
+      return terkirim ? HasilCetakGelang.terkirim : HasilCetakGelang.gagal;
     } catch (e) {
       logger.safeLog('CETAK GELANG GAGAL : $e');
-      return false;
+      return HasilCetakGelang.gagal;
     } finally {
       // `connect()` menggeser penanda printer aktif; kembalikan ke printer struk
       // supaya cetakan struk berikutnya tidak diam-diam pergi ke printer gelang.
       currPrinter = printerStruk;
     }
   }
+}
+
+/// Hasil satu upaya cetak gelang.
+///
+/// Empat keadaan, bukan satu bool, karena ketiga kegagalannya butuh jawaban yang
+/// berbeda dari orang di depan kasir: printer belum dipilih, mode simulasi masih
+/// menyala, atau perangkatnya menolak. Menyamakan ketiganya jadi "gagal" membuat
+/// orang mencabut kabel padahal yang salah adalah saklar simulasi.
+enum HasilCetakGelang {
+  /// Byte-nya diterima perangkat.
+  terkirim,
+
+  /// Printer gelang belum dipilih di Setting.
+  belumDiatur,
+
+  /// Mode simulasi menyala — cetakan ditangkap ke pratinjau, tidak ada kertas.
+  simulasi,
+
+  /// Perangkat menolak atau sambungannya putus.
+  gagal,
 }
 
 PrinterUtil printerUtil = PrinterUtil();
