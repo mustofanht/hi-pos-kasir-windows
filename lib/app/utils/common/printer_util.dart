@@ -446,30 +446,45 @@ class PrinterUtil {
   ///
   /// `selectDevice()` di sisi Android menutup sambungan lama lalu **meminta
   /// izin** untuk perangkat baru dan langsung mengembalikan true; perpindahannya
-  /// selesai belakangan lewat siaran izin, yang muncul di sini sebagai
-  /// `USBStatus.connected`. Jadi yang ditunggu adalah siaran itu, bukan nilai
-  /// balik `connect()`.
+  /// selesai belakangan lewat siaran izin. Jadi yang ditunggu adalah siarannya,
+  /// bukan nilai balik `connect()`.
   ///
-  /// Dua tenggat, dan bedanya disengaja:
-  /// - **Sedang berpindah** dari perangkat lain yang diketahui → habis waktu
-  ///   berarti **gagal**. Melanjutkan berarti mencetak ke printer yang salah,
-  ///   dan itu persis kesalahan yang mekanisme ini ada untuk mencegahnya.
-  /// - **Belum tahu apa-apa** (mis. setelah hot restart, saat sisi Android masih
-  ///   memegang perangkat yang sama) → `selectDevice` mengembalikan true tanpa
-  ///   menyiarkan apa pun, jadi habis waktu di sini wajar dan dilanjutkan.
+  /// Siarannya sendiri sudah cukup jelas untuk diikuti sampai selesai, dan itu
+  /// yang dipakai di sini alih-alih menebak lewat tenggat waktu:
+  ///
+  /// - `connecting` — dialog izin sedang ditampilkan. **Ditunggu**, tidak
+  ///   dianggap siap. Melanjutkan di sini berarti mengirim byte sebelum izinnya
+  ///   ada, dan printer menolaknya diam-diam.
+  /// - `connected` — izin diberikan, perangkatnya siap.
+  /// - `none` — izin ditolak atau perangkatnya lepas. Gagal.
+  ///
+  /// Sisi Android selalu menyiarkan keadaannya saat `selectDevice` dipanggil,
+  /// termasuk saat perangkatnya memang sudah terpilih — jadi diamnya siaran
+  /// berarti ada yang tidak beres, bukan berarti sudah siap.
   Future<bool> _pastikanUsbSiap(PrinterModel target) async {
     if (_usbAktif != null && _usbAktif == target.kunci) return true;
 
-    final berpindah = _usbAktif != null;
     final menunggu = Completer<bool>();
+    var izinDiminta = false;
 
     StreamSubscription<USBStatus>? langganan;
     try {
       // Langganan sendiri, bukan yang dibuat init(): langganan itu dimatikan
       // stopSubscription() setiap kali layar Pengaturan memilih printer.
       langganan = printerManager.stateUSB.listen((status) {
-        if (status == USBStatus.connected && !menunggu.isCompleted) {
-          menunggu.complete(true);
+        if (menunggu.isCompleted) return;
+        switch (status) {
+          case USBStatus.connected:
+            menunggu.complete(true);
+            break;
+          case USBStatus.none:
+            menunggu.complete(false);
+            break;
+          case USBStatus.connecting:
+            // Dialog izin muncul. Biarkan menunggu; catat supaya pesan
+            // gagalnya bisa menyebut sebab yang benar.
+            izinDiminta = true;
+            break;
         }
       });
 
@@ -482,17 +497,30 @@ class PrinterUtil {
         ),
       );
       if (!diterima) {
-        logger.safeLog('USB ${target.deviceName} tidak ditemukan');
+        logger.safeLog('USB ${target.deviceName} tidak ditemukan '
+            '(vendor ${target.vendorId}, product ${target.productId})');
         _usbAktif = null;
         return false;
       }
 
       final siap = await menunggu.future.timeout(
-        Duration(seconds: berpindah ? 20 : 5),
-        onTimeout: () => !berpindah,
+        const Duration(seconds: 30),
+        onTimeout: () => false,
       );
       _usbAktif = siap ? target.kunci : null;
-      logger.safeLog('USB AKTIF : ${siap ? target.deviceName : "(gagal)"}');
+      if (siap && izinDiminta) {
+        // Jeda yang sama dipakai plugin ini sendiri setelah siaran tersambung.
+        // Siaran itu menandakan izinnya sudah ada, bukan bahwa salurannya sudah
+        // terbuka — mengirim byte tepat di detik itu masih bisa ditolak.
+        await Future.delayed(const Duration(milliseconds: 1000));
+      }
+      if (!siap) {
+        logger.safeLog(izinDiminta
+            ? 'USB ${target.deviceName} : izin belum disetujui'
+            : 'USB ${target.deviceName} : tidak ada siaran status');
+      } else {
+        logger.safeLog('USB AKTIF : ${target.deviceName}');
+      }
       return siap;
     } catch (e) {
       logger.safeLog('USB gagal disiapkan : $e');

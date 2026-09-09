@@ -425,6 +425,16 @@ class SettingPageController extends GetxController
     update();
   }
 
+  /// Sebab kegagalan cetak gelang yang paling sering, diurutkan dari yang
+  /// paling mungkin. Ditulis sekali supaya tiap tombol cetak memberi petunjuk
+  /// yang sama.
+  static const String _sebabGagalCetak =
+      'Printer gelang tidak menerima cetakan. Periksa berurutan: '
+      '(1) dialog izin USB untuk printer label sudah disetujui — kalau belum '
+      'pernah muncul, cabut lalu colok ulang kabelnya; '
+      '(2) printer menyala dan medianya terpasang; '
+      '(3) segarkan daftar perangkat lalu pilih ulang printer gelangnya.';
+
   /// Saklar putar isi 90 derajat.
   ///
   /// Disimpan seketika seperti saklar pendamping, dengan alasan yang sama.
@@ -470,7 +480,7 @@ class SettingPageController extends GetxController
           alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
           break;
         case HasilCetakGelang.gagal:
-          alert.error('Gagal', 'Printer gelang tidak menerima cetakan.');
+          alert.error('Gagal', _sebabGagalCetak);
           break;
       }
     } catch (e) {
@@ -509,9 +519,7 @@ class SettingPageController extends GetxController
           alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
           break;
         case HasilCetakGelang.gagal:
-          alert.error('Gagal',
-              'Printer gelang tidak menerima cetakan. Periksa kabel/sambungan, '
-              'lalu segarkan daftar perangkat.');
+          alert.error('Gagal', _sebabGagalCetak);
           break;
       }
     } catch (e) {
