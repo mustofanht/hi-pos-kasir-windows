@@ -761,6 +761,15 @@ class SettingPage extends GetView<SettingPageController> {
                         : 'Cetak Uji'),
                   ),
                 ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: controller.isLoadingTesGelang.value
+                        ? null
+                        : controller.doCetakPenggaris,
+                    icon: const Icon(Icons.straighten, size: 18),
+                    label: const Text('Cetak Penggaris'),
+                  ),
+                ),
               ],
             ),
             Text(
@@ -768,6 +777,13 @@ class SettingPage extends GetView<SettingPageController> {
               'Tinggi. Boleh negatif. Dipakai untuk menjauhkan cetakan dari '
               'perekat gelang; geseran yang membuat cetakan keluar lembar '
               'dipangkas otomatis.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            Text(
+              'Cetak penggaris menggambar dua sumbu bernomor (L dan T) dari '
+              'sudut awal cetak. Baca angka terakhir yang masih terlihat di '
+              'tiap sumbu — itulah ukuran cetak yang sebenarnya, dan sumbu mana '
+              'yang menyusuri panjang gelang.',
               style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
             Text(

@@ -367,6 +367,76 @@ void main() {
     });
   });
 
+  group('Cetak penggaris', () {
+    // Alat ukur, bukan hasil akhir. Yang harus dijamin: ia tidak ikut dipengaruhi
+    // setelan yang justru sedang dipertanyakan.
+    test('ukurannya tetap, tidak mengikuti setelan yang sedang diuji', () {
+      for (final c in [
+        WristbandConfigModel(),
+        WristbandConfigModel(widthMm: 25, heightMm: 200, marginMm: 5),
+        WristbandConfigModel(widthMm: 90, heightMm: 25, geserXMm: 20),
+      ]) {
+        final p = perintah(gen.rulerPrint(c));
+        expect(p.first, 'SIZE 60 mm,60 mm');
+      }
+    });
+
+    test('geseran diabaikan, supaya sumbunya mulai dari sudut cetak', () {
+      final tanpa = perintah(gen.rulerPrint(WristbandConfigModel()));
+      final dengan = perintah(gen.rulerPrint(
+          WristbandConfigModel(geserXMm: 15, geserYMm: 5)));
+      expect(dengan, tanpa);
+    });
+
+    test('kedua sumbu bernomor tiap 10mm sampai 60', () {
+      final p = perintah(gen.rulerPrint(WristbandConfigModel()));
+      for (var mm = 10; mm <= 60; mm += 10) {
+        expect(p.any((b) => b.endsWith('"L$mm"')), isTrue, reason: 'L$mm');
+        expect(p.any((b) => b.endsWith('"T$mm"')), isTrue, reason: 'T$mm');
+      }
+    });
+
+    test('nomor sumbu berada di jarak yang benar dari titik nol', () {
+      // Kalau angkanya tidak berada di posisi yang ia klaim, penggarisnya
+      // menyesatkan — lebih buruk daripada tidak ada penggaris sama sekali.
+      final c = WristbandConfigModel();
+      final p = perintah(gen.rulerPrint(c));
+      for (var mm = 10; mm < 60; mm += 10) {
+        final d = c.dots(mm.toDouble());
+        expect(p.any((b) => b.startsWith('BAR $d,0,')), isTrue, reason: 'L$mm');
+        expect(p.any((b) => b.startsWith('BAR 0,$d,')), isTrue, reason: 'T$mm');
+      }
+    });
+
+    test('tik di tepi digeser ke dalam, bukan dihilangkan', () {
+      // 60mm jatuh persis di tepi lembar; tanpa penyesuaian ia hilang dan
+      // penggarisnya kehilangan angka terbesarnya.
+      final p = perintah(gen.rulerPrint(WristbandConfigModel()));
+      final tik = p.where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT'));
+      for (final b in tik) {
+        final e = elemen(b);
+        expect(e.x + e.w, lessThanOrEqualTo(480));
+        expect(e.y + e.h, lessThanOrEqualTo(480));
+        expect(e.x, greaterThanOrEqualTo(0));
+        expect(e.y, greaterThanOrEqualTo(0));
+      }
+    });
+
+    test('penanda nol ada di sudut awal cetak', () {
+      final p = perintah(gen.rulerPrint(WristbandConfigModel()));
+      expect(p.any((b) => b.startsWith('BAR 0,0,480,')), isTrue);
+      expect(p.any((b) => RegExp(r'^BAR 0,0,\d+,480$').hasMatch(b)), isTrue);
+      expect(p.any((b) => b.startsWith('TEXT') && b.endsWith('"0"')), isTrue);
+    });
+
+    test('mengikuti resolusi printer', () {
+      final p = perintah(gen.rulerPrint(WristbandConfigModel(dpi: 300)));
+      expect(p.first, 'SIZE 60 mm,60 mm');
+      // 60mm pada 300dpi = 709 titik, bukan 480.
+      expect(p.any((b) => b.startsWith('BAR 0,0,709,')), isTrue);
+    });
+  });
+
   group('Geser cetakan', () {
     // Ada karena bagian yang boleh dicetaki pada gelang jarang di tengah
     // medianya: satu ujungnya perekat.

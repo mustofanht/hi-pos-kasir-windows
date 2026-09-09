@@ -155,6 +155,73 @@ class GenerateWristbandUtil {
     );
   }
 
+  /// Cetak penggaris: dua sumbu bernomor untuk **mengukur medianya sendiri**.
+  ///
+  /// Dibuat setelah beberapa gelang terbuang karena menebak arah sumbu dari
+  /// foto. Media gelang tidak memberi tahu ukurannya, dan TSPL tidak mengeluh
+  /// saat mencetak di luar media — cetakan hanya hilang. Jadi alih-alih menebak,
+  /// cetak penggaris ini sekali dan **baca angka terakhir yang masih terlihat**
+  /// di tiap sumbu: itulah ukuran cetak yang sebenarnya, sekaligus jawaban arah
+  /// sumbu mana yang menyusuri panjang gelang.
+  ///
+  /// Ukurannya sengaja tetap 60 × 60 mm, tidak mengikuti setelan: setelan yang
+  /// sedang diuji tidak boleh ikut menentukan hasil pengukurannya.
+  List<int> rulerPrint(WristbandConfigModel config) {
+    const sisiMm = 60.0;
+    final ukur = config.salin(
+      widthMm: sisiMm,
+      heightMm: sisiMm,
+      marginMm: 0,
+      geserXMm: 0,
+      geserYMm: 0,
+    );
+    final w = ukur.widthDots;
+    final h = ukur.heightDots;
+    final tebal = (ukur.titikPerMm * 0.3).round().clamp(1, 4);
+    final panjangTik = ukur.dots(3);
+
+    final perintah = _kepala(ukur)
+      ..addAll([
+        // Kedua sumbu bertemu di titik (0,0), sudut tempat printer mulai
+        // mencetak. Sudut itu yang harus dicari di gelang.
+        'BAR 0,0,$w,$tebal',
+        'BAR 0,0,$tebal,$h',
+        'TEXT ${ukur.dots(2)},${ukur.dots(2)},"3",0,1,1,"0"',
+      ]);
+
+    final lebarAngka = 3 * fontDots['2']![0];
+
+    for (var mm = 10; mm <= sisiMm.toInt(); mm += 10) {
+      final d = ukur.dots(mm.toDouble());
+
+      // Sumbu L mengikuti kolom Lebar.
+      if (d <= w) {
+        // Tik terakhir jatuh tepat di tepi; digeser ke dalam seukuran garisnya
+        // sendiri supaya tetap tercetak, dan angkanya pindah ke sisi dalam bila
+        // tidak lagi muat di kanan.
+        final x = d + tebal <= w ? d : w - tebal;
+        perintah.add('BAR $x,0,$tebal,$panjangTik');
+        final xAngka = x + tebal + 4 + lebarAngka <= w
+            ? x + tebal + 4
+            : x - 4 - lebarAngka;
+        perintah.add('TEXT $xAngka,${panjangTik + 4},"2",0,1,1,"L$mm"');
+      }
+
+      // Sumbu T mengikuti kolom Tinggi.
+      if (d <= h) {
+        final y = d + tebal <= h ? d : h - tebal;
+        perintah.add('BAR 0,$y,$panjangTik,$tebal');
+        final yAngka = y + tebal + 4 + fontDots['2']![1] <= h
+            ? y + tebal + 4
+            : y - 4 - fontDots['2']![1];
+        perintah.add('TEXT ${panjangTik + 4},$yAngka,"2",0,1,1,"T$mm"');
+      }
+    }
+
+    perintah.add('PRINT 1,1');
+    return _bytes(perintah);
+  }
+
   /// Menggeser seluruh gambar, **tanpa membiarkannya keluar lembar**.
   ///
   /// Geseran diminta operator untuk menjauhkan cetakan dari perekat gelang.

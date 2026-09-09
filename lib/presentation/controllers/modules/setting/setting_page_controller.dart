@@ -401,6 +401,46 @@ class SettingPageController extends GetxController
     update();
   }
 
+  /// Cetak penggaris: dua sumbu bernomor untuk mengukur medianya sendiri.
+  ///
+  /// Dipisahkan dari cetak uji karena menjawab pertanyaan yang berbeda. Cetak
+  /// uji memeriksa apakah setelan yang ada sudah cocok; penggaris ini dipakai
+  /// saat setelannya belum diketahui sama sekali.
+  Future<void> doCetakPenggaris() async {
+    if (!printerUtil.punyaPrinterGelang) {
+      alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
+      return;
+    }
+    isLoadingTesGelang.value = true;
+    try {
+      final hasil = await printerUtil
+          .printWristband(generateWristbandUtil.rulerPrint(printerUtil.wristbandConfig));
+      switch (hasil) {
+        case HasilCetakGelang.terkirim:
+          alert.success('Terkirim',
+              'Baca angka terakhir yang masih terlihat di sumbu L dan sumbu T. '
+              'Itulah ukuran cetak yang sebenarnya.');
+          break;
+        case HasilCetakGelang.simulasi:
+          alert.warning('Mode Simulasi Menyala',
+              'Tidak ada kertas yang keluar. Matikan "Simulasi Printer" untuk '
+              'mengukur media sungguhan.');
+          break;
+        case HasilCetakGelang.belumDiatur:
+          alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
+          break;
+        case HasilCetakGelang.gagal:
+          alert.error('Gagal', 'Printer gelang tidak menerima cetakan.');
+          break;
+      }
+    } catch (e) {
+      logger.safeLog('CETAK PENGGARIS : $e');
+      alert.error('Gagal', 'Cetak penggaris gagal, periksa sambungan printer.');
+    } finally {
+      isLoadingTesGelang.value = false;
+    }
+  }
+
   /// Cetak uji: bingkai batas media + QR contoh. Dipakai untuk mencocokkan
   /// ukuran pada setelan dengan media yang benar-benar terpasang.
   Future<void> doTesCetakGelang() async {
