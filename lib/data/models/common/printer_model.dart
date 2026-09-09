@@ -45,10 +45,21 @@ class PrinterModel {
     );
   }
 
-  /// Penanda satu perangkat. Printer USB dikenali dari vendorId, printer
-  /// jaringan/bluetooth dari alamatnya — dipakai untuk mencocokkan pilihan yang
-  /// tersimpan dengan perangkat yang terdeteksi saat ini.
-  String get kunci => vendorId ?? address ?? deviceName ?? '';
+  /// Penanda satu perangkat, dipakai untuk mencocokkan pilihan yang tersimpan
+  /// dengan perangkat yang terdeteksi saat ini.
+  ///
+  /// Menggabungkan **seluruh** penanda yang ada, bukan vendorId saja. VendorId
+  /// menandai pembuat cip, bukan perangkat: dua printer USB bermerek berbeda
+  /// kerap memakai cip yang sama dan berbagi vendorId. Dengan penanda lama,
+  /// keduanya tak terbedakan — memilih printer gelang bisa diam-diam
+  /// menghasilkan printer struk, dan cetakan gelang keluar di kertas struk.
+  String get kunci => [
+        typePrinter.toString().split('.').last,
+        vendorId ?? '',
+        productId ?? '',
+        address ?? '',
+        deviceName ?? '',
+      ].join('|');
 
 Map<String, dynamic> toJson() {
   return {

@@ -40,6 +40,10 @@ class PrinterUtil {
   /// utuh sebagai teks di atas kertas struk POS80.
   String? _usbAktif;
 
+  /// Penanda yang sama untuk Bluetooth dan jaringan.
+  String? _btAktif;
+  String? _tcpAktif;
+
 
   /// Printer gelang — perangkat kedua, terpisah dari printer struk.
   ///
@@ -413,33 +417,125 @@ class PrinterUtil {
   Future<bool> _kirim(PrinterModel selectedPrinter, List<int> bytes) async {
     // Satu-satunya tempat yang memastikan byte pergi ke perangkat yang dimaksud.
     // Diletakkan di sini, bukan di pemanggil, supaya tidak ada jalur cetak yang
-    // bisa melewatinya — struk maupun gelang.
-    if (selectedPrinter.typePrinter == PrinterType.usb && Platform.isAndroid) {
-      if (!await _pastikanUsbSiap(selectedPrinter)) {
-        logger.safeLog('KIRIM DIBATALKAN : printer USB '
-            '${selectedPrinter.deviceName} tidak jadi aktif');
-        return false;
-      }
+    // bisa melewatinya — struk maupun gelang, jenis sambungan apa pun.
+    if (!await _pastikanSiap(selectedPrinter)) {
+      logger.safeLog('KIRIM DIBATALKAN : ${selectedPrinter.deviceName} '
+          '(${_namaJenis(selectedPrinter.typePrinter)}) tidak jadi aktif');
+      return false;
     }
 
+    final isPrinted = await printerManager.send(
+        type: selectedPrinter.typePrinter, bytes: bytes);
     if (selectedPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
-      if (_currentStatus != BTStatus.connected) {
-        logger.safeLog('KIRIM DIBATALKAN : bluetooth belum tersambung');
-        return false;
-      }
-      var isPrinted = await printerManager.send(
-          type: selectedPrinter.typePrinter, bytes: bytes);
-      pendingTask = null;
-      if (Platform.isAndroid) pendingTask = bytes;
-      logger.safeLog('IS PRINT : $isPrinted ');
-      return isPrinted;
+      // Dipakai listener status: bila sambungan bluetooth sempat putus lalu
+      // pulih, cetakan yang tertunda dikirim ulang.
+      pendingTask = bytes;
+    }
+    logger.safeLog('IS PRINT : $isPrinted (${selectedPrinter.deviceName})');
+    return isPrinted;
+  }
+
+  static String _namaJenis(PrinterType jenis) {
+    switch (jenis) {
+      case PrinterType.usb:
+        return 'USB';
+      case PrinterType.bluetooth:
+        return 'Bluetooth';
+      case PrinterType.network:
+        return 'Jaringan';
+      default:
+        return '?';
+    }
+  }
+
+  /// Memastikan perangkat yang dituju benar-benar tersambung sebelum mengirim.
+  ///
+  /// Dulu hanya USB yang diperiksa, dan itu lubang yang nyata: printer gelang
+  /// tidak harus USB. Printer Bluetooth tidak pernah tersambung sama sekali —
+  /// tidak ada satu pun jalur yang menyambungkannya — sehingga setiap cetakan
+  /// gagal tanpa sebab yang kelihatan.
+  Future<bool> _pastikanSiap(PrinterModel target) async {
+    switch (target.typePrinter) {
+      case PrinterType.usb:
+        if (!Platform.isAndroid) return true;
+        return _pastikanUsbSiap(target);
+      case PrinterType.bluetooth:
+        return _pastikanBtSiap(target);
+      case PrinterType.network:
+        return _pastikanTcpSiap(target);
+      default:
+        return true;
+    }
+  }
+
+  Future<bool> _pastikanBtSiap(PrinterModel target) async {
+    if (target.address == null || target.address!.isEmpty) {
+      logger.safeLog('BT ${target.deviceName} tidak punya alamat');
+      return false;
+    }
+    if (_btAktif == target.kunci && _currentStatus == BTStatus.connected) {
+      return true;
     }
 
-    var isPrinted = await printerManager.send(
-        type: selectedPrinter.typePrinter, bytes: bytes);
-    logger.safeLog('IS PRINT : $isPrinted ');
-    return isPrinted;
+    final menunggu = Completer<bool>();
+    StreamSubscription<BTStatus>? langganan;
+    try {
+      langganan = printerManager.stateBluetooth.listen((status) {
+        if (menunggu.isCompleted) return;
+        if (status == BTStatus.connected) menunggu.complete(true);
+        if (status == BTStatus.none) menunggu.complete(false);
+      });
+
+      final tersambung = await printerManager.connect(
+        type: PrinterType.bluetooth,
+        model: BluetoothPrinterInput(
+          name: target.deviceName,
+          address: target.address!,
+          isBle: target.isBle ?? false,
+          autoConnect: _reconnect,
+        ),
+      );
+
+      // Berbeda dari USB, connect() bluetooth sudah mengembalikan hasil
+      // sambungan yang sebenarnya; siarannya hanya dipakai bila ia belum tahu.
+      final siap = tersambung ||
+          await menunggu.future
+              .timeout(const Duration(seconds: 20), onTimeout: () => false);
+
+      _btAktif = siap ? target.kunci : null;
+      if (siap) _currentStatus = BTStatus.connected;
+      logger.safeLog('BT ${target.deviceName} : ${siap ? "aktif" : "gagal"}');
+      return siap;
+    } catch (e) {
+      logger.safeLog('BT gagal disiapkan : $e');
+      _btAktif = null;
+      return false;
+    } finally {
+      await langganan?.cancel();
+    }
+  }
+
+  Future<bool> _pastikanTcpSiap(PrinterModel target) async {
+    if (target.address == null || target.address!.isEmpty) {
+      logger.safeLog('TCP ${target.deviceName} tidak punya alamat');
+      return false;
+    }
+    if (_tcpAktif == target.kunci) return true;
+    try {
+      final tersambung = await printerManager.connect(
+        type: PrinterType.network,
+        model: TcpPrinterInput(ipAddress: target.address!),
+      );
+      _tcpAktif = tersambung ? target.kunci : null;
+      logger.safeLog(
+          'TCP ${target.address} : ${tersambung ? "aktif" : "gagal"}');
+      return tersambung;
+    } catch (e) {
+      logger.safeLog('TCP gagal disiapkan : $e');
+      _tcpAktif = null;
+      return false;
+    }
   }
 
   /// Memastikan printer USB yang dimaksud benar-benar yang aktif di Android.
@@ -462,6 +558,9 @@ class PrinterUtil {
   /// termasuk saat perangkatnya memang sudah terpilih — jadi diamnya siaran
   /// berarti ada yang tidak beres, bukan berarti sudah siap.
   Future<bool> _pastikanUsbSiap(PrinterModel target) async {
+    logger.safeLog('USB SIAPKAN : ${target.deviceName} '
+        'vendor=${target.vendorId} product=${target.productId} '
+        '(aktif sekarang: ${_usbAktif ?? "belum diketahui"})');
     if (_usbAktif != null && _usbAktif == target.kunci) return true;
 
     final menunggu = Completer<bool>();

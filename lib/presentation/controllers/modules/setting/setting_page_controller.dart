@@ -14,6 +14,7 @@ import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/printer_model.dart';
+import 'package:thermal_printer/thermal_printer.dart';
 import 'package:jaya_propertiy/data/models/common/wristband_config_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
@@ -298,7 +299,10 @@ class SettingPageController extends GetxController
     final tersimpan = printerUtil.wristbandPrinter;
     selectedPrinterGelang.value = tersimpan == null
         ? CustomIdNameEntity(id: null, name: '--- Belum diatur ---')
-        : CustomIdNameEntity(id: tersimpan.kunci, name: tersimpan.deviceName);
+        : CustomIdNameEntity(
+            id: tersimpan.kunci,
+            name: '${tersimpan.deviceName} (${_jenisPrinter(tersimpan)})',
+          );
   }
 
   String _angka(double v) =>
@@ -308,10 +312,30 @@ class SettingPageController extends GetxController
   /// printer struk, ditambah pilihan kosong untuk melepasnya kembali.
   List<CustomIdNameEntity> get listPrinterGelang => [
         CustomIdNameEntity(id: null, name: '--- Belum diatur ---'),
+        // Jenis sambungannya ikut ditampilkan. Printer struk dan printer gelang
+        // bisa berbeda jenis, dan nama perangkat saja tidak memberi tahu yang
+        // mana — padahal jenis itulah yang menentukan cara menyambungkannya.
         ...printers.map(
-          (e) => CustomIdNameEntity(id: e.kunci, name: e.deviceName),
+          (e) => CustomIdNameEntity(
+            id: e.kunci,
+            name: '${e.deviceName} (${_jenisPrinter(e)})',
+          ),
         ),
       ];
+
+  String _jenisPrinter(PrinterModel p) {
+    if (PrinterUtil.isSimulated(p)) return 'Simulasi';
+    switch (p.typePrinter) {
+      case PrinterType.usb:
+        return 'USB';
+      case PrinterType.bluetooth:
+        return 'Bluetooth';
+      case PrinterType.network:
+        return 'Jaringan';
+      default:
+        return '?';
+    }
+  }
 
   void doPilihPrinterGelang(CustomIdNameEntity? val) {
     if (val == null || val.id == null) {
@@ -347,7 +371,8 @@ class SettingPageController extends GetxController
 
     printerUtil.simpanPrinterGelang(pilihan);
     selectedPrinterGelang.value = val;
-    alert.success('Tersimpan', 'Printer gelang : ${pilihan.deviceName}');
+    alert.success('Tersimpan',
+        'Printer gelang : ${pilihan.deviceName} (${_jenisPrinter(pilihan)})');
     update();
   }
 
@@ -428,12 +453,22 @@ class SettingPageController extends GetxController
   /// Sebab kegagalan cetak gelang yang paling sering, diurutkan dari yang
   /// paling mungkin. Ditulis sekali supaya tiap tombol cetak memberi petunjuk
   /// yang sama.
-  static const String _sebabGagalCetak =
-      'Printer gelang tidak menerima cetakan. Periksa berurutan: '
-      '(1) dialog izin USB untuk printer label sudah disetujui — kalau belum '
-      'pernah muncul, cabut lalu colok ulang kabelnya; '
-      '(2) printer menyala dan medianya terpasang; '
-      '(3) segarkan daftar perangkat lalu pilih ulang printer gelangnya.';
+  String get _sebabGagalCetak {
+    final p = printerUtil.wristbandPrinter;
+    if (p == null) return 'Printer gelang belum dipilih.';
+    final jenis = _jenisPrinter(p);
+    final khusus = p.typePrinter == PrinterType.bluetooth
+        ? 'Printer ini tersambung lewat Bluetooth — pastikan sudah dipasangkan '
+            '(paired) di setelan Android dan dalam keadaan menyala.'
+        : p.typePrinter == PrinterType.network
+            ? 'Printer ini tersambung lewat jaringan — pastikan alamat '
+                '${p.address} bisa dijangkau dari perangkat ini.'
+            : 'Pastikan dialog izin USB untuk printer ini sudah disetujui. '
+                'Kalau belum pernah muncul, cabut lalu colok ulang kabelnya.';
+    return '${p.deviceName} ($jenis) tidak menerima cetakan.\n\n$khusus\n\n'
+        'Kalau tetap gagal: pastikan printer menyala dan medianya terpasang, '
+        'lalu segarkan daftar perangkat dan pilih ulang printer gelangnya.';
+  }
 
   /// Saklar putar isi 90 derajat.
   ///
