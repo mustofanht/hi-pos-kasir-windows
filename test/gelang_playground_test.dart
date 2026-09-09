@@ -145,6 +145,39 @@ void main() {
       expect(hasil.struk, hasLength(1));
     });
 
+    test('saklar mati: pendamping tidak dapat gelang, tapi QR-nya tidak hilang',
+        () {
+      // Dipakai saat mengkalibrasi media supaya tiap percobaan tidak memakan
+      // dua kali lipat gelang. Yang dimatikan cetaknya, bukan tiketnya —
+      // QR-nya tetap keluar, hanya pindah ke kertas struk.
+      final hasil = GelangUtil.pisahkan([
+        tiket('Playground 2 Jam'),
+        pendamping('Playground 2 Jam'),
+      ], playground, gelangPendamping: false);
+
+      expect(hasil.gelang, hasLength(1));
+      expect(hasil.gelang.single.isCompanion, isNot('Y'));
+      expect(hasil.struk, hasLength(1));
+      expect(hasil.struk.single.isCompanion, 'Y');
+    });
+
+    test('saklar mati tidak menyentuh tiket berbayar', () {
+      final hasil = GelangUtil.pisahkan([
+        tiket('Playground 2 Jam'),
+        tiket('Playground 1 Jam'),
+      ], playground, gelangPendamping: false);
+
+      expect(hasil.gelang, hasLength(2));
+      expect(hasil.struk, isEmpty);
+    });
+
+    test('saklar menyala adalah bawaannya', () {
+      final hasil = GelangUtil.pisahkan([
+        pendamping('Playground 2 Jam'),
+      ], playground);
+      expect(hasil.gelang, hasLength(1));
+    });
+
     test('namaDasar mengembalikan nama katalog', () {
       expect(GelangUtil.namaDasar(pendamping('Tiket 1 jam weekday')),
           'Tiket 1 jam weekday');

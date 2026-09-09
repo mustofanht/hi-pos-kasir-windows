@@ -65,6 +65,31 @@ class WristbandConfigModel {
   /// Geseran cetakan searah kolom **Tinggi**, dalam milimeter. Boleh negatif.
   double geserYMm;
 
+  /// Memutar isi 90 derajat sehingga membaca **menyusuri** panjang gelang,
+  /// bukan melintang pitanya.
+  ///
+  /// Pada pita 25 mm, arah melintang hanya memuat 12 digit nomor tiket pada
+  /// huruf kecil — nomornya sendiri sudah 24 mm. Menyusuri gelang tersedia
+  /// ratusan milimeter, jadi hurufnya bisa berkali-kali lebih besar tanpa apa
+  /// pun terpotong.
+  ///
+  /// Bawaannya mati karena tata letak berputar baru bisa dipastikan benar di
+  /// depan printer: penempatan jangkar teks berputar berbeda antar firmware
+  /// TSPL. Nyalakan, lalu buktikan dengan satu kali **Cetak Uji**.
+  bool putarIsi;
+
+  /// Apakah tiket pendamping ikut dicetak sebagai gelang.
+  ///
+  /// Dimatikan saat mengkalibrasi media: order playground membuat satu tiket
+  /// pendamping gratis per tiket berbayar, jadi setiap percobaan memakan dua
+  /// kali lipat gelang.
+  ///
+  /// Yang dimatikan **cetaknya saja**, bukan tiketnya. Tiket pendamping tetap
+  /// dibuat server dan tetap sah di gate; QR-nya kembali dicetak menyambung
+  /// struk, persis seperti sebelum ada printer gelang. Mematikan tiketnya
+  /// sendiri akan mengubah data dan membuat pendamping tidak bisa masuk.
+  bool gelangPendamping;
+
   WristbandConfigModel({
     this.dpi = 203,
     this.widthMm = 50,
@@ -77,6 +102,8 @@ class WristbandConfigModel {
     this.potong = ModePotong.sobek,
     this.geserXMm = 0,
     this.geserYMm = 0,
+    this.gelangPendamping = true,
+    this.putarIsi = false,
   });
 
   /// Titik per milimeter untuk resolusi ini.
@@ -100,6 +127,8 @@ class WristbandConfigModel {
     ModePotong? potong,
     double? geserXMm,
     double? geserYMm,
+    bool? gelangPendamping,
+    bool? putarIsi,
   }) {
     return WristbandConfigModel(
       dpi: dpi ?? this.dpi,
@@ -113,6 +142,8 @@ class WristbandConfigModel {
       potong: potong ?? this.potong,
       geserXMm: geserXMm ?? this.geserXMm,
       geserYMm: geserYMm ?? this.geserYMm,
+      gelangPendamping: gelangPendamping ?? this.gelangPendamping,
+      putarIsi: putarIsi ?? this.putarIsi,
     );
   }
 
@@ -128,6 +159,8 @@ class WristbandConfigModel {
         'potong': potong.name,
         'geserXMm': geserXMm,
         'geserYMm': geserYMm,
+        'gelangPendamping': gelangPendamping,
+        'putarIsi': putarIsi,
       };
 
   /// Nilai di luar akal dianggap tidak ada dan diganti bawaan. Berkas setelan
@@ -163,6 +196,10 @@ class WristbandConfigModel {
       ),
       geserXMm: angka('geserXMm', 0, -100, 100),
       geserYMm: angka('geserYMm', 0, -100, 100),
+      // Bawaan menyala: pendamping yang diam-diam tidak dapat gelang lebih
+      // merepotkan daripada gelang yang terbuang saat menguji.
+      gelangPendamping: json['gelangPendamping'] != false,
+      putarIsi: json['putarIsi'] == true,
     );
   }
 }

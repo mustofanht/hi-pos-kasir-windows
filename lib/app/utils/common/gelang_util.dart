@@ -62,7 +62,11 @@ class GelangUtil {
     // membedakan "tidak ada tiket playground" dari "ada tapi printernya belum
     // diatur". Keduanya berakhir sama di kertas, tapi sebabnya jauh berbeda dan
     // itulah yang dicari saat menelusuri gelang yang tidak keluar.
-    final (:gelang, :struk) = pisahkan(semua, namaPlayground);
+    final (:gelang, :struk) = pisahkan(
+      semua,
+      namaPlayground,
+      gelangPendamping: printerUtil.wristbandConfig.gelangPendamping,
+    );
 
     if (gelang.isEmpty) {
       logger.safeLog('CETAK GELANG : tidak ada tiket playground di order ini '
@@ -91,7 +95,9 @@ class GelangUtil {
     }
 
     logger.safeLog('CETAK GELANG : ${gelang.length} gelang playground '
-        '(${struk.length} tiket lain ke struk), ${bytes.length} byte');
+        '(${struk.length} tiket lain ke struk'
+        '${printerUtil.wristbandConfig.gelangPendamping ? "" : ", pendamping dimatikan"}'
+        '), ${bytes.length} byte');
 
     final hasil = await printerUtil.printWristband(bytes);
     if (hasil == HasilCetakGelang.terkirim ||
@@ -112,20 +118,25 @@ class GelangUtil {
   ///
   /// Tiket tanpa nomor ikut ke struk, bukan dibuang: nomor kosong berarti ada
   /// yang salah di hulu, dan menghilangkannya diam-diam hanya menyembunyikannya.
+  ///
+  /// [gelangPendamping] false membuang tiket pendamping dari cetak gelang —
+  /// QR-nya tetap keluar di struk, jadi tidak ada tiket yang kehilangan QR.
   static ({
     List<ResponseCreateTicketNoEntity> gelang,
     List<ResponseCreateTicketNoEntity> struk,
   }) pisahkan(
     List<ResponseCreateTicketNoEntity> semua,
-    Set<String> namaPlayground,
-  ) {
+    Set<String> namaPlayground, {
+    bool gelangPendamping = true,
+  }) {
     final gelang = <ResponseCreateTicketNoEntity>[];
     final struk = <ResponseCreateTicketNoEntity>[];
     for (final t in semua) {
       final nomor = t.ticketNo;
       final layak = nomor != null &&
           nomor.trim().isNotEmpty &&
-          namaPlayground.contains(namaDasar(t));
+          namaPlayground.contains(namaDasar(t)) &&
+          (gelangPendamping || t.isCompanion != 'Y');
       (layak ? gelang : struk).add(t);
     }
     return (gelang: gelang, struk: struk);

@@ -740,6 +740,35 @@ class SettingPage extends GetView<SettingPageController> {
                   style: textStyle.blackText.copyWith(fontSize: fontSize.small),
                 ),
               ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              value: controller.putarIsiGelang.value,
+              onChanged: controller.doTogglePutarIsi,
+              title: Text('Putar isi 90 derajat', style: textStyle.blackText),
+              subtitle: Text(
+                controller.putarIsiGelang.value
+                    ? 'Isi membaca menyusuri panjang gelang — huruf bisa jauh '
+                        'lebih besar. Buktikan dengan Cetak Uji.'
+                    : 'Isi membaca melintang pita. Pada pita sempit, huruf '
+                        'terpaksa kecil dan teks panjang terpotong.',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              value: controller.gelangPendamping.value,
+              onChanged: controller.doToggleGelangPendamping,
+              title: Text('Cetak gelang pendamping', style: textStyle.blackText),
+              subtitle: Text(
+                controller.gelangPendamping.value
+                    ? 'Setiap tiket playground menghasilkan 2 gelang: anak + pendamping'
+                    : 'Pendamping tidak dapat gelang; QR-nya dicetak di struk. '
+                        'Nyalakan lagi sebelum outlet beroperasi.',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
+            ),
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [

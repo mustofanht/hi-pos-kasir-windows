@@ -32,14 +32,23 @@ void main() {
     final y = int.parse(a[1].trim());
     final font = a[2].trim().replaceAll('"', '');
     final ukuran = GenerateWristbandUtil.fontDots[font]!;
-    return (
-      x: x,
-      y: y,
-      w: isi.length * ukuran[0],
-      h: ukuran[1],
-      jenis: 'teks',
-      isi: isi
-    );
+    final lebar = isi.length * ukuran[0];
+    final tinggi = ukuran[1];
+    // Teks berputar menempati kotak yang sisinya tertukar, dan jangkarnya di
+    // tepi kanan kotak itu. Mengabaikannya membuat uji batas memeriksa kotak
+    // yang salah — lalu lulus padahal cetakannya keluar lembar.
+    final putaran = int.tryParse(a[3].trim()) ?? 0;
+    if (putaran == 90 || putaran == 270) {
+      return (
+        x: x - tinggi,
+        y: y,
+        w: tinggi,
+        h: lebar,
+        jenis: 'teks',
+        isi: isi
+      );
+    }
+    return (x: x, y: y, w: lebar, h: tinggi, jenis: 'teks', isi: isi);
   }
 
   List<String> perintah(List<int> bytes) => latin1
@@ -185,6 +194,15 @@ void main() {
       final ulang = WristbandConfigModel.fromJson(
           WristbandConfigModel(potong: ModePotong.akhirBatch).toJson());
       expect(ulang.potong, ModePotong.akhirBatch);
+    });
+
+    test('saklar gelang pendamping bertahan dan bawaannya menyala', () {
+      expect(WristbandConfigModel().gelangPendamping, isTrue);
+      expect(WristbandConfigModel.fromJson({}).gelangPendamping, isTrue,
+          reason: 'setelan lama tanpa kunci ini tidak boleh mematikannya');
+      final ulang = WristbandConfigModel.fromJson(
+          WristbandConfigModel(gelangPendamping: false).toJson());
+      expect(ulang.gelangPendamping, isFalse);
     });
 
     test('mode tidak dikenal kembali ke sobek manual', () {
@@ -364,6 +382,91 @@ void main() {
           p.firstWhere((b) => b.startsWith('QRCODE')).substring(6).split(',')[3]);
       // 25mm - 2x2mm margin = 168 titik untuk 29 modul (21 + zona sunyi).
       expect(sel, greaterThanOrEqualTo(4));
+    });
+  });
+
+  group('Putar isi 90 derajat', () {
+    // Pada pita 25mm, arah melintang hanya memuat nomor tiket pada huruf kecil.
+    // Memutar isi memindahkan keterbatasan itu ke arah panjang gelang, yang
+    // tersedia ratusan milimeter.
+    List<int> cetak(WristbandConfigModel c) => gen.dataWristbandPrint(
+          config: c,
+          qrCode: '300909260012',
+          ticketNo: '300909260012',
+          berlakuSampai: 's/d 09 Sep 2026',
+        );
+
+    int tinggiHurufTerbesar(List<int> bytes) => perintah(bytes)
+        .where((b) => b.startsWith('TEXT'))
+        .map((b) => GenerateWristbandUtil
+            .fontDots[b.split(',')[2].replaceAll('"', '')]![1])
+        .reduce((a, b) => a > b ? a : b);
+
+    test('putaran menaikkan ukuran huruf pada pita sempit', () {
+      final biasa = WristbandConfigModel(widthMm: 25, heightMm: 80, marginMm: 1);
+      expect(tinggiHurufTerbesar(cetak(biasa.salin(putarIsi: true))),
+          greaterThan(tinggiHurufTerbesar(cetak(biasa))));
+    });
+
+    test('putaran tidak mengecilkan QR', () {
+      int selQr(List<int> bytes) => int.parse(perintah(bytes)
+          .firstWhere((b) => b.startsWith('QRCODE'))
+          .substring(6)
+          .split(',')[3]
+          .trim());
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 80, marginMm: 1);
+      expect(selQr(cetak(c.salin(putarIsi: true))), selQr(cetak(c)));
+    });
+
+    test('QR dan teks sama-sama diberi tanda putaran 90', () {
+      final p = perintah(cetak(
+          WristbandConfigModel(widthMm: 25, heightMm: 80, putarIsi: true)));
+      expect(p.firstWhere((b) => b.startsWith('QRCODE')).split(',')[5].trim(),
+          '90');
+      for (final b in p.where((b) => b.startsWith('TEXT'))) {
+        expect(b.split(',')[3].trim(), '90');
+      }
+    });
+
+    test('tanpa putaran tidak ada yang bertanda 90', () {
+      final p = perintah(
+          cetak(WristbandConfigModel(widthMm: 25, heightMm: 80)));
+      expect(p.firstWhere((b) => b.startsWith('QRCODE')).split(',')[5].trim(),
+          '0');
+      for (final b in p.where((b) => b.startsWith('TEXT'))) {
+        expect(b.split(',')[3].trim(), '0');
+      }
+    });
+
+    group('tetap di dalam lembar setelah diputar', () {
+      final ukuran = <String, WristbandConfigModel>{
+        'gelang 25x60': WristbandConfigModel(widthMm: 25, heightMm: 60),
+        'gelang 25x80 margin 1':
+            WristbandConfigModel(widthMm: 25, heightMm: 80, marginMm: 1),
+        'gelang 19x180': WristbandConfigModel(widthMm: 19, heightMm: 180),
+        'label 50x25': WristbandConfigModel(),
+        'label mungil 25x15': WristbandConfigModel(widthMm: 25, heightMm: 15),
+        '300dpi': WristbandConfigModel(widthMm: 25, heightMm: 80, dpi: 300),
+      };
+      ukuran.forEach((nama, dasar) {
+        final c = dasar.salin(putarIsi: true);
+        test(nama, () => periksaMuat(cetak(c), c));
+        test('$nama — cetak uji', () => periksaMuat(gen.testPrint(c), c));
+        test('$nama — dengan geseran', () {
+          final g = c.salin(geserXMm: 3, geserYMm: 8);
+          periksaMuat(cetak(g), g);
+        });
+      });
+    });
+
+    test('putaran bertahan lewat penyimpanan, bawaannya mati', () {
+      expect(WristbandConfigModel().putarIsi, isFalse);
+      expect(WristbandConfigModel.fromJson({}).putarIsi, isFalse,
+          reason: 'setelan lama tidak boleh berubah perilaku sendiri');
+      expect(
+          WristbandConfigModel.fromJson(
+              WristbandConfigModel(putarIsi: true).toJson()).putarIsi,
+          isTrue);
     });
   });
 

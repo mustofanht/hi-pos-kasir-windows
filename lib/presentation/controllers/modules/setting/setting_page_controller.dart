@@ -74,6 +74,8 @@ class SettingPageController extends GetxController
   final kecepatanGelang = 4.obs;
   final arahGelang = 1.obs;
   final potongGelang = ModePotong.sobek.obs;
+  final gelangPendamping = true.obs;
+  final putarIsiGelang = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -290,6 +292,8 @@ class SettingPageController extends GetxController
     kecepatanGelang.value = c.speed;
     arahGelang.value = c.direction;
     potongGelang.value = c.potong;
+    gelangPendamping.value = c.gelangPendamping;
+    putarIsiGelang.value = c.putarIsi;
 
     final tersimpan = printerUtil.wristbandPrinter;
     selectedPrinterGelang.value = tersimpan == null
@@ -396,8 +400,44 @@ class SettingPageController extends GetxController
       potong: potongGelang.value,
       geserXMm: geserX,
       geserYMm: geserY,
+      gelangPendamping: gelangPendamping.value,
+      putarIsi: putarIsiGelang.value,
     ));
     alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
+    update();
+  }
+
+  /// Saklar cetak gelang pendamping.
+  ///
+  /// Disimpan seketika, bukan menunggu tombol Simpan Ukuran: ini saklar, dan
+  /// saklar yang tidak langsung berlaku akan dikira rusak. Menyimpannya di atas
+  /// setelan tersimpan — bukan isi formulir — supaya perubahan ukuran yang
+  /// sedang diketik tapi belum disimpan tidak ikut terbawa.
+  void doToggleGelangPendamping(bool value) {
+    gelangPendamping.value = value;
+    printerUtil.simpanSetelanGelang(
+        printerUtil.wristbandConfig.salin(gelangPendamping: value));
+    if (!value) {
+      alert.warning('Gelang Pendamping Dimatikan',
+          'Tiket pendamping tetap dibuat dan tetap sah di gate, tapi QR-nya '
+          'dicetak di struk. Nyalakan lagi sebelum outlet beroperasi.');
+    }
+    update();
+  }
+
+  /// Saklar putar isi 90 derajat.
+  ///
+  /// Disimpan seketika seperti saklar pendamping, dengan alasan yang sama.
+  void doTogglePutarIsi(bool value) {
+    putarIsiGelang.value = value;
+    printerUtil
+        .simpanSetelanGelang(printerUtil.wristbandConfig.salin(putarIsi: value));
+    alert.warning(
+        value ? 'Isi Diputar' : 'Putaran Dimatikan',
+        value
+            ? 'Buktikan dengan satu kali Cetak Uji sebelum menjual. Penempatan '
+                'teks berputar berbeda antar firmware printer.'
+            : 'Isi kembali dicetak melintang pita.');
     update();
   }
 

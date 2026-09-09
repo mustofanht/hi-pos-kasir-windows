@@ -64,18 +64,15 @@ class GenerateWristbandUtil {
   }) {
     final perintah = _kepala(config);
 
-    final atur = _ruangDanGeser(config);
-    perintah.addAll(_geser(
-      _tataLetak(
-        config: atur.ruang,
+    perintah.addAll(_susun(
+      config,
+      (ruang) => _tataLetak(
+        config: ruang,
         qrCode: qrCode,
         ticketNo: ticketNo,
         berlakuSampai: berlakuSampai,
         pendamping: pendamping,
       ),
-      config,
-      atur.dx,
-      atur.dy,
     ));
 
     perintah.add('PRINT ${salinan < 1 ? 1 : salinan},1');
@@ -103,23 +100,96 @@ class GenerateWristbandUtil {
       'BAR ${w - m - tebal},$m,$tebal,${h - 2 * m}',
       ]);
 
-    final atur = _ruangDanGeser(config);
-    perintah.addAll(_geser(
-      _tataLetak(
-        config: atur.ruang,
+    perintah.addAll(_susun(
+      config,
+      (ruang) => _tataLetak(
+        config: ruang,
         qrCode: 'TES-GELANG',
         ticketNo: 'TES GELANG',
         berlakuSampai: '${config.widthMm.toStringAsFixed(0)}x'
-            '${config.heightMm.toStringAsFixed(0)}mm ${config.dpi}dpi',
+            '${config.heightMm.toStringAsFixed(0)}mm'
+            '${config.putarIsi ? " putar" : ""}',
       ),
-      config,
-      atur.dx,
-      atur.dy,
     ));
 
     perintah.add('PRINT 1,1');
 
     return _bytes(perintah);
+  }
+
+  /// Menjalankan penata isi pada ruang yang benar, lalu memutar dan menggesernya.
+  ///
+  /// Satu pintu untuk cetak biasa dan cetak uji, supaya keduanya tidak bisa
+  /// berbeda perlakuan.
+  ///
+  /// Saat [WristbandConfigModel.putarIsi] menyala, isi ditata pada lembar yang
+  /// **ditukar sisinya** (panjang gelang menjadi lebar tata letak), lalu diputar
+  /// 90 derajat ke posisi sebenarnya. Menata langsung dalam koordinat berputar
+  /// akan menggandakan seluruh aturan batas dan penengahan; menukar sisinya
+  /// lebih dulu membuat semua itu dipakai ulang apa adanya.
+  List<String> _susun(
+    WristbandConfigModel config,
+    List<String> Function(WristbandConfigModel ruang) tata,
+  ) {
+    if (!config.putarIsi) {
+      final atur = _ruangDanGeser(config);
+      return _geser(tata(atur.ruang), config, atur.dx, atur.dy);
+    }
+
+    // Ditata tanpa geseran; geseran diterapkan setelah diputar, dalam koordinat
+    // sebenarnya — supaya arti X dan Y tetap sama bagi operator: X melintang
+    // pita, Y menyusuri gelang, apa pun keadaan saklar putarnya.
+    final tertukar = config.salin(
+      widthMm: config.heightMm,
+      heightMm: config.widthMm,
+      geserXMm: 0,
+      geserYMm: 0,
+    );
+    return _geser(
+      _putar(tata(tertukar), config),
+      config,
+      config.dots(config.geserXMm),
+      config.dots(config.geserYMm),
+    );
+  }
+
+  /// Memutar gambar 90 derajat searah jarum jam, dari lembar tertukar ke lembar
+  /// sebenarnya.
+  ///
+  /// Elemen yang menempati kotak (u, v, lebar, tinggi) pada lembar tertukar
+  /// pindah ke kotak (Lnyata − v − tinggi, u, tinggi, lebar). Karena tinggi
+  /// lembar tertukar sama dengan lebar lembar sebenarnya, hasilnya selalu jatuh
+  /// di dalam — tanpa perlu pemangkasan tambahan.
+  ///
+  /// Jangkar teks berputar berbeda antar firmware TSPL: sebagian menaruhnya di
+  /// sudut kiri-atas hasil putaran, sebagian di sudut yang sama seperti sebelum
+  /// diputar. Yang dipakai di sini yang kedua — jangkarnya ikut berputar, jadi
+  /// berada di sisi kanan kotak hasilnya. **Kalau di printer sungguhan teksnya
+  /// bergeser tepat setinggi satu huruf, di sinilah tempat membetulkannya.**
+  List<String> _putar(List<String> gambar, WristbandConfigModel nyata) {
+    final lebar = nyata.widthDots;
+
+    return gambar.map((baris) {
+      final kotak = _kotakDari(baris);
+      if (kotak == null) return baris;
+
+      final x = lebar - kotak.y - kotak.h;
+      final y = kotak.x;
+      final isi = _kutip(_isiTerakhir(baris));
+
+      if (baris.startsWith('QRCODE')) {
+        final bagian = baris.substring(6).split(',');
+        // QR persegi; jangkarnya tetap sudut kiri-atas.
+        return 'QRCODE ${x < 0 ? 0 : x},$y,${bagian[2].trim()},'
+            '${bagian[3].trim()},${bagian[4].trim()},90,"$isi"';
+      }
+
+      final bagian = baris.substring(4).split(',');
+      final font = bagian[2].trim();
+      final xMul = bagian[4].trim();
+      final yMul = bagian[5].trim();
+      return 'TEXT ${x + kotak.h},$y,$font,90,$xMul,$yMul,"$isi"';
+    }).toList();
   }
 
   /// Ruang untuk menata isi, beserta geseran yang akan diterapkan setelahnya.
@@ -257,6 +327,11 @@ class GenerateWristbandUtil {
   }
 
   /// Kotak yang ditempati satu perintah gambar, atau null bila bukan gambar.
+  ///
+  /// Ikut memperhitungkan putaran: teks berputar 90 derajat menempati kotak yang
+  /// sisi-sisinya tertukar, dan jangkarnya berada di tepi kanan kotak itu, bukan
+  /// tepi kiri. Tanpa ini, pemangkasan geseran menghitung kotak yang salah dan
+  /// justru membiarkan cetakan keluar lembar.
   _Kotak? _kotakDari(String baris) {
     if (baris.startsWith('QRCODE')) {
       final bagian = baris.substring(6).split(',');
@@ -272,8 +347,15 @@ class GenerateWristbandUtil {
       final ukuran = fontDots[font];
       if (ukuran == null) return null;
       final isi = _isiTerakhir(baris);
-      return _Kotak(int.parse(bagian[0].trim()), int.parse(bagian[1].trim()),
-          isi.length * ukuran[0], ukuran[1]);
+      final x = int.parse(bagian[0].trim());
+      final y = int.parse(bagian[1].trim());
+      final lebarTeks = isi.length * ukuran[0];
+      final tinggiTeks = ukuran[1];
+      final putaran = int.tryParse(bagian[3].trim()) ?? 0;
+      if (putaran == 90 || putaran == 270) {
+        return _Kotak(x - tinggiTeks, y, tinggiTeks, lebarTeks);
+      }
+      return _Kotak(x, y, lebarTeks, tinggiTeks);
     }
     return null;
   }
