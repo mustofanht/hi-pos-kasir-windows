@@ -67,9 +67,9 @@ void main() {
     expect(digambar, isNotEmpty, reason: 'lembar kosong tidak berguna');
 
     // Tidak ada yang boleh saling menimpa. Ini pernah terjadi sungguhan:
-    // "PENDAMPING", nomor tiket, dan masa berlaku tercetak bertindihan sampai
-    // nomornya tidak terbaca — jarak antar baris dulu tetap 4 titik untuk semua
-    // ukuran huruf, terlalu rapat begitu hurufnya membesar.
+    // penanda pendamping, nomor tiket, dan masa berlaku tercetak bertindihan
+    // sampai nomornya tidak terbaca — jarak antar baris dulu tetap 4 titik
+    // untuk semua ukuran huruf, terlalu rapat begitu hurufnya membesar.
     final urut = digambar.toList()..sort((a, b) => a.y.compareTo(b.y));
     for (var i = 0; i < urut.length - 1; i++) {
       for (var j = i + 1; j < urut.length; j++) {
@@ -268,23 +268,100 @@ void main() {
           isTrue);
     });
 
-    test('gelang pendamping diberi penanda', () {
-      final p = perintah(gen.dataWristbandPrint(
-        config: WristbandConfigModel(),
-        qrCode: '290809260006',
-        ticketNo: '290809260006',
-        pendamping: true,
+    test('tanpa nomor dan tanggal, QR mengambil seluruh pita', () {
+      // Bentuk yang dipilih outlet playground: gelang hanya berisi QR, sebesar
+      // yang muat di 20mm pita bersih sebelum merek pabrik. Uji ini menjaga dua
+      // hal sekaligus — QR-nya benar-benar membesar, dan tidak ada teks tersisa
+      // yang diam-diam ikut tercetak.
+      final media = WristbandConfigModel(
+        widthMm: 25,
+        heightMm: 30,
+        gapMm: 0,
+        marginMm: 1,
+        posisi: PosisiIsi.atas,
+      );
+
+      final penuh = perintah(gen.dataWristbandPrint(
+        config: media,
+        qrCode: '301009260015',
+        ticketNo: '301009260015',
+        berlakuSampai: 's/d 10Sep26',
       ));
-      expect(p.any((b) => b.contains('PENDAMPING')), isTrue);
+      final polos = perintah(gen.dataWristbandPrint(
+        config: media,
+        qrCode: '301009260015',
+      ));
+
+      int sel(List<String> p) => int.parse(p
+          .firstWhere((b) => b.startsWith('QRCODE'))
+          .substring(6)
+          .split(',')[3]
+          .trim());
+
+      expect(sel(polos), greaterThan(sel(penuh)));
+      expect(polos.any((b) => b.startsWith('TEXT')), isFalse);
+      expect(polos.any((b) => b.startsWith('QRCODE')), isTrue);
     });
 
-    test('tanpa pendamping tidak ada penandanya', () {
+    test('gelang QR-saja tetap menghormati perataan', () {
+      // Cabang QR-saja dulu memusatkan tanpa melihat perataan, dan pada gelang
+      // bermerek itu berarti QR meluncur turun ke atas cetakan pabrik justru
+      // pada mode yang dipilih supaya QR sebesar mungkin.
+      int atasQr(PosisiIsi posisi) {
+        final qr = perintah(gen.dataWristbandPrint(
+          config: WristbandConfigModel(
+            widthMm: 25,
+            heightMm: 30,
+            gapMm: 0,
+            marginMm: 1,
+            posisi: posisi,
+          ),
+          qrCode: '301009260015',
+        )).firstWhere((b) => b.startsWith('QRCODE'));
+        return int.parse(qr.substring(6).split(',')[1].trim());
+      }
+
+      expect(atasQr(PosisiIsi.atas), lessThan(atasQr(PosisiIsi.tengah)));
+      expect(atasQr(PosisiIsi.tengah), lessThan(atasQr(PosisiIsi.bawah)));
+      // Rapat ke atas berarti tepat di margin, bukan sekadar lebih atas.
+      expect(atasQr(PosisiIsi.atas), 8);
+    });
+
+    test('gelang pendamping tidak diberi penanda tercetak', () {
+      // Penandanya dibuang dengan sengaja: satu baris "PENDAMPING" mendorong
+      // isi sampai 26,8mm pada pita 25mm, menimpa cetakan pabrik yang justru
+      // tertutup saat gelang dilipat. Pembedaan anak/pendamping tetap ada di
+      // `otdtl_is_companion` dan terbaca gate saat QR dipindai.
       final p = perintah(gen.dataWristbandPrint(
-        config: WristbandConfigModel(),
-        qrCode: '290809260006',
-        ticketNo: '290809260006',
+        config: WristbandConfigModel(widthMm: 25, heightMm: 30, marginMm: 1),
+        qrCode: '301009260016',
       ));
-      expect(p.any((b) => b.contains('PENDAMPING')), isFalse);
+      expect(p.any((b) => b.startsWith('TEXT')), isFalse);
+    });
+
+    test('isi QR selalu nomor tiket apa adanya', () {
+      // Gate mencari tiket dengan string hasil pindai sebagai **kunci utama**:
+      // `TakeOutService.findTicket` memanggil `findById(ticketNo)` atas
+      // `otdtl_no`. Satu karakter tambahan di dalam QR — durasi, tanggal,
+      // pemisah apa pun — membuat pencarian gagal, dan gagalnya baru terlihat
+      // saat pelanggan sudah berdiri di pintu masuk.
+      //
+      // Durasi bermain tidak perlu ikut: `PlaygroundTvService` membacanya dari
+      // `mst_ticket.ticket_duration_minutes` saat gelang discan, dan argonya
+      // memang baru mulai di gate — bukan saat gelang dicetak di kasir.
+      for (final c in [
+        WristbandConfigModel(),
+        WristbandConfigModel(widthMm: 25, heightMm: 30, marginMm: 1),
+      ]) {
+        final p = perintah(gen.dataWristbandPrint(
+          config: c,
+          qrCode: '301009260015',
+          ticketNo: '301009260015',
+          berlakuSampai: 's/d 10Sep26',
+        ));
+        final qr = p.firstWhere((b) => b.startsWith('QRCODE'));
+        expect(RegExp(r'"([^"]*)"$').firstMatch(qr)!.group(1), '301009260015');
+      }
     });
 
     test('koreksi galat QR di tingkat M, bukan L', () {
@@ -317,7 +394,6 @@ void main() {
             qrCode: '290809260005',
             ticketNo: '290809260005',
             berlakuSampai: 's/d 08 Sep 2026',
-            pendamping: true,
           ),
           c,
         );
@@ -378,13 +454,12 @@ void main() {
         qrCode: '300909260011',
         ticketNo: '300909260011',
         berlakuSampai: '09 Sep',
-        pendamping: true,
       ));
       final fonts = p
           .where((b) => b.startsWith('TEXT'))
           .map((b) => b.split(',')[2].replaceAll('"', ''))
           .toList();
-      expect(fonts.length, 3);
+      expect(fonts.length, 2);
       expect(fonts.skip(1).any((f) => int.parse(f) >= 4), isTrue,
           reason: 'huruf: $fonts');
     });

@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -33,10 +32,6 @@ class HasilGelang {
 
   bool get adaGelang => tercetak.isNotEmpty;
 }
-
-/// Tanggal ringkas untuk gelang: `09Sep26`. Tanpa spasi agar tiap karakter
-/// terpakai untuk isi, bukan jarak — di pita 25mm setiap karakter berharga.
-final DateFormat _formatPendek = DateFormat('ddMMMyy', 'id_ID');
 
 /// Jembatan antara tiket yang baru dibuat dan printer gelang.
 ///
@@ -111,11 +106,18 @@ class GelangUtil {
       bytes.addAll(generateWristbandUtil.dataWristbandPrint(
         config: config,
         qrCode: t.ticketNo!,
-        ticketNo: t.ticketNo,
-        berlakuSampai: _berlaku(t),
-        // Penanda pendamping ikut dicetak supaya petugas gate bisa membedakan
-        // gelang gratis dari gelang berbayar tanpa memindai satu per satu.
-        pendamping: t.isCompanion == 'Y',
+        // Gelang sengaja **hanya berisi QR** — tanpa nomor tiket, tanpa
+        // tanggal, dan tanpa penanda pendamping. Pita Blueprint hanya menyisakan sekitar 20mm bersih sebelum
+        // cetakan pabrik, dan tiap baris teks di bawah QR memakan ruang itu:
+        // dengan dua baris QR-nya cuma 7,9mm, tanpa keduanya 15,8mm. Pada
+        // gelang yang dipakai anak-anak dan kena air, QR besar yang terbaca
+        // sekali pindai lebih berharga daripada nomor kecil yang jarang dipakai.
+        //
+        // Pendamping tidak lagi diberi penanda tercetak. Satu baris "PENDAMPING"
+        // saja mendorong isi sampai 26,8mm — menimpa cetakan pabrik yang
+        // tertutup saat gelang dilipat, jadi penandanya hilang justru pada saat
+        // dipakai. Pembedaannya tetap ada dan lebih dapat dipercaya: gate
+        // membacanya dari `otdtl_is_companion` begitu QR-nya dipindai.
       ));
     }
 
@@ -175,22 +177,6 @@ class GelangUtil {
       return nama.substring(0, nama.length - _akhiranPendamping.length);
     }
     return nama;
-  }
-
-  /// Masa berlaku yang dicetak di gelang.
-  ///
-  /// Hanya **tanggal**, bukan jam. Untuk tiket berdurasi, argonya baru berjalan
-  /// saat gelang dipindai di gate — jam berakhirnya belum ada saat gelang
-  /// dicetak di kasir. Mencetak jam tebakan di sini akan berselisih dengan papan
-  /// TV di gate, dan pelanggan akan memercayai yang tercetak.
-  String? _berlaku(ResponseCreateTicketNoEntity t) {
-    final tanggal = t.ticketActiveDate;
-    if (tanggal == null) return null;
-    // Sependek mungkin tanpa kehilangan arti: "s/d 09Sep26" (11 karakter),
-    // bukan "s/d 09 Sep 2026" (15). Melintang pita 25mm hanya ada ruang untuk
-    // sekitar 12 karakter pada huruf yang masih terbaca; format panjang memaksa
-    // hurufnya mengecil, atau ujungnya terpotong seperti yang sudah terjadi.
-    return 's/d ${_formatPendek.format(tanggal.toLocal())}';
   }
 }
 

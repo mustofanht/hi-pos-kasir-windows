@@ -361,6 +361,19 @@ class PrinterUtil {
 
     if (printers.isNotEmpty) {
       for (var element in printers) {
+        // Printer gelang tidak boleh dipungut jadi printer struk.
+        //
+        // Pemilihan otomatis ini mengambil printer USB pertama yang ditemukan.
+        // Di outlet yang printer struknya belum tercolok, satu-satunya kandidat
+        // adalah printer gelang — lalu struk ikut tercetak di atas gelang,
+        // lengkap dengan QR-nya. Di tangan, itu terlihat seperti "dua QR dalam
+        // satu gelang", dan sebabnya sama sekali tidak kelihatan.
+        if (wristbandPrinter != null &&
+            element.kunci == wristbandPrinter!.kunci) {
+          logger.safeLog('LEWATI ${element.deviceName} : itu printer gelang, '
+              'bukan kandidat printer struk');
+          continue;
+        }
         if (element.typePrinter == PrinterType.usb) {
           currPrinter = element;
           logger.safeLog('NAME : ${element.deviceName}');

@@ -59,7 +59,6 @@ class GenerateWristbandUtil {
     required String qrCode,
     String? ticketNo,
     String? berlakuSampai,
-    bool pendamping = false,
     int salinan = 1,
   }) {
     final perintah = _kepala(config);
@@ -71,7 +70,6 @@ class GenerateWristbandUtil {
         qrCode: qrCode,
         ticketNo: ticketNo,
         berlakuSampai: berlakuSampai,
-        pendamping: pendamping,
       ),
     ));
 
@@ -463,7 +461,6 @@ class GenerateWristbandUtil {
     required String qrCode,
     String? ticketNo,
     String? berlakuSampai,
-    bool pendamping = false,
   }) {
     final w = config.widthDots;
     final h = config.heightDots;
@@ -477,7 +474,6 @@ class GenerateWristbandUtil {
     // tiket adalah baris terakhir yang boleh hilang — alur Keluar Manual
     // bertumpu padanya saat QR tidak terbaca.
     final baris = <_BarisTeks>[
-      if (pendamping) _BarisTeks('PENDAMPING', tampil: 0, penting: 1),
       if (ticketNo != null && ticketNo.trim().isNotEmpty)
         _BarisTeks(_ascii(ticketNo), tampil: 1, penting: 0),
       if (berlakuSampai != null && berlakuSampai.trim().isNotEmpty)
@@ -505,8 +501,18 @@ class GenerateWristbandUtil {
     if (baris.isEmpty) {
       final sel = selMaksLebar < selMaksTinggi ? selMaksLebar : selMaksTinggi;
       final sisi = sel * modul;
+      // Perataan berlaku di sini juga, bukan cuma saat ada teks. Dulu cabang ini
+      // selalu memusatkan, dan itu tidak terasa selama gelang selalu punya
+      // nomor di bawahnya. Begitu nomornya dimatikan demi QR yang lebih besar,
+      // QR yang dipusatkan justru bergeser turun sampai ekornya menimpa cetakan
+      // pabrik — persis yang dihindari dengan memilih "rapat ke atas".
       return [
-        _qr(((w - sisi) / 2).round(), ((h - sisi) / 2).round(), sel, isi)
+        _qr(
+          ((w - sisi) / 2).round().clamp(0, w),
+          _mulaiY(h, sisi, m, config.posisi).clamp(0, h - sisi),
+          sel,
+          isi,
+        )
       ];
     }
 

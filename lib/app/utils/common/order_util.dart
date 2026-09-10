@@ -52,7 +52,10 @@ class OrderUtil {
         await _handleSendProofOfPayment(authToken, body, orderNo?.value ?? '');
       },
       onPrint: () async {
-        if (printerUtil.currPrinter != null) {
+        // Cukup salah satu printer ada. Dulu seluruh alur cetak digantungkan
+        // pada printer struk, sehingga printer struk yang belum tercolok ikut
+        // mematikan cetak gelang — padahal keduanya perangkat terpisah.
+        if (printerUtil.currPrinter != null || printerUtil.punyaPrinterGelang) {
           Get.back();
           loading.popUpLoading();
           await Future.delayed(const Duration(seconds: 1), () {});
@@ -151,7 +154,7 @@ class OrderUtil {
 
     logger.safeLog('LIST PRINTER : ${printerUtil.currPrinter}');
     printerUtil.connectPrinter();
-    if (printerUtil.currPrinter != null) {
+    if (printerUtil.currPrinter != null || printerUtil.punyaPrinterGelang) {
       String locationName = "";
       String kasirName = "";
       UserEntity? user = await common.getUser(
@@ -169,6 +172,10 @@ class OrderUtil {
         paperSize: PaperSize.mm80,
         body: body,
       );
+      // Berapa tiket yang QR-nya bergantung pada printer struk. Dipakai di
+      // bawah untuk membedakan "tidak ada yang perlu dicetak di struk" dari
+      // "ada QR yang kehilangan tujuan".
+      var jumlahKeStruk = 0;
       if (body.listCreateTicket != null) {
         // E-tiket booking lapangan TIDAK dicetak QR gate-nya (booking lapangan
         // tidak perlu QR). Dikenali dari nama tiket = nama court pada struk.
@@ -199,6 +206,7 @@ class OrderUtil {
         );
 
         final tiketDiStruk = hasilGelang.keStruk;
+        jumlahKeStruk = tiketDiStruk.length;
         int count = 1;
         int totalPak = tiketDiStruk.length;
         String reffNo = body.orderReffno ?? '';
@@ -228,7 +236,20 @@ class OrderUtil {
 
       Get.back();
       loading.popUpLoading();
-      await printerUtil.print(printerUtil.currPrinter!, data);
+      if (printerUtil.currPrinter != null) {
+        await printerUtil.print(printerUtil.currPrinter!, data);
+      } else if (jumlahKeStruk == 0) {
+        // Tidak ada printer struk, dan memang tidak ada QR yang harus keluar di
+        // sana — semuanya sudah jadi gelang. Diam saja; ini keadaan yang wajar
+        // saat mengkalibrasi printer gelang sebelum printer struk terpasang.
+        logger.safeLog('CETAK : printer struk tidak ada, struk dilewati');
+      } else {
+        // Ada QR yang seharusnya keluar di struk tapi tidak punya tujuan.
+        // Pelanggan akan pulang tanpa tiket untuk tiket-tiket itu.
+        alert.warning('Struk Tidak Tercetak',
+            '$jumlahKeStruk tiket seharusnya dicetak QR-nya di struk, '
+            'tapi printer struk belum terpasang.');
+      }
       await doRefreshCustomerDisplay(
         paymentMethod: PaymentMethod.QRIS,
       );
