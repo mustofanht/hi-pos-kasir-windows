@@ -1,8 +1,7 @@
-import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:intl/intl.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
-import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 
@@ -35,6 +34,10 @@ class HasilGelang {
   bool get adaGelang => tercetak.isNotEmpty;
 }
 
+/// Tanggal ringkas untuk gelang: `09Sep26`. Tanpa spasi agar tiap karakter
+/// terpakai untuk isi, bukan jarak — di pita 25mm setiap karakter berharga.
+final DateFormat _formatPendek = DateFormat('ddMMMyy', 'id_ID');
+
 /// Jembatan antara tiket yang baru dibuat dan printer gelang.
 ///
 /// Dipisah dari alur penjualan karena dipakai dua kali dengan data yang sama:
@@ -62,11 +65,33 @@ class GelangUtil {
     // membedakan "tidak ada tiket playground" dari "ada tapi printernya belum
     // diatur". Keduanya berakhir sama di kertas, tapi sebabnya jauh berbeda dan
     // itulah yang dicari saat menelusuri gelang yang tidak keluar.
+    final bolehPendamping = printerUtil.wristbandConfig.gelangPendamping;
+
+    // Satu baris per tiket, sebelum apa pun diputuskan.
+    //
+    // Ditambahkan setelah dua gelang keluar dari order yang seharusnya
+    // menghasilkan satu. Tanpa catatan ini, "gelang kedua" bisa berarti tiga hal
+    // yang berbeda — tiket pendamping yang lolos saringan, cetakan yang terbelah
+    // media, atau gelang kosong yang terdorong keluar printer — dan ketiganya
+    // terlihat sama di tangan.
+    logger.safeLog('CETAK GELANG saklar pendamping='
+        '${bolehPendamping ? "NYALA" : "MATI"}, katalog playground='
+        '${namaPlayground.length} nama, tiket=${semua.length}');
+    for (final t in semua) {
+      logger.safeLog('  tiket ${t.ticketNo} nama="${t.ticketName}" '
+          'dasar="${namaDasar(t)}" pendamping=${t.isCompanion} '
+          'playground=${namaPlayground.contains(namaDasar(t))}');
+    }
+
     final (:gelang, :struk) = pisahkan(
       semua,
       namaPlayground,
-      gelangPendamping: printerUtil.wristbandConfig.gelangPendamping,
+      gelangPendamping: bolehPendamping,
     );
+
+    logger.safeLog('CETAK GELANG keputusan: '
+        'gelang=[${gelang.map((e) => e.ticketNo).join(", ")}] '
+        'struk=[${struk.map((e) => e.ticketNo).join(", ")}]');
 
     if (gelang.isEmpty) {
       logger.safeLog('CETAK GELANG : tidak ada tiket playground di order ini '
@@ -96,8 +121,8 @@ class GelangUtil {
 
     logger.safeLog('CETAK GELANG : ${gelang.length} gelang playground '
         '(${struk.length} tiket lain ke struk'
-        '${printerUtil.wristbandConfig.gelangPendamping ? "" : ", pendamping dimatikan"}'
-        '), ${bytes.length} byte');
+        '${bolehPendamping ? "" : ", pendamping dimatikan"}'
+        '), ${bytes.length} byte, ${bytes.where((b) => b == 0x0A).length} baris');
 
     final hasil = await printerUtil.printWristband(bytes);
     if (hasil == HasilCetakGelang.terkirim ||
@@ -161,10 +186,11 @@ class GelangUtil {
   String? _berlaku(ResponseCreateTicketNoEntity t) {
     final tanggal = t.ticketActiveDate;
     if (tanggal == null) return null;
-    return 's/d ${dateTimeUtil.getFormattedDate(
-      date: tanggal.toLocal(),
-      format: dateFormat.dateWithoutTime,
-    )}';
+    // Sependek mungkin tanpa kehilangan arti: "s/d 09Sep26" (11 karakter),
+    // bukan "s/d 09 Sep 2026" (15). Melintang pita 25mm hanya ada ruang untuk
+    // sekitar 12 karakter pada huruf yang masih terbaca; format panjang memaksa
+    // hurufnya mengecil, atau ujungnya terpotong seperti yang sudah terjadi.
+    return 's/d ${_formatPendek.format(tanggal.toLocal())}';
   }
 }
 

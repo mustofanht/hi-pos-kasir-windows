@@ -14,6 +14,35 @@ enum ModePotong {
 
   /// Potong sekali di akhir seluruh cetakan. Butuh modul pemotong.
   akhirBatch,
+
+  /// Media tidak dimajukan sama sekali setelah mencetak.
+  ///
+  /// Dipakai bila setiap cetakan mengeluarkan **satu gelang kosong tambahan**:
+  /// pada media bergelang panjang, memajukan ke bilah sobek berarti memuntahkan
+  /// sisa gelang yang sedang dicetak sampai jeda berikutnya — terlihat seperti
+  /// gelang kedua yang tercetak sendiri. Konsekuensinya bagian tercetak berhenti
+  /// di dalam printer dan perlu ditarik keluar sebelum disobek.
+  tanpaMaju,
+}
+
+/// Di mana isi diletakkan pada lembar, searah kolom Tinggi.
+///
+/// Bukan hal yang sama dengan Geser Y. Geser memindahkan isi **dengan
+/// mengorbankan ruang**: menggeser 1mm mengecilkan ruang tata letak 2mm, jadi
+/// QR ikut menyusut. Perataan hanya memilih ujung mana yang dipakai — ukuran
+/// isinya tidak berubah sama sekali.
+///
+/// Dibuat setelah berhari-hari menyetel gelang bermerek: area bersihnya ada di
+/// satu ujung, dan isi yang dipusatkan selalu jatuh menimpa cetakan pabrik.
+enum PosisiIsi {
+  /// Menempel ke awal lembar.
+  atas,
+
+  /// Di tengah lembar. Bawaan, dan benar untuk media polos.
+  tengah,
+
+  /// Menempel ke akhir lembar.
+  bawah,
 }
 
 /// Ukuran dan setelan media gelang.
@@ -65,6 +94,21 @@ class WristbandConfigModel {
   /// Geseran cetakan searah kolom **Tinggi**, dalam milimeter. Boleh negatif.
   double geserYMm;
 
+  /// Perataan isi searah kolom Tinggi. Lihat [PosisiIsi].
+  PosisiIsi posisi;
+
+  /// Batas atas ukuran QR dalam milimeter. 0 berarti sebesar mungkin.
+  ///
+  /// Ada karena kadang yang langka bukan lebar media, melainkan **panjang area
+  /// yang boleh dicetaki**. Gelang bermerek sudah punya cetakan pabrik di
+  /// sebagian panjangnya; isi kita harus muat di sisa yang bersih, dan satu-
+  /// satunya bagian yang bisa dikecilkan tanpa kehilangan makna adalah QR.
+  ///
+  /// Mengecilkan QR menukar jarak pindai dengan ruang gerak — di bawah ±8mm
+  /// pemindai gate perlu didekatkan. Karena itu bawaannya 0: hanya dipakai bila
+  /// medianya memang memaksa.
+  double qrMaksMm;
+
   /// Memutar isi 90 derajat sehingga membaca **menyusuri** panjang gelang,
   /// bukan melintang pitanya.
   ///
@@ -104,6 +148,8 @@ class WristbandConfigModel {
     this.geserYMm = 0,
     this.gelangPendamping = true,
     this.putarIsi = false,
+    this.qrMaksMm = 0,
+    this.posisi = PosisiIsi.tengah,
   });
 
   /// Titik per milimeter untuk resolusi ini.
@@ -129,6 +175,8 @@ class WristbandConfigModel {
     double? geserYMm,
     bool? gelangPendamping,
     bool? putarIsi,
+    double? qrMaksMm,
+    PosisiIsi? posisi,
   }) {
     return WristbandConfigModel(
       dpi: dpi ?? this.dpi,
@@ -144,6 +192,8 @@ class WristbandConfigModel {
       geserYMm: geserYMm ?? this.geserYMm,
       gelangPendamping: gelangPendamping ?? this.gelangPendamping,
       putarIsi: putarIsi ?? this.putarIsi,
+      qrMaksMm: qrMaksMm ?? this.qrMaksMm,
+      posisi: posisi ?? this.posisi,
     );
   }
 
@@ -161,6 +211,8 @@ class WristbandConfigModel {
         'geserYMm': geserYMm,
         'gelangPendamping': gelangPendamping,
         'putarIsi': putarIsi,
+        'qrMaksMm': qrMaksMm,
+        'posisi': posisi.name,
       };
 
   /// Nilai di luar akal dianggap tidak ada dan diganti bawaan. Berkas setelan
@@ -200,6 +252,11 @@ class WristbandConfigModel {
       // merepotkan daripada gelang yang terbuang saat menguji.
       gelangPendamping: json['gelangPendamping'] != false,
       putarIsi: json['putarIsi'] == true,
+      qrMaksMm: angka('qrMaksMm', 0, 0, 50),
+      posisi: PosisiIsi.values.firstWhere(
+        (e) => e.name == json['posisi'],
+        orElse: () => PosisiIsi.tengah,
+      ),
     );
   }
 }

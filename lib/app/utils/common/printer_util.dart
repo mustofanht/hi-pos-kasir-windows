@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -424,8 +425,15 @@ class PrinterUtil {
       return false;
     }
 
+    // Disalin ke daftar biasa sebelum menyeberang ke Android. `Uint8List`
+    // bertipe `List<int>` juga, jadi Dart tidak memberi peringatan apa pun —
+    // tetapi jembatan Flutter mengirimkannya sebagai `byte[]`, sedangkan plugin
+    // printer hanya menerima `ArrayList`, lalu melempar ClassCastException yang
+    // di sini hanya tampak sebagai "cetak gagal". Dijaga di satu tempat yang
+    // dilewati semua cetakan, supaya penyusun byte mana pun aman.
     final isPrinted = await printerManager.send(
-        type: selectedPrinter.typePrinter, bytes: bytes);
+        type: selectedPrinter.typePrinter,
+        bytes: bytes is Uint8List ? List<int>.from(bytes) : bytes);
     if (selectedPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
       // Dipakai listener status: bila sambungan bluetooth sempat putus lalu

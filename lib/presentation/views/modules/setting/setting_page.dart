@@ -704,6 +704,7 @@ class SettingPage extends GetView<SettingPageController> {
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
+                _kotakAngka('QR maks (mm)', controller.qrMaksGelangController),
                 _kotakAngka('Geser X (mm)', controller.geserXGelangController),
                 _kotakAngka('Geser Y (mm)', controller.geserYGelangController),
               ],
@@ -711,6 +712,17 @@ class SettingPage extends GetView<SettingPageController> {
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
+                _kotakPilihan<PosisiIsi>(
+                  'Posisi isi',
+                  controller.posisiGelang.value,
+                  PosisiIsi.values,
+                  (v) => controller.posisiGelang.value = v,
+                  teks: (v) => switch (v) {
+                    PosisiIsi.atas => 'Rapat ke atas',
+                    PosisiIsi.tengah => 'Di tengah',
+                    PosisiIsi.bawah => 'Rapat ke bawah',
+                  },
+                ),
                 _kotakPilihan<ModePotong>(
                   'Pemisah gelang',
                   controller.potongGelang.value,
@@ -720,6 +732,7 @@ class SettingPage extends GetView<SettingPageController> {
                     ModePotong.sobek => 'Sobek manual (tanpa pemotong)',
                     ModePotong.tiapGelang => 'Potong tiap gelang',
                     ModePotong.akhirBatch => 'Potong di akhir cetakan',
+                    ModePotong.tanpaMaju => 'Tanpa maju (media diam)',
                   },
                 ),
               ],
@@ -802,6 +815,18 @@ class SettingPage extends GetView<SettingPageController> {
               ],
             ),
             Text(
+              'Posisi isi memilih ujung lembar mana yang dipakai — tidak '
+              'mengubah ukuran QR sama sekali, berbeda dari Geser Y yang selalu '
+              'mengecilkannya. Pakai ini dulu sebelum menggeser.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            Text(
+              'QR maks membatasi ukuran QR (0 = sebesar mungkin). Dipakai bila '
+              'area gelang yang bersih dari cetakan pabrik terlalu pendek untuk '
+              'memuat QR besar + teks.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            Text(
               'Geser X mengikuti arah kolom Lebar, Geser Y mengikuti kolom '
               'Tinggi. Boleh negatif. Dipakai untuk menjauhkan cetakan dari '
               'perekat gelang; geseran yang membuat cetakan keluar lembar '
@@ -833,7 +858,13 @@ class SettingPage extends GetView<SettingPageController> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: TextField(
           controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          // signed: true supaya papan tombol angka ikut menyediakan tanda minus.
+          // Kolom Geser X/Y memang menerima nilai negatif, dan tanpa ini
+          // operator harus berganti papan tombol untuk mengetiknya.
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+            signed: true,
+          ),
           decoration: InputDecoration(
             labelText: label,
             border: const OutlineInputBorder(),

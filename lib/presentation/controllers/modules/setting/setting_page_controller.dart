@@ -68,6 +68,7 @@ class SettingPageController extends GetxController
   final tinggiGelangController = TextEditingController();
   final jarakGelangController = TextEditingController();
   final marginGelangController = TextEditingController();
+  final qrMaksGelangController = TextEditingController();
   final geserXGelangController = TextEditingController();
   final geserYGelangController = TextEditingController();
   final dpiGelang = 203.obs;
@@ -77,6 +78,7 @@ class SettingPageController extends GetxController
   final potongGelang = ModePotong.sobek.obs;
   final gelangPendamping = true.obs;
   final putarIsiGelang = false.obs;
+  final posisiGelang = PosisiIsi.tengah.obs;
 
   @override
   Future<void> onInit() async {
@@ -286,6 +288,7 @@ class SettingPageController extends GetxController
     tinggiGelangController.text = _angka(c.heightMm);
     jarakGelangController.text = _angka(c.gapMm);
     marginGelangController.text = _angka(c.marginMm);
+    qrMaksGelangController.text = _angka(c.qrMaksMm);
     geserXGelangController.text = _angka(c.geserXMm);
     geserYGelangController.text = _angka(c.geserYMm);
     dpiGelang.value = c.dpi;
@@ -295,6 +298,7 @@ class SettingPageController extends GetxController
     potongGelang.value = c.potong;
     gelangPendamping.value = c.gelangPendamping;
     putarIsiGelang.value = c.putarIsi;
+    posisiGelang.value = c.posisi;
 
     final tersimpan = printerUtil.wristbandPrinter;
     selectedPrinterGelang.value = tersimpan == null
@@ -384,6 +388,7 @@ class SettingPageController extends GetxController
     final tinggi = double.tryParse(tinggiGelangController.text.replaceAll(',', '.'));
     final jarak = double.tryParse(jarakGelangController.text.replaceAll(',', '.'));
     final margin = double.tryParse(marginGelangController.text.replaceAll(',', '.'));
+    final qrMaks = double.tryParse(qrMaksGelangController.text.replaceAll(',', '.'));
     final geserX = double.tryParse(geserXGelangController.text.replaceAll(',', '.'));
     final geserY = double.tryParse(geserYGelangController.text.replaceAll(',', '.'));
 
@@ -404,6 +409,10 @@ class SettingPageController extends GetxController
       return;
     }
 
+    if (qrMaks == null || qrMaks < 0 || qrMaks > 50) {
+      alert.warning('Ukuran Salah', 'QR maks harus 0-50 mm (0 = otomatis).');
+      return;
+    }
     if (geserX == null || geserX < -100 || geserX > 100) {
       alert.warning('Ukuran Salah', 'Geser X harus -100 sampai 100 mm.');
       return;
@@ -423,10 +432,12 @@ class SettingPageController extends GetxController
       speed: kecepatanGelang.value,
       direction: arahGelang.value,
       potong: potongGelang.value,
+      qrMaksMm: qrMaks,
       geserXMm: geserX,
       geserYMm: geserY,
       gelangPendamping: gelangPendamping.value,
       putarIsi: putarIsiGelang.value,
+      posisi: posisiGelang.value,
     ));
     alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
     update();
@@ -522,9 +533,20 @@ class SettingPageController extends GetxController
       logger.safeLog('CETAK PENGGARIS : $e');
       alert.error('Gagal', 'Cetak penggaris gagal, periksa sambungan printer.');
     } finally {
+      await _jedaSetelahCetak();
       isLoadingTesGelang.value = false;
     }
   }
+
+  /// Menahan tombol cetak sejenak setelah byte terkirim.
+  ///
+  /// Aplikasi menganggap cetakan selesai begitu byte diserahkan ke saluran USB —
+  /// padahal printer baru mulai bekerja beberapa saat kemudian. Tanpa jeda,
+  /// tombolnya hidup lagi dalam sekejap, dan saat printer tampak diam operator
+  /// wajar menekan lagi. Antrean itu menumpuk di printer lalu keluar sekaligus:
+  /// belasan gelang terbuang untuk satu perintah.
+  Future<void> _jedaSetelahCetak() =>
+      Future.delayed(const Duration(seconds: 3));
 
   /// Cetak uji: bingkai batas media + QR contoh. Dipakai untuk mencocokkan
   /// ukuran pada setelan dengan media yang benar-benar terpasang.
@@ -561,6 +583,7 @@ class SettingPageController extends GetxController
       logger.safeLog('TES CETAK GELANG : $e');
       alert.error('Gagal', 'Cetak uji gagal, periksa sambungan printer.');
     } finally {
+      await _jedaSetelahCetak();
       isLoadingTesGelang.value = false;
     }
   }

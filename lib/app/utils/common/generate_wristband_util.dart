@@ -89,31 +89,108 @@ class GenerateWristbandUtil {
     final w = config.widthDots;
     final h = config.heightDots;
     final m = config.marginDots;
-    final tebal = (config.titikPerMm * 0.3).round().clamp(1, 4);
+    final lebarHuruf = fontDots['2']![0];
+    final tinggiHuruf = fontDots['2']![1];
+
+    // Empat penanda sudut, bukan bingkai garis.
+    //
+    // Bingkai lama digambar dengan `BAR`, dan tidak satu pun cetakan ber-BAR
+    // pernah keluar dari printer di lapangan — sementara `TEXT` dan `QRCODE`
+    // selalu keluar. Penanda sudut menjawab pertanyaan yang sama: bila keempat
+    // huruf muncul utuh, ukuran media pada setelan cocok dengan media yang
+    // terpasang; bila ada yang hilang, tidak cocok.
+    final kiri = m < 1 ? 1 : m;
+    final atas = m < 1 ? 1 : m;
+    final kanan = w - kiri - 2 * lebarHuruf;
+    final bawah = h - atas - tinggiHuruf;
 
     final perintah = _kepala(config)
       ..addAll([
-      // Bingkai batas margin.
-      'BAR $m,$m,${w - 2 * m},$tebal',
-      'BAR $m,${h - m - tebal},${w - 2 * m},$tebal',
-      'BAR $m,$m,$tebal,${h - 2 * m}',
-      'BAR ${w - m - tebal},$m,$tebal,${h - 2 * m}',
+        'TEXT $kiri,$atas,"2",0,1,1,"TL"',
+        if (kanan > kiri + 2 * lebarHuruf) 'TEXT $kanan,$atas,"2",0,1,1,"TR"',
+        if (bawah > atas + tinggiHuruf) 'TEXT $kiri,$bawah,"2",0,1,1,"BL"',
+        if (kanan > kiri + 2 * lebarHuruf && bawah > atas + tinggiHuruf)
+          'TEXT $kanan,$bawah,"2",0,1,1,"BR"',
       ]);
 
     perintah.addAll(_susun(
       config,
       (ruang) => _tataLetak(
-        config: ruang,
+        config: ruang.salin(
+          // Ruang untuk penanda sudut, supaya isi contoh tidak menimpanya.
+          marginMm: ruang.marginMm + 4,
+        ),
         qrCode: 'TES-GELANG',
-        ticketNo: 'TES GELANG',
+        ticketNo: 'TES',
         berlakuSampai: '${config.widthMm.toStringAsFixed(0)}x'
-            '${config.heightMm.toStringAsFixed(0)}mm'
-            '${config.putarIsi ? " putar" : ""}',
+            '${config.heightMm.toStringAsFixed(0)}',
       ),
     ));
 
     perintah.add('PRINT 1,1');
+    return _bytes(perintah);
+  }
 
+  /// Cetak penggaris: dua sumbu bernomor untuk **mengukur medianya sendiri**.
+  ///
+  /// Dibuat setelah beberapa gelang terbuang karena menebak arah sumbu dari
+  /// foto. Media gelang tidak memberi tahu ukurannya, dan TSPL tidak mengeluh
+  /// saat mencetak di luar media — cetakan hanya hilang. Jadi alih-alih menebak,
+  /// cetak penggaris ini sekali dan **baca angka terakhir yang masih terlihat**
+  /// di tiap sumbu.
+  ///
+  /// Memakai **ukuran media dari setelan**; hanya margin dan geserannya yang
+  /// dinolkan supaya sumbunya mulai dekat sudut cetak. Versi pertama memaksa
+  /// 60 x 60 mm dengan alasan "setelan yang sedang diuji tidak boleh menentukan
+  /// hasilnya". Itu keliru: printer melaporkan berhasil lalu tidak mengeluarkan
+  /// apa pun, karena ukuran lembar yang dimintanya tidak cocok dengan media yang
+  /// terpasang. Penggaris yang tidak keluar tidak mengukur apa-apa.
+  List<int> rulerPrint(WristbandConfigModel config) {
+    final ukur = config.salin(marginMm: 0, geserXMm: 0, geserYMm: 0);
+    final w = ukur.widthDots;
+    final h = ukur.heightDots;
+    final lebarHuruf = fontDots['2']![0];
+    final tinggiHuruf = fontDots['2']![1];
+
+    // Tidak ada satu pun elemen di koordinat 0.
+    //
+    // Cetakan tiket yang selalu berhasil tidak pernah menggambar di 0 — elemen
+    // terdekatnya di 13 titik. Cetak uji dan penggaris, yang belum pernah
+    // keluar, keduanya mulai tepat di 0. Sebagian firmware TSPL menolak seluruh
+    // lembar bila ada elemen di tepi mutlak, tanpa mengeluh. Satu milimeter
+    // masuk ke dalam tidak mengubah gunanya sebagai penggaris, dan menghapus
+    // satu perbedaan yang belum terjelaskan.
+    final asal = ukur.dots(1);
+
+    final perintah = _kepala(ukur);
+
+    // Hanya TEXT, tanpa satu pun BAR — juga disengaja. Setiap cetakan ber-BAR
+    // belum pernah keluar dari printer ini, sementara QRCODE dan TEXT selalu
+    // keluar. Alat ukur harus memakai perintah yang sudah terbukti dimengerti.
+    perintah.add('TEXT $asal,$asal,"2",0,1,1,"0"');
+
+    for (var mm = 20; mm <= ukur.widthMm.toInt(); mm += 20) {
+      final x = ukur.dots(mm.toDouble());
+      if (x + 3 * lebarHuruf > w) break;
+      perintah.add('TEXT $x,$asal,"2",0,1,1,"L$mm"');
+    }
+
+    for (var mm = 20; mm <= ukur.heightMm.toInt(); mm += 20) {
+      final y = ukur.dots(mm.toDouble());
+      if (y + tinggiHuruf > h) break;
+      perintah.add('TEXT $asal,$y,"2",0,1,1,"T$mm"');
+    }
+
+    // Uji putaran: dua teks kembar berdampingan, satu tegak satu diputar.
+    // Printer TSPL tidak melaporkan apakah ia mendukung teks berputar; hanya
+    // hasil cetak berdampingan yang bisa menjawabnya.
+    final yUji = asal + tinggiHuruf + 8;
+    if (yUji + 3 * fontDots['3']![0] <= h && w > 6 * fontDots['3']![0]) {
+      perintah.add('TEXT ${asal + 4 * lebarHuruf},$yUji,"3",0,1,1,"R0"');
+      perintah.add('TEXT ${w - asal},$yUji,"3",90,1,1,"R90"');
+    }
+
+    perintah.add('PRINT 1,1');
     return _bytes(perintah);
   }
 
@@ -157,7 +234,7 @@ class GenerateWristbandUtil {
   /// sebenarnya.
   ///
   /// Elemen yang menempati kotak (u, v, lebar, tinggi) pada lembar tertukar
-  /// pindah ke kotak (Lnyata − v − tinggi, u, tinggi, lebar). Karena tinggi
+  /// pindah ke kotak (Lnyata - v - tinggi, u, tinggi, lebar). Karena tinggi
   /// lembar tertukar sama dengan lebar lembar sebenarnya, hasilnya selalu jatuh
   /// di dalam — tanpa perlu pemangkasan tambahan.
   ///
@@ -223,73 +300,6 @@ class GenerateWristbandUtil {
       dx: dx + dx.abs(),
       dy: dy + dy.abs(),
     );
-  }
-
-  /// Cetak penggaris: dua sumbu bernomor untuk **mengukur medianya sendiri**.
-  ///
-  /// Dibuat setelah beberapa gelang terbuang karena menebak arah sumbu dari
-  /// foto. Media gelang tidak memberi tahu ukurannya, dan TSPL tidak mengeluh
-  /// saat mencetak di luar media — cetakan hanya hilang. Jadi alih-alih menebak,
-  /// cetak penggaris ini sekali dan **baca angka terakhir yang masih terlihat**
-  /// di tiap sumbu: itulah ukuran cetak yang sebenarnya, sekaligus jawaban arah
-  /// sumbu mana yang menyusuri panjang gelang.
-  ///
-  /// Ukurannya sengaja tetap 60 × 60 mm, tidak mengikuti setelan: setelan yang
-  /// sedang diuji tidak boleh ikut menentukan hasil pengukurannya.
-  List<int> rulerPrint(WristbandConfigModel config) {
-    const sisiMm = 60.0;
-    final ukur = config.salin(
-      widthMm: sisiMm,
-      heightMm: sisiMm,
-      marginMm: 0,
-      geserXMm: 0,
-      geserYMm: 0,
-    );
-    final w = ukur.widthDots;
-    final h = ukur.heightDots;
-    final tebal = (ukur.titikPerMm * 0.3).round().clamp(1, 4);
-    final panjangTik = ukur.dots(3);
-
-    final perintah = _kepala(ukur)
-      ..addAll([
-        // Kedua sumbu bertemu di titik (0,0), sudut tempat printer mulai
-        // mencetak. Sudut itu yang harus dicari di gelang.
-        'BAR 0,0,$w,$tebal',
-        'BAR 0,0,$tebal,$h',
-        'TEXT ${ukur.dots(2)},${ukur.dots(2)},"3",0,1,1,"0"',
-      ]);
-
-    final lebarAngka = 3 * fontDots['2']![0];
-
-    for (var mm = 10; mm <= sisiMm.toInt(); mm += 10) {
-      final d = ukur.dots(mm.toDouble());
-
-      // Sumbu L mengikuti kolom Lebar.
-      if (d <= w) {
-        // Tik terakhir jatuh tepat di tepi; digeser ke dalam seukuran garisnya
-        // sendiri supaya tetap tercetak, dan angkanya pindah ke sisi dalam bila
-        // tidak lagi muat di kanan.
-        final x = d + tebal <= w ? d : w - tebal;
-        perintah.add('BAR $x,0,$tebal,$panjangTik');
-        final xAngka = x + tebal + 4 + lebarAngka <= w
-            ? x + tebal + 4
-            : x - 4 - lebarAngka;
-        perintah.add('TEXT $xAngka,${panjangTik + 4},"2",0,1,1,"L$mm"');
-      }
-
-      // Sumbu T mengikuti kolom Tinggi.
-      if (d <= h) {
-        final y = d + tebal <= h ? d : h - tebal;
-        perintah.add('BAR 0,$y,$panjangTik,$tebal');
-        final yAngka = y + tebal + 4 + fontDots['2']![1] <= h
-            ? y + tebal + 4
-            : y - 4 - fontDots['2']![1];
-        perintah.add('TEXT ${panjangTik + 4},$yAngka,"2",0,1,1,"T$mm"');
-      }
-    }
-
-    perintah.add('PRINT 1,1');
-    return _bytes(perintah);
   }
 
   /// Menggeser seluruh gambar, **tanpa membiarkannya keluar lembar**.
@@ -420,6 +430,8 @@ class GenerateWristbandUtil {
         return const ['SET TEAR OFF', 'SET CUTTER BATCH'];
       case ModePotong.sobek:
         return const ['SET CUTTER OFF', 'SET TEAR ON'];
+      case ModePotong.tanpaMaju:
+        return const ['SET CUTTER OFF', 'SET TEAR OFF'];
     }
   }
 
@@ -468,8 +480,17 @@ class GenerateWristbandUtil {
         _BarisTeks(_ascii(berlakuSampai), tampil: 2, penting: 2),
     ]..sort((a, b) => a.penting.compareTo(b.penting));
 
-    final selMaksLebar = ((w - 2 * m) / modul).floor();
-    final selMaksTinggi = ((h - 2 * m) / modul).floor();
+    // Batas atas dari operator, bila ada. Dihitung terhadap modul yang
+    // benar-benar tercetak (tanpa zona sunyi), karena itu yang diukur orang
+    // dengan penggaris di atas gelang.
+    final selMaksPermintaan = config.qrMaksMm <= 0
+        ? 9999
+        : (config.dots(config.qrMaksMm) / modulQr(isi.length)).floor();
+
+    final selMaksLebar =
+        _kecil(((w - 2 * m) / modul).floor(), selMaksPermintaan);
+    final selMaksTinggi =
+        _kecil(((h - 2 * m) / modul).floor(), selMaksPermintaan);
 
     // Media terlalu kecil untuk apa pun selain QR. Lebih baik gelang berisi QR
     // saja daripada gelang berisi potongan QR yang tidak bisa dipindai.
@@ -490,11 +511,24 @@ class GenerateWristbandUtil {
     final butuh =
         baris.map((b) => b.isi.length).reduce((a, b) => a > b ? a : b) *
             fontDots['1']![0];
-    final selSampingLebar = ((w - 3 * m - butuh) / modul).floor();
+    final selSampingLebar =
+        _kecil(((w - 3 * m - butuh) / modul).floor(), selMaksPermintaan);
     final selSamping =
         selSampingLebar < selMaksTinggi ? selSampingLebar : selMaksTinggi;
 
-    if (selSamping >= 2) {
+    // Berapa besar QR kalau susunannya bertumpuk? Dihitung lebih dulu, bukan
+    // dipakai sebagai cadangan, karena pada media sempit bertumpuk sering
+    // memberi QR **berkali-kali lebih besar** — susunan berdampingan memotong
+    // lebar QR demi kolom teks di sampingnya.
+    //
+    // Dulu berdampingan selalu menang asal selnya >= 2. Akibatnya nyata:
+    // memendekkan satu baris teks membuat kolom sampingnya muat, susunan
+    // berpindah ke berdampingan, dan QR jatuh dari 15,8mm ke 5,2mm — mengecil
+    // justru karena teksnya diperbaiki.
+    final selTumpuk =
+        _selBertumpuk(baris, w, h, m, modul, selMaksPermintaan).sel;
+
+    if (selSamping >= 2 && selSamping >= selTumpuk) {
       final sisi = selSamping * modul;
       final teks = _pilihTeks(
         baris,
@@ -509,11 +543,16 @@ class GenerateWristbandUtil {
         final xQr = ((w - komposisi) / 2).round().clamp(0, w - komposisi);
 
         return [
-          _qr(xQr, ((h - sisi) / 2).round().clamp(0, h - sisi), selSamping, isi),
+          _qr(
+              xQr,
+              _mulaiY(h, sisi, m, config.posisi).clamp(0, h - sisi),
+              selSamping,
+              isi),
           ..._tulis(
             teks,
             x: xQr + sisi + m,
-            y: ((h - tinggiTeks) / 2).round().clamp(0, h - tinggiTeks),
+            y: _mulaiY(h, tinggiTeks, m, config.posisi)
+                .clamp(0, h - tinggiTeks),
             lebarBlok: lebarTeks,
           ),
         ];
@@ -521,8 +560,41 @@ class GenerateWristbandUtil {
     }
 
     // --- Bertumpuk ----------------------------------------------------------
-    // Kurangi baris teks satu per satu (yang paling tidak penting duluan)
-    // sampai QR mendapat sel yang masih layak dipindai.
+    final tumpuk = _selBertumpuk(baris, w, h, m, modul, selMaksPermintaan);
+    final sel = tumpuk.sel;
+    final teks = tumpuk.teks;
+
+    final sisi = sel * modul;
+    final tinggiTeks = _tinggiBlok(teks);
+    // Seluruh susunan (QR + jarak + teks) dipusatkan tegak, bukan menempel atas.
+    final tinggiSusun = sisi + (teks.isEmpty ? 0 : m + tinggiTeks);
+    final yAtas =
+        _mulaiY(h, tinggiSusun, m, config.posisi).clamp(0, h - tinggiSusun);
+
+    return [
+      _qr(((w - sisi) / 2).round().clamp(0, w), yAtas, sel, isi),
+      if (teks.isNotEmpty)
+        ..._tulis(
+          teks,
+          x: m,
+          y: yAtas + sisi + m,
+          lebarBlok: w - 2 * m,
+          diTengah: true,
+        ),
+    ];
+  }
+
+  /// Sel QR terbesar yang mungkin pada susunan bertumpuk, beserta baris teks
+  /// yang masih terbawa.
+  ///
+  /// Baris dikurangi satu per satu — yang paling tidak penting duluan — sampai
+  /// QR mendapat sel yang masih layak dipindai. Dipisah menjadi fungsi sendiri
+  /// supaya hasilnya bisa **dibandingkan** dengan susunan berdampingan sebelum
+  /// salah satunya dipilih, bukan sekadar dipakai kalau yang lain gagal.
+  ({int sel, List<_TeksJadi> teks}) _selBertumpuk(List<_BarisTeks> baris, int w,
+      int h, int m, int modul, int selMaksPermintaan) {
+    final selMaksLebar =
+        _kecil(((w - 2 * m) / modul).floor(), selMaksPermintaan);
     var dipakai = baris.length;
     var sel = 1;
     var teks = <_TeksJadi>[];
@@ -540,25 +612,26 @@ class GenerateWristbandUtil {
       if (sel >= 2 || dipakai == 0) break;
       dipakai--;
     }
-    if (sel < 1) sel = 1;
+    return (sel: sel < 1 ? 1 : sel, teks: teks);
+  }
 
-    final sisi = sel * modul;
-    final tinggiTeks = _tinggiBlok(teks);
-    // Seluruh susunan (QR + jarak + teks) dipusatkan tegak, bukan menempel atas.
-    final tinggiSusun = sisi + (teks.isEmpty ? 0 : m + tinggiTeks);
-    final yAtas = ((h - tinggiSusun) / 2).round().clamp(0, h - tinggiSusun);
+  static int _kecil(int a, int b) => a < b ? a : b;
 
-    return [
-      _qr(((w - sisi) / 2).round().clamp(0, w), yAtas, sel, isi),
-      if (teks.isNotEmpty)
-        ..._tulis(
-          teks,
-          x: m,
-          y: yAtas + sisi + m,
-          lebarBlok: w - 2 * m,
-          diTengah: true,
-        ),
-    ];
+  /// Titik awal isi searah tinggi lembar, menurut perataan yang dipilih.
+  ///
+  /// Perataan berbeda dari geseran: ia tidak mengubah ukuran ruang tata letak,
+  /// hanya memilih ujung mana yang dipakai. Karena itu merapatkan isi ke atas
+  /// tidak mengecilkan QR sedikit pun, sementara menggeser sejauh yang sama
+  /// selalu mengecilkannya.
+  static int _mulaiY(int h, int tinggiIsi, int m, PosisiIsi posisi) {
+    switch (posisi) {
+      case PosisiIsi.atas:
+        return m;
+      case PosisiIsi.bawah:
+        return h - m - tinggiIsi;
+      case PosisiIsi.tengah:
+        return ((h - tinggiIsi) / 2).round();
+    }
   }
 
   /// Jarak bawah satu baris, sepertiga tinggi hurufnya.
@@ -698,8 +771,28 @@ class GenerateWristbandUtil {
     return v == bulat ? bulat.toStringAsFixed(0) : v.toStringAsFixed(1);
   }
 
-  List<int> _bytes(List<String> perintah) =>
-      latin1.encode('${perintah.join('\r\n')}\r\n');
+  /// Perintah menjadi byte, sebagai `List<int>` biasa — **bukan** `Uint8List`.
+  ///
+  /// `latin1.encode` mengembalikan `Uint8List`, dan dari Dart itu terlihat sama
+  /// saja karena bertipe `List<int>`. Tapi jembatan Flutter mengirim keduanya
+  /// dengan cara berbeda: daftar biasa sampai di Android sebagai `ArrayList`,
+  /// `Uint8List` sampai sebagai `byte[]`. Plugin printer hanya menerima yang
+  /// pertama, dan yang kedua membuatnya melempar
+  /// `ClassCastException: byte[] cannot be cast to java.util.ArrayList` — yang
+  /// di Dart hanya terlihat sebagai "cetak gagal", tanpa sebab.
+  List<int> _bytes(List<String> perintah) {
+    // Dipanjangkan sampai kelipatan 64 dengan baris kosong.
+    //
+    // Plugin printer memotong kiriman per 64 byte memakai `Arrays.copyOfRange`,
+    // yang **membantali potongan terakhir dengan byte NUL** bila panjangnya
+    // tidak pas. ESC/POS mengabaikan NUL, tapi TSPL tidak menjanjikan apa pun
+    // tentangnya. Baris kosong aman: penerjemah TSPL melewatinya.
+    final teks = StringBuffer('${perintah.join('\r\n')}\r\n');
+    while (teks.length % 64 != 0) {
+      teks.write('\n');
+    }
+    return List<int>.from(latin1.encode(teks.toString()));
+  }
 }
 
 /// Satu baris teks calon cetak, dengan dua urutan: [tampil] menentukan

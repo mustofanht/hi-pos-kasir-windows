@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
@@ -94,6 +95,27 @@ void main() {
     }
   }
 
+  group('Byte yang menyeberang ke Android', () {
+    test('bukan Uint8List, melainkan List<int> biasa', () {
+      // `latin1.encode` mengembalikan Uint8List, dan dari Dart itu terlihat
+      // sama saja karena bertipe List<int>. Jembatan Flutter mengirimkannya
+      // sebagai `byte[]`, sementara plugin printer hanya menerima `ArrayList` —
+      // hasilnya ClassCastException di sisi Android, yang di Dart hanya tampak
+      // sebagai "cetak gagal" tanpa sebab. Uji ini menjaga agar tidak kembali.
+      final c = WristbandConfigModel();
+      for (final bytes in [
+        gen.dataWristbandPrint(config: c, qrCode: '300909260012'),
+        gen.testPrint(c),
+        gen.rulerPrint(c),
+      ]) {
+        expect(bytes, isNot(isA<Uint8List>()),
+            reason: 'byte[] tidak diterima plugin printer');
+        expect(bytes, isA<List<int>>());
+        expect(bytes, isNotEmpty);
+      }
+    });
+  });
+
   group('Perintah dasar', () {
     test('kepala lembar memuat ukuran, jarak, kerapatan, dan cetak', () {
       final c = WristbandConfigModel();
@@ -161,6 +183,19 @@ void main() {
         qrCode: '290809260005',
       ));
       expect(p, contains('SET CUTTER 1'));
+      expect(p, contains('SET TEAR OFF'));
+      expect(p, isNot(contains('SET TEAR ON')));
+    });
+
+    test('tanpa maju: media tidak digerakkan setelah mencetak', () {
+      // Pada media bergelang panjang, memajukan ke bilah sobek memuntahkan sisa
+      // gelang sampai jeda berikutnya — terlihat seperti gelang kedua yang
+      // tercetak sendiri.
+      final p = perintah(gen.dataWristbandPrint(
+        config: WristbandConfigModel(potong: ModePotong.tanpaMaju),
+        qrCode: '290809260005',
+      ));
+      expect(p, contains('SET CUTTER OFF'));
       expect(p, contains('SET TEAR OFF'));
       expect(p, isNot(contains('SET TEAR ON')));
     });
@@ -471,72 +506,235 @@ void main() {
   });
 
   group('Cetak penggaris', () {
-    // Alat ukur, bukan hasil akhir. Yang harus dijamin: ia tidak ikut dipengaruhi
-    // setelan yang justru sedang dipertanyakan.
-    test('ukurannya tetap, tidak mengikuti setelan yang sedang diuji', () {
+    // Alat ukur, bukan hasil akhir. Yang dijaga: ia mengikuti media yang
+    // benar-benar terpasang, memakai perintah yang terbukti dimengerti printer,
+    // dan sumbunya mulai tepat di sudut cetak.
+    test('memakai ukuran media dari setelan', () {
+      // Versi pertama memaksa 60x60mm, dan printer melaporkan berhasil lalu
+      // tidak mengeluarkan apa pun karena ukuran itu tidak cocok dengan
+      // medianya. Penggaris yang tidak keluar tidak mengukur apa-apa.
       for (final c in [
         WristbandConfigModel(),
-        WristbandConfigModel(widthMm: 25, heightMm: 200, marginMm: 5),
-        WristbandConfigModel(widthMm: 90, heightMm: 25, geserXMm: 20),
+        WristbandConfigModel(widthMm: 25, heightMm: 80),
       ]) {
-        final p = perintah(gen.rulerPrint(c));
-        expect(p.first, 'SIZE 60 mm,60 mm');
+        expect(perintah(gen.rulerPrint(c)).first,
+            'SIZE ${c.widthMm.toInt()} mm,${c.heightMm.toInt()} mm');
       }
     });
 
-    test('geseran diabaikan, supaya sumbunya mulai dari sudut cetak', () {
-      final tanpa = perintah(gen.rulerPrint(WristbandConfigModel()));
-      final dengan = perintah(gen.rulerPrint(
-          WristbandConfigModel(geserXMm: 15, geserYMm: 5)));
-      expect(dengan, tanpa);
+    test('tidak memakai perintah BAR sama sekali', () {
+      // Setiap cetakan ber-BAR belum pernah keluar dari printer di lapangan,
+      // sementara QRCODE dan TEXT selalu keluar. Alat ukur tidak boleh ikut
+      // mempertaruhkan hasilnya pada perintah yang belum terbukti.
+      final p = perintah(gen.rulerPrint(
+          WristbandConfigModel(widthMm: 25, heightMm: 80)));
+      expect(p.any((b) => b.startsWith('BAR')), isFalse);
     });
 
-    test('kedua sumbu bernomor tiap 10mm sampai 60', () {
-      final p = perintah(gen.rulerPrint(WristbandConfigModel()));
-      for (var mm = 10; mm <= 60; mm += 10) {
-        expect(p.any((b) => b.endsWith('"L$mm"')), isTrue, reason: 'L$mm');
+    test('sependek cetakan tiket yang sudah terbukti berhasil', () {
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 80);
+      final tiket = gen.dataWristbandPrint(
+          config: c, qrCode: '300909260029', ticketNo: '300909260029');
+      expect(gen.rulerPrint(c).length, lessThan(tiket.length * 2));
+    });
+
+    test('margin dan geseran diabaikan, sumbu mulai dekat sudut cetak', () {
+      // 1mm masuk ke dalam, bukan tepat di 0: cetakan tiket yang selalu
+      // berhasil tidak pernah menggambar di koordinat 0, sementara cetakan yang
+      // tidak pernah keluar selalu mulai di sana.
+      final c = WristbandConfigModel(
+          widthMm: 25, heightMm: 80, marginMm: 5, geserXMm: 15, geserYMm: 5);
+      final asal = c.dots(1);
+      final p = perintah(gen.rulerPrint(c));
+      expect(p.any((b) => b.startsWith('TEXT $asal,$asal,')), isTrue);
+      expect(p.any((b) => b.contains(' 0,0,')), isFalse);
+    });
+
+    test('kedua sumbu bernomor tiap 20mm sejauh medianya', () {
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 80);
+      final p = perintah(gen.rulerPrint(c));
+      expect(p.any((b) => b.endsWith('"L20"')), isTrue);
+      for (var mm = 20; mm <= 60; mm += 20) {
         expect(p.any((b) => b.endsWith('"T$mm"')), isTrue, reason: 'T$mm');
       }
+      // Angka yang tidak lagi muat utuh tidak dicetak: L40 melewati lebar 25mm,
+      // dan T80 jatuh tepat di tepi bawah lembar 80mm.
+      expect(p.any((b) => b.endsWith('"L40"')), isFalse);
+      expect(p.any((b) => b.endsWith('"T80"')), isFalse);
     });
 
     test('nomor sumbu berada di jarak yang benar dari titik nol', () {
-      // Kalau angkanya tidak berada di posisi yang ia klaim, penggarisnya
-      // menyesatkan — lebih buruk daripada tidak ada penggaris sama sekali.
-      final c = WristbandConfigModel();
+      // Penggaris yang angkanya tidak berada di posisi yang ia klaim lebih buruk
+      // daripada tidak ada penggaris sama sekali.
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 80);
       final p = perintah(gen.rulerPrint(c));
-      for (var mm = 10; mm < 60; mm += 10) {
-        final d = c.dots(mm.toDouble());
-        expect(p.any((b) => b.startsWith('BAR $d,0,')), isTrue, reason: 'L$mm');
-        expect(p.any((b) => b.startsWith('BAR 0,$d,')), isTrue, reason: 'T$mm');
+      final asal = c.dots(1);
+      expect(p.any((b) => b.startsWith('TEXT ${c.dots(20)},$asal,')), isTrue);
+      for (var mm = 20; mm <= 60; mm += 20) {
+        expect(
+            p.any((b) => b.startsWith('TEXT $asal,${c.dots(mm.toDouble())},')),
+            isTrue,
+            reason: 'T$mm');
       }
     });
 
-    test('tik di tepi digeser ke dalam, bukan dihilangkan', () {
-      // 60mm jatuh persis di tepi lembar; tanpa penyesuaian ia hilang dan
-      // penggarisnya kehilangan angka terbesarnya.
-      final p = perintah(gen.rulerPrint(WristbandConfigModel()));
-      final tik = p.where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT'));
-      for (final b in tik) {
-        final e = elemen(b);
-        expect(e.x + e.w, lessThanOrEqualTo(480));
-        expect(e.y + e.h, lessThanOrEqualTo(480));
-        expect(e.x, greaterThanOrEqualTo(0));
-        expect(e.y, greaterThanOrEqualTo(0));
+    test('membawa uji putaran R0 dan R90', () {
+      final p = perintah(gen.rulerPrint(
+          WristbandConfigModel(widthMm: 25, heightMm: 80)));
+      expect(p.firstWhere((b) => b.endsWith('"R0"')).split(',')[3].trim(), '0');
+      expect(
+          p.firstWhere((b) => b.endsWith('"R90"')).split(',')[3].trim(), '90');
+    });
+
+    test('seluruh isinya tetap di dalam lembar', () {
+      for (final c in [
+        WristbandConfigModel(),
+        WristbandConfigModel(widthMm: 25, heightMm: 80),
+        WristbandConfigModel(widthMm: 19, heightMm: 180),
+        WristbandConfigModel(widthMm: 25, heightMm: 80, dpi: 300),
+      ]) {
+        periksaMuat(gen.rulerPrint(c), c);
+      }
+    });
+  });
+
+  group('Batas ukuran QR', () {
+    // Kadang yang langka bukan lebar media, melainkan panjang area yang bersih
+    // dari cetakan pabrik gelang. Isi kita harus muat di sisa itu, dan QR satu-
+    // satunya bagian yang bisa dikecilkan tanpa kehilangan makna.
+    int sisiQr(List<int> bytes) {
+      final b = perintah(bytes).firstWhere((t) => t.startsWith('QRCODE'));
+      final sel = int.parse(b.substring(6).split(',')[3].trim());
+      return GenerateWristbandUtil.modulQr(12) * sel;
+    }
+
+    List<int> cetak(WristbandConfigModel c) => gen.dataWristbandPrint(
+          config: c,
+          qrCode: '300909260039',
+          ticketNo: '300909260039',
+          berlakuSampai: 's/d 09Sep26',
+        );
+
+    test('0 berarti sebesar mungkin, seperti sebelumnya', () {
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 30, marginMm: 1);
+      expect(sisiQr(cetak(c.salin(qrMaksMm: 0))), sisiQr(cetak(c)));
+    });
+
+    test('batas ditaati, tidak dilampaui', () {
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 30, marginMm: 1);
+      for (final maks in [6.0, 8.0, 10.0]) {
+        expect(sisiQr(cetak(c.salin(qrMaksMm: maks))),
+            lessThanOrEqualTo(c.dots(maks)),
+            reason: 'batas $maks mm');
       }
     });
 
-    test('penanda nol ada di sudut awal cetak', () {
-      final p = perintah(gen.rulerPrint(WristbandConfigModel()));
-      expect(p.any((b) => b.startsWith('BAR 0,0,480,')), isTrue);
-      expect(p.any((b) => RegExp(r'^BAR 0,0,\d+,480$').hasMatch(b)), isTrue);
-      expect(p.any((b) => b.startsWith('TEXT') && b.endsWith('"0"')), isTrue);
+    test('QR mengecil membebaskan ruang menyusuri gelang', () {
+      // Inilah gunanya: isi jadi lebih pendek, sehingga muat di area bersih
+      // dan masih menyisakan ruang untuk digeser menjauhi cetakan pabrik.
+      int tinggiIsi(List<int> bytes) {
+        final e = perintah(bytes)
+            .where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT'))
+            .map(elemen);
+        final atas = e.map((v) => v.y).reduce((a, b) => a < b ? a : b);
+        final bawah = e.map((v) => v.y + v.h).reduce((a, b) => a > b ? a : b);
+        return bawah - atas;
+      }
+
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 30, marginMm: 1);
+      expect(tinggiIsi(cetak(c.salin(qrMaksMm: 7))),
+          lessThan(tinggiIsi(cetak(c))));
     });
 
-    test('mengikuti resolusi printer', () {
-      final p = perintah(gen.rulerPrint(WristbandConfigModel(dpi: 300)));
-      expect(p.first, 'SIZE 60 mm,60 mm');
-      // 60mm pada 300dpi = 709 titik, bukan 480.
-      expect(p.any((b) => b.startsWith('BAR 0,0,709,')), isTrue);
+    test('batas yang mustahil tidak membuat QR hilang', () {
+      // Setengah milimeter tidak bisa dipenuhi; QR tetap dicetak pada sel
+      // terkecil, karena gelang tanpa QR tidak berguna sama sekali.
+      final c = WristbandConfigModel(
+          widthMm: 25, heightMm: 30, marginMm: 1, qrMaksMm: 0.5);
+      expect(sisiQr(cetak(c)), greaterThan(0));
+      periksaMuat(cetak(c), c);
+    });
+
+    test('batas bertahan lewat penyimpanan, nilai mustahil ditolak', () {
+      expect(
+          WristbandConfigModel.fromJson(
+              WristbandConfigModel(qrMaksMm: 8).toJson()).qrMaksMm,
+          8);
+      expect(WristbandConfigModel.fromJson({'qrMaksMm': 999}).qrMaksMm, 0);
+    });
+  });
+
+  group('Posisi isi', () {
+    // Perataan berbeda dari geseran, dan bedanya itulah gunanya: geser
+    // memindahkan isi dengan mengorbankan ruang (QR ikut mengecil), perataan
+    // hanya memilih ujung mana yang dipakai.
+    List<int> cetak(WristbandConfigModel c) => gen.dataWristbandPrint(
+          config: c,
+          qrCode: '300909260043',
+          ticketNo: '300909260043',
+          berlakuSampai: 's/d 10Sep26',
+        );
+
+    ({int atas, int bawah, int sel}) ukur(List<int> bytes) {
+      final p = perintah(bytes);
+      final e = p
+          .where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT'))
+          .map(elemen)
+          .toList();
+      return (
+        atas: e.map((v) => v.y).reduce((a, b) => a < b ? a : b),
+        bawah: e.map((v) => v.y + v.h).reduce((a, b) => a > b ? a : b),
+        sel: int.parse(
+            p.firstWhere((b) => b.startsWith('QRCODE')).substring(6).split(',')[3]),
+      );
+    }
+
+    final dasar = WristbandConfigModel(
+        widthMm: 25, heightMm: 30, marginMm: 1, qrMaksMm: 9);
+
+    test('rapat ke atas menempel margin, bukan di tengah', () {
+      final atas = ukur(cetak(dasar.salin(posisi: PosisiIsi.atas)));
+      expect(atas.atas, dasar.marginDots);
+      expect(atas.atas,
+          lessThan(ukur(cetak(dasar.salin(posisi: PosisiIsi.tengah))).atas));
+    });
+
+    test('rapat ke bawah menempel margin bawah', () {
+      final bawah = ukur(cetak(dasar.salin(posisi: PosisiIsi.bawah)));
+      expect(bawah.bawah, dasar.heightDots - dasar.marginDots);
+    });
+
+    test('perataan tidak mengecilkan QR — inilah bedanya dari geser', () {
+      final tengah = ukur(cetak(dasar));
+      for (final p in PosisiIsi.values) {
+        expect(ukur(cetak(dasar.salin(posisi: p))).sel, tengah.sel,
+            reason: 'posisi $p');
+      }
+      // Geser sejauh yang setara justru mengecilkan.
+      expect(ukur(cetak(dasar.salin(geserYMm: -6))).sel,
+          lessThan(tengah.sel));
+    });
+
+    test('bawaannya di tengah, dan setelan lama tidak berubah sendiri', () {
+      expect(WristbandConfigModel().posisi, PosisiIsi.tengah);
+      expect(WristbandConfigModel.fromJson({}).posisi, PosisiIsi.tengah);
+      expect(
+          WristbandConfigModel.fromJson(
+              WristbandConfigModel(posisi: PosisiIsi.atas).toJson()).posisi,
+          PosisiIsi.atas);
+    });
+
+    test('semua perataan tetap di dalam lembar', () {
+      for (final p in PosisiIsi.values) {
+        for (final c in [
+          dasar.salin(posisi: p),
+          dasar.salin(posisi: p, geserYMm: 3),
+          WristbandConfigModel(posisi: p),
+          WristbandConfigModel(widthMm: 25, heightMm: 80, posisi: p),
+        ]) {
+          periksaMuat(cetak(c), c);
+        }
+      }
     });
   });
 
@@ -630,10 +828,18 @@ void main() {
     });
 
     test('cetak uji ikut tergeser, supaya mewakili cetak sungguhan', () {
+      // Diukur pada QR-nya saja: penanda sudut cetak uji sengaja **tidak**
+      // ikut bergeser — ia menandai batas media, bukan isi.
+      int xQr(List<int> bytes) => int.parse(perintah(bytes)
+          .firstWhere((b) => b.startsWith('QRCODE'))
+          .substring(6)
+          .split(',')[0]
+          .trim());
+
       final asal = WristbandConfigModel(widthMm: 90, heightMm: 25);
-      final a = tengah(gen.testPrint(asal));
-      final b = tengah(gen.testPrint(asal.salin(geserXMm: 10)));
-      expect((b.x - a.x - asal.dots(10)).abs(), lessThanOrEqualTo(toleransi));
+      final selisih = xQr(gen.testPrint(asal.salin(geserXMm: 10))) -
+          xQr(gen.testPrint(asal));
+      expect((selisih - asal.dots(10)).abs(), lessThanOrEqualTo(toleransi));
     });
 
     test('geseran bertahan lewat penyimpanan setelan', () {
