@@ -409,6 +409,10 @@ class GenerateWristbandUtil {
       'DENSITY ${config.density}',
       'SPEED ${config.speed}',
       ..._pemisah(config.potong),
+      // Hanya dikirim bila dipakai. Perintah asing bisa membuat sebagian
+      // firmware menolak seluruh lembar tanpa mengeluh, dan tidak ada alasan
+      // menanggung risiko itu pada printer yang tidak membutuhkannya.
+      if (config.shiftMm != 0) 'SHIFT ${config.dots(config.shiftMm)}',
       'CLS',
     ];
   }

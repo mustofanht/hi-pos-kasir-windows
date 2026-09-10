@@ -664,6 +664,54 @@ void main() {
     });
   });
 
+  group('Geser lembar (SHIFT)', () {
+    // Memindahkan lembar terhadap takik gelang — satu-satunya cara mencetak di
+    // atas titik awal cetak, yang tidak bisa dijangkau tata letak.
+    test('tidak dikirim sama sekali saat 0', () {
+      // Perintah asing bisa membuat sebagian firmware menolak seluruh lembar
+      // tanpa mengeluh; printer yang tidak membutuhkannya tidak boleh ikut
+      // menanggung risikonya.
+      final p = perintah(gen.dataWristbandPrint(
+          config: WristbandConfigModel(), qrCode: '290809260005'));
+      expect(p.any((b) => b.startsWith('SHIFT')), isFalse);
+    });
+
+    test('dikirim dalam titik, bukan milimeter', () {
+      final c = WristbandConfigModel(shiftMm: -7);
+      final p = perintah(
+          gen.dataWristbandPrint(config: c, qrCode: '290809260005'));
+      expect(p, contains('SHIFT ${c.dots(-7)}'));
+    });
+
+    test('mendahului CLS, sebelum lembar disiapkan', () {
+      final p = perintah(gen.dataWristbandPrint(
+          config: WristbandConfigModel(shiftMm: -7), qrCode: 'X'));
+      expect(p.indexWhere((b) => b.startsWith('SHIFT')),
+          lessThan(p.indexOf('CLS')));
+    });
+
+    test('tidak mengubah tata letak isi sedikit pun', () {
+      // Yang bergeser lembarnya, bukan isinya di dalam lembar.
+      final c = WristbandConfigModel(widthMm: 25, heightMm: 30, marginMm: 1);
+      final tanpa = perintah(gen.dataWristbandPrint(
+          config: c, qrCode: '300909260043', ticketNo: '300909260043'));
+      final dengan = perintah(gen.dataWristbandPrint(
+          config: c.salin(shiftMm: -7),
+          qrCode: '300909260043',
+          ticketNo: '300909260043'));
+      expect(dengan.where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT')),
+          tanpa.where((b) => b.startsWith('QRCODE') || b.startsWith('TEXT')));
+    });
+
+    test('bertahan lewat penyimpanan, nilai mustahil ditolak', () {
+      expect(
+          WristbandConfigModel.fromJson(
+              WristbandConfigModel(shiftMm: -7).toJson()).shiftMm,
+          -7);
+      expect(WristbandConfigModel.fromJson({'shiftMm': 999}).shiftMm, 0);
+    });
+  });
+
   group('Posisi isi', () {
     // Perataan berbeda dari geseran, dan bedanya itulah gunanya: geser
     // memindahkan isi dengan mengorbankan ruang (QR ikut mengecil), perataan

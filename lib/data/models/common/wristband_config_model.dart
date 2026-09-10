@@ -94,6 +94,24 @@ class WristbandConfigModel {
   /// Geseran cetakan searah kolom **Tinggi**, dalam milimeter. Boleh negatif.
   double geserYMm;
 
+  /// Menggeser **seluruh lembar** terhadap titik registrasi media, dalam
+  /// milimeter. Boleh negatif. 0 berarti tidak dikirim sama sekali.
+  ///
+  /// Berbeda dari Geser Y dan Posisi isi, yang keduanya memindahkan isi **di
+  /// dalam** lembar. Ini memindahkan lembarnya sendiri terhadap gelang —
+  /// satu-satunya cara mencetak di atas titik awal cetak, yang tidak bisa
+  /// dijangkau tata letak.
+  ///
+  /// Dipakai saat printer sudah mengunci takik gelang tapi titik awalnya jatuh
+  /// beberapa milimeter dari tempat yang diinginkan. Nilai negatif memajukan
+  /// cetakan ke arah awal gelang.
+  ///
+  /// Dikirim sebagai perintah `SHIFT` dan **tidak semua firmware TSPL
+  /// mendukungnya**. Karena itu bawaannya 0 dan perintahnya tidak dikirim sama
+  /// sekali — printer yang menolak perintah asing tidak ikut terganggu selama
+  /// setelan ini tidak dipakai.
+  double shiftMm;
+
   /// Perataan isi searah kolom Tinggi. Lihat [PosisiIsi].
   PosisiIsi posisi;
 
@@ -150,6 +168,7 @@ class WristbandConfigModel {
     this.putarIsi = false,
     this.qrMaksMm = 0,
     this.posisi = PosisiIsi.tengah,
+    this.shiftMm = 0,
   });
 
   /// Titik per milimeter untuk resolusi ini.
@@ -177,6 +196,7 @@ class WristbandConfigModel {
     bool? putarIsi,
     double? qrMaksMm,
     PosisiIsi? posisi,
+    double? shiftMm,
   }) {
     return WristbandConfigModel(
       dpi: dpi ?? this.dpi,
@@ -194,6 +214,7 @@ class WristbandConfigModel {
       putarIsi: putarIsi ?? this.putarIsi,
       qrMaksMm: qrMaksMm ?? this.qrMaksMm,
       posisi: posisi ?? this.posisi,
+      shiftMm: shiftMm ?? this.shiftMm,
     );
   }
 
@@ -213,6 +234,7 @@ class WristbandConfigModel {
         'putarIsi': putarIsi,
         'qrMaksMm': qrMaksMm,
         'posisi': posisi.name,
+        'shiftMm': shiftMm,
       };
 
   /// Nilai di luar akal dianggap tidak ada dan diganti bawaan. Berkas setelan
@@ -257,6 +279,7 @@ class WristbandConfigModel {
         (e) => e.name == json['posisi'],
         orElse: () => PosisiIsi.tengah,
       ),
+      shiftMm: angka('shiftMm', 0, -100, 100),
     );
   }
 }

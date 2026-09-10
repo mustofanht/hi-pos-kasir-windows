@@ -707,6 +707,7 @@ class SettingPage extends GetView<SettingPageController> {
                 _kotakAngka('QR maks (mm)', controller.qrMaksGelangController),
                 _kotakAngka('Geser X (mm)', controller.geserXGelangController),
                 _kotakAngka('Geser Y (mm)', controller.geserYGelangController),
+                _kotakAngka('Geser lembar (mm)', controller.shiftGelangController),
               ],
             ),
             SizedBox(height: layoutStyle.defaultMargin / 2),
@@ -813,6 +814,14 @@ class SettingPage extends GetView<SettingPageController> {
                   ),
                 ),
               ],
+            ),
+            Text(
+              'Geser lembar memindahkan seluruh lembar terhadap takik gelang — '
+              'satu-satunya cara mencetak di atas titik awal cetak. Nilai '
+              'negatif memajukan ke arah awal gelang. Tidak semua printer '
+              'mendukungnya; kalau setelahnya tidak ada yang tercetak, '
+              'kembalikan ke 0.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
             Text(
               'Posisi isi memilih ujung lembar mana yang dipakai — tidak '

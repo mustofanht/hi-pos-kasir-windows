@@ -71,6 +71,7 @@ class SettingPageController extends GetxController
   final qrMaksGelangController = TextEditingController();
   final geserXGelangController = TextEditingController();
   final geserYGelangController = TextEditingController();
+  final shiftGelangController = TextEditingController();
   final dpiGelang = 203.obs;
   final kerapatanGelang = 8.obs;
   final kecepatanGelang = 4.obs;
@@ -291,6 +292,7 @@ class SettingPageController extends GetxController
     qrMaksGelangController.text = _angka(c.qrMaksMm);
     geserXGelangController.text = _angka(c.geserXMm);
     geserYGelangController.text = _angka(c.geserYMm);
+    shiftGelangController.text = _angka(c.shiftMm);
     dpiGelang.value = c.dpi;
     kerapatanGelang.value = c.density;
     kecepatanGelang.value = c.speed;
@@ -389,6 +391,7 @@ class SettingPageController extends GetxController
     final jarak = double.tryParse(jarakGelangController.text.replaceAll(',', '.'));
     final margin = double.tryParse(marginGelangController.text.replaceAll(',', '.'));
     final qrMaks = double.tryParse(qrMaksGelangController.text.replaceAll(',', '.'));
+    final shift = double.tryParse(shiftGelangController.text.replaceAll(',', '.'));
     final geserX = double.tryParse(geserXGelangController.text.replaceAll(',', '.'));
     final geserY = double.tryParse(geserYGelangController.text.replaceAll(',', '.'));
 
@@ -409,6 +412,10 @@ class SettingPageController extends GetxController
       return;
     }
 
+    if (shift == null || shift < -100 || shift > 100) {
+      alert.warning('Ukuran Salah', 'Geser lembar harus -100 sampai 100 mm.');
+      return;
+    }
     if (qrMaks == null || qrMaks < 0 || qrMaks > 50) {
       alert.warning('Ukuran Salah', 'QR maks harus 0-50 mm (0 = otomatis).');
       return;
@@ -438,6 +445,7 @@ class SettingPageController extends GetxController
       gelangPendamping: gelangPendamping.value,
       putarIsi: putarIsiGelang.value,
       posisi: posisiGelang.value,
+      shiftMm: shift,
     ));
     alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
     update();
