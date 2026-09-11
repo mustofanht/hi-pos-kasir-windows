@@ -71,6 +71,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
   await GetStorage.init("sessions");
+  // Setelan perangkat (printer gelang dan ukuran medianya) sengaja di kotak
+  // terpisah: kotak "sessions" dihapus seluruhnya setiap kali kasir logout.
+  await GetStorage.init("perangkat");
   runApp(MyApp());
 }
 

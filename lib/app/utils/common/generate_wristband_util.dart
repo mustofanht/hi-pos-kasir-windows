@@ -44,9 +44,21 @@ class GenerateWristbandUtil {
     return 33; // versi 4
   }
 
-  /// Sisi QR termasuk zona sunyi 4 modul di setiap tepi. Tanpa zona ini pemindai
-  /// sering gagal mengunci sudut QR, terutama pada cetakan kecil.
-  static int _modulTotal(int panjang) => modulQr(panjang) + 8;
+  /// Zona sunyi yang **dipesan di tata letak**, dalam modul, per tepi.
+  ///
+  /// Standar QR meminta 4 modul. Di sini dipesan 2, dan sisanya diserahkan pada
+  /// medianya sendiri: gelang 25mm yang polos di kiri-kanan QR sudah menyediakan
+  /// beberapa milimeter putih sungguhan di tiap tepi, dan memesan ruang untuk
+  /// putih yang sudah ada berarti membayarnya dua kali — dengan QR yang mengecil.
+  ///
+  /// Bedanya tidak kecil. Pada pita 25mm, 4 modul menahan QR di 15,8mm; 2 modul
+  /// melepaskannya ke 18,4mm. Pada gelang bermerek yang hanya menyisakan 20mm
+  /// bersih, selisih itu menentukan QR terbaca sekali pindai atau tidak.
+  static const int _zonaSunyi = 2;
+
+  /// Sisi kotak yang dipesan satu QR: simbolnya sendiri ditambah zona sunyi di
+  /// kedua tepi. Lihat [_zonaSunyi].
+  static int _modulTotal(int panjang) => modulQr(panjang) + 2 * _zonaSunyi;
 
   /// Susun satu gelang.
   ///
@@ -400,8 +412,7 @@ class GenerateWristbandUtil {
   List<String> _kepala(WristbandConfigModel config) {
     return <String>[
       'SIZE ${_mm(config.widthMm)} mm,${_mm(config.heightMm)} mm',
-      // GAP 0 berarti media menyambung tanpa jeda; printer memotong sesuai SIZE.
-      'GAP ${_mm(config.gapMm)} mm,0 mm',
+      ..._sensorMedia(config),
       'DIRECTION ${config.direction}',
       'REFERENCE 0,0',
       'DENSITY ${config.density}',
@@ -413,6 +424,30 @@ class GenerateWristbandUtil {
       if (config.shiftMm != 0) 'SHIFT ${config.dots(config.shiftMm)}',
       'CLS',
     ];
+  }
+
+  /// Cara batas antar gelang dikenali printer.
+  ///
+  /// `GAP` dan `BLINE` adalah dua perintah yang **saling menggantikan**, bukan
+  /// dua setelan yang bisa hidup bersama: yang terakhir dikirim menentukan
+  /// sensor mana yang dipakai. Mengirim keduanya membuat perilakunya bergantung
+  /// urutan, dan itu jenis kesalahan yang baru terlihat berbulan-bulan kemudian
+  /// saat gulungan mereknya berganti.
+  ///
+  /// Mode menyambung sengaja mengirim `GAP 0 mm,0 mm` secara eksplisit, bukan
+  /// tidak mengirim apa-apa. Printer menyimpan setelan sensor terakhirnya di
+  /// memori — termasuk dari kalibrasi tombol FEED — jadi diam berarti mewarisi
+  /// keadaan yang tidak diketahui, dan gelang pertama tiap pagi bisa keluar
+  /// berbeda dari yang kemarin.
+  List<String> _sensorMedia(WristbandConfigModel config) {
+    switch (config.sensor) {
+      case SensorMedia.menerus:
+        return const ['GAP 0 mm,0 mm'];
+      case SensorMedia.celah:
+        return ['GAP ${_mm(config.gapMm)} mm,0 mm'];
+      case SensorMedia.tandaHitam:
+        return ['BLINE ${_mm(config.gapMm)} mm,0 mm'];
+    }
   }
 
   /// Cara media dipisahkan.
@@ -759,8 +794,17 @@ class GenerateWristbandUtil {
   /// Koreksi galat **M** (±15%) dipilih dengan sengaja: gelang dipakai di kolam
   /// dan wahana basah, kena gesek dan lipatan, jadi QR-nya harus tetap terbaca
   /// meski sebagian rusak. Tingkat L lebih rapat tapi menyerah lebih cepat.
-  String _qr(int x, int y, int sel, String isi) =>
-      'QRCODE $x,$y,M,$sel,A,0,"${_kutip(isi)}"';
+  /// [x] dan [y] adalah pojok **kotak** yang dipesan tata letak, bukan pojok
+  /// simbolnya. Zona sunyinya dibagi rata ke empat tepi di sini.
+  ///
+  /// Dulu simbol digambar tepat di pojok kotak, sehingga seluruh zona sunyi
+  /// menumpuk di sisi kanan dan bawah saja. Akibatnya QR yang "dipusatkan"
+  /// tata letak justru tercetak melenceng ke kiri-atas beberapa milimeter —
+  /// terlihat jelas pada pita 25mm, dan sempat dikira salah setelan margin.
+  String _qr(int x, int y, int sel, String isi) {
+    final sunyi = _zonaSunyi * sel;
+    return 'QRCODE ${x + sunyi},${y + sunyi},M,$sel,A,0,"${_kutip(isi)}"';
+  }
 
   /// TSPL menutup isi perintah dengan tanda kutip ganda, jadi kutip dan garis
   /// miring balik di dalam isi harus dilindungi — kalau tidak, perintahnya

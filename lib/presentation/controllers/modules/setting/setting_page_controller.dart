@@ -80,6 +80,7 @@ class SettingPageController extends GetxController
   final gelangPendamping = true.obs;
   final putarIsiGelang = false.obs;
   final posisiGelang = PosisiIsi.tengah.obs;
+  final sensorGelang = SensorMedia.menerus.obs;
 
   @override
   Future<void> onInit() async {
@@ -301,6 +302,7 @@ class SettingPageController extends GetxController
     gelangPendamping.value = c.gelangPendamping;
     putarIsiGelang.value = c.putarIsi;
     posisiGelang.value = c.posisi;
+    sensorGelang.value = c.sensor;
 
     final tersimpan = printerUtil.wristbandPrinter;
     selectedPrinterGelang.value = tersimpan == null
@@ -445,6 +447,7 @@ class SettingPageController extends GetxController
       gelangPendamping: gelangPendamping.value,
       putarIsi: putarIsiGelang.value,
       posisi: posisiGelang.value,
+      sensor: sensorGelang.value,
       shiftMm: shift,
     ));
     alert.success('Tersimpan', 'Ukuran media gelang disimpan.');

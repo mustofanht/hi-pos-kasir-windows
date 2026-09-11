@@ -713,6 +713,17 @@ class SettingPage extends GetView<SettingPageController> {
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
+                _kotakPilihan<SensorMedia>(
+                  'Sensor media',
+                  controller.sensorGelang.value,
+                  SensorMedia.values,
+                  (v) => controller.sensorGelang.value = v,
+                  teks: (v) => switch (v) {
+                    SensorMedia.menerus => 'Menyambung (tanpa penanda)',
+                    SensorMedia.celah => 'Celah antar gelang',
+                    SensorMedia.tandaHitam => 'Tanda hitam di balik media',
+                  },
+                ),
                 _kotakPilihan<PosisiIsi>(
                   'Posisi isi',
                   controller.posisiGelang.value,

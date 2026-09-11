@@ -118,7 +118,7 @@ void main() {
 
   group('Perintah dasar', () {
     test('kepala lembar memuat ukuran, jarak, kerapatan, dan cetak', () {
-      final c = WristbandConfigModel();
+      final c = WristbandConfigModel(sensor: SensorMedia.celah);
       final p = perintah(gen.dataWristbandPrint(
         config: c,
         qrCode: '290809260005',
@@ -137,7 +137,11 @@ void main() {
     test('ukuran milimeter tanpa nol di belakang koma', () {
       // Sebagian firmware TSPL menolak "50.0 mm" tapi menerima "50 mm".
       final p = perintah(gen.dataWristbandPrint(
-        config: WristbandConfigModel(widthMm: 50, heightMm: 25, gapMm: 2.5),
+        config: WristbandConfigModel(
+            widthMm: 50,
+            heightMm: 25,
+            gapMm: 2.5,
+            sensor: SensorMedia.celah),
         qrCode: 'X',
       ));
       expect(p.first, 'SIZE 50 mm,25 mm');
@@ -159,6 +163,49 @@ void main() {
         salinan: 2,
       ));
       expect(p.last, 'PRINT 2,1');
+    });
+  });
+
+  group('Sensor batas gelang', () {
+    // `GAP` dan `BLINE` saling menggantikan. Mengirim keduanya membuat sensor
+    // mana yang aktif bergantung urutan perintah — jenis kesalahan yang baru
+    // terlihat saat merek gulungannya berganti.
+    List<String> kepala(SensorMedia sensor, double gapMm) => perintah(
+          gen.dataWristbandPrint(
+            config: WristbandConfigModel(sensor: sensor, gapMm: gapMm),
+            qrCode: '290809260005',
+          ),
+        );
+
+    test('menyambung mengirim GAP nol, bukan diam', () {
+      // Printer menyimpan setelan sensor terakhirnya — termasuk dari kalibrasi
+      // tombol FEED. Diam berarti mewarisi keadaan yang tidak diketahui.
+      final p = kepala(SensorMedia.menerus, 3);
+      expect(p, contains('GAP 0 mm,0 mm'));
+      expect(p.any((b) => b.startsWith('BLINE')), isFalse);
+    });
+
+    test('celah memakai GAP setinggi kolom Jarak', () {
+      final p = kepala(SensorMedia.celah, 2.5);
+      expect(p.any((b) => b.startsWith('GAP 2.5 mm')), isTrue,
+          reason: p.toString());
+      expect(p.any((b) => b.startsWith('BLINE')), isFalse);
+    });
+
+    test('tanda hitam memakai BLINE, dan GAP tidak ikut dikirim', () {
+      final p = kepala(SensorMedia.tandaHitam, 3);
+      expect(p.any((b) => b.startsWith('BLINE 3 mm')), isTrue,
+          reason: p.toString());
+      expect(p.any((b) => b.startsWith('GAP')), isFalse);
+    });
+
+    test('bawaannya menyambung dan bertahan disimpan', () {
+      expect(WristbandConfigModel().sensor, SensorMedia.menerus);
+      expect(
+          WristbandConfigModel.fromJson(
+                  WristbandConfigModel(sensor: SensorMedia.tandaHitam).toJson())
+              .sensor,
+          SensorMedia.tandaHitam);
     });
   });
 
@@ -307,8 +354,8 @@ void main() {
       // Cabang QR-saja dulu memusatkan tanpa melihat perataan, dan pada gelang
       // bermerek itu berarti QR meluncur turun ke atas cetakan pabrik justru
       // pada mode yang dipilih supaya QR sebesar mungkin.
-      int atasQr(PosisiIsi posisi) {
-        final qr = perintah(gen.dataWristbandPrint(
+      ({int y, int sel}) qr(PosisiIsi posisi) {
+        final b = perintah(gen.dataWristbandPrint(
           config: WristbandConfigModel(
             widthMm: 25,
             heightMm: 30,
@@ -318,13 +365,16 @@ void main() {
           ),
           qrCode: '301009260015',
         )).firstWhere((b) => b.startsWith('QRCODE'));
-        return int.parse(qr.substring(6).split(',')[1].trim());
+        final a = b.substring(6).split(',');
+        return (y: int.parse(a[1].trim()), sel: int.parse(a[3].trim()));
       }
 
-      expect(atasQr(PosisiIsi.atas), lessThan(atasQr(PosisiIsi.tengah)));
-      expect(atasQr(PosisiIsi.tengah), lessThan(atasQr(PosisiIsi.bawah)));
-      // Rapat ke atas berarti tepat di margin, bukan sekadar lebih atas.
-      expect(atasQr(PosisiIsi.atas), 8);
+      expect(qr(PosisiIsi.atas).y, lessThan(qr(PosisiIsi.tengah).y));
+      expect(qr(PosisiIsi.tengah).y, lessThan(qr(PosisiIsi.bawah).y));
+      // Rapat ke atas berarti kotaknya tepat di margin. Yang dikirim ke printer
+      // adalah pojok simbolnya, jadi margin ditambah zona sunyi kiri-atas.
+      final atas = qr(PosisiIsi.atas);
+      expect(atas.y, 8 + 2 * atas.sel);
     });
 
     test('gelang pendamping tidak diberi penanda tercetak', () {
@@ -833,8 +883,11 @@ void main() {
         expect(ukur(cetak(dasar.salin(posisi: p))).sel, tengah.sel,
             reason: 'posisi $p');
       }
-      // Geser sejauh yang setara justru mengecilkan.
-      expect(ukur(cetak(dasar.salin(geserYMm: -6))).sel,
+      // Geser sejauh yang setara justru mengecilkan. Geseran memakan ruang dua
+      // kali lipat jaraknya — sekali di tiap tepi — jadi 10mm menyisakan
+      // sepertiga lembar dan sudah cukup untuk
+      // menjatuhkan sel QR pada lembar 30mm.
+      expect(ukur(cetak(dasar.salin(geserYMm: -10))).sel,
           lessThan(tengah.sel));
     });
 

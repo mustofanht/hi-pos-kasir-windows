@@ -45,6 +45,30 @@ enum PosisiIsi {
   bawah,
 }
 
+/// Cara printer mengetahui di mana satu gelang berakhir dan yang berikutnya
+/// mulai.
+///
+/// Ini yang menentukan apakah cetakan **teregistrasi** — selalu jatuh di tempat
+/// yang sama pada tiap gelang — atau hanyut sedikit demi sedikit. Kolom Pemisah
+/// gelang tidak bisa menggantikannya: pemisah cuma mengatur apa yang dilakukan
+/// *setelah* mencetak, sedangkan ini menjawab *sampai di mana*.
+enum SensorMedia {
+  /// Media menyambung tanpa penanda. Printer memajukan persis setinggi SIZE,
+  /// tidak tahu apa-apa soal gelangnya. Aman di mana saja, tapi posisi cetakan
+  /// hanyut kalau tinggi lembar tidak sama persis dengan panjang gelang.
+  menerus,
+
+  /// Ada celah (jeda tembus cahaya) antar gelang. Umum pada label, jarang pada
+  /// gulungan gelang — dan mencarinya pada media yang tidak punya celah membuat
+  /// printer memutar media tanpa henti.
+  celah,
+
+  /// Ada tanda hitam tercetak di balik media pada tiap batas gelang. Inilah yang
+  /// dipakai kebanyakan gulungan gelang rumah sakit, dan yang dilaporkan
+  /// halaman self-test printer ini sebagai `Sensor type: black mark`.
+  tandaHitam,
+}
+
 /// Ukuran dan setelan media gelang.
 ///
 /// Semuanya bisa diubah dari layar Pengaturan karena media gelang tidak
@@ -112,6 +136,15 @@ class WristbandConfigModel {
   /// setelan ini tidak dipakai.
   double shiftMm;
 
+  /// Cara batas gelang dikenali. Lihat [SensorMedia].
+  ///
+  /// Nilai [gapMm] dipakai ulang sebagai ukurannya: tinggi celah pada mode
+  /// [SensorMedia.celah], tinggi tanda hitam pada [SensorMedia.tandaHitam].
+  /// Satu kolom untuk dua arti memang tidak ideal, tapi keduanya tidak pernah
+  /// dipakai bersamaan dan menambah kolom kedua hanya akan membuat operator
+  /// mengisi yang salah.
+  SensorMedia sensor;
+
   /// Perataan isi searah kolom Tinggi. Lihat [PosisiIsi].
   PosisiIsi posisi;
 
@@ -168,6 +201,7 @@ class WristbandConfigModel {
     this.putarIsi = false,
     this.qrMaksMm = 0,
     this.posisi = PosisiIsi.tengah,
+    this.sensor = SensorMedia.menerus,
     this.shiftMm = 0,
   });
 
@@ -196,6 +230,7 @@ class WristbandConfigModel {
     bool? putarIsi,
     double? qrMaksMm,
     PosisiIsi? posisi,
+    SensorMedia? sensor,
     double? shiftMm,
   }) {
     return WristbandConfigModel(
@@ -214,6 +249,7 @@ class WristbandConfigModel {
       putarIsi: putarIsi ?? this.putarIsi,
       qrMaksMm: qrMaksMm ?? this.qrMaksMm,
       posisi: posisi ?? this.posisi,
+      sensor: sensor ?? this.sensor,
       shiftMm: shiftMm ?? this.shiftMm,
     );
   }
@@ -234,6 +270,7 @@ class WristbandConfigModel {
         'putarIsi': putarIsi,
         'qrMaksMm': qrMaksMm,
         'posisi': posisi.name,
+        'sensor': sensor.name,
         'shiftMm': shiftMm,
       };
 
@@ -275,6 +312,19 @@ class WristbandConfigModel {
       gelangPendamping: json['gelangPendamping'] != false,
       putarIsi: json['putarIsi'] == true,
       qrMaksMm: angka('qrMaksMm', 0, 0, 50),
+      // Setelan lama tidak punya kunci ini. Menyimpulkannya dari Jarak, bukan
+      // memaksanya ke bawaan: perangkat yang sudah berjalan dengan Jarak > 0
+      // memang memakai sensor celah, dan diam-diam mematikannya akan membuat
+      // cetakan pertama setelah pembaruan keluar berbeda tanpa ada yang
+      // mengubah setelan apa pun.
+      sensor: json['sensor'] == null
+          ? (angka('gapMm', 2, 0, 20) > 0
+              ? SensorMedia.celah
+              : SensorMedia.menerus)
+          : SensorMedia.values.firstWhere(
+              (e) => e.name == json['sensor'],
+              orElse: () => SensorMedia.menerus,
+            ),
       posisi: PosisiIsi.values.firstWhere(
         (e) => e.name == json['posisi'],
         orElse: () => PosisiIsi.tengah,

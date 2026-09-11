@@ -26,7 +26,22 @@ class PrinterUtil {
   final _reconnect = false;
   List<PrinterModel> printerList = [];
 
-  static final GetStorage _store = GetStorage("sessions");
+  /// Setelan printer gelang disimpan di kotak **perangkat**, bukan kotak sesi.
+  ///
+  /// Kotak "sessions" dihapus utuh (`erase()`) setiap kali kasir logout. Selama
+  /// setelan gelang tinggal di sana, satu kali ganti shift sudah cukup untuk
+  /// menghapus hasil kalibrasi media yang didapat lewat puluhan gelang
+  /// percobaan. Kehilangannya juga tidak kelihatan saat itu: setelan di memori
+  /// masih utuh sampai aplikasi ditutup, lalu keesokan paginya gelang keluar
+  /// dengan ukuran bawaan 50x25mm, atau QR-nya diam-diam kembali ke kertas struk.
+  ///
+  /// Printer dan medianya melekat pada perangkat, bukan pada kasir yang sedang
+  /// masuk.
+  static final GetStorage _store = GetStorage("perangkat");
+
+  /// Kotak lama, hanya untuk memindahkan setelan yang tersimpan sebelum
+  /// pemisahan di atas. Lihat [muatSetelanGelang].
+  static final GetStorage _storeLama = GetStorage("sessions");
 
   /// Printer USB mana yang **benar-benar** sedang dipilih di sisi Android.
   ///
@@ -64,6 +79,7 @@ class PrinterUtil {
 
   /// Membaca setelan gelang yang tersimpan. Dipanggil sekali saat aplikasi mulai.
   void muatSetelanGelang() {
+    _pindahkanDariSesi();
     try {
       final printer = _store.read(constant.wristbandPrinter);
       if (printer is Map) wristbandPrinter = PrinterModel.fromJson(printer);
@@ -77,6 +93,30 @@ class PrinterUtil {
       wristbandConfig = WristbandConfigModel();
     }
     logger.safeLog('PRINTER GELANG : ${wristbandPrinter?.deviceName ?? "(belum diatur)"}');
+  }
+
+  /// Memindahkan setelan gelang dari kotak sesi ke kotak perangkat, sekali.
+  ///
+  /// Perangkat yang sudah dikalibrasi sebelum pembaruan ini menyimpan setelannya
+  /// di kotak sesi. Tanpa pemindahan, pembaruan aplikasi itu sendiri akan
+  /// menghapus kalibrasinya — persis masalah yang sedang diperbaiki.
+  ///
+  /// Hanya menyalin bila kotak perangkat belum punya nilai, supaya setelan yang
+  /// lebih baru tidak pernah tertimpa yang lama.
+  void _pindahkanDariSesi() {
+    for (final kunci in [constant.wristbandPrinter, constant.wristbandConfig]) {
+      try {
+        final lama = _storeLama.read(kunci);
+        if (lama == null) continue;
+        if (_store.read(kunci) == null) {
+          _store.write(kunci, lama);
+          logger.safeLog('SETELAN GELANG dipindah dari sesi : $kunci');
+        }
+        _storeLama.remove(kunci);
+      } catch (e) {
+        logger.safeLog('Setelan gelang gagal dipindah ($kunci) : $e');
+      }
+    }
   }
 
   void simpanPrinterGelang(PrinterModel? printer) {
