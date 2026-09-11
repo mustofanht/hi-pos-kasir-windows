@@ -48,6 +48,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/app/utils/translation/app_translation.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
@@ -74,6 +75,16 @@ Future<void> main() async {
   // Setelan perangkat (printer gelang dan ukuran medianya) sengaja di kotak
   // terpisah: kotak "sessions" dihapus seluruhnya setiap kali kasir logout.
   await GetStorage.init("perangkat");
+  // Dibaca di sini, bukan di `AppCommon.globalInitialize`: fungsi itu hanya
+  // terpanggil lewat `AppMain`, dan `AppMain` tidak pernah dipakai sejak aplikasi
+  // berpindah ke `GetMaterialApp`. Setelan gelang ditulis ke penyimpanan tapi
+  // tidak pernah dibaca balik — setiap aplikasi dibuka ulang, printer gelang
+  // kembali "belum diatur" dan ukuran medianya kembali ke bawaan 50x25mm.
+  //
+  // Harus sebelum halaman mana pun terbuka: pemilihan otomatis printer struk
+  // melewati printer gelang yang tersimpan, dan tanpa itu gelang TSPL bisa
+  // terpilih sebagai printer struk lagi.
+  printerUtil.muatSetelanGelang();
   runApp(MyApp());
 }
 
