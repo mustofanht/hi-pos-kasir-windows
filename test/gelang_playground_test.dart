@@ -214,4 +214,107 @@ void main() {
           reason: 'tiket "${t.ticketName}" harus ada di tepat satu daftar');
     }
   });
+
+  group('Baris nama di gelang', () {
+    ResponseCreateTicketNoEntity t(
+      String no, {
+      bool pendamping = false,
+      String? anak,
+      String tiket = 'Tiket 1 jam weekday',
+    }) =>
+        ResponseCreateTicketNoEntity(
+          ticketNo: no,
+          // Server membubuhkan akhiran ini pada tiket pendamping yang baru dibuat.
+          ticketName: pendamping ? '$tiket (Pendamping)' : tiket,
+          isCompanion: pendamping ? 'Y' : 'N',
+          childName: pendamping ? 'Pendamping' : anak,
+        );
+
+    test('tiket anak berisi nama anak, pendamping berisi Pendamping (nama anak)',
+        () {
+      final b = GelangUtil.barisNama([
+        t('301009260015', anak: 'rita'),
+        t('301009260016', pendamping: true),
+      ]);
+      expect(b['301009260015'], 'rita');
+      expect(b['301009260016'], 'Pendamping (rita)');
+    });
+
+    test('dua anak: tiap pendamping dipasangkan dengan anaknya sendiri', () {
+      final b = GelangUtil.barisNama([
+        t('301009260015', anak: 'rita'),
+        t('301009260016', pendamping: true),
+        t('301009260017', anak: 'budi'),
+        t('301009260018', pendamping: true),
+      ]);
+      expect(b['301009260016'], 'Pendamping (rita)');
+      expect(b['301009260018'], 'Pendamping (budi)');
+    });
+
+    test('urutan balasan server diabaikan — dipasangkan menurut nomor tiket', () {
+      // Cetak ulang membaca tiket tanpa ORDER BY sambil memperbarui statusnya;
+      // urutan yang datang bisa teracak.
+      final b = GelangUtil.barisNama([
+        t('301009260018', pendamping: true),
+        t('301009260015', anak: 'rita'),
+        t('301009260017', anak: 'budi'),
+        t('301009260016', pendamping: true),
+      ]);
+      expect(b['301009260016'], 'Pendamping (rita)');
+      expect(b['301009260018'], 'Pendamping (budi)');
+    });
+
+    test('cetak ulang: nama tiket pendamping tanpa akhiran tetap dipasangkan', () {
+      // Jalur tiket-sudah-ada di server mengirim nama katalog apa adanya.
+      final b = GelangUtil.barisNama([
+        ResponseCreateTicketNoEntity(
+            ticketNo: '301009260015',
+            ticketName: 'Tiket 1 jam weekday',
+            isCompanion: 'N',
+            childName: 'rita'),
+        ResponseCreateTicketNoEntity(
+            ticketNo: '301009260016',
+            ticketName: 'Tiket 1 jam weekday',
+            isCompanion: 'Y',
+            childName: 'Pendamping'),
+      ]);
+      expect(b['301009260016'], 'Pendamping (rita)');
+    });
+
+    test('nama anak kosong: dipakai nama pemesan, seperti papan TV', () {
+      final b = GelangUtil.barisNama([
+        t('301009260015'),
+        t('301009260016', pendamping: true),
+      ], pembeli: 'rita');
+      expect(b['301009260015'], 'rita');
+      expect(b['301009260016'], 'Pendamping (rita)');
+    });
+
+    test('tanpa nama sama sekali: pendamping tetap bertanda', () {
+      final b = GelangUtil.barisNama([
+        t('301009260015'),
+        t('301009260016', pendamping: true),
+      ]);
+      expect(b['301009260015'], isNull);
+      expect(b['301009260016'], 'Pendamping');
+    });
+
+    test('pendamping tidak dipasangkan dengan anak dari tiket berbeda', () {
+      final b = GelangUtil.barisNama([
+        t('301009260015', anak: 'rita', tiket: 'Tiket 1 jam weekday'),
+        t('301009260016', anak: 'budi', tiket: 'Tiket 2 jam weekday'),
+        t('301009260017', pendamping: true, tiket: 'Tiket 1 jam weekday'),
+      ]);
+      expect(b['301009260017'], 'Pendamping (rita)');
+    });
+
+    test('nama anak panjang dipotong tanpa kehilangan kurung penutup', () {
+      final b = GelangUtil.barisNama([
+        t('301009260015', anak: 'Muhammad Rizky Pratama Putra'),
+        t('301009260016', pendamping: true),
+      ]);
+      expect(b['301009260016'], endsWith(')'));
+      expect(b['301009260016']!.length, lessThanOrEqualTo(32));
+    });
+  });
 }

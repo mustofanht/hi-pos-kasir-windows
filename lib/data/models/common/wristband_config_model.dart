@@ -173,18 +173,6 @@ class WristbandConfigModel {
   /// TSPL. Nyalakan, lalu buktikan dengan satu kali **Cetak Uji**.
   bool putarIsi;
 
-  /// Arah baca teks gelang playground.
-  ///
-  /// Mati (bawaan): teks diputar 270 derajat dan terbaca ke arah awal lembar,
-  /// sehingga nomor order jatuh paling dekat awal cetak dan nama lokasi paling
-  /// jauh. Nyala: diputar 90 derajat, urutan dan arah bacanya terbalik.
-  ///
-  /// Arah bawaan diturunkan dari posisi QR yang sudah terbukti, bukan diamati
-  /// langsung — arah sumbu di printer ini sudah beberapa kali salah ditebak
-  /// dari foto. Karena itu disediakan sebagai saklar: kalau teks di gelang
-  /// terbaca terbalik, cukup dinyalakan, tanpa membangun ulang aplikasi.
-  bool balikTeks;
-
   /// Apakah tiket pendamping ikut dicetak sebagai gelang.
   ///
   /// Dimatikan saat mengkalibrasi media: order playground membuat satu tiket
@@ -210,7 +198,6 @@ class WristbandConfigModel {
     this.geserXMm = 0,
     this.geserYMm = 0,
     this.gelangPendamping = true,
-    this.balikTeks = false,
     this.putarIsi = false,
     this.qrMaksMm = 0,
     this.posisi = PosisiIsi.tengah,
@@ -240,7 +227,6 @@ class WristbandConfigModel {
     double? geserXMm,
     double? geserYMm,
     bool? gelangPendamping,
-    bool? balikTeks,
     bool? putarIsi,
     double? qrMaksMm,
     PosisiIsi? posisi,
@@ -260,7 +246,6 @@ class WristbandConfigModel {
       geserXMm: geserXMm ?? this.geserXMm,
       geserYMm: geserYMm ?? this.geserYMm,
       gelangPendamping: gelangPendamping ?? this.gelangPendamping,
-      balikTeks: balikTeks ?? this.balikTeks,
       putarIsi: putarIsi ?? this.putarIsi,
       qrMaksMm: qrMaksMm ?? this.qrMaksMm,
       posisi: posisi ?? this.posisi,
@@ -282,7 +267,6 @@ class WristbandConfigModel {
         'geserXMm': geserXMm,
         'geserYMm': geserYMm,
         'gelangPendamping': gelangPendamping,
-        'balikTeks': balikTeks,
         'putarIsi': putarIsi,
         'qrMaksMm': qrMaksMm,
         'posisi': posisi.name,
@@ -326,7 +310,6 @@ class WristbandConfigModel {
       // Bawaan menyala: pendamping yang diam-diam tidak dapat gelang lebih
       // merepotkan daripada gelang yang terbuang saat menguji.
       gelangPendamping: json['gelangPendamping'] != false,
-      balikTeks: json['balikTeks'] == true,
       putarIsi: json['putarIsi'] == true,
       qrMaksMm: angka('qrMaksMm', 0, 0, 50),
       // Setelan lama tidak punya kunci ini. Menyimpulkannya dari Jarak, bukan

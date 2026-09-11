@@ -1170,7 +1170,7 @@ void main() {
     List<int> bytesGelang(
       WristbandConfigModel c, {
       String? lokasi = 'Arena Playground Bekasi',
-      String? pembeli = 'rita',
+      String? nama = 'rita',
       String? order = '0161/IV/TIX/2025',
       String? waktu = '2026-04-03 13:52:46',
     }) =>
@@ -1178,7 +1178,7 @@ void main() {
           config: c,
           qrCode: '301009260015',
           lokasi: lokasi,
-          pembeli: pembeli,
+          nama: nama,
           nomorOrder: order,
           waktu: waktu,
         );
@@ -1193,11 +1193,8 @@ void main() {
     final qrSaja =
         perintah(gen.dataWristbandPrint(config: media, qrCode: '301009260015'));
 
-    test('semua elemen di dalam lembar dan tidak bertumpuk, kedua arah baca', () {
-      for (final balik in [false, true]) {
-        final c = media.salin(balikTeks: balik);
-        periksaMuat(bytesGelang(c), c);
-      }
+    test('semua elemen di dalam lembar dan tidak bertumpuk', () {
+      periksaMuat(bytesGelang(media), media);
     });
 
     test('QR sama besar dengan gelang QR-saja — teks tidak mengecilkannya', () {
@@ -1213,62 +1210,72 @@ void main() {
       expect(b.substring(6).split(',')[5].trim(), '0');
     });
 
-    test('semua teks terbaca sepanjang gelang: 270 bawaan, 90 bila dibalik', () {
-      for (final (balik, arah) in [(false, 270), (true, 90)]) {
-        final p = perintah(bytesGelang(media.salin(balikTeks: balik)));
-        final semua = p.where((b) => b.startsWith('TEXT')).toList();
-        expect(semua.length, 4);
-        expect(semua.every((b) => putaran(b) == arah), isTrue, reason: '$semua');
-      }
+    test('semua teks diputar 90 derajat — arah yang terbukti di printer', () {
+      // 270 derajat pernah dipakai dan tercetak terbalik di gelang sungguhan.
+      final semua = perintah(bytesGelang(media))
+          .where((b) => b.startsWith('TEXT'))
+          .toList();
+      expect(semua.length, 4);
+      expect(semua.every((b) => putaran(b) == 90), isTrue, reason: '$semua');
     });
 
-    test('bawaan: nomor order paling dekat awal cetak, lokasi paling jauh', () {
+    test('urutan sepanjang gelang: lokasi, QR, lalu nomor order', () {
       final p = perintah(bytesGelang(media));
-      final yOrder = elemen(teks(p, '0161/IV/TIX/2025')).y;
-      final yQr = elemen(qr(p)).y;
       final yLokasi = elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y;
-      expect(yOrder, lessThan(yQr));
-      expect(yQr, lessThan(yLokasi));
-    });
-
-    test('dibalik: urutannya ikut terbalik', () {
-      final p = perintah(bytesGelang(media.salin(balikTeks: true)));
-      expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y,
-          lessThan(elemen(qr(p)).y));
-      expect(elemen(qr(p)).y, lessThan(elemen(teks(p, '0161/IV/TIX/2025')).y));
+      final yQr = elemen(qr(p)).y;
+      final yOrder = elemen(teks(p, '0161/IV/TIX/2025')).y;
+      expect(yLokasi, lessThan(yQr));
+      expect(yQr, lessThan(yOrder));
     });
 
     test('baris pertama tiap blok berada di sisi atas bacaan', () {
-      // 270: badan huruf menjulur ke kanan, jadi "atas" bacaan ada di kiri.
+      // 90: badan huruf menjulur ke kiri, jadi "atas" bacaan ada di kanan.
       final p = perintah(bytesGelang(media));
       expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).x,
-          lessThan(elemen(teks(p, 'rita')).x));
+          greaterThan(elemen(teks(p, 'rita')).x));
       expect(elemen(teks(p, '0161/IV/TIX/2025')).x,
-          lessThan(elemen(teks(p, '2026-04-03 13:52:46')).x));
-      // 90: kebalikannya.
-      final q = perintah(bytesGelang(media.salin(balikTeks: true)));
-      expect(elemen(teks(q, 'ARENA PLAYGROUND BEKASI')).x,
-          greaterThan(elemen(teks(q, 'rita')).x));
+          greaterThan(elemen(teks(p, '2026-04-03 13:52:46')).x));
     });
 
     test('baris dalam satu blok rata ke awal bacaan yang sama', () {
-      // 270 berjalan ke atas: awal bacaan adalah ujung bawah kotaknya.
+      // 90 berjalan ke bawah: awal bacaan adalah ujung atas kotaknya.
       final p = perintah(bytesGelang(media));
-      final a = elemen(teks(p, '0161/IV/TIX/2025'));
-      final b = elemen(teks(p, '2026-04-03 13:52:46'));
-      expect(a.y + a.h, b.y + b.h);
+      expect(elemen(teks(p, '0161/IV/TIX/2025')).y,
+          elemen(teks(p, '2026-04-03 13:52:46')).y);
+      expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y,
+          elemen(teks(p, 'rita')).y);
     });
 
-    test('lokasi ditulis kapital dengan huruf lebih besar dari nama pembeli', () {
+    test('lokasi ditulis kapital dengan huruf lebih besar dari nama', () {
       final p = perintah(bytesGelang(media));
       expect(huruf(teks(p, 'ARENA PLAYGROUND BEKASI')),
           greaterThan(huruf(teks(p, 'rita'))));
     });
 
+    test('baris pendamping tercetak utuh di dalam lembar', () {
+      final bytes = bytesGelang(media, nama: 'Pendamping (rita)');
+      expect(
+          perintah(bytes).any(
+              (b) => b.startsWith('TEXT') && b.endsWith('"Pendamping (rita)"')),
+          isTrue);
+      periksaMuat(bytes, media);
+    });
+
+    test('cetak uji pendamping memakai baris pendamping, cetak uji biasa tidak',
+        () {
+      expect(
+          perintah(gen.testPrint(media, pendamping: true))
+              .any((b) => b.endsWith('"Pendamping (nama anak)"')),
+          isTrue);
+      expect(perintah(gen.testPrint(media)).any((b) => b.contains('Pendamping')),
+          isFalse);
+      periksaMuat(gen.testPrint(media, pendamping: true), media);
+    });
+
     test('tanpa data teks hasilnya persis gelang QR-saja yang sudah terbukti', () {
       expect(
           perintah(bytesGelang(media,
-              lokasi: null, pembeli: null, order: null, waktu: null)),
+              lokasi: null, nama: null, order: null, waktu: null)),
           qrSaja);
     });
 
@@ -1282,7 +1289,7 @@ void main() {
     });
 
     test('nama yang sangat panjang dipotong, bukan membuang seluruh blok', () {
-      final p = perintah(bytesGelang(media, pembeli: 'x' * 80));
+      final p = perintah(bytesGelang(media, nama: 'x' * 80));
       expect(p.any((b) => b.startsWith('TEXT') && b.contains('x' * 32)), isTrue);
       expect(p.any((b) => b.contains('x' * 33)), isFalse);
     });
@@ -1290,18 +1297,10 @@ void main() {
     test('geser Y memindahkan seluruh isi tanpa keluar lembar', () {
       final c = media.salin(geserYMm: 10);
       periksaMuat(bytesGelang(c), c);
-      expect(elemen(qr(perintah(bytesGelang(c)))).y -
+      expect(
+          elemen(qr(perintah(bytesGelang(c)))).y -
               elemen(qr(perintah(bytesGelang(media)))).y,
           c.dots(10));
-    });
-
-    test('arah teks bertahan lewat penyimpanan, bawaannya mati', () {
-      expect(WristbandConfigModel().balikTeks, isFalse);
-      expect(
-          WristbandConfigModel.fromJson(
-                  WristbandConfigModel(balikTeks: true).toJson())
-              .balikTeks,
-          isTrue);
     });
   });
 }

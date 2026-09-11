@@ -78,7 +78,6 @@ class SettingPageController extends GetxController
   final arahGelang = 1.obs;
   final potongGelang = ModePotong.sobek.obs;
   final gelangPendamping = true.obs;
-  final balikTeksGelang = false.obs;
   final terkunciGelang = false.obs;
   final putarIsiGelang = false.obs;
   final posisiGelang = PosisiIsi.tengah.obs;
@@ -303,7 +302,6 @@ class SettingPageController extends GetxController
     potongGelang.value = c.potong;
     gelangPendamping.value = c.gelangPendamping;
     putarIsiGelang.value = c.putarIsi;
-    balikTeksGelang.value = c.balikTeks;
     terkunciGelang.value = printerUtil.setelanGelangTerkunci;
     posisiGelang.value = c.posisi;
     sensorGelang.value = c.sensor;
@@ -452,7 +450,6 @@ class SettingPageController extends GetxController
       geserYMm: geserY,
       gelangPendamping: gelangPendamping.value,
       putarIsi: putarIsiGelang.value,
-      balikTeks: balikTeksGelang.value,
       posisi: posisiGelang.value,
       sensor: sensorGelang.value,
       shiftMm: shift,
@@ -550,15 +547,6 @@ class SettingPageController extends GetxController
     update();
   }
 
-  /// Saklar arah baca teks gelang. Disimpan seketika seperti saklar lainnya.
-  void doToggleBalikTeks(bool value) {
-    if (_gelangTerkunci()) return;
-    balikTeksGelang.value = value;
-    printerUtil.simpanSetelanGelang(
-        printerUtil.wristbandConfig.salin(balikTeks: value));
-    update();
-  }
-
   /// Saklar putar isi 90 derajat.
   ///
   /// Disimpan seketika seperti saklar pendamping, dengan alasan yang sama.
@@ -630,7 +618,13 @@ class SettingPageController extends GetxController
 
   /// Cetak uji: bingkai batas media + QR contoh. Dipakai untuk mencocokkan
   /// ukuran pada setelan dengan media yang benar-benar terpasang.
-  Future<void> doTesCetakGelang() async {
+  Future<void> doTesCetakGelang() => _tesCetakGelang(pendamping: false);
+
+  /// Cetak uji gelang pendamping: tata letak yang sama dengan baris
+  /// `Pendamping (nama anak)`, tanpa perlu membuat order sungguhan.
+  Future<void> doTesCetakPendamping() => _tesCetakGelang(pendamping: true);
+
+  Future<void> _tesCetakGelang({required bool pendamping}) async {
     if (_gelangTerkunci()) return;
     if (!printerUtil.punyaPrinterGelang) {
       alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
@@ -638,13 +632,15 @@ class SettingPageController extends GetxController
     }
     isLoadingTesGelang.value = true;
     try {
-      final bytes =
-          generateWristbandUtil.testPrint(printerUtil.wristbandConfig);
+      final bytes = generateWristbandUtil.testPrint(
+          printerUtil.wristbandConfig,
+          pendamping: pendamping);
       final hasil = await printerUtil.printWristband(bytes);
       switch (hasil) {
         case HasilCetakGelang.terkirim:
           alert.success('Terkirim',
-              'Cetak uji dikirim. Periksa bingkainya utuh dan QR-nya bisa dipindai.');
+              'Cetak uji ${pendamping ? "pendamping " : ""}dikirim. Periksa '
+              'arah teks, posisinya, dan QR-nya bisa dipindai.');
           break;
         case HasilCetakGelang.simulasi:
           // Ini yang paling mudah disalahpahami: notifikasi berhasil muncul,

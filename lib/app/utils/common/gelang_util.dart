@@ -56,9 +56,11 @@ class GelangUtil {
   /// belum diatur, atau bila cetaknya gagal — pelanggan tidak boleh pulang tanpa
   /// tiket karena satu perangkat ngadat.
   ///
-  /// [lokasi], [pembeli], [nomorOrder], dan [waktu] dicetak di samping QR —
-  /// satu order, jadi sama untuk setiap gelangnya, termasuk gelang pendamping.
-  /// Semuanya boleh kosong; baris yang kosong tidak dicetak.
+  /// [lokasi], [nomorOrder], dan [waktu] dicetak di samping QR dan sama untuk
+  /// setiap gelang dalam order ini. Baris di bawah lokasi berbeda per tiket —
+  /// nama anak, atau `Pendamping (nama anak)`; lihat [barisNama]. [pembeli]
+  /// hanya dipakai bila nama anak kosong. Semuanya boleh kosong; baris yang
+  /// kosong tidak dicetak.
   Future<HasilGelang> cetak(
     List<ResponseCreateTicketNoEntity> semua, {
     required Set<String> namaPlayground,
@@ -115,16 +117,21 @@ class GelangUtil {
 
     final config = printerUtil.wristbandConfig;
     final bytes = <int>[];
-    for (final t in gelang) {
+    // Dipasangkan dari seluruh tiket order, bukan hanya yang jadi gelang:
+    // pendamping butuh nama anaknya, dan tiket anak itulah yang menyimpannya.
+    final namaGelang = barisNama(semua, pembeli: pembeli);
+    // Dicetak urut nomor tiket, jadi setiap gelang anak langsung diikuti gelang
+    // pendampingnya — tidak perlu dicocokkan lagi saat dibagikan di kasir.
+    final urutCetak = [...gelang]..sort(_urutNomor);
+    for (final t in urutCetak) {
+      logger.safeLog('  gelang ${t.ticketNo} nama="${namaGelang[t.ticketNo] ?? ""}"');
       bytes.addAll(generateWristbandUtil.dataGelangPlayground(
         config: config,
         qrCode: t.ticketNo!,
         lokasi: lokasi,
-        pembeli: pembeli,
+        nama: namaGelang[t.ticketNo],
         nomorOrder: nomorOrder,
         waktu: waktu == null ? null : _formatWaktu.format(waktu.toLocal()),
-        // Pendamping tidak diberi penanda tercetak. Pembedaannya ada di
-        // `otdtl_is_companion` dan terbaca gate begitu QR-nya dipindai.
       ));
     }
 
@@ -174,6 +181,66 @@ class GelangUtil {
       (layak ? gelang : struk).add(t);
     }
     return (gelang: gelang, struk: struk);
+  }
+
+  /// Panjang nama anak di dalam `Pendamping (...)`. Baris gelang dipotong di 32
+  /// karakter; tanpa batas ini, nama yang panjang memotong kurung penutupnya.
+  static const int _namaAnakMaks = 19;
+
+  /// Baris di bawah nama lokasi untuk setiap tiket, dikunci nomor tiket.
+  ///
+  /// - Tiket anak: nama anaknya. Kosong bila kasir tidak mengisinya — server
+  ///   memang membiarkannya kosong untuk order satu tiket — dan saat itu
+  ///   dipakai nama pemesan [pembeli], sama seperti papan TV playground.
+  /// - Tiket pendamping: `Pendamping (nama anak)`, atau `Pendamping` saja bila
+  ///   anaknya tidak bernama.
+  ///
+  /// Server tidak menyimpan hubungan pendamping ke anaknya; kolom
+  /// `otdtl_child_name` pendamping selalu berisi "Pendamping". Yang pasti hanya
+  /// urutan pembuatannya: di dalam satu transaksi, pendamping dibuat tepat
+  /// setelah tiket anaknya dengan tiket yang sama, sehingga nomornya tepat
+  /// sesudah nomor anak. Karena itu tiket **diurutkan menurut nomor** lebih
+  /// dulu, dan setiap pendamping dipasangkan dengan tiket anak terdekat
+  /// sebelumnya yang bernama dasar sama.
+  ///
+  /// Urutan balasan server sendiri tidak dipakai: pada cetak ulang, server
+  /// membaca tiket tanpa `ORDER BY` sambil memperbarui statusnya, dan urutan
+  /// baris Postgres setelah pembaruan tidak dijamin.
+  static Map<String, String?> barisNama(
+    List<ResponseCreateTicketNoEntity> tiket, {
+    String? pembeli,
+  }) {
+    String? bersih(String? s) =>
+        s == null || s.trim().isEmpty ? null : s.trim();
+
+    final hasil = <String, String?>{};
+    final anakTerakhir = <String, String?>{};
+    for (final t in [...tiket]..sort(_urutNomor)) {
+      final nomor = t.ticketNo;
+      if (nomor == null) continue;
+      if (t.isCompanion == 'Y') {
+        var anak = anakTerakhir[namaDasar(t)];
+        if (anak != null && anak.length > _namaAnakMaks) {
+          anak = anak.substring(0, _namaAnakMaks).trimRight();
+        }
+        hasil[nomor] = anak == null ? 'Pendamping' : 'Pendamping ($anak)';
+      } else {
+        final anak = bersih(t.childName) ?? bersih(pembeli);
+        anakTerakhir[namaDasar(t)] = anak;
+        hasil[nomor] = anak;
+      }
+    }
+    return hasil;
+  }
+
+  /// Nomor tiket berpanjang sama dan urut waktu pembuatan di dalam satu order,
+  /// jadi cukup dibandingkan sebagai teks — panjangnya lebih dulu, berjaga bila
+  /// formatnya kelak bertambah digit.
+  static int _urutNomor(
+      ResponseCreateTicketNoEntity a, ResponseCreateTicketNoEntity b) {
+    final x = a.ticketNo ?? '';
+    final y = b.ticketNo ?? '';
+    return x.length != y.length ? x.length.compareTo(y.length) : x.compareTo(y);
   }
 
   /// Nama tiket seperti yang ada di katalog, tanpa hiasan yang ditambahkan

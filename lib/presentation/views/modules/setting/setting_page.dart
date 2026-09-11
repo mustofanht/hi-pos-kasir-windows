@@ -800,21 +800,6 @@ class SettingPage extends GetView<SettingPageController> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               dense: true,
-              value: controller.balikTeksGelang.value,
-              onChanged: aktif ? controller.doToggleBalikTeks : null,
-              title: Text('Balik arah teks', style: textStyle.blackText),
-              subtitle: Text(
-                controller.balikTeksGelang.value
-                    ? 'Teks dibalik: lokasi paling dekat awal cetak, nomor order '
-                        'paling jauh.'
-                    : 'Bawaan: nomor order paling dekat awal cetak. Nyalakan '
-                        'kalau teks di gelang terbaca terbalik.',
-                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-              ),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
               value: controller.gelangPendamping.value,
               onChanged: aktif ? controller.doToggleGelangPendamping : null,
               title: Text('Cetak gelang pendamping', style: textStyle.blackText),
@@ -845,6 +830,15 @@ class SettingPage extends GetView<SettingPageController> {
                     label: Text(controller.isLoadingTesGelang.value
                         ? 'Mengirim...'
                         : 'Cetak Uji'),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: !aktif || controller.isLoadingTesGelang.value
+                        ? null
+                        : controller.doTesCetakPendamping,
+                    icon: const Icon(Icons.people_outline, size: 18),
+                    label: const Text('Uji Pendamping'),
                   ),
                 ),
                 Expanded(
@@ -894,9 +888,10 @@ class SettingPage extends GetView<SettingPageController> {
             ),
             Text(
               'Cetak uji mencetak satu gelang contoh dengan tata letak '
-              'sungguhan: lokasi dan nama di satu sisi QR, nomor order dan '
-              'waktu di sisi lain, terbaca sepanjang gelang. Periksa arah '
-              'bacanya dan pastikan isinya tidak menimpa cetakan pabrik.',
+              'sungguhan: lokasi dan nama anak di satu sisi QR, nomor order '
+              'dan waktu di sisi lain, terbaca sepanjang gelang. Uji '
+              'pendamping sama, dengan baris "Pendamping (nama anak)". '
+              'Pastikan isinya tidak menimpa cetakan pabrik.',
               style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
           ],

@@ -93,8 +93,13 @@ class GenerateWristbandUtil {
   /// Gelang playground: QR diapit dua blok teks yang terbaca **menyusuri
   /// panjang gelang**, meniru gelang cetak outlet playground.
   ///
-  ///     [ LOKASI  ]   [QR]   [ nomor order     ]
-  ///     [ pembeli ]          [ waktu pembelian ]
+  ///     [ LOKASI    ]   [QR]   [ nomor order     ]
+  ///     [ nama anak ]          [ waktu pembelian ]
+  ///
+  /// [nama] adalah baris di bawah lokasi: nama anak untuk tiket anak, dan
+  /// `Pendamping (nama anak)` untuk tiket pendamping. Disusun pemanggil, karena
+  /// hanya pemanggil yang memegang seluruh tiket order untuk memasangkan
+  /// pendamping dengan anaknya.
   ///
   /// Teks diputar, **QR tidak**. QR terbaca dari arah mana pun, jadi memutarnya
   /// hanya menambah satu hal lagi yang bergantung pada firmware — jangkar
@@ -103,14 +108,14 @@ class GenerateWristbandUtil {
   /// **QR tidak pernah dikecilkan demi teks.** Ukurannya dihitung lebih dulu,
   /// persis seperti gelang tanpa teks. Teks yang tidak muat di sisa panjang
   /// lembar dikecilkan hurufnya, lalu dibuang bertahap — lokasi lebih dulu,
-  /// nomor order paling akhir, karena nomor order satu-satunya yang dipakai
-  /// untuk menelusuri transaksi. Bila tidak ada teks yang muat, hasilnya persis
-  /// gelang QR-saja yang sudah terbukti di lapangan.
+  /// lalu nama, dan nomor order paling akhir, karena nomor order satu-satunya
+  /// yang dipakai untuk menelusuri transaksi. Bila tidak ada teks yang muat,
+  /// hasilnya persis gelang QR-saja yang sudah terbukti di lapangan.
   List<int> dataGelangPlayground({
     required WristbandConfigModel config,
     required String qrCode,
     String? lokasi,
-    String? pembeli,
+    String? nama,
     String? nomorOrder,
     String? waktu,
   }) {
@@ -125,7 +130,7 @@ class GenerateWristbandUtil {
     }
 
     final judul = bersih(lokasi, kapital: true);
-    final nama = bersih(pembeli);
+    final namaGelang = bersih(nama);
     final order = bersih(nomorOrder);
     final jam = bersih(waktu);
 
@@ -140,11 +145,14 @@ class GenerateWristbandUtil {
       (
         awal: [
           if (judul != null) _BarisGelang(judul, judul: true),
-          if (nama != null) _BarisGelang(nama),
+          if (namaGelang != null) _BarisGelang(namaGelang),
         ],
         akhir: blokOrder,
       ),
-      (awal: [if (nama != null) _BarisGelang(nama)], akhir: blokOrder),
+      (
+        awal: [if (namaGelang != null) _BarisGelang(namaGelang)],
+        akhir: blokOrder,
+      ),
       (awal: const <_BarisGelang>[], akhir: blokOrder),
       (
         awal: const <_BarisGelang>[],
@@ -174,13 +182,17 @@ class GenerateWristbandUtil {
   /// apa gelang pelanggan nanti, dan apakah teksnya terbaca ke arah yang benar.
   /// Ukuran media kini dijawab Cetak Penggaris.
   ///
+  /// [pendamping] mencetak contoh gelang pendamping — baris namanya
+  /// `Pendamping (nama anak)`, baris terpanjang yang bisa muncul di gelang.
+  ///
   /// Isi contohnya sepanjang data sungguhan — nomor order dan waktu dengan
   /// jumlah karakter yang sama — supaya panjang cetakannya mewakili.
-  List<int> testPrint(WristbandConfigModel config) => dataGelangPlayground(
+  List<int> testPrint(WristbandConfigModel config, {bool pendamping = false}) =>
+      dataGelangPlayground(
         config: config,
-        qrCode: 'TES-GELANG',
+        qrCode: pendamping ? 'TES-PENDAMPING' : 'TES-GELANG',
         lokasi: 'UJI GELANG',
-        pembeli: 'nama pembeli',
+        nama: pendamping ? 'Pendamping (nama anak)' : 'nama anak',
         nomorOrder: '0000/UJI/TIX/2026',
         waktu: '2026-01-01 00:00:00',
       );
@@ -268,14 +280,18 @@ class GenerateWristbandUtil {
   /// Mengembalikan null bila blok yang diminta tidak muat tanpa mengecilkan QR
   /// — pemanggil lalu mencoba susunan yang lebih hemat.
   ///
-  /// Arah baca menentukan urutan di atas lembar. Bawaannya teks diputar 270
-  /// derajat, sehingga terbaca ke arah awal lembar: blok [akhir] (nomor order)
-  /// jatuh paling dekat awal cetak dan blok [awal] (lokasi) paling jauh.
-  /// [WristbandConfigModel.balikTeks] membalik keduanya.
+  /// Teks diputar 90 derajat dan terbaca ke arah menjauhi awal lembar, jadi
+  /// urutannya di atas lembar sama dengan urutan bacanya: blok [awal] (lokasi)
+  /// paling dekat awal cetak, lalu QR, lalu blok [akhir] (nomor order).
   ///
-  /// Baris pertama tiap blok selalu berada di sisi yang menjadi "atas" saat
-  /// tulisan dibaca, dan setiap baris rata ke awal bacaan — seperti teks biasa
-  /// yang kebetulan tercetak menyamping.
+  /// Arah ini dipastikan di printer sungguhan pada 11 Sep 2026. Rancangan
+  /// pertama memakai 270 derajat — diturunkan dari posisi QR, bukan diamati —
+  /// dan tercetak terbalik. Sempat ada saklar untuk membaliknya; dibuang
+  /// begitu arah yang benar terbukti, karena saklar arah yang salah disentuh
+  /// hanya membalik gelang di outlet tanpa ada yang tahu sebabnya.
+  ///
+  /// Baris pertama tiap blok berada di sisi yang menjadi "atas" saat tulisan
+  /// dibaca, dan setiap baris rata ke awal bacaan.
   List<String>? _tataMenyusuri(
     WristbandConfigModel config,
     String isi,
@@ -325,42 +341,25 @@ class GenerateWristbandUtil {
           panjang(akhir);
       if (total > h - 2 * m) continue;
 
-      // Rotasi 90 terbaca ke arah +y (menjauhi awal lembar), 270 ke arah -y.
-      final bacaMaju = config.balikTeks;
-      final urutan = bacaMaju
-          ? <List<_BarisGelang>?>[awal, null, akhir]
-          : <List<_BarisGelang>?>[akhir, null, awal];
-
       var y = _mulaiY(h, total, m, config.posisi).clamp(0, h - total);
       final hasil = <String>[];
-      for (final blok in urutan) {
+      for (final blok in <List<_BarisGelang>?>[awal, null, akhir]) {
         if (blok == null) {
           hasil.add(_qr(((w - sisi) / 2).round(), y, selQr, isi));
           y += sisi + jeda;
           continue;
         }
         if (blok.isEmpty) continue;
-        final p = panjang(blok);
         final t = tebal(blok);
-        final xBlok = ((w - t) / 2).round();
-        // 90: badan huruf menjulur ke kiri jangkar, jadi baris pertama di kanan.
-        // 270: badan huruf menjulur ke kanan, jadi baris pertama di kiri.
-        var x = bacaMaju ? xBlok + t : xBlok;
+        // Pada 90 derajat badan huruf menjulur ke kiri jangkarnya, jadi baris
+        // pertama berada paling kanan dan baris berikutnya bergeser ke kiri.
+        var x = ((w - t) / 2).round() + t;
         for (final b in blok) {
           final f = huruf(b);
-          final tinggiHuruf = fontDots[f]![1];
-          final teks = _kutip(b.isi);
-          if (bacaMaju) {
-            hasil.add('TEXT $x,$y,"$f",90,1,1,"$teks"');
-            x -= tinggiHuruf + _jarak(f);
-          } else {
-            // Tulisan 270 berjalan ke atas dari jangkarnya: jangkar di ujung
-            // bawah blok supaya semua baris rata ke awal bacaan yang sama.
-            hasil.add('TEXT $x,${y + p},"$f",270,1,1,"$teks"');
-            x += tinggiHuruf + _jarak(f);
-          }
+          hasil.add('TEXT $x,$y,"$f",90,1,1,"${_kutip(b.isi)}"');
+          x -= fontDots[f]![1] + _jarak(f);
         }
-        y += p + jeda;
+        y += panjang(blok) + jeda;
       }
       return hasil;
     }
@@ -538,9 +537,8 @@ class GenerateWristbandUtil {
       // Jangkar TSPL ikut berputar bersama teksnya. Pada 90 derajat badan huruf
       // menjulur ke kiri jangkar dan tulisan berjalan ke bawah; pada 270 badan
       // huruf menjulur ke kanan dan tulisan berjalan ke atas. Dulu keduanya
-      // disamakan — tidak terasa selama hanya 90 yang dipakai, tapi gelang
-      // playground membaca ke arah 270, dan kotak yang salah membuat batas
-      // lembar serta tumpang tindih diperiksa di tempat yang keliru.
+      // disamakan; tidak terasa selama hanya 90 yang dipakai, dan baru
+      // ketahuan saat tata letak gelang playground sempat memakai 270.
       if (putaran == 90) {
         return _Kotak(x - tinggiTeks, y, tinggiTeks, lebarTeks);
       }
