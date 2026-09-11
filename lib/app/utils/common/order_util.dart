@@ -203,6 +203,12 @@ class OrderUtil {
         final hasilGelang = await gelangUtil.cetak(
           ticketsToPrint,
           namaPlayground: namaPlayground,
+          lokasi: locationName,
+          pembeli: body.orderName,
+          nomorOrder: body.orderNumber,
+          // Sumber yang sama dengan waktu di kertas struk, supaya keduanya tidak
+          // pernah berbeda di tangan pelanggan.
+          waktu: body.paymentDate ?? DateTime.now(),
         );
 
         final tiketDiStruk = hasilGelang.keStruk;

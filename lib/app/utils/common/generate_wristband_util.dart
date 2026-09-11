@@ -90,56 +90,100 @@ class GenerateWristbandUtil {
     return _bytes(perintah);
   }
 
-  /// Cetak uji untuk kalibrasi media di depan printer.
+  /// Gelang playground: QR diapit dua blok teks yang terbaca **menyusuri
+  /// panjang gelang**, meniru gelang cetak outlet playground.
   ///
-  /// Sengaja menggambar kotak tepat di batas margin: kalau garisnya terpotong
-  /// atau miring, ukuran media pada setelan belum cocok dengan media yang
-  /// terpasang — itu yang paling sering salah saat printer pertama dipasang.
-  List<int> testPrint(WristbandConfigModel config) {
-    final w = config.widthDots;
-    final h = config.heightDots;
-    final m = config.marginDots;
-    final lebarHuruf = fontDots['2']![0];
-    final tinggiHuruf = fontDots['2']![1];
+  ///     [ LOKASI  ]   [QR]   [ nomor order     ]
+  ///     [ pembeli ]          [ waktu pembelian ]
+  ///
+  /// Teks diputar, **QR tidak**. QR terbaca dari arah mana pun, jadi memutarnya
+  /// hanya menambah satu hal lagi yang bergantung pada firmware — jangkar
+  /// `QRCODE` berputar tidak diperlakukan sama oleh semua printer TSPL.
+  ///
+  /// **QR tidak pernah dikecilkan demi teks.** Ukurannya dihitung lebih dulu,
+  /// persis seperti gelang tanpa teks. Teks yang tidak muat di sisa panjang
+  /// lembar dikecilkan hurufnya, lalu dibuang bertahap — lokasi lebih dulu,
+  /// nomor order paling akhir, karena nomor order satu-satunya yang dipakai
+  /// untuk menelusuri transaksi. Bila tidak ada teks yang muat, hasilnya persis
+  /// gelang QR-saja yang sudah terbukti di lapangan.
+  List<int> dataGelangPlayground({
+    required WristbandConfigModel config,
+    required String qrCode,
+    String? lokasi,
+    String? pembeli,
+    String? nomorOrder,
+    String? waktu,
+  }) {
+    String? bersih(String? s, {bool kapital = false}) {
+      if (s == null) return null;
+      var t = _ascii(s);
+      if (t.isEmpty) return null;
+      if (t.length > _panjangBarisMaks) {
+        t = t.substring(0, _panjangBarisMaks).trimRight();
+      }
+      return kapital ? t.toUpperCase() : t;
+    }
 
-    // Empat penanda sudut, bukan bingkai garis.
-    //
-    // Bingkai lama digambar dengan `BAR`, dan tidak satu pun cetakan ber-BAR
-    // pernah keluar dari printer di lapangan — sementara `TEXT` dan `QRCODE`
-    // selalu keluar. Penanda sudut menjawab pertanyaan yang sama: bila keempat
-    // huruf muncul utuh, ukuran media pada setelan cocok dengan media yang
-    // terpasang; bila ada yang hilang, tidak cocok.
-    final kiri = m < 1 ? 1 : m;
-    final atas = m < 1 ? 1 : m;
-    final kanan = w - kiri - 2 * lebarHuruf;
-    final bawah = h - atas - tinggiHuruf;
+    final judul = bersih(lokasi, kapital: true);
+    final nama = bersih(pembeli);
+    final order = bersih(nomorOrder);
+    final jam = bersih(waktu);
 
-    final perintah = _kepala(config)
-      ..addAll([
-        'TEXT $kiri,$atas,"2",0,1,1,"TL"',
-        if (kanan > kiri + 2 * lebarHuruf) 'TEXT $kanan,$atas,"2",0,1,1,"TR"',
-        if (bawah > atas + tinggiHuruf) 'TEXT $kiri,$bawah,"2",0,1,1,"BL"',
-        if (kanan > kiri + 2 * lebarHuruf && bawah > atas + tinggiHuruf)
-          'TEXT $kanan,$bawah,"2",0,1,1,"BR"',
-      ]);
+    final blokOrder = <_BarisGelang>[
+      if (order != null) _BarisGelang(order),
+      if (jam != null) _BarisGelang(jam),
+    ];
 
-    perintah.addAll(_susun(
-      config,
-      (ruang) => _tataLetak(
-        config: ruang.salin(
-          // Ruang untuk penanda sudut, supaya isi contoh tidak menimpanya.
-          marginMm: ruang.marginMm + 4,
-        ),
-        qrCode: 'TES-GELANG',
-        ticketNo: 'TES',
-        berlakuSampai: '${config.widthMm.toStringAsFixed(0)}x'
-            '${config.heightMm.toStringAsFixed(0)}',
+    // Dari yang paling lengkap sampai yang paling hemat. Urutan pembuangannya
+    // mengikuti kegunaan di lapangan, bukan urutan tampil.
+    final calon = <({List<_BarisGelang> awal, List<_BarisGelang> akhir})>[
+      (
+        awal: [
+          if (judul != null) _BarisGelang(judul, judul: true),
+          if (nama != null) _BarisGelang(nama),
+        ],
+        akhir: blokOrder,
       ),
-    ));
+      (awal: [if (nama != null) _BarisGelang(nama)], akhir: blokOrder),
+      (awal: const <_BarisGelang>[], akhir: blokOrder),
+      (
+        awal: const <_BarisGelang>[],
+        akhir: [if (order != null) _BarisGelang(order)],
+      ),
+    ];
 
-    perintah.add('PRINT 1,1');
-    return _bytes(perintah);
+    final isi = _ascii(qrCode);
+    for (final c in calon) {
+      if (c.awal.isEmpty && c.akhir.isEmpty) continue;
+      final gambar = _tataMenyusuri(config, isi, c.awal, c.akhir);
+      if (gambar == null) continue;
+      final perintah = _kepala(config)
+        ..addAll(_geser(gambar, config, config.dots(config.geserXMm),
+            config.dots(config.geserYMm)))
+        ..add('PRINT 1,1');
+      return _bytes(perintah);
+    }
+    return dataWristbandPrint(config: config, qrCode: qrCode);
   }
+
+  /// Cetak uji: satu gelang contoh dengan tata letak **sungguhan**.
+  ///
+  /// Dulu cetak uji menggambar penanda sudut dan isi rekaan yang ditata
+  /// berbeda dari gelang pembayaran. Hasilnya menjawab "apakah ukuran media
+  /// cocok", tapi tidak menjawab yang benar-benar ditanyakan di outlet: seperti
+  /// apa gelang pelanggan nanti, dan apakah teksnya terbaca ke arah yang benar.
+  /// Ukuran media kini dijawab Cetak Penggaris.
+  ///
+  /// Isi contohnya sepanjang data sungguhan — nomor order dan waktu dengan
+  /// jumlah karakter yang sama — supaya panjang cetakannya mewakili.
+  List<int> testPrint(WristbandConfigModel config) => dataGelangPlayground(
+        config: config,
+        qrCode: 'TES-GELANG',
+        lokasi: 'UJI GELANG',
+        pembeli: 'nama pembeli',
+        nomorOrder: '0000/UJI/TIX/2026',
+        waktu: '2026-01-01 00:00:00',
+      );
 
   /// Cetak penggaris: dua sumbu bernomor untuk **mengukur medianya sendiri**.
   ///
@@ -202,6 +246,125 @@ class GenerateWristbandUtil {
 
     perintah.add('PRINT 1,1');
     return _bytes(perintah);
+  }
+
+  /// Batas panjang satu baris teks gelang. Nama lokasi dan nama pembeli diketik
+  /// orang; tanpa batas, satu nama panjang mendorong seluruh blok sampai tidak
+  /// muat dan terbuang semuanya.
+  static const int _panjangBarisMaks = 32;
+
+  /// Pasangan huruf (judul, isi) yang dicoba berurutan, dari besar ke kecil.
+  static const List<(String, String)> _tingkatHuruf = [
+    ('4', '3'),
+    ('3', '3'),
+    ('3', '2'),
+    ('2', '2'),
+    ('2', '1'),
+    ('1', '1'),
+  ];
+
+  /// Menata QR dan dua blok teks berurutan **sepanjang gelang** (sumbu Tinggi).
+  ///
+  /// Mengembalikan null bila blok yang diminta tidak muat tanpa mengecilkan QR
+  /// — pemanggil lalu mencoba susunan yang lebih hemat.
+  ///
+  /// Arah baca menentukan urutan di atas lembar. Bawaannya teks diputar 270
+  /// derajat, sehingga terbaca ke arah awal lembar: blok [akhir] (nomor order)
+  /// jatuh paling dekat awal cetak dan blok [awal] (lokasi) paling jauh.
+  /// [WristbandConfigModel.balikTeks] membalik keduanya.
+  ///
+  /// Baris pertama tiap blok selalu berada di sisi yang menjadi "atas" saat
+  /// tulisan dibaca, dan setiap baris rata ke awal bacaan — seperti teks biasa
+  /// yang kebetulan tercetak menyamping.
+  List<String>? _tataMenyusuri(
+    WristbandConfigModel config,
+    String isi,
+    List<_BarisGelang> awal,
+    List<_BarisGelang> akhir,
+  ) {
+    final w = config.widthDots;
+    final h = config.heightDots;
+    final m = config.marginDots;
+    final modul = _modulTotal(isi.length);
+    final selMaksPermintaan = config.qrMaksMm <= 0
+        ? 9999
+        : (config.dots(config.qrMaksMm) / modulQr(isi.length)).floor();
+    final selQr = [
+      ((w - 2 * m) / modul).floor(),
+      ((h - 2 * m) / modul).floor(),
+      selMaksPermintaan,
+    ].reduce(_kecil);
+    if (selQr < 1) return null;
+    final sisi = selQr * modul;
+    final jeda = config.dots(2.5);
+
+    for (final (hurufJudul, hurufIsi) in _tingkatHuruf) {
+      String huruf(_BarisGelang b) => b.judul ? hurufJudul : hurufIsi;
+
+      int tebal(List<_BarisGelang> blok) {
+        var total = 0;
+        for (var i = 0; i < blok.length; i++) {
+          final f = huruf(blok[i]);
+          total += fontDots[f]![1];
+          if (i < blok.length - 1) total += _jarak(f);
+        }
+        return total;
+      }
+
+      int panjang(List<_BarisGelang> blok) => blok.isEmpty
+          ? 0
+          : blok
+              .map((b) => b.isi.length * fontDots[huruf(b)]![0])
+              .reduce((a, b) => a > b ? a : b);
+
+      if (tebal(awal) > w - 2 * m || tebal(akhir) > w - 2 * m) continue;
+      final total = panjang(awal) +
+          (awal.isEmpty ? 0 : jeda) +
+          sisi +
+          (akhir.isEmpty ? 0 : jeda) +
+          panjang(akhir);
+      if (total > h - 2 * m) continue;
+
+      // Rotasi 90 terbaca ke arah +y (menjauhi awal lembar), 270 ke arah -y.
+      final bacaMaju = config.balikTeks;
+      final urutan = bacaMaju
+          ? <List<_BarisGelang>?>[awal, null, akhir]
+          : <List<_BarisGelang>?>[akhir, null, awal];
+
+      var y = _mulaiY(h, total, m, config.posisi).clamp(0, h - total);
+      final hasil = <String>[];
+      for (final blok in urutan) {
+        if (blok == null) {
+          hasil.add(_qr(((w - sisi) / 2).round(), y, selQr, isi));
+          y += sisi + jeda;
+          continue;
+        }
+        if (blok.isEmpty) continue;
+        final p = panjang(blok);
+        final t = tebal(blok);
+        final xBlok = ((w - t) / 2).round();
+        // 90: badan huruf menjulur ke kiri jangkar, jadi baris pertama di kanan.
+        // 270: badan huruf menjulur ke kanan, jadi baris pertama di kiri.
+        var x = bacaMaju ? xBlok + t : xBlok;
+        for (final b in blok) {
+          final f = huruf(b);
+          final tinggiHuruf = fontDots[f]![1];
+          final teks = _kutip(b.isi);
+          if (bacaMaju) {
+            hasil.add('TEXT $x,$y,"$f",90,1,1,"$teks"');
+            x -= tinggiHuruf + _jarak(f);
+          } else {
+            // Tulisan 270 berjalan ke atas dari jangkarnya: jangkar di ujung
+            // bawah blok supaya semua baris rata ke awal bacaan yang sama.
+            hasil.add('TEXT $x,${y + p},"$f",270,1,1,"$teks"');
+            x += tinggiHuruf + _jarak(f);
+          }
+        }
+        y += p + jeda;
+      }
+      return hasil;
+    }
+    return null;
   }
 
   /// Menjalankan penata isi pada ruang yang benar, lalu memutar dan menggesernya.
@@ -372,8 +535,17 @@ class GenerateWristbandUtil {
       final lebarTeks = isi.length * ukuran[0];
       final tinggiTeks = ukuran[1];
       final putaran = int.tryParse(bagian[3].trim()) ?? 0;
-      if (putaran == 90 || putaran == 270) {
+      // Jangkar TSPL ikut berputar bersama teksnya. Pada 90 derajat badan huruf
+      // menjulur ke kiri jangkar dan tulisan berjalan ke bawah; pada 270 badan
+      // huruf menjulur ke kanan dan tulisan berjalan ke atas. Dulu keduanya
+      // disamakan — tidak terasa selama hanya 90 yang dipakai, tapi gelang
+      // playground membaca ke arah 270, dan kotak yang salah membuat batas
+      // lembar serta tumpang tindih diperiksa di tempat yang keliru.
+      if (putaran == 90) {
         return _Kotak(x - tinggiTeks, y, tinggiTeks, lebarTeks);
+      }
+      if (putaran == 270) {
+        return _Kotak(x, y - lebarTeks, tinggiTeks, lebarTeks);
       }
       return _Kotak(x, y, lebarTeks, tinggiTeks);
     }
@@ -876,6 +1048,15 @@ class _TeksJadi {
   final String font;
 
   _TeksJadi(this.isi, this.font);
+}
+
+/// Satu baris teks gelang playground. [judul] memakai huruf satu tingkat lebih
+/// besar — dipakai untuk nama lokasi.
+class _BarisGelang {
+  final String isi;
+  final bool judul;
+
+  const _BarisGelang(this.isi, {this.judul = false});
 }
 
 GenerateWristbandUtil generateWristbandUtil = GenerateWristbandUtil();

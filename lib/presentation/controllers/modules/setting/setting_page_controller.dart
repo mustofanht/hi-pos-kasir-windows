@@ -78,6 +78,8 @@ class SettingPageController extends GetxController
   final arahGelang = 1.obs;
   final potongGelang = ModePotong.sobek.obs;
   final gelangPendamping = true.obs;
+  final balikTeksGelang = false.obs;
+  final terkunciGelang = false.obs;
   final putarIsiGelang = false.obs;
   final posisiGelang = PosisiIsi.tengah.obs;
   final sensorGelang = SensorMedia.menerus.obs;
@@ -301,6 +303,8 @@ class SettingPageController extends GetxController
     potongGelang.value = c.potong;
     gelangPendamping.value = c.gelangPendamping;
     putarIsiGelang.value = c.putarIsi;
+    balikTeksGelang.value = c.balikTeks;
+    terkunciGelang.value = printerUtil.setelanGelangTerkunci;
     posisiGelang.value = c.posisi;
     sensorGelang.value = c.sensor;
 
@@ -346,6 +350,7 @@ class SettingPageController extends GetxController
   }
 
   void doPilihPrinterGelang(CustomIdNameEntity? val) {
+    if (_gelangTerkunci()) return;
     if (val == null || val.id == null) {
       printerUtil.simpanPrinterGelang(null);
       selectedPrinterGelang.value =
@@ -388,6 +393,7 @@ class SettingPageController extends GetxController
   /// bukan hanya saat dibaca ulang — kasir berhak tahu angkanya salah saat itu
   /// juga, bukan menemukannya lewat printer yang diam tak mencetak.
   void doSimpanSetelanGelang() {
+    if (_gelangTerkunci()) return;
     final lebar = double.tryParse(lebarGelangController.text.replaceAll(',', '.'));
     final tinggi = double.tryParse(tinggiGelangController.text.replaceAll(',', '.'));
     final jarak = double.tryParse(jarakGelangController.text.replaceAll(',', '.'));
@@ -446,6 +452,7 @@ class SettingPageController extends GetxController
       geserYMm: geserY,
       gelangPendamping: gelangPendamping.value,
       putarIsi: putarIsiGelang.value,
+      balikTeks: balikTeksGelang.value,
       posisi: posisiGelang.value,
       sensor: sensorGelang.value,
       shiftMm: shift,
@@ -461,6 +468,7 @@ class SettingPageController extends GetxController
   /// setelan tersimpan — bukan isi formulir — supaya perubahan ukuran yang
   /// sedang diketik tapi belum disimpan tidak ikut terbawa.
   void doToggleGelangPendamping(bool value) {
+    if (_gelangTerkunci()) return;
     gelangPendamping.value = value;
     printerUtil.simpanSetelanGelang(
         printerUtil.wristbandConfig.salin(gelangPendamping: value));
@@ -492,10 +500,70 @@ class SettingPageController extends GetxController
         'lalu segarkan daftar perangkat dan pilih ulang printer gelangnya.';
   }
 
+  /// Menolak perubahan setelan gelang selama terkunci.
+  ///
+  /// Tampilan sudah menonaktifkan semua kontrolnya, jadi ini jarang terpicu.
+  /// Tetap dipasang di setiap pintu masuk karena tampilan bukan satu-satunya
+  /// pemanggil — dan kunci yang hanya ada di tampilan hanya berlaku sampai ada
+  /// yang memanggil handler-nya dari tempat lain.
+  bool _gelangTerkunci() {
+    if (!terkunciGelang.value) return false;
+    alert.warning('Setelan Terkunci',
+        'Buka kunci setelan printer gelang dulu untuk mengubahnya.');
+    return true;
+  }
+
+  /// Saklar kunci setelan gelang.
+  ///
+  /// Mengunci langsung berlaku. Membuka meminta konfirmasi, karena justru di
+  /// situlah perubahan tak sengaja dimulai.
+  ///
+  /// Saat dikunci, formulir dimuat ulang dari setelan tersimpan. Tanpa itu,
+  /// angka yang sempat diketik tapi belum disimpan tetap terlihat di kolom yang
+  /// terkunci — seolah-olah itulah setelan yang berlaku, padahal bukan.
+  Future<void> doToggleKunciGelang(bool kunci) async {
+    if (!kunci) {
+      final yakin = await Get.dialog<bool>(
+        AlertDialog(
+          title: const Text('Buka Kunci Setelan?'),
+          content: const Text(
+              'Setelan printer gelang sudah dikalibrasi. Perubahan yang keliru '
+              'bisa membuat gelang tercetak di posisi yang salah atau tidak '
+              'tercetak sama sekali.'),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Buka Kunci'),
+            ),
+          ],
+        ),
+      );
+      if (yakin != true) return;
+    }
+    printerUtil.kunciSetelanGelang(kunci);
+    terkunciGelang.value = kunci;
+    if (kunci) muatSetelanGelang();
+    update();
+  }
+
+  /// Saklar arah baca teks gelang. Disimpan seketika seperti saklar lainnya.
+  void doToggleBalikTeks(bool value) {
+    if (_gelangTerkunci()) return;
+    balikTeksGelang.value = value;
+    printerUtil.simpanSetelanGelang(
+        printerUtil.wristbandConfig.salin(balikTeks: value));
+    update();
+  }
+
   /// Saklar putar isi 90 derajat.
   ///
   /// Disimpan seketika seperti saklar pendamping, dengan alasan yang sama.
   void doTogglePutarIsi(bool value) {
+    if (_gelangTerkunci()) return;
     putarIsiGelang.value = value;
     printerUtil
         .simpanSetelanGelang(printerUtil.wristbandConfig.salin(putarIsi: value));
@@ -514,6 +582,7 @@ class SettingPageController extends GetxController
   /// uji memeriksa apakah setelan yang ada sudah cocok; penggaris ini dipakai
   /// saat setelannya belum diketahui sama sekali.
   Future<void> doCetakPenggaris() async {
+    if (_gelangTerkunci()) return;
     if (!printerUtil.punyaPrinterGelang) {
       alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
       return;
@@ -562,6 +631,7 @@ class SettingPageController extends GetxController
   /// Cetak uji: bingkai batas media + QR contoh. Dipakai untuk mencocokkan
   /// ukuran pada setelan dengan media yang benar-benar terpasang.
   Future<void> doTesCetakGelang() async {
+    if (_gelangTerkunci()) return;
     if (!printerUtil.punyaPrinterGelang) {
       alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
       return;

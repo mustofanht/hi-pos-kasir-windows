@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -33,6 +34,10 @@ class HasilGelang {
   bool get adaGelang => tercetak.isNotEmpty;
 }
 
+/// Waktu pembelian di gelang: `2026-04-03 13:52:46`, sama dengan gelang cetak
+/// outlet playground yang dijadikan contoh.
+final DateFormat _formatWaktu = DateFormat('yyyy-MM-dd HH:mm:ss');
+
 /// Jembatan antara tiket yang baru dibuat dan printer gelang.
 ///
 /// Dipisah dari alur penjualan karena dipakai dua kali dengan data yang sama:
@@ -50,9 +55,17 @@ class GelangUtil {
   /// keluar di kertas struk seperti sebelumnya. Begitu juga bila printer gelang
   /// belum diatur, atau bila cetaknya gagal — pelanggan tidak boleh pulang tanpa
   /// tiket karena satu perangkat ngadat.
+  ///
+  /// [lokasi], [pembeli], [nomorOrder], dan [waktu] dicetak di samping QR —
+  /// satu order, jadi sama untuk setiap gelangnya, termasuk gelang pendamping.
+  /// Semuanya boleh kosong; baris yang kosong tidak dicetak.
   Future<HasilGelang> cetak(
     List<ResponseCreateTicketNoEntity> semua, {
     required Set<String> namaPlayground,
+    String? lokasi,
+    String? pembeli,
+    String? nomorOrder,
+    DateTime? waktu,
   }) async {
     final semuaKeStruk = HasilGelang(tercetak: const [], keStruk: semua);
 
@@ -103,21 +116,15 @@ class GelangUtil {
     final config = printerUtil.wristbandConfig;
     final bytes = <int>[];
     for (final t in gelang) {
-      bytes.addAll(generateWristbandUtil.dataWristbandPrint(
+      bytes.addAll(generateWristbandUtil.dataGelangPlayground(
         config: config,
         qrCode: t.ticketNo!,
-        // Gelang sengaja **hanya berisi QR** — tanpa nomor tiket, tanpa
-        // tanggal, dan tanpa penanda pendamping. Pita Blueprint hanya menyisakan sekitar 20mm bersih sebelum
-        // cetakan pabrik, dan tiap baris teks di bawah QR memakan ruang itu:
-        // dengan dua baris QR-nya cuma 7,9mm, tanpa keduanya 15,8mm. Pada
-        // gelang yang dipakai anak-anak dan kena air, QR besar yang terbaca
-        // sekali pindai lebih berharga daripada nomor kecil yang jarang dipakai.
-        //
-        // Pendamping tidak lagi diberi penanda tercetak. Satu baris "PENDAMPING"
-        // saja mendorong isi sampai 26,8mm — menimpa cetakan pabrik yang
-        // tertutup saat gelang dilipat, jadi penandanya hilang justru pada saat
-        // dipakai. Pembedaannya tetap ada dan lebih dapat dipercaya: gate
-        // membacanya dari `otdtl_is_companion` begitu QR-nya dipindai.
+        lokasi: lokasi,
+        pembeli: pembeli,
+        nomorOrder: nomorOrder,
+        waktu: waktu == null ? null : _formatWaktu.format(waktu.toLocal()),
+        // Pendamping tidak diberi penanda tercetak. Pembedaannya ada di
+        // `otdtl_is_companion` dan terbaca gate begitu QR-nya dipindai.
       ));
     }
 

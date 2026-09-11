@@ -25,6 +25,7 @@ class AppStringConstant {
   // ukuran medianya bertahan setelah aplikasi ditutup.
   final String wristbandPrinter = "wristband_printer";
   final String wristbandConfig = "wristband_config";
+  final String wristbandLocked = "wristband_locked";
 }
 
 class ArgumentsConstant {

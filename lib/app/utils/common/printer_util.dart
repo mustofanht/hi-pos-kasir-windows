@@ -77,6 +77,17 @@ class PrinterUtil {
 
   bool get punyaPrinterGelang => wristbandPrinter != null;
 
+  /// Setelan printer gelang dikunci dari perubahan.
+  ///
+  /// Kalibrasi media gelang dicapai lewat puluhan percobaan, dan halaman
+  /// Setting dibuka banyak orang untuk urusan lain. Kunci ini penjaga dari
+  /// perubahan tak sengaja, **bukan pengaman**: siapa pun yang membuka Setting
+  /// bisa membukanya lagi setelah konfirmasi.
+  ///
+  /// Disimpan di kotak perangkat bersama setelannya, supaya ikut bertahan saat
+  /// logout — kunci yang lepas setiap ganti shift tidak mengunci apa-apa.
+  bool setelanGelangTerkunci = false;
+
   /// Membaca setelan gelang yang tersimpan. Dipanggil sekali saat aplikasi mulai.
   void muatSetelanGelang() {
     _pindahkanDariSesi();
@@ -85,14 +96,17 @@ class PrinterUtil {
       if (printer is Map) wristbandPrinter = PrinterModel.fromJson(printer);
       final config = _store.read(constant.wristbandConfig);
       if (config is Map) wristbandConfig = WristbandConfigModel.fromJson(config);
+      setelanGelangTerkunci = _store.read(constant.wristbandLocked) == true;
     } catch (e) {
       // Setelan rusak tidak boleh menggagalkan aplikasi mulai; kembali ke
       // bawaan, dan kasir tinggal memilih ulang printernya.
       logger.safeLog('Setelan gelang gagal dibaca : $e');
       wristbandPrinter = null;
       wristbandConfig = WristbandConfigModel();
+      setelanGelangTerkunci = false;
     }
-    logger.safeLog('PRINTER GELANG : ${wristbandPrinter?.deviceName ?? "(belum diatur)"}');
+    logger.safeLog('PRINTER GELANG : ${wristbandPrinter?.deviceName ?? "(belum diatur)"}'
+        '${setelanGelangTerkunci ? " (setelan terkunci)" : ""}');
   }
 
   /// Memindahkan setelan gelang dari kotak sesi ke kotak perangkat, sekali.
@@ -133,6 +147,12 @@ class PrinterUtil {
     wristbandConfig = config;
     _store.write(constant.wristbandConfig, config.toJson());
     logger.safeLog('SETELAN GELANG : ${config.toJson()}');
+  }
+
+  void kunciSetelanGelang(bool kunci) {
+    setelanGelangTerkunci = kunci;
+    _store.write(constant.wristbandLocked, kunci);
+    logger.safeLog('SETELAN GELANG ${kunci ? "DIKUNCI" : "DIBUKA"}');
   }
 
   Future<void> init() async {

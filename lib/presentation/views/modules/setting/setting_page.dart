@@ -620,8 +620,11 @@ class SettingPage extends GetView<SettingPageController> {
   /// printer yang salah setelan ukurannya tidak mengeluh — ia mencetak sebagian
   /// lalu memotong sisanya diam-diam. Karena itu ada tombol cetak uji.
   Widget _printerGelang(SettingPageController controller) {
-    return Obx(
-      () => Container(
+    return Obx(() {
+      // Satu sumber untuk seluruh kartu: saat terkunci, setiap isian, pilihan,
+      // saklar, dan tombol di bawah ini nonaktif.
+      final aktif = !controller.terkunciGelang.value;
+      return Container(
         padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
         decoration: BoxDecoration(
           border: Border.all(color: colorStyle.grey.withOpacity(0.5)),
@@ -633,6 +636,26 @@ class SettingPage extends GetView<SettingPageController> {
             Text(
               'Printer Gelang',
               style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              secondary: Icon(
+                controller.terkunciGelang.value
+                    ? Icons.lock_outline
+                    : Icons.lock_open_outlined,
+              ),
+              value: controller.terkunciGelang.value,
+              onChanged: controller.doToggleKunciGelang,
+              title: Text('Kunci setelan', style: textStyle.blackText),
+              subtitle: Text(
+                controller.terkunciGelang.value
+                    ? 'Semua setelan printer gelang dikunci. Matikan untuk '
+                        'mengubah.'
+                    : 'Nyalakan setelah Cetak Uji terbukti benar, supaya '
+                        'setelan tidak berubah tanpa sengaja.',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
             ),
             Text(
               controller.selectedPrinterGelang.value.id == null
@@ -655,7 +678,9 @@ class SettingPage extends GetView<SettingPageController> {
                         child: Text('${e.name}'),
                       ))
                   .toList(),
-              onChanged: (val) => controller.doPilihPrinterGelang(
+              onChanged: !aktif
+                  ? null
+                  : (val) => controller.doPilihPrinterGelang(
                 controller.listPrinterGelang.firstWhere(
                   (e) => e.id?.toString() == val,
                   orElse: () => CustomIdNameEntity(id: null),
@@ -665,16 +690,17 @@ class SettingPage extends GetView<SettingPageController> {
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
-                _kotakAngka('Lebar (mm)', controller.lebarGelangController),
-                _kotakAngka('Tinggi (mm)', controller.tinggiGelangController),
-                _kotakAngka('Jarak (mm)', controller.jarakGelangController),
-                _kotakAngka('Margin (mm)', controller.marginGelangController),
+                _kotakAngka('Lebar (mm)', controller.lebarGelangController, aktif: aktif),
+                _kotakAngka('Tinggi (mm)', controller.tinggiGelangController, aktif: aktif),
+                _kotakAngka('Jarak (mm)', controller.jarakGelangController, aktif: aktif),
+                _kotakAngka('Margin (mm)', controller.marginGelangController, aktif: aktif),
               ],
             ),
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
                 _kotakPilihan<int>(
+                  aktif: aktif,
                   'Resolusi',
                   controller.dpiGelang.value,
                   const [203, 300],
@@ -682,18 +708,21 @@ class SettingPage extends GetView<SettingPageController> {
                   teks: (v) => '$v dpi',
                 ),
                 _kotakPilihan<int>(
+                  aktif: aktif,
                   'Kerapatan',
                   controller.kerapatanGelang.value,
                   List<int>.generate(16, (i) => i),
                   (v) => controller.kerapatanGelang.value = v,
                 ),
                 _kotakPilihan<int>(
+                  aktif: aktif,
                   'Kecepatan',
                   controller.kecepatanGelang.value,
                   const [1, 2, 3, 4, 5, 6],
                   (v) => controller.kecepatanGelang.value = v,
                 ),
                 _kotakPilihan<int>(
+                  aktif: aktif,
                   'Arah',
                   controller.arahGelang.value,
                   const [0, 1],
@@ -704,16 +733,17 @@ class SettingPage extends GetView<SettingPageController> {
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
-                _kotakAngka('QR maks (mm)', controller.qrMaksGelangController),
-                _kotakAngka('Geser X (mm)', controller.geserXGelangController),
-                _kotakAngka('Geser Y (mm)', controller.geserYGelangController),
-                _kotakAngka('Geser lembar (mm)', controller.shiftGelangController),
+                _kotakAngka('QR maks (mm)', controller.qrMaksGelangController, aktif: aktif),
+                _kotakAngka('Geser X (mm)', controller.geserXGelangController, aktif: aktif),
+                _kotakAngka('Geser Y (mm)', controller.geserYGelangController, aktif: aktif),
+                _kotakAngka('Geser lembar (mm)', controller.shiftGelangController, aktif: aktif),
               ],
             ),
             SizedBox(height: layoutStyle.defaultMargin / 2),
             Row(
               children: [
                 _kotakPilihan<SensorMedia>(
+                  aktif: aktif,
                   'Sensor media',
                   controller.sensorGelang.value,
                   SensorMedia.values,
@@ -725,6 +755,7 @@ class SettingPage extends GetView<SettingPageController> {
                   },
                 ),
                 _kotakPilihan<PosisiIsi>(
+                  aktif: aktif,
                   'Posisi isi',
                   controller.posisiGelang.value,
                   PosisiIsi.values,
@@ -736,6 +767,7 @@ class SettingPage extends GetView<SettingPageController> {
                   },
                 ),
                 _kotakPilihan<ModePotong>(
+                  aktif: aktif,
                   'Pemisah gelang',
                   controller.potongGelang.value,
                   ModePotong.values,
@@ -768,15 +800,15 @@ class SettingPage extends GetView<SettingPageController> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               dense: true,
-              value: controller.putarIsiGelang.value,
-              onChanged: controller.doTogglePutarIsi,
-              title: Text('Putar isi 90 derajat', style: textStyle.blackText),
+              value: controller.balikTeksGelang.value,
+              onChanged: aktif ? controller.doToggleBalikTeks : null,
+              title: Text('Balik arah teks', style: textStyle.blackText),
               subtitle: Text(
-                controller.putarIsiGelang.value
-                    ? 'Isi membaca menyusuri panjang gelang — huruf bisa jauh '
-                        'lebih besar. Buktikan dengan Cetak Uji.'
-                    : 'Isi membaca melintang pita. Pada pita sempit, huruf '
-                        'terpaksa kecil dan teks panjang terpotong.',
+                controller.balikTeksGelang.value
+                    ? 'Teks dibalik: lokasi paling dekat awal cetak, nomor order '
+                        'paling jauh.'
+                    : 'Bawaan: nomor order paling dekat awal cetak. Nyalakan '
+                        'kalau teks di gelang terbaca terbalik.',
                 style: textStyle.greyText.copyWith(fontSize: fontSize.small),
               ),
             ),
@@ -784,7 +816,7 @@ class SettingPage extends GetView<SettingPageController> {
               contentPadding: EdgeInsets.zero,
               dense: true,
               value: controller.gelangPendamping.value,
-              onChanged: controller.doToggleGelangPendamping,
+              onChanged: aktif ? controller.doToggleGelangPendamping : null,
               title: Text('Cetak gelang pendamping', style: textStyle.blackText),
               subtitle: Text(
                 controller.gelangPendamping.value
@@ -799,14 +831,14 @@ class SettingPage extends GetView<SettingPageController> {
               children: [
                 Expanded(
                   child: TextButton.icon(
-                    onPressed: controller.doSimpanSetelanGelang,
+                    onPressed: aktif ? controller.doSimpanSetelanGelang : null,
                     icon: const Icon(Icons.save_outlined, size: 18),
                     label: const Text('Simpan Ukuran'),
                   ),
                 ),
                 Expanded(
                   child: TextButton.icon(
-                    onPressed: controller.isLoadingTesGelang.value
+                    onPressed: !aktif || controller.isLoadingTesGelang.value
                         ? null
                         : controller.doTesCetakGelang,
                     icon: const Icon(Icons.print_outlined, size: 18),
@@ -817,7 +849,7 @@ class SettingPage extends GetView<SettingPageController> {
                 ),
                 Expanded(
                   child: TextButton.icon(
-                    onPressed: controller.isLoadingTesGelang.value
+                    onPressed: !aktif || controller.isLoadingTesGelang.value
                         ? null
                         : controller.doCetakPenggaris,
                     icon: const Icon(Icons.straighten, size: 18),
@@ -861,23 +893,26 @@ class SettingPage extends GetView<SettingPageController> {
               style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
             Text(
-              'Cetak uji menggambar bingkai tepat di batas margin. Bila '
-              'bingkainya terpotong, ukuran media di atas belum cocok dengan '
-              'media yang terpasang.',
+              'Cetak uji mencetak satu gelang contoh dengan tata letak '
+              'sungguhan: lokasi dan nama di satu sisi QR, nomor order dan '
+              'waktu di sisi lain, terbaca sepanjang gelang. Periksa arah '
+              'bacanya dan pastikan isinya tidak menimpa cetakan pabrik.',
               style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 
-  Widget _kotakAngka(String label, TextEditingController controller) {
+  Widget _kotakAngka(String label, TextEditingController controller,
+      {bool aktif = true}) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: TextField(
           controller: controller,
+          enabled: aktif,
           // signed: true supaya papan tombol angka ikut menyediakan tanda minus.
           // Kolom Geser X/Y memang menerima nilai negatif, dan tanpa ini
           // operator harus berganti papan tombol untuk mengetiknya.
@@ -901,6 +936,7 @@ class SettingPage extends GetView<SettingPageController> {
     List<T> pilihan,
     void Function(T) onPilih, {
     String Function(T)? teks,
+    bool aktif = true,
   }) {
     return Expanded(
       child: Padding(
@@ -919,9 +955,11 @@ class SettingPage extends GetView<SettingPageController> {
                     child: Text(teks == null ? '$e' : teks(e)),
                   ))
               .toList(),
-          onChanged: (v) {
-            if (v != null) onPilih(v);
-          },
+          onChanged: !aktif
+              ? null
+              : (v) {
+                  if (v != null) onPilih(v);
+                },
         ),
       ),
     );

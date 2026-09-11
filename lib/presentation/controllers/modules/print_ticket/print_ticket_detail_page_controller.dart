@@ -352,6 +352,12 @@ class PrintTicketDetailPageController extends GetxController {
           final hasilGelang = await gelangUtil.cetak(
             gateTickets,
             namaPlayground: namaPlayground,
+            lokasi: locationName,
+            pembeli: model.value.orderName,
+            nomorOrder: orderNo,
+            // Waktu order asli, bukan saat cetak ulang: gelang pengganti harus
+            // sama persis dengan yang hilang atau rusak.
+            waktu: paymentDate,
           );
 
           final tiketDiStruk = hasilGelang.keStruk;

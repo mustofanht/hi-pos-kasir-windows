@@ -39,15 +39,12 @@ void main() {
     // tepi kanan kotak itu. Mengabaikannya membuat uji batas memeriksa kotak
     // yang salah — lalu lulus padahal cetakannya keluar lembar.
     final putaran = int.tryParse(a[3].trim()) ?? 0;
-    if (putaran == 90 || putaran == 270) {
-      return (
-        x: x - tinggi,
-        y: y,
-        w: tinggi,
-        h: lebar,
-        jenis: 'teks',
-        isi: isi
-      );
+    if (putaran == 90) {
+      return (x: x - tinggi, y: y, w: tinggi, h: lebar, jenis: 'teks', isi: isi);
+    }
+    // 270: badan huruf menjulur ke kanan jangkar, tulisan berjalan ke atas.
+    if (putaran == 270) {
+      return (x: x, y: y - lebar, w: tinggi, h: lebar, jenis: 'teks', isi: isi);
     }
     return (x: x, y: y, w: lebar, h: tinggi, jenis: 'teks', isi: isi);
   }
@@ -1004,8 +1001,7 @@ void main() {
     });
 
     test('cetak uji ikut tergeser, supaya mewakili cetak sungguhan', () {
-      // Diukur pada QR-nya saja: penanda sudut cetak uji sengaja **tidak**
-      // ikut bergeser — ia menandai batas media, bukan isi.
+      // Diukur pada QR-nya: posisi QR yang dicari operator saat menggeser.
       int xQr(List<int> bytes) => int.parse(perintah(bytes)
           .firstWhere((b) => b.startsWith('QRCODE'))
           .substring(6)
@@ -1157,6 +1153,155 @@ void main() {
     test('titik per milimeter mengikuti resolusi', () {
       expect(WristbandConfigModel(dpi: 203).dots(25), 200); // 8 titik/mm
       expect(WristbandConfigModel(dpi: 300).dots(25), 295); // 11,8 titik/mm
+    });
+  });
+  group('Gelang playground — teks menyusuri gelang', () {
+    // Setelan yang sudah terbukti di Blueprint MEDIC 25mm.
+    final media = WristbandConfigModel(
+      widthMm: 25,
+      heightMm: 200,
+      gapMm: 3,
+      marginMm: 0,
+      qrMaksMm: 19,
+      posisi: PosisiIsi.atas,
+      sensor: SensorMedia.tandaHitam,
+    );
+
+    List<int> bytesGelang(
+      WristbandConfigModel c, {
+      String? lokasi = 'Arena Playground Bekasi',
+      String? pembeli = 'rita',
+      String? order = '0161/IV/TIX/2025',
+      String? waktu = '2026-04-03 13:52:46',
+    }) =>
+        gen.dataGelangPlayground(
+          config: c,
+          qrCode: '301009260015',
+          lokasi: lokasi,
+          pembeli: pembeli,
+          nomorOrder: order,
+          waktu: waktu,
+        );
+
+    String teks(List<String> p, String isi) =>
+        p.firstWhere((b) => b.startsWith('TEXT') && b.endsWith('"$isi"'));
+    String qr(List<String> p) => p.firstWhere((b) => b.startsWith('QRCODE'));
+    int sel(List<String> p) => int.parse(qr(p).substring(6).split(',')[3].trim());
+    int putaran(String b) => int.parse(b.substring(4).split(',')[3].trim());
+    int huruf(String b) =>
+        int.parse(b.substring(4).split(',')[2].replaceAll('"', '').trim());
+    final qrSaja =
+        perintah(gen.dataWristbandPrint(config: media, qrCode: '301009260015'));
+
+    test('semua elemen di dalam lembar dan tidak bertumpuk, kedua arah baca', () {
+      for (final balik in [false, true]) {
+        final c = media.salin(balikTeks: balik);
+        periksaMuat(bytesGelang(c), c);
+      }
+    });
+
+    test('QR sama besar dengan gelang QR-saja — teks tidak mengecilkannya', () {
+      expect(sel(perintah(bytesGelang(media))), sel(qrSaja));
+      expect(sel(qrSaja), 7, reason: 'QR 18,4 mm pada setelan terbukti');
+    });
+
+    test('isi QR tetap nomor tiket, dan QR-nya tidak diputar', () {
+      // Gate mencari tiket dengan string ini sebagai kunci utama. QR tidak
+      // diputar karena jangkar QRCODE berputar berbeda antar firmware.
+      final b = qr(perintah(bytesGelang(media)));
+      expect(RegExp(r'"([^"]*)"$').firstMatch(b)!.group(1), '301009260015');
+      expect(b.substring(6).split(',')[5].trim(), '0');
+    });
+
+    test('semua teks terbaca sepanjang gelang: 270 bawaan, 90 bila dibalik', () {
+      for (final (balik, arah) in [(false, 270), (true, 90)]) {
+        final p = perintah(bytesGelang(media.salin(balikTeks: balik)));
+        final semua = p.where((b) => b.startsWith('TEXT')).toList();
+        expect(semua.length, 4);
+        expect(semua.every((b) => putaran(b) == arah), isTrue, reason: '$semua');
+      }
+    });
+
+    test('bawaan: nomor order paling dekat awal cetak, lokasi paling jauh', () {
+      final p = perintah(bytesGelang(media));
+      final yOrder = elemen(teks(p, '0161/IV/TIX/2025')).y;
+      final yQr = elemen(qr(p)).y;
+      final yLokasi = elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y;
+      expect(yOrder, lessThan(yQr));
+      expect(yQr, lessThan(yLokasi));
+    });
+
+    test('dibalik: urutannya ikut terbalik', () {
+      final p = perintah(bytesGelang(media.salin(balikTeks: true)));
+      expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y,
+          lessThan(elemen(qr(p)).y));
+      expect(elemen(qr(p)).y, lessThan(elemen(teks(p, '0161/IV/TIX/2025')).y));
+    });
+
+    test('baris pertama tiap blok berada di sisi atas bacaan', () {
+      // 270: badan huruf menjulur ke kanan, jadi "atas" bacaan ada di kiri.
+      final p = perintah(bytesGelang(media));
+      expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).x,
+          lessThan(elemen(teks(p, 'rita')).x));
+      expect(elemen(teks(p, '0161/IV/TIX/2025')).x,
+          lessThan(elemen(teks(p, '2026-04-03 13:52:46')).x));
+      // 90: kebalikannya.
+      final q = perintah(bytesGelang(media.salin(balikTeks: true)));
+      expect(elemen(teks(q, 'ARENA PLAYGROUND BEKASI')).x,
+          greaterThan(elemen(teks(q, 'rita')).x));
+    });
+
+    test('baris dalam satu blok rata ke awal bacaan yang sama', () {
+      // 270 berjalan ke atas: awal bacaan adalah ujung bawah kotaknya.
+      final p = perintah(bytesGelang(media));
+      final a = elemen(teks(p, '0161/IV/TIX/2025'));
+      final b = elemen(teks(p, '2026-04-03 13:52:46'));
+      expect(a.y + a.h, b.y + b.h);
+    });
+
+    test('lokasi ditulis kapital dengan huruf lebih besar dari nama pembeli', () {
+      final p = perintah(bytesGelang(media));
+      expect(huruf(teks(p, 'ARENA PLAYGROUND BEKASI')),
+          greaterThan(huruf(teks(p, 'rita'))));
+    });
+
+    test('tanpa data teks hasilnya persis gelang QR-saja yang sudah terbukti', () {
+      expect(
+          perintah(bytesGelang(media,
+              lokasi: null, pembeli: null, order: null, waktu: null)),
+          qrSaja);
+    });
+
+    test('lembar terlalu pendek: teks dibuang, QR tidak mengecil', () {
+      final pendek = media.salin(heightMm: 30);
+      periksaMuat(bytesGelang(pendek), pendek);
+      expect(
+          sel(perintah(bytesGelang(pendek))),
+          sel(perintah(
+              gen.dataWristbandPrint(config: pendek, qrCode: '301009260015'))));
+    });
+
+    test('nama yang sangat panjang dipotong, bukan membuang seluruh blok', () {
+      final p = perintah(bytesGelang(media, pembeli: 'x' * 80));
+      expect(p.any((b) => b.startsWith('TEXT') && b.contains('x' * 32)), isTrue);
+      expect(p.any((b) => b.contains('x' * 33)), isFalse);
+    });
+
+    test('geser Y memindahkan seluruh isi tanpa keluar lembar', () {
+      final c = media.salin(geserYMm: 10);
+      periksaMuat(bytesGelang(c), c);
+      expect(elemen(qr(perintah(bytesGelang(c)))).y -
+              elemen(qr(perintah(bytesGelang(media)))).y,
+          c.dots(10));
+    });
+
+    test('arah teks bertahan lewat penyimpanan, bawaannya mati', () {
+      expect(WristbandConfigModel().balikTeks, isFalse);
+      expect(
+          WristbandConfigModel.fromJson(
+                  WristbandConfigModel(balikTeks: true).toJson())
+              .balikTeks,
+          isTrue);
     });
   });
 }
