@@ -39,6 +39,37 @@ void main() {
       ]);
     });
 
+    test('ada jarak sebelum alamat dan sebelum telepon, tidak menempel', () {
+      final bytes = KepalaStruk.cetak(
+        generator,
+        nama: 'Arena Playground Bekasi',
+        alamat: 'Kp. Rawa Panjang RT003/RW004',
+        telepon: '85933533953',
+      );
+      final jeda = KepalaStruk.jeda();
+      int posisi(List<int> pola, [int mulai = 0]) {
+        for (var i = mulai; i <= bytes.length - pola.length; i++) {
+          var cocok = true;
+          for (var j = 0; j < pola.length; j++) {
+            if (bytes[i + j] != pola[j]) {
+              cocok = false;
+              break;
+            }
+          }
+          if (cocok) return i;
+        }
+        return -1;
+      }
+
+      final nama = posisi('Arena'.codeUnits);
+      final alamat = posisi('Kp. Rawa'.codeUnits);
+      final telp = posisi('Telp.'.codeUnits);
+      final jeda1 = posisi(jeda, nama);
+      final jeda2 = posisi(jeda, alamat);
+      expect(nama < jeda1 && jeda1 < alamat, isTrue, reason: 'jarak nama → alamat');
+      expect(alamat < jeda2 && jeda2 < telp, isTrue, reason: 'jarak alamat → telepon');
+    });
+
     test('telepon tanpa angka 0 di depan dilengkapi, yang lain apa adanya', () {
       expect(KepalaStruk.formatTelepon('89630918829'), '089630918829');
       expect(KepalaStruk.formatTelepon('0215551234'), '0215551234');

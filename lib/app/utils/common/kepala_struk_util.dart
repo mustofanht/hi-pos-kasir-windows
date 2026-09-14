@@ -10,6 +10,14 @@ class KepalaStruk {
   /// Jumlah karakter satu baris huruf normal (font A) di kertas 80 mm.
   static const int lebarBaris80mm = 48;
 
+  /// Jarak antar bagian kepala struk, dalam titik (203 dpi: 16 titik = 2 mm,
+  /// sekitar setengah baris). Sebaris kosong penuh terlalu renggang untuk kepala
+  /// tiga baris; tanpa jarak, alamat menempel ke nama lokasi yang berhuruf besar.
+  static const int jarakTitik = 16;
+
+  /// `ESC J n`: majukan kertas n titik tanpa menambah baris teks.
+  static List<int> jeda([int titik = jarakTitik]) => [0x1B, 0x4A, titik];
+
   static List<int> cetak(
     Generator generator, {
     String? nama,
@@ -30,13 +38,21 @@ class KepalaStruk {
       ),
     );
 
-    for (final baris in barisKontak(
-      alamat: alamat,
-      telepon: telepon,
-      lebarBaris: lebarBaris,
-    )) {
+    final a = _rapikan(alamat);
+    final t = formatTelepon(telepon);
+    if (a != null) {
+      bytes += jeda();
+      for (final baris in pecahBaris(a, lebarBaris)) {
+        bytes += generator.text(
+          baris,
+          styles: const PosStyles(align: PosAlign.center),
+        );
+      }
+    }
+    if (t != null) {
+      bytes += jeda();
       bytes += generator.text(
-        baris,
+        'Telp. $t',
         styles: const PosStyles(align: PosAlign.center),
       );
     }
