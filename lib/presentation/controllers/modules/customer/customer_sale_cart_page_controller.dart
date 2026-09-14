@@ -36,6 +36,7 @@ class CustomerSaleCartPageController extends GetxController {
   var reffNo = RxString('');
 
   final addonList = RxList<CartAddon>([]);
+  final bundleList = RxList<CartAddon>([]);
   final ticketList = RxList<CartTicket>([]);
   final potonganList = RxList<CartPotongan>([]);
   final voucherList = RxList<CartVoucher>([]);
@@ -186,6 +187,7 @@ class CustomerSaleCartPageController extends GetxController {
     voucherList.clear();
     depositList.clear();
     addonList.clear();
+    bundleList.clear();
     memberList.clear();
     
     CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
@@ -209,6 +211,7 @@ class CustomerSaleCartPageController extends GetxController {
     voucherList.clear();
     depositList.clear();
     addonList.clear();
+    bundleList.clear();
     memberList.clear();
 
     CustomerSaleCart customerSaleCart = CustomerSaleCart.fromJson(val);
@@ -227,6 +230,9 @@ class CustomerSaleCartPageController extends GetxController {
     }
     if (customerSaleCart.addonList != null) {
       addonList.addAll(customerSaleCart.addonList!);
+    }
+    if (customerSaleCart.bundleList != null) {
+      bundleList.addAll(customerSaleCart.bundleList!);
     }
     if (customerSaleCart.totalOrder != null) {
       totalOrder.value = customerSaleCart.totalOrder!;

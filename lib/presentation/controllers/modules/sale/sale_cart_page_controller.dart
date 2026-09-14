@@ -916,6 +916,10 @@ class SaleCartPageController extends GetxController {
         value: CustomerSaleCart(
           ticketList: ticketList,
           addonList: addonList,
+          // Tanpa ini layar pelanggan tidak pernah menampilkan merchandise bundling:
+          // yang gratis tidak terlihat sama sekali, dan yang berbayar membuat total
+          // di layar lebih besar dari jumlah barang yang terlihat.
+          bundleList: bundleList,
           potonganList: potonganList,
           voucherList: voucherList,
           depositList: depositList,

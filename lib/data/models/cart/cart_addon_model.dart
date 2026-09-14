@@ -37,7 +37,9 @@ class CartAddon {
   CartAddon.fromJson(Map<String, dynamic> json) {
     try {
       qtyOrder = json['qtyOrder'];
-      totalPrice = json['totalPrice'];
+      // Harga bundling gratis bisa tiba sebagai int 0 setelah melewati kanal layar
+      // kedua; menugaskannya langsung ke double? melempar dan seluruh baris hilang.
+      totalPrice = (json['totalPrice'] as num?)?.toDouble();
       bundleId = json['bundleId'];
       // rentModel = json['rentModel'];
 

@@ -79,7 +79,8 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
               controller.potonganList.isEmpty &&
               controller.voucherList.isEmpty &&
               controller.depositList.isEmpty &&
-              controller.addonList.isEmpty && 
+              controller.addonList.isEmpty &&
+              controller.bundleList.isEmpty && 
               controller.memberList.isEmpty
               )
           ? notOrder()
@@ -111,6 +112,10 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                       Container(),
                     if (controller.addonList.isNotEmpty) ...[
                       addonListComponent(controller)
+                    ] else
+                      Container(),
+                    if (controller.bundleList.isNotEmpty) ...[
+                      bundleListComponent(controller)
                     ] else
                       Container(),
                     if (controller.potonganList.isNotEmpty) ...[
@@ -489,6 +494,68 @@ class CustomerSaleCartPage extends GetView<CustomerSaleCartPageController> {
                         ],
                       ),
                     ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  /// Merchandise yang menempel pada tiket. Yang gratis tetap ditampilkan dengan
+  /// Rp.0 dan penanda "Gratis", supaya pelanggan tahu barang itu memang haknya —
+  /// bukan barang yang terbawa tanpa dibayar.
+  Widget bundleListComponent(CustomerSaleCartPageController controller) {
+    return Container(
+      alignment: Alignment.topCenter,
+      margin: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: controller.bundleList
+            .map(
+              (e) => Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.addon?.productName ?? '',
+                            style: TextStyle(
+                              fontSize: fontSize.title,
+                            ),
+                          ),
+                          SizedBox(
+                            height: layoutStyle.defaultMargin / 5,
+                          ),
+                          Text(
+                            (e.totalPrice ?? 0) <= 0
+                                ? 'QTY ${e.qtyOrder ?? 0} · Gratis — ikut tiket'
+                                : 'QTY ${e.qtyOrder ?? 0} · Ikut tiket',
+                            style: TextStyle(
+                              color: colorStyle.grey,
+                              fontSize: fontSize.subtitle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                        'Rp.${common.currencyFormat(e.totalPrice ?? 0)}',
+                        style: TextStyle(
+                          fontSize: fontSize.title,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
             .toList(),
       ),

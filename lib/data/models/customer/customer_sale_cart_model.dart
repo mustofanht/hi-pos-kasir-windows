@@ -13,6 +13,11 @@ class CustomerSaleCart {
   List<CartVoucher>? voucherList = [];
   List<CartDeposit>? depositList = [];
   List<CartAddon>? addonList = [];
+
+  /// Merchandise bundling tiket. Dipisah dari [addonList] supaya layar pelanggan
+  /// bisa menandainya "ikut tiket" — termasuk yang gratis, yang tanpa penanda
+  /// terlihat seperti barang yang lupa ditagih.
+  List<CartAddon>? bundleList = [];
   List<Membership>? memberList = [];
   double? totalOrder;
   double? paymentFee;
@@ -20,6 +25,7 @@ class CustomerSaleCart {
   CustomerSaleCart({
     this.ticketList,
     this.addonList,
+    this.bundleList,
     this.potonganList,
     this.voucherList,
     this.depositList,
@@ -32,6 +38,7 @@ class CustomerSaleCart {
     return {
       'ticketList': ticketList?.map((e) => e.toJson()).toList(),
       'addonList': addonList?.map((e) => e.toJson()).toList(),
+      'bundleList': bundleList?.map((e) => e.toJson()).toList(),
       'potonganList': potonganList?.map((e) => e.toJson2()).toList(),
       'voucherList': voucherList?.map((e) => e.toJson2()).toList(),
       'depositList': depositList?.map((e) => e.toJson2()).toList(),
@@ -48,6 +55,7 @@ class CustomerSaleCart {
       int indexVoucher = 0;
       int indexDeposit = 0;
       int indexAddon = 0;
+      int indexBundle = 0;
       int indexMember = 0;
       if (json['ticketList'] != null) {
         for (var e in json['ticketList']) {
@@ -70,6 +78,17 @@ class CustomerSaleCart {
             indexAddon++;
           } else {
             addonList?.add(CartAddon.fromJson(e));
+          }
+        }
+      }
+      if (json['bundleList'] != null) {
+        for (var e in json['bundleList']) {
+          if (e is Map<Object?, Object?>) {
+            Map<String, dynamic> result = common.convertToMapStringDynamic(e);
+            bundleList?.insert(indexBundle, CartAddon.fromJson(result));
+            indexBundle++;
+          } else {
+            bundleList?.add(CartAddon.fromJson(e));
           }
         }
       }
