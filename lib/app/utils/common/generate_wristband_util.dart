@@ -174,92 +174,6 @@ class GenerateWristbandUtil {
     return dataWristbandPrint(config: config, qrCode: qrCode);
   }
 
-  /// Cetak uji: satu gelang contoh dengan tata letak **sungguhan**.
-  ///
-  /// Dulu cetak uji menggambar penanda sudut dan isi rekaan yang ditata
-  /// berbeda dari gelang pembayaran. Hasilnya menjawab "apakah ukuran media
-  /// cocok", tapi tidak menjawab yang benar-benar ditanyakan di outlet: seperti
-  /// apa gelang pelanggan nanti, dan apakah teksnya terbaca ke arah yang benar.
-  /// Ukuran media kini dijawab Cetak Penggaris.
-  ///
-  /// [pendamping] mencetak contoh gelang pendamping — baris namanya
-  /// `Pendamping (nama anak)`, baris terpanjang yang bisa muncul di gelang.
-  ///
-  /// Isi contohnya sepanjang data sungguhan — nomor order dan waktu dengan
-  /// jumlah karakter yang sama — supaya panjang cetakannya mewakili.
-  List<int> testPrint(WristbandConfigModel config, {bool pendamping = false}) =>
-      dataGelangPlayground(
-        config: config,
-        qrCode: pendamping ? 'TES-PENDAMPING' : 'TES-GELANG',
-        lokasi: 'UJI GELANG',
-        nama: pendamping ? 'Pendamping (nama anak)' : 'nama anak',
-        nomorOrder: '0000/UJI/TIX/2026',
-        waktu: '2026-01-01 00:00:00',
-      );
-
-  /// Cetak penggaris: dua sumbu bernomor untuk **mengukur medianya sendiri**.
-  ///
-  /// Dibuat setelah beberapa gelang terbuang karena menebak arah sumbu dari
-  /// foto. Media gelang tidak memberi tahu ukurannya, dan TSPL tidak mengeluh
-  /// saat mencetak di luar media — cetakan hanya hilang. Jadi alih-alih menebak,
-  /// cetak penggaris ini sekali dan **baca angka terakhir yang masih terlihat**
-  /// di tiap sumbu.
-  ///
-  /// Memakai **ukuran media dari setelan**; hanya margin dan geserannya yang
-  /// dinolkan supaya sumbunya mulai dekat sudut cetak. Versi pertama memaksa
-  /// 60 x 60 mm dengan alasan "setelan yang sedang diuji tidak boleh menentukan
-  /// hasilnya". Itu keliru: printer melaporkan berhasil lalu tidak mengeluarkan
-  /// apa pun, karena ukuran lembar yang dimintanya tidak cocok dengan media yang
-  /// terpasang. Penggaris yang tidak keluar tidak mengukur apa-apa.
-  List<int> rulerPrint(WristbandConfigModel config) {
-    final ukur = config.salin(marginMm: 0, geserXMm: 0, geserYMm: 0);
-    final w = ukur.widthDots;
-    final h = ukur.heightDots;
-    final lebarHuruf = fontDots['2']![0];
-    final tinggiHuruf = fontDots['2']![1];
-
-    // Tidak ada satu pun elemen di koordinat 0.
-    //
-    // Cetakan tiket yang selalu berhasil tidak pernah menggambar di 0 — elemen
-    // terdekatnya di 13 titik. Cetak uji dan penggaris, yang belum pernah
-    // keluar, keduanya mulai tepat di 0. Sebagian firmware TSPL menolak seluruh
-    // lembar bila ada elemen di tepi mutlak, tanpa mengeluh. Satu milimeter
-    // masuk ke dalam tidak mengubah gunanya sebagai penggaris, dan menghapus
-    // satu perbedaan yang belum terjelaskan.
-    final asal = ukur.dots(1);
-
-    final perintah = _kepala(ukur);
-
-    // Hanya TEXT, tanpa satu pun BAR — juga disengaja. Setiap cetakan ber-BAR
-    // belum pernah keluar dari printer ini, sementara QRCODE dan TEXT selalu
-    // keluar. Alat ukur harus memakai perintah yang sudah terbukti dimengerti.
-    perintah.add('TEXT $asal,$asal,"2",0,1,1,"0"');
-
-    for (var mm = 20; mm <= ukur.widthMm.toInt(); mm += 20) {
-      final x = ukur.dots(mm.toDouble());
-      if (x + 3 * lebarHuruf > w) break;
-      perintah.add('TEXT $x,$asal,"2",0,1,1,"L$mm"');
-    }
-
-    for (var mm = 20; mm <= ukur.heightMm.toInt(); mm += 20) {
-      final y = ukur.dots(mm.toDouble());
-      if (y + tinggiHuruf > h) break;
-      perintah.add('TEXT $asal,$y,"2",0,1,1,"T$mm"');
-    }
-
-    // Uji putaran: dua teks kembar berdampingan, satu tegak satu diputar.
-    // Printer TSPL tidak melaporkan apakah ia mendukung teks berputar; hanya
-    // hasil cetak berdampingan yang bisa menjawabnya.
-    final yUji = asal + tinggiHuruf + 8;
-    if (yUji + 3 * fontDots['3']![0] <= h && w > 6 * fontDots['3']![0]) {
-      perintah.add('TEXT ${asal + 4 * lebarHuruf},$yUji,"3",0,1,1,"R0"');
-      perintah.add('TEXT ${w - asal},$yUji,"3",90,1,1,"R90"');
-    }
-
-    perintah.add('PRINT 1,1');
-    return _bytes(perintah);
-  }
-
   /// Batas panjang satu baris teks gelang. Nama lokasi dan nama pembeli diketik
   /// orang; tanpa batas, satu nama panjang mendorong seluruh blok sampai tidak
   /// muat dan terbuang semuanya.
@@ -368,8 +282,8 @@ class GenerateWristbandUtil {
 
   /// Menjalankan penata isi pada ruang yang benar, lalu memutar dan menggesernya.
   ///
-  /// Satu pintu untuk cetak biasa dan cetak uji, supaya keduanya tidak bisa
-  /// berbeda perlakuan.
+  /// Satu pintu untuk semua tata letak gelang, supaya tidak ada yang berbeda
+  /// perlakuan.
   ///
   /// Saat [WristbandConfigModel.putarIsi] menyala, isi ditata pada lembar yang
   /// **ditukar sisinya** (panjang gelang menjadi lebar tata letak), lalu diputar
@@ -576,9 +490,7 @@ class GenerateWristbandUtil {
 
   /// Perintah pembuka satu lembar: ukuran media, kerapatan, dan cara memisahkan.
   ///
-  /// Disatukan supaya cetak biasa dan cetak uji tidak bisa berbeda setelan —
-  /// cetak uji yang tidak mewakili cetak sungguhan adalah cetak uji yang
-  /// menyesatkan.
+  /// Disatukan supaya setiap tata letak gelang memakai setelan media yang sama.
   List<String> _kepala(WristbandConfigModel config) {
     return <String>[
       'SIZE ${_mm(config.widthMm)} mm,${_mm(config.heightMm)} mm',

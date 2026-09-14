@@ -17,6 +17,17 @@ import 'package:jaya_propertiy/data/models/common/wristband_config_model.dart';
 void main() {
   final gen = GenerateWristbandUtil();
 
+  /// Gelang contoh dengan semua baris teks terisi — isi terpanjang yang bisa
+  /// muncul, jadi paling mungkin meluber.
+  List<int> contohGelang(WristbandConfigModel c) => gen.dataGelangPlayground(
+        config: c,
+        qrCode: 'TES-GELANG',
+        lokasi: 'UJI GELANG',
+        nama: 'Pendamping (nama anak)',
+        nomorOrder: '0000/UJI/TIX/2026',
+        waktu: '2026-01-01 00:00:00',
+      );
+
   /// Satu elemen yang digambar di atas lembar, dalam titik.
   ({int x, int y, int w, int h, String jenis, String isi}) elemen(String b) {
     final isi = RegExp(r'"([^"]*)"$').firstMatch(b)?.group(1) ?? '';
@@ -102,8 +113,7 @@ void main() {
       final c = WristbandConfigModel();
       for (final bytes in [
         gen.dataWristbandPrint(config: c, qrCode: '300909260012'),
-        gen.testPrint(c),
-        gen.rulerPrint(c),
+        contohGelang(c),
       ]) {
         expect(bytes, isNot(isA<Uint8List>()),
             reason: 'byte[] tidak diterima plugin printer');
@@ -266,7 +276,7 @@ void main() {
       // Cetak uji yang tidak mewakili cetak sungguhan adalah cetak uji yang
       // menyesatkan.
       final c = WristbandConfigModel(potong: ModePotong.tiapGelang);
-      expect(perintah(gen.testPrint(c)), contains('SET CUTTER 1'));
+      expect(perintah(contohGelang(c)), contains('SET CUTTER 1'));
     });
 
     test('mode pemisah bertahan lewat penyimpanan setelan', () {
@@ -447,7 +457,7 @@ void main() {
       });
 
       test('$nama — cetak uji juga di dalam lembar', () {
-        periksaMuat(gen.testPrint(c), c);
+        periksaMuat(contohGelang(c), c);
       });
     });
 
@@ -608,7 +618,7 @@ void main() {
       ukuran.forEach((nama, dasar) {
         final c = dasar.salin(putarIsi: true);
         test(nama, () => periksaMuat(cetak(c), c));
-        test('$nama — cetak uji', () => periksaMuat(gen.testPrint(c), c));
+        test('$nama — isi lengkap', () => periksaMuat(contohGelang(c), c));
         test('$nama — dengan geseran', () {
           final g = c.salin(geserXMm: 3, geserYMm: 8);
           periksaMuat(cetak(g), g);
@@ -624,99 +634,6 @@ void main() {
           WristbandConfigModel.fromJson(
               WristbandConfigModel(putarIsi: true).toJson()).putarIsi,
           isTrue);
-    });
-  });
-
-  group('Cetak penggaris', () {
-    // Alat ukur, bukan hasil akhir. Yang dijaga: ia mengikuti media yang
-    // benar-benar terpasang, memakai perintah yang terbukti dimengerti printer,
-    // dan sumbunya mulai tepat di sudut cetak.
-    test('memakai ukuran media dari setelan', () {
-      // Versi pertama memaksa 60x60mm, dan printer melaporkan berhasil lalu
-      // tidak mengeluarkan apa pun karena ukuran itu tidak cocok dengan
-      // medianya. Penggaris yang tidak keluar tidak mengukur apa-apa.
-      for (final c in [
-        WristbandConfigModel(),
-        WristbandConfigModel(widthMm: 25, heightMm: 80),
-      ]) {
-        expect(perintah(gen.rulerPrint(c)).first,
-            'SIZE ${c.widthMm.toInt()} mm,${c.heightMm.toInt()} mm');
-      }
-    });
-
-    test('tidak memakai perintah BAR sama sekali', () {
-      // Setiap cetakan ber-BAR belum pernah keluar dari printer di lapangan,
-      // sementara QRCODE dan TEXT selalu keluar. Alat ukur tidak boleh ikut
-      // mempertaruhkan hasilnya pada perintah yang belum terbukti.
-      final p = perintah(gen.rulerPrint(
-          WristbandConfigModel(widthMm: 25, heightMm: 80)));
-      expect(p.any((b) => b.startsWith('BAR')), isFalse);
-    });
-
-    test('sependek cetakan tiket yang sudah terbukti berhasil', () {
-      final c = WristbandConfigModel(widthMm: 25, heightMm: 80);
-      final tiket = gen.dataWristbandPrint(
-          config: c, qrCode: '300909260029', ticketNo: '300909260029');
-      expect(gen.rulerPrint(c).length, lessThan(tiket.length * 2));
-    });
-
-    test('margin dan geseran diabaikan, sumbu mulai dekat sudut cetak', () {
-      // 1mm masuk ke dalam, bukan tepat di 0: cetakan tiket yang selalu
-      // berhasil tidak pernah menggambar di koordinat 0, sementara cetakan yang
-      // tidak pernah keluar selalu mulai di sana.
-      final c = WristbandConfigModel(
-          widthMm: 25, heightMm: 80, marginMm: 5, geserXMm: 15, geserYMm: 5);
-      final asal = c.dots(1);
-      final p = perintah(gen.rulerPrint(c));
-      expect(p.any((b) => b.startsWith('TEXT $asal,$asal,')), isTrue);
-      expect(p.any((b) => b.contains(' 0,0,')), isFalse);
-    });
-
-    test('kedua sumbu bernomor tiap 20mm sejauh medianya', () {
-      final c = WristbandConfigModel(widthMm: 25, heightMm: 80);
-      final p = perintah(gen.rulerPrint(c));
-      expect(p.any((b) => b.endsWith('"L20"')), isTrue);
-      for (var mm = 20; mm <= 60; mm += 20) {
-        expect(p.any((b) => b.endsWith('"T$mm"')), isTrue, reason: 'T$mm');
-      }
-      // Angka yang tidak lagi muat utuh tidak dicetak: L40 melewati lebar 25mm,
-      // dan T80 jatuh tepat di tepi bawah lembar 80mm.
-      expect(p.any((b) => b.endsWith('"L40"')), isFalse);
-      expect(p.any((b) => b.endsWith('"T80"')), isFalse);
-    });
-
-    test('nomor sumbu berada di jarak yang benar dari titik nol', () {
-      // Penggaris yang angkanya tidak berada di posisi yang ia klaim lebih buruk
-      // daripada tidak ada penggaris sama sekali.
-      final c = WristbandConfigModel(widthMm: 25, heightMm: 80);
-      final p = perintah(gen.rulerPrint(c));
-      final asal = c.dots(1);
-      expect(p.any((b) => b.startsWith('TEXT ${c.dots(20)},$asal,')), isTrue);
-      for (var mm = 20; mm <= 60; mm += 20) {
-        expect(
-            p.any((b) => b.startsWith('TEXT $asal,${c.dots(mm.toDouble())},')),
-            isTrue,
-            reason: 'T$mm');
-      }
-    });
-
-    test('membawa uji putaran R0 dan R90', () {
-      final p = perintah(gen.rulerPrint(
-          WristbandConfigModel(widthMm: 25, heightMm: 80)));
-      expect(p.firstWhere((b) => b.endsWith('"R0"')).split(',')[3].trim(), '0');
-      expect(
-          p.firstWhere((b) => b.endsWith('"R90"')).split(',')[3].trim(), '90');
-    });
-
-    test('seluruh isinya tetap di dalam lembar', () {
-      for (final c in [
-        WristbandConfigModel(),
-        WristbandConfigModel(widthMm: 25, heightMm: 80),
-        WristbandConfigModel(widthMm: 19, heightMm: 180),
-        WristbandConfigModel(widthMm: 25, heightMm: 80, dpi: 300),
-      ]) {
-        periksaMuat(gen.rulerPrint(c), c);
-      }
     });
   });
 
@@ -1009,8 +926,8 @@ void main() {
           .trim());
 
       final asal = WristbandConfigModel(widthMm: 90, heightMm: 25);
-      final selisih = xQr(gen.testPrint(asal.salin(geserXMm: 10))) -
-          xQr(gen.testPrint(asal));
+      final selisih = xQr(contohGelang(asal.salin(geserXMm: 10))) -
+          xQr(contohGelang(asal));
       expect((selisih - asal.dots(10)).abs(), lessThanOrEqualTo(toleransi));
     });
 
@@ -1120,6 +1037,33 @@ void main() {
   });
 
   group('Setelan media', () {
+    test('bawaan perangkat baru = setelan terbukti di outlet (dokumen 14 §C.2)',
+        () {
+      final c = WristbandConfigModel.terbukti();
+      expect([c.widthMm, c.heightMm, c.gapMm, c.marginMm], [25, 200, 3, 0]);
+      expect([c.dpi, c.density, c.speed, c.direction], [203, 12, 2, 1]);
+      expect([c.qrMaksMm, c.geserXMm, c.geserYMm, c.shiftMm], [19, 0, 0, 25]);
+      expect(c.sensor, SensorMedia.tandaHitam);
+      expect(c.posisi, PosisiIsi.atas);
+      expect(c.potong, ModePotong.sobek);
+      expect(c.putarIsi, isFalse);
+      expect(c.gelangPendamping, isTrue);
+    });
+
+    test('status bawaan bertahan lewat penyimpanan dan mengabaikan pendamping',
+        () {
+      final simpan = WristbandConfigModel.fromJson(
+          WristbandConfigModel.terbukti(gelangPendamping: false).toJson());
+      expect(simpan.samaDenganTerbukti, isTrue);
+      expect(simpan.salin(density: 10).samaDenganTerbukti, isFalse);
+      expect(WristbandConfigModel().samaDenganTerbukti, isFalse);
+    });
+
+    test('setelan terbukti menghasilkan gelang yang muat di lembarnya', () {
+      final c = WristbandConfigModel.terbukti();
+      periksaMuat(contohGelang(c), c);
+    });
+
     test('nilai mustahil ditolak dan kembali ke bawaan', () {
       // Lembar 0mm membuat printer diam tanpa mencetak dan tanpa memberi tahu.
       final c = WristbandConfigModel.fromJson({
@@ -1259,17 +1203,6 @@ void main() {
               (b) => b.startsWith('TEXT') && b.endsWith('"Pendamping (rita)"')),
           isTrue);
       periksaMuat(bytes, media);
-    });
-
-    test('cetak uji pendamping memakai baris pendamping, cetak uji biasa tidak',
-        () {
-      expect(
-          perintah(gen.testPrint(media, pendamping: true))
-              .any((b) => b.endsWith('"Pendamping (nama anak)"')),
-          isTrue);
-      expect(perintah(gen.testPrint(media)).any((b) => b.contains('Pendamping')),
-          isFalse);
-      periksaMuat(gen.testPrint(media, pendamping: true), media);
     });
 
     test('tanpa data teks hasilnya persis gelang QR-saja yang sudah terbukti', () {

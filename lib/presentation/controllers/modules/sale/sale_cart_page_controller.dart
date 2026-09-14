@@ -50,7 +50,10 @@ class SaleCartPageController extends GetxController {
   final bundleList = RxList<CartAddon>([]);
 
   /// Cache aturan bundling per tiket, agar keranjang tidak memanggil backend
-  /// setiap kali qty tiket berubah.
+  /// setiap kali qty tiket berubah. Hanya berlaku selama tiket itu ada di
+  /// keranjang: diambil ulang saat tiket masuk keranjang, saat halaman Ticket
+  /// di-refresh, dan sebelum membuka pembayaran (lihat [muatUlangBundle]) —
+  /// perubahan aturan di back office tidak menunggu kasir logout.
   final Map<int, List<TicketBundleEntity>> _aturanBundle = {};
   final potonganList = RxList<CartPotongan>([]);
   final voucherList = RxList<CartVoucher>([]);
@@ -211,24 +214,31 @@ class SaleCartPageController extends GetxController {
   // Harga tetap dihitung ulang backend; yang di sini semata agar angka di layar
   // sama dengan angka yang ditagih.
 
-  /// Ambil (dan cache) aturan bundling satu tiket.
-  Future<List<TicketBundleEntity>> _muatAturanBundle(int ticketId) async {
+  /// Ambil (dan cache) aturan bundling satu tiket. [segarkan] melewati cache.
+  Future<List<TicketBundleEntity>> _muatAturanBundle(
+    int ticketId, {
+    bool segarkan = false,
+  }) async {
     final tersimpan = _aturanBundle[ticketId];
-    if (tersimpan != null) return tersimpan;
+    if (tersimpan != null && !segarkan) return tersimpan;
 
     final hasil = await _service.sale.ticketBundleService.getByTicket(
       authToken: _authToken,
       ticketId: ticketId,
     );
-    final aturan = hasil.fold<List<TicketBundleEntity>>(
+    final aturan = hasil.fold<List<TicketBundleEntity>?>(
       (error) {
         // Bundling gagal dimuat bukan alasan menahan penjualan tiket: server
         // tetap menyisipkan merchandise wajibnya saat order disimpan.
         logger.safeLog('Gagal memuat bundling tiket $ticketId: $error');
-        return <TicketBundleEntity>[];
+        return null;
       },
       (response) => response.data ?? <TicketBundleEntity>[],
     );
+    // Gagal memuat: pakai aturan terakhir yang diketahui, dan jangan simpan hasil
+    // kosong — kalau disimpan, merchandise wajib hilang dari keranjang sampai
+    // cache dibersihkan, padahal server tetap menagihnya.
+    if (aturan == null) return tersimpan ?? <TicketBundleEntity>[];
     _aturanBundle[ticketId] = aturan;
     return aturan;
   }
@@ -270,6 +280,29 @@ class SaleCartPageController extends GetxController {
     );
     return false;
   }
+
+  /// Ambil ulang aturan bundling semua tiket di keranjang dari server, lalu
+  /// susun ulang [bundleList]. Mengembalikan true bila isi bundling berubah
+  /// (merchandise, qty, atau nominalnya).
+  Future<bool> muatUlangBundle() async {
+    final idTiket = ticketList
+        .map((t) => t.ticket?.ticketId)
+        .whereType<int>()
+        .toSet();
+    _aturanBundle.removeWhere((id, _) => !idTiket.contains(id));
+    if (idTiket.isEmpty) return false;
+
+    final sebelum = _jejakBundle();
+    await Future.wait(
+      idTiket.map((id) => _muatAturanBundle(id, segarkan: true)),
+    );
+    await refreshBundle();
+    return _jejakBundle() != sebelum;
+  }
+
+  String _jejakBundle() => bundleList
+      .map((b) => '${b.addon?.productId}:${b.qtyOrder}:${b.totalPrice}')
+      .join('|');
 
   /// Susun ulang [bundleList] dari isi keranjang tiket saat ini.
   ///
@@ -316,6 +349,10 @@ class SaleCartPageController extends GetxController {
   }
 
   addTicket(TicketEntity ticket) async {
+    // Tiket baru masuk keranjang: selalu pakai aturan bundling terbaru.
+    if (ticket.ticketId != null) {
+      await _muatAturanBundle(ticket.ticketId!, segarkan: true);
+    }
     if (!await _stokBundleCukup(ticket, ticket.ticketMinimum ?? 1)) return;
     ticketList.add(
       CartTicket(
@@ -839,7 +876,7 @@ class SaleCartPageController extends GetxController {
     updateCustomer();
   }
 
-  onPayment() {
+  onPayment() async {
     // logger.safeLog('TOTAL AMT : ${finalTotalOrderAmt.value}');
     // logger.safeLog('TICKERT LIST : ${ticketList.length}');
     // logger.safeLog('TICKERT LIST : ${ticketList.isEmpty}');
@@ -857,6 +894,17 @@ class SaleCartPageController extends GetxController {
     if (salePageController.openPayment.value) {
       salePageController.doPayment();
     } else {
+      // Server menghitung ulang bundling saat order disimpan. Pastikan yang
+      // ditagih kasir memakai aturan yang sama, dan beri tahu bila berubah
+      // supaya kasir melihat totalnya dulu sebelum menerima pembayaran.
+      if (await muatUlangBundle()) {
+        alert.warning(
+          'Bundling Diperbarui',
+          'Aturan bundling tiket baru saja diubah di back office. '
+              'Periksa kembali keranjang dan total sebelum lanjut ke pembayaran.',
+        );
+        return;
+      }
       salePageController.doPrepared();
       salePageController.totalOrderQty(totalOrderQty.value);
       salePageController.totalOrderAmnt(finalTotalOrderAmt.value);

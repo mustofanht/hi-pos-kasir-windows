@@ -35,6 +35,12 @@ class SaleTicketPageController extends GetxController {
     if (isLoading.value) return;
     isLoading.value = true;
 
+    // Refresh halaman Ticket juga menyegarkan bundling tiket yang sudah ada di
+    // keranjang, supaya perubahan aturan di back office terlihat tanpa logout.
+    if (page == 0 && Get.isRegistered<SaleCartPageController>()) {
+      Get.find<SaleCartPageController>().muatUlangBundle();
+    }
+
     try {
       ticketList.clear();
       var result;

@@ -77,8 +77,8 @@ enum SensorMedia {
 /// label termometer yang paling umum beredar (50x25mm, jarak 2mm, 203 dpi) —
 /// titik awal yang wajar, bukan tebakan yang harus dipakai apa adanya.
 ///
-/// Kalibrasi sesungguhnya baru bisa dilakukan di depan printer: cetak uji,
-/// ukur hasilnya, sesuaikan angkanya.
+/// Kalibrasi sesungguhnya baru bisa dilakukan di depan printer: cetak gelang,
+/// ukur hasilnya, sesuaikan angkanya. Setelan yang terbukti ada di dokumen 14.
 class WristbandConfigModel {
   /// Resolusi printer. Hampir semua printer label thermal 203 dpi (8 titik/mm);
   /// sebagian seri industri 300 dpi (11,8 titik/mm).
@@ -170,7 +170,7 @@ class WristbandConfigModel {
   ///
   /// Bawaannya mati karena tata letak berputar baru bisa dipastikan benar di
   /// depan printer: penempatan jangkar teks berputar berbeda antar firmware
-  /// TSPL. Nyalakan, lalu buktikan dengan satu kali **Cetak Uji**.
+  /// TSPL. Nyalakan hanya setelah dibuktikan dengan cetakan sungguhan.
   bool putarIsi;
 
   /// Apakah tiket pendamping ikut dicetak sebagai gelang.
@@ -204,6 +204,42 @@ class WristbandConfigModel {
     this.sensor = SensorMedia.menerus,
     this.shiftMm = 0,
   });
+
+  /// Setelan media yang **terbukti** di printer outlet (11 Sep 2026): gelang
+  /// Blueprint MEDIC pita 25 mm pada printer label TSPL 203 dpi. Lihat
+  /// dokumentasi 14 §C.2.
+  ///
+  /// Inilah bawaan perangkat yang belum pernah diatur, dan tujuan tombol
+  /// "Pakai Setelan Bawaan". Konstruktor biasa sengaja tidak diubah: nilainya
+  /// dipakai sebagai media netral di banyak uji tata letak.
+  factory WristbandConfigModel.terbukti({bool gelangPendamping = true}) =>
+      WristbandConfigModel(
+        dpi: 203,
+        widthMm: 25,
+        heightMm: 200,
+        gapMm: 3,
+        marginMm: 0,
+        density: 12,
+        speed: 2,
+        direction: 1,
+        potong: ModePotong.sobek,
+        geserXMm: 0,
+        geserYMm: 0,
+        gelangPendamping: gelangPendamping,
+        putarIsi: false,
+        qrMaksMm: 19,
+        posisi: PosisiIsi.atas,
+        sensor: SensorMedia.tandaHitam,
+        shiftMm: 25,
+      );
+
+  /// true bila setelan media ini sama dengan [WristbandConfigModel.terbukti].
+  /// Saklar pendamping tidak dihitung — itu keputusan outlet, bukan media.
+  bool get samaDenganTerbukti {
+    final a = toJson()..remove('gelangPendamping');
+    final b = WristbandConfigModel.terbukti().toJson()..remove('gelangPendamping');
+    return a.keys.every((k) => a[k] == b[k]);
+  }
 
   /// Titik per milimeter untuk resolusi ini.
   double get titikPerMm => dpi / 25.4;

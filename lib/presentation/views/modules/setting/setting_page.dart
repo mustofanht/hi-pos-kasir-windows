@@ -618,12 +618,14 @@ class SettingPage extends GetView<SettingPageController> {
   /// Ukuran medianya bisa diubah di sini karena tidak ada satu ukuran yang
   /// benar: label 50x25mm dan gulungan gelang 25x220mm sama-sama dipakai, dan
   /// printer yang salah setelan ukurannya tidak mengeluh — ia mencetak sebagian
-  /// lalu memotong sisanya diam-diam. Karena itu ada tombol cetak uji.
+  /// lalu memotong sisanya diam-diam. Setelan yang sudah terbukti sebaiknya
+  /// dikunci.
   Widget _printerGelang(SettingPageController controller) {
     return Obx(() {
-      // Satu sumber untuk seluruh kartu: saat terkunci, setiap isian, pilihan,
-      // saklar, dan tombol di bawah ini nonaktif.
+      // Kunci hanya berlaku untuk Setelan lanjutan. Pilihan printer dan saklar
+      // pendamping diatur per perangkat / per outlet, jadi selalu bisa diubah.
       final aktif = !controller.terkunciGelang.value;
+      final bawaan = controller.setelanGelangBawaan;
       return Container(
         padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
         decoration: BoxDecoration(
@@ -637,30 +639,10 @@ class SettingPage extends GetView<SettingPageController> {
               'Printer Gelang',
               style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
             ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              secondary: Icon(
-                controller.terkunciGelang.value
-                    ? Icons.lock_outline
-                    : Icons.lock_open_outlined,
-              ),
-              value: controller.terkunciGelang.value,
-              onChanged: controller.doToggleKunciGelang,
-              title: Text('Kunci setelan', style: textStyle.blackText),
-              subtitle: Text(
-                controller.terkunciGelang.value
-                    ? 'Semua setelan printer gelang dikunci. Matikan untuk '
-                        'mengubah.'
-                    : 'Nyalakan setelah Cetak Uji terbukti benar, supaya '
-                        'setelan tidak berubah tanpa sengaja.',
-                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-              ),
-            ),
             Text(
               controller.selectedPrinterGelang.value.id == null
-                  ? 'Belum diatur — QR tiket masih dicetak menyambung struk.'
-                  : 'QR tiket dicetak sebagai gelang di perangkat ini (TSPL).',
+                  ? 'Belum ada printer gelang. QR tiket dicetak di kertas struk.'
+                  : 'QR tiket dicetak di gelang lewat printer ini.',
               style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
             SizedBox(height: layoutStyle.defaultMargin / 2),
@@ -678,110 +660,14 @@ class SettingPage extends GetView<SettingPageController> {
                         child: Text('${e.name}'),
                       ))
                   .toList(),
-              onChanged: !aktif
-                  ? null
-                  : (val) => controller.doPilihPrinterGelang(
+              onChanged: (val) => controller.doPilihPrinterGelang(
                 controller.listPrinterGelang.firstWhere(
                   (e) => e.id?.toString() == val,
                   orElse: () => CustomIdNameEntity(id: null),
                 ),
               ),
             ),
-            SizedBox(height: layoutStyle.defaultMargin / 2),
-            Row(
-              children: [
-                _kotakAngka('Lebar (mm)', controller.lebarGelangController, aktif: aktif),
-                _kotakAngka('Tinggi (mm)', controller.tinggiGelangController, aktif: aktif),
-                _kotakAngka('Jarak (mm)', controller.jarakGelangController, aktif: aktif),
-                _kotakAngka('Margin (mm)', controller.marginGelangController, aktif: aktif),
-              ],
-            ),
-            SizedBox(height: layoutStyle.defaultMargin / 2),
-            Row(
-              children: [
-                _kotakPilihan<int>(
-                  aktif: aktif,
-                  'Resolusi',
-                  controller.dpiGelang.value,
-                  const [203, 300],
-                  (v) => controller.dpiGelang.value = v,
-                  teks: (v) => '$v dpi',
-                ),
-                _kotakPilihan<int>(
-                  aktif: aktif,
-                  'Kerapatan',
-                  controller.kerapatanGelang.value,
-                  List<int>.generate(16, (i) => i),
-                  (v) => controller.kerapatanGelang.value = v,
-                ),
-                _kotakPilihan<int>(
-                  aktif: aktif,
-                  'Kecepatan',
-                  controller.kecepatanGelang.value,
-                  const [1, 2, 3, 4, 5, 6],
-                  (v) => controller.kecepatanGelang.value = v,
-                ),
-                _kotakPilihan<int>(
-                  aktif: aktif,
-                  'Arah',
-                  controller.arahGelang.value,
-                  const [0, 1],
-                  (v) => controller.arahGelang.value = v,
-                ),
-              ],
-            ),
-            SizedBox(height: layoutStyle.defaultMargin / 2),
-            Row(
-              children: [
-                _kotakAngka('QR maks (mm)', controller.qrMaksGelangController, aktif: aktif),
-                _kotakAngka('Geser X (mm)', controller.geserXGelangController, aktif: aktif),
-                _kotakAngka('Geser Y (mm)', controller.geserYGelangController, aktif: aktif),
-                _kotakAngka('Geser lembar (mm)', controller.shiftGelangController, aktif: aktif),
-              ],
-            ),
-            SizedBox(height: layoutStyle.defaultMargin / 2),
-            Row(
-              children: [
-                _kotakPilihan<SensorMedia>(
-                  aktif: aktif,
-                  'Sensor media',
-                  controller.sensorGelang.value,
-                  SensorMedia.values,
-                  (v) => controller.sensorGelang.value = v,
-                  teks: (v) => switch (v) {
-                    SensorMedia.menerus => 'Menyambung (tanpa penanda)',
-                    SensorMedia.celah => 'Celah antar gelang',
-                    SensorMedia.tandaHitam => 'Tanda hitam di balik media',
-                  },
-                ),
-                _kotakPilihan<PosisiIsi>(
-                  aktif: aktif,
-                  'Posisi isi',
-                  controller.posisiGelang.value,
-                  PosisiIsi.values,
-                  (v) => controller.posisiGelang.value = v,
-                  teks: (v) => switch (v) {
-                    PosisiIsi.atas => 'Rapat ke atas',
-                    PosisiIsi.tengah => 'Di tengah',
-                    PosisiIsi.bawah => 'Rapat ke bawah',
-                  },
-                ),
-                _kotakPilihan<ModePotong>(
-                  aktif: aktif,
-                  'Pemisah gelang',
-                  controller.potongGelang.value,
-                  ModePotong.values,
-                  (v) => controller.potongGelang.value = v,
-                  teks: (v) => switch (v) {
-                    ModePotong.sobek => 'Sobek manual (tanpa pemotong)',
-                    ModePotong.tiapGelang => 'Potong tiap gelang',
-                    ModePotong.akhirBatch => 'Potong di akhir cetakan',
-                    ModePotong.tanpaMaju => 'Tanpa maju (media diam)',
-                  },
-                ),
-              ],
-            ),
-            // Peringatan paling penting di kartu ini. Tanpanya, Cetak Uji
+            // Peringatan paling penting di kartu ini. Tanpanya, cetak gelang
             // melaporkan berhasil sementara printer diam — dan yang dicurigai
             // orang pertama kali adalah kabelnya, bukan saklar simulasi.
             if (controller.simulatePrinter.value)
@@ -791,9 +677,9 @@ class SettingPage extends GetView<SettingPageController> {
                 padding: EdgeInsets.all(layoutStyle.defaultMargin / 3),
                 color: colorStyle.yellow.withOpacity(0.25),
                 child: Text(
-                  'Simulasi Printer sedang menyala — cetakan ditangkap ke '
-                  'Hasil Cetak, tidak ada kertas yang keluar. Matikan dulu '
-                  'untuk mencetak sungguhan.',
+                  'Simulasi Printer sedang menyala, jadi gelang tidak akan '
+                  'keluar dari printer. Matikan Simulasi Printer supaya gelang '
+                  'bisa dicetak.',
                   style: textStyle.blackText.copyWith(fontSize: fontSize.small),
                 ),
               ),
@@ -801,103 +687,279 @@ class SettingPage extends GetView<SettingPageController> {
               contentPadding: EdgeInsets.zero,
               dense: true,
               value: controller.gelangPendamping.value,
-              onChanged: aktif ? controller.doToggleGelangPendamping : null,
-              title: Text('Cetak gelang pendamping', style: textStyle.blackText),
+              onChanged: controller.doToggleGelangPendamping,
+              title:
+                  Text('Cetak gelang pendamping', style: textStyle.blackText),
               subtitle: Text(
                 controller.gelangPendamping.value
-                    ? 'Setiap tiket playground menghasilkan 2 gelang: anak + pendamping'
-                    : 'Pendamping tidak dapat gelang; QR-nya dicetak di struk. '
-                        'Nyalakan lagi sebelum outlet beroperasi.',
+                    ? 'Setiap tiket playground mencetak 2 gelang: satu untuk '
+                        'anak, satu untuk pendampingnya.'
+                    : 'Pendamping tidak dapat gelang, QR-nya dicetak di struk. '
+                        'Nyalakan lagi sebelum outlet buka.',
                 style: textStyle.greyText.copyWith(fontSize: fontSize.small),
               ),
             ),
-            SizedBox(height: layoutStyle.defaultMargin / 2),
-            Row(
+            // Setelan media disembunyikan: bawaannya sudah terbukti di printer
+            // outlet, dan salah ubah membuat gelang tercetak di posisi yang salah
+            // tanpa printer mengeluh. Tetap bisa dibuka tanpa update aplikasi
+            // untuk printer atau media yang berbeda.
+            ExpansionTile(
+              shape: const Border(),
+              collapsedShape: const Border(),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              leading: Icon(
+                controller.terkunciGelang.value
+                    ? Icons.lock_outline
+                    : Icons.lock_open_outlined,
+              ),
+              title: Text('Setelan lanjutan', style: textStyle.blackText),
+              subtitle: Text(
+                '${bawaan ? "Memakai setelan standar" : "Setelan sudah diubah dari standar"}'
+                ' · ${controller.terkunciGelang.value ? "terkunci" : "tidak terkunci"}',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
               children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: aktif ? controller.doSimpanSetelanGelang : null,
-                    icon: const Icon(Icons.save_outlined, size: 18),
-                    label: const Text('Simpan Ukuran'),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  secondary: Icon(
+                    controller.terkunciGelang.value
+                        ? Icons.lock_outline
+                        : Icons.lock_open_outlined,
+                  ),
+                  value: controller.terkunciGelang.value,
+                  onChanged: controller.doToggleKunciGelang,
+                  title: Text('Kunci setelan', style: textStyle.blackText),
+                  subtitle: Text(
+                    controller.terkunciGelang.value
+                        ? 'Setelan di bawah tidak bisa diubah. Matikan kunci '
+                            'hanya kalau memang perlu mengubahnya.'
+                        : 'Setelan bisa diubah. Nyalakan lagi kunci setelah '
+                            'selesai supaya tidak berubah tanpa sengaja.',
+                    style:
+                        textStyle.greyText.copyWith(fontSize: fontSize.small),
                   ),
                 ),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: !aktif || controller.isLoadingTesGelang.value
-                        ? null
-                        : controller.doTesCetakGelang,
-                    icon: const Icon(Icons.print_outlined, size: 18),
-                    label: Text(controller.isLoadingTesGelang.value
-                        ? 'Mengirim...'
-                        : 'Cetak Uji'),
-                  ),
+                Row(
+                  children: [
+                    _kotakAngka('Lebar (mm)', controller.lebarGelangController,
+                        aktif: aktif),
+                    _kotakAngka(
+                        'Tinggi (mm)', controller.tinggiGelangController,
+                        aktif: aktif),
+                    _kotakAngka('Jarak (mm)', controller.jarakGelangController,
+                        aktif: aktif),
+                    _kotakAngka(
+                        'Margin (mm)', controller.marginGelangController,
+                        aktif: aktif),
+                  ],
                 ),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: !aktif || controller.isLoadingTesGelang.value
-                        ? null
-                        : controller.doTesCetakPendamping,
-                    icon: const Icon(Icons.people_outline, size: 18),
-                    label: const Text('Uji Pendamping'),
-                  ),
+                SizedBox(height: layoutStyle.defaultMargin / 2),
+                Row(
+                  children: [
+                    _kotakPilihan<int>(
+                      aktif: aktif,
+                      'Resolusi',
+                      controller.dpiGelang.value,
+                      const [203, 300],
+                      (v) => controller.dpiGelang.value = v,
+                      teks: (v) => '$v dpi',
+                    ),
+                    _kotakPilihan<int>(
+                      aktif: aktif,
+                      'Kerapatan',
+                      controller.kerapatanGelang.value,
+                      List<int>.generate(16, (i) => i),
+                      (v) => controller.kerapatanGelang.value = v,
+                    ),
+                    _kotakPilihan<int>(
+                      aktif: aktif,
+                      'Kecepatan',
+                      controller.kecepatanGelang.value,
+                      const [1, 2, 3, 4, 5, 6],
+                      (v) => controller.kecepatanGelang.value = v,
+                    ),
+                    _kotakPilihan<int>(
+                      aktif: aktif,
+                      'Arah',
+                      controller.arahGelang.value,
+                      const [0, 1],
+                      (v) => controller.arahGelang.value = v,
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: !aktif || controller.isLoadingTesGelang.value
-                        ? null
-                        : controller.doCetakPenggaris,
-                    icon: const Icon(Icons.straighten, size: 18),
-                    label: const Text('Cetak Penggaris'),
-                  ),
+                SizedBox(height: layoutStyle.defaultMargin / 2),
+                Row(
+                  children: [
+                    _kotakAngka(
+                        'QR maks (mm)', controller.qrMaksGelangController,
+                        aktif: aktif),
+                    _kotakAngka(
+                        'Geser X (mm)', controller.geserXGelangController,
+                        aktif: aktif),
+                    _kotakAngka(
+                        'Geser Y (mm)', controller.geserYGelangController,
+                        aktif: aktif),
+                    _kotakAngka(
+                        'Geser lembar (mm)', controller.shiftGelangController,
+                        aktif: aktif),
+                  ],
                 ),
+                SizedBox(height: layoutStyle.defaultMargin / 2),
+                Row(
+                  children: [
+                    _kotakPilihan<SensorMedia>(
+                      aktif: aktif,
+                      'Sensor media',
+                      controller.sensorGelang.value,
+                      SensorMedia.values,
+                      (v) => controller.sensorGelang.value = v,
+                      teks: (v) => switch (v) {
+                        SensorMedia.menerus => 'Tanpa penanda',
+                        SensorMedia.celah => 'Celah di antara gelang',
+                        SensorMedia.tandaHitam => 'Garis hitam di balik gelang',
+                      },
+                    ),
+                    _kotakPilihan<PosisiIsi>(
+                      aktif: aktif,
+                      'Posisi isi',
+                      controller.posisiGelang.value,
+                      PosisiIsi.values,
+                      (v) => controller.posisiGelang.value = v,
+                      teks: (v) => switch (v) {
+                        PosisiIsi.atas => 'Di ujung awal',
+                        PosisiIsi.tengah => 'Di tengah',
+                        PosisiIsi.bawah => 'Di ujung akhir',
+                      },
+                    ),
+                    _kotakPilihan<ModePotong>(
+                      aktif: aktif,
+                      'Pemisah gelang',
+                      controller.potongGelang.value,
+                      ModePotong.values,
+                      (v) => controller.potongGelang.value = v,
+                      teks: (v) => switch (v) {
+                        ModePotong.sobek => 'Disobek tangan',
+                        ModePotong.tiapGelang =>
+                          'Dipotong tiap gelang (perlu pisau)',
+                        ModePotong.akhirBatch =>
+                          'Dipotong di akhir (perlu pisau)',
+                        ModePotong.tanpaMaju => 'Tidak dimajukan',
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: layoutStyle.defaultMargin / 2),
+                Wrap(
+                  children: [
+                    TextButton.icon(
+                      onPressed:
+                          aktif ? controller.doSimpanSetelanGelang : null,
+                      icon: const Icon(Icons.save_outlined, size: 18),
+                      label: const Text('Simpan Setelan'),
+                    ),
+                    TextButton.icon(
+                      onPressed: aktif && !bawaan
+                          ? controller.doPakaiSetelanBawaan
+                          : null,
+                      icon: const Icon(Icons.restore, size: 18),
+                      label: const Text('Kembalikan ke Standar'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: layoutStyle.defaultMargin / 2),
+                _panduanGelang(),
               ],
-            ),
-            Text(
-              'Geser lembar memindahkan seluruh lembar terhadap takik gelang — '
-              'satu-satunya cara mencetak di atas titik awal cetak. Nilai '
-              'negatif memajukan ke arah awal gelang. Tidak semua printer '
-              'mendukungnya; kalau setelahnya tidak ada yang tercetak, '
-              'kembalikan ke 0.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-            ),
-            Text(
-              'Posisi isi memilih ujung lembar mana yang dipakai — tidak '
-              'mengubah ukuran QR sama sekali, berbeda dari Geser Y yang selalu '
-              'mengecilkannya. Pakai ini dulu sebelum menggeser.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-            ),
-            Text(
-              'QR maks membatasi ukuran QR (0 = sebesar mungkin). Dipakai bila '
-              'area gelang yang bersih dari cetakan pabrik terlalu pendek untuk '
-              'memuat QR besar + teks.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-            ),
-            Text(
-              'Geser X mengikuti arah kolom Lebar, Geser Y mengikuti kolom '
-              'Tinggi. Boleh negatif. Dipakai untuk menjauhkan cetakan dari '
-              'perekat gelang; geseran yang membuat cetakan keluar lembar '
-              'dipangkas otomatis.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-            ),
-            Text(
-              'Cetak penggaris menggambar dua sumbu bernomor (L dan T) dari '
-              'sudut awal cetak. Baca angka terakhir yang masih terlihat di '
-              'tiap sumbu — itulah ukuran cetak yang sebenarnya, dan sumbu mana '
-              'yang menyusuri panjang gelang.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-            ),
-            Text(
-              'Cetak uji mencetak satu gelang contoh dengan tata letak '
-              'sungguhan: lokasi dan nama anak di satu sisi QR, nomor order '
-              'dan waktu di sisi lain, terbaca sepanjang gelang. Uji '
-              'pendamping sama, dengan baris "Pendamping (nama anak)". '
-              'Pastikan isinya tidak menimpa cetakan pabrik.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
           ],
         ),
       );
     });
+  }
+
+  /// Arti setiap setelan lanjutan, untuk kasir yang baru pertama kali memegang
+  /// printer gelang. Bahasanya sengaja tanpa istilah printer: yang dibutuhkan
+  /// di outlet adalah "kalau begini, ubah yang ini", bukan cara kerja TSPL.
+  Widget _panduanGelang() {
+    const panduan = <(String, String)>[
+      ('Lebar', 'Lebar pita gelang. Standar 25 mm.'),
+      (
+        'Tinggi',
+        'Panjang bagian gelang yang dipakai untuk mencetak. '
+            'Standar 200 mm.'
+      ),
+      ('Jarak', 'Tebal garis hitam di balik gelang. Standar 3 mm.'),
+      ('Margin', 'Ruang kosong di pinggir cetakan. Standar 0.'),
+      (
+        'Resolusi',
+        'Ketajaman printer, tertulis di label printer. '
+            'Standar 203 dpi.'
+      ),
+      (
+        'Kerapatan',
+        'Tingkat hitam cetakan. Naikkan kalau QR pucat atau '
+            'tidak terbaca di pintu masuk. Standar 12.'
+      ),
+      (
+        'Kecepatan',
+        'Kecepatan mencetak. Makin pelan, makin hitam. '
+            'Standar 2.'
+      ),
+      ('Arah', 'Ganti kalau tulisan di gelang tercetak terbalik. Standar 1.'),
+      ('QR maks', 'Ukuran QR paling besar. Standar 19 mm.'),
+      ('Geser X / Geser Y', 'Menggeser cetakan sedikit. Biarkan 0.'),
+      (
+        'Geser lembar',
+        'Jarak cetakan dari ujung gelang. Tambah angkanya '
+            'kalau cetakan terlalu dekat ke ujung, kurangi kalau terlalu jauh. '
+            'Standar 25 mm.'
+      ),
+      (
+        'Sensor media',
+        'Cara printer mengenali batas satu gelang. Gelang '
+            'kita punya garis hitam di baliknya, jadi pilih "Garis hitam di '
+            'balik gelang". Jangan pilih "Celah": printer akan terus menggulung '
+            'gelang tanpa berhenti.'
+      ),
+      ('Posisi isi', 'Letak cetakan di gelang. Standar "Di ujung awal".'),
+      (
+        'Pemisah gelang',
+        'Printer kita tidak punya pisau, jadi pilih '
+            '"Disobek tangan".'
+      ),
+    ];
+    final kecil = textStyle.greyText.copyWith(fontSize: fontSize.small);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Arti setiap setelan',
+            style: textStyle.blackText.copyWith(fontSize: fontSize.small)),
+        SizedBox(height: layoutStyle.defaultMargin / 4),
+        for (final (judul, isi) in panduan)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                  text: '$judul: ',
+                  style: kecil.copyWith(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(text: isi),
+              ]),
+              style: kecil,
+            ),
+          ),
+        SizedBox(height: layoutStyle.defaultMargin / 4),
+        Text(
+          'Setelah mengubah, tekan Simpan Setelan lalu coba satu transaksi. '
+          'Kalau hasilnya jadi aneh atau gelang tidak keluar, tekan '
+          'Kembalikan ke Standar.',
+          style: textStyle.blackText.copyWith(fontSize: fontSize.small),
+        ),
+      ],
+    );
   }
 
   Widget _kotakAngka(String label, TextEditingController controller,

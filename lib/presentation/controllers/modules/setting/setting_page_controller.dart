@@ -7,7 +7,6 @@ import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
-import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
@@ -62,7 +61,6 @@ class SettingPageController extends GetxController
   // --- Printer gelang -------------------------------------------------------
   // Perangkat kedua, memakai bahasa TSPL, terpisah dari printer struk.
   final selectedPrinterGelang = CustomIdNameEntity().obs;
-  final isLoadingTesGelang = false.obs;
 
   final lebarGelangController = TextEditingController();
   final tinggiGelangController = TextEditingController();
@@ -79,6 +77,11 @@ class SettingPageController extends GetxController
   final potongGelang = ModePotong.sobek.obs;
   final gelangPendamping = true.obs;
   final terkunciGelang = false.obs;
+
+  /// Setelan media tersimpan sama dengan setelan terbukti. Diperbarui setiap
+  /// formulir dimuat ulang dan setiap setelan disimpan.
+  final _gelangBawaan = true.obs;
+  bool get setelanGelangBawaan => _gelangBawaan.value;
   final putarIsiGelang = false.obs;
   final posisiGelang = PosisiIsi.tengah.obs;
   final sensorGelang = SensorMedia.menerus.obs;
@@ -303,6 +306,7 @@ class SettingPageController extends GetxController
     gelangPendamping.value = c.gelangPendamping;
     putarIsiGelang.value = c.putarIsi;
     terkunciGelang.value = printerUtil.setelanGelangTerkunci;
+    _gelangBawaan.value = c.samaDenganTerbukti;
     posisiGelang.value = c.posisi;
     sensorGelang.value = c.sensor;
 
@@ -348,7 +352,6 @@ class SettingPageController extends GetxController
   }
 
   void doPilihPrinterGelang(CustomIdNameEntity? val) {
-    if (_gelangTerkunci()) return;
     if (val == null || val.id == null) {
       printerUtil.simpanPrinterGelang(null);
       selectedPrinterGelang.value =
@@ -376,7 +379,7 @@ class SettingPageController extends GetxController
         printerUtil.currPrinter != null &&
         printerUtil.currPrinter!.kunci == pilihan.kunci) {
       alert.warning('Perangkat Sama',
-          'Printer ini sudah dipakai sebagai printer struk. Pilih perangkat lain.');
+          'Printer ini sudah dipakai untuk struk. Pilih printer gelang yang lain.');
       return;
     }
 
@@ -454,7 +457,8 @@ class SettingPageController extends GetxController
       sensor: sensorGelang.value,
       shiftMm: shift,
     ));
-    alert.success('Tersimpan', 'Ukuran media gelang disimpan.');
+    _gelangBawaan.value = printerUtil.wristbandConfig.samaDenganTerbukti;
+    alert.success('Tersimpan', 'Setelan printer gelang disimpan.');
     update();
   }
 
@@ -465,36 +469,47 @@ class SettingPageController extends GetxController
   /// setelan tersimpan — bukan isi formulir — supaya perubahan ukuran yang
   /// sedang diketik tapi belum disimpan tidak ikut terbawa.
   void doToggleGelangPendamping(bool value) {
-    if (_gelangTerkunci()) return;
     gelangPendamping.value = value;
     printerUtil.simpanSetelanGelang(
         printerUtil.wristbandConfig.salin(gelangPendamping: value));
     if (!value) {
       alert.warning('Gelang Pendamping Dimatikan',
-          'Tiket pendamping tetap dibuat dan tetap sah di gate, tapi QR-nya '
-          'dicetak di struk. Nyalakan lagi sebelum outlet beroperasi.');
+          'Tiket pendamping tetap berlaku untuk masuk, tapi QR-nya dicetak '
+          'di struk, bukan di gelang. Nyalakan lagi sebelum outlet buka.');
     }
     update();
   }
 
-  /// Sebab kegagalan cetak gelang yang paling sering, diurutkan dari yang
-  /// paling mungkin. Ditulis sekali supaya tiap tombol cetak memberi petunjuk
-  /// yang sama.
-  String get _sebabGagalCetak {
-    final p = printerUtil.wristbandPrinter;
-    if (p == null) return 'Printer gelang belum dipilih.';
-    final jenis = _jenisPrinter(p);
-    final khusus = p.typePrinter == PrinterType.bluetooth
-        ? 'Printer ini tersambung lewat Bluetooth — pastikan sudah dipasangkan '
-            '(paired) di setelan Android dan dalam keadaan menyala.'
-        : p.typePrinter == PrinterType.network
-            ? 'Printer ini tersambung lewat jaringan — pastikan alamat '
-                '${p.address} bisa dijangkau dari perangkat ini.'
-            : 'Pastikan dialog izin USB untuk printer ini sudah disetujui. '
-                'Kalau belum pernah muncul, cabut lalu colok ulang kabelnya.';
-    return '${p.deviceName} ($jenis) tidak menerima cetakan.\n\n$khusus\n\n'
-        'Kalau tetap gagal: pastikan printer menyala dan medianya terpasang, '
-        'lalu segarkan daftar perangkat dan pilih ulang printer gelangnya.';
+  /// Kembali ke setelan media yang terbukti ([WristbandConfigModel.terbukti]).
+  ///
+  /// Saklar pendamping dipertahankan — itu keputusan outlet, bukan media.
+  Future<void> doPakaiSetelanBawaan() async {
+    if (_gelangTerkunci()) return;
+    final yakin = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Kembalikan ke Standar?'),
+        content: const Text(
+            'Semua setelan lanjutan dikembalikan ke setelan standar yang sudah '
+            'dicoba dan berhasil untuk gelang 25 mm. Perubahan yang pernah '
+            'disimpan akan hilang.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Kembalikan'),
+          ),
+        ],
+      ),
+    );
+    if (yakin != true) return;
+    printerUtil.simpanSetelanGelang(WristbandConfigModel.terbukti(
+        gelangPendamping: printerUtil.wristbandConfig.gelangPendamping));
+    muatSetelanGelang();
+    alert.success('Tersimpan', 'Setelan printer gelang kembali ke standar.');
+    update();
   }
 
   /// Menolak perubahan setelan gelang selama terkunci.
@@ -506,7 +521,7 @@ class SettingPageController extends GetxController
   bool _gelangTerkunci() {
     if (!terkunciGelang.value) return false;
     alert.warning('Setelan Terkunci',
-        'Buka kunci setelan printer gelang dulu untuk mengubahnya.');
+        'Matikan Kunci setelan di Setelan lanjutan dulu untuk mengubahnya.');
     return true;
   }
 
@@ -524,9 +539,9 @@ class SettingPageController extends GetxController
         AlertDialog(
           title: const Text('Buka Kunci Setelan?'),
           content: const Text(
-              'Setelan printer gelang sudah dikalibrasi. Perubahan yang keliru '
-              'bisa membuat gelang tercetak di posisi yang salah atau tidak '
-              'tercetak sama sekali.'),
+              'Setelan ini sudah dicoba dan berhasil. Kalau salah ubah, '
+              'cetakan bisa bergeser atau gelang tidak keluar sama sekali. '
+              'Buka kunci hanya kalau memang perlu.'),
           actions: [
             TextButton(
               onPressed: () => Get.back(result: false),
@@ -545,124 +560,6 @@ class SettingPageController extends GetxController
     terkunciGelang.value = kunci;
     if (kunci) muatSetelanGelang();
     update();
-  }
-
-  /// Saklar putar isi 90 derajat.
-  ///
-  /// Disimpan seketika seperti saklar pendamping, dengan alasan yang sama.
-  void doTogglePutarIsi(bool value) {
-    if (_gelangTerkunci()) return;
-    putarIsiGelang.value = value;
-    printerUtil
-        .simpanSetelanGelang(printerUtil.wristbandConfig.salin(putarIsi: value));
-    alert.warning(
-        value ? 'Isi Diputar' : 'Putaran Dimatikan',
-        value
-            ? 'Buktikan dengan satu kali Cetak Uji sebelum menjual. Penempatan '
-                'teks berputar berbeda antar firmware printer.'
-            : 'Isi kembali dicetak melintang pita.');
-    update();
-  }
-
-  /// Cetak penggaris: dua sumbu bernomor untuk mengukur medianya sendiri.
-  ///
-  /// Dipisahkan dari cetak uji karena menjawab pertanyaan yang berbeda. Cetak
-  /// uji memeriksa apakah setelan yang ada sudah cocok; penggaris ini dipakai
-  /// saat setelannya belum diketahui sama sekali.
-  Future<void> doCetakPenggaris() async {
-    if (_gelangTerkunci()) return;
-    if (!printerUtil.punyaPrinterGelang) {
-      alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
-      return;
-    }
-    isLoadingTesGelang.value = true;
-    try {
-      final hasil = await printerUtil
-          .printWristband(generateWristbandUtil.rulerPrint(printerUtil.wristbandConfig));
-      switch (hasil) {
-        case HasilCetakGelang.terkirim:
-          alert.success('Terkirim',
-              'Baca angka terakhir yang masih terlihat di sumbu L dan sumbu T. '
-              'Itulah ukuran cetak yang sebenarnya.');
-          break;
-        case HasilCetakGelang.simulasi:
-          alert.warning('Mode Simulasi Menyala',
-              'Tidak ada kertas yang keluar. Matikan "Simulasi Printer" untuk '
-              'mengukur media sungguhan.');
-          break;
-        case HasilCetakGelang.belumDiatur:
-          alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
-          break;
-        case HasilCetakGelang.gagal:
-          alert.error('Gagal', _sebabGagalCetak);
-          break;
-      }
-    } catch (e) {
-      logger.safeLog('CETAK PENGGARIS : $e');
-      alert.error('Gagal', 'Cetak penggaris gagal, periksa sambungan printer.');
-    } finally {
-      await _jedaSetelahCetak();
-      isLoadingTesGelang.value = false;
-    }
-  }
-
-  /// Menahan tombol cetak sejenak setelah byte terkirim.
-  ///
-  /// Aplikasi menganggap cetakan selesai begitu byte diserahkan ke saluran USB —
-  /// padahal printer baru mulai bekerja beberapa saat kemudian. Tanpa jeda,
-  /// tombolnya hidup lagi dalam sekejap, dan saat printer tampak diam operator
-  /// wajar menekan lagi. Antrean itu menumpuk di printer lalu keluar sekaligus:
-  /// belasan gelang terbuang untuk satu perintah.
-  Future<void> _jedaSetelahCetak() =>
-      Future.delayed(const Duration(seconds: 3));
-
-  /// Cetak uji: bingkai batas media + QR contoh. Dipakai untuk mencocokkan
-  /// ukuran pada setelan dengan media yang benar-benar terpasang.
-  Future<void> doTesCetakGelang() => _tesCetakGelang(pendamping: false);
-
-  /// Cetak uji gelang pendamping: tata letak yang sama dengan baris
-  /// `Pendamping (nama anak)`, tanpa perlu membuat order sungguhan.
-  Future<void> doTesCetakPendamping() => _tesCetakGelang(pendamping: true);
-
-  Future<void> _tesCetakGelang({required bool pendamping}) async {
-    if (_gelangTerkunci()) return;
-    if (!printerUtil.punyaPrinterGelang) {
-      alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
-      return;
-    }
-    isLoadingTesGelang.value = true;
-    try {
-      final bytes = generateWristbandUtil.testPrint(
-          printerUtil.wristbandConfig,
-          pendamping: pendamping);
-      final hasil = await printerUtil.printWristband(bytes);
-      switch (hasil) {
-        case HasilCetakGelang.terkirim:
-          alert.success('Terkirim',
-              'Cetak uji ${pendamping ? "pendamping " : ""}dikirim. Periksa '
-              'arah teks, posisinya, dan QR-nya bisa dipindai.');
-          break;
-        case HasilCetakGelang.simulasi:
-          // Ini yang paling mudah disalahpahami: notifikasi berhasil muncul,
-          // printer diam. Sebutkan sebabnya sekaligus cara mematikannya.
-          alert.warning('Mode Simulasi Menyala',
-              'Tidak ada kertas yang keluar. Hasilnya ditangkap ke Hasil Cetak. '
-              'Matikan "Simulasi Printer" di bawah untuk mencetak sungguhan.');
-          break;
-        case HasilCetakGelang.belumDiatur:
-          alert.warning('Belum Diatur', 'Pilih printer gelang terlebih dahulu.');
-          break;
-        case HasilCetakGelang.gagal:
-          alert.error('Gagal', _sebabGagalCetak);
-          break;
-      }
-    } catch (e) {
-      logger.safeLog('TES CETAK GELANG : $e');
-      alert.error('Gagal', 'Cetak uji gagal, periksa sambungan printer.');
-    } finally {
-      await _jedaSetelahCetak();
-      isLoadingTesGelang.value = false;
-    }
   }
 
   /// Menyalakan simulasi printer sekaligus menyegarkan daftar perangkat, supaya

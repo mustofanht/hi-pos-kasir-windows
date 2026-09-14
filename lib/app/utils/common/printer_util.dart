@@ -73,7 +73,7 @@ class PrinterUtil {
   /// printer gelang tidak berhenti bisa mencetak tiket.
   PrinterModel? wristbandPrinter;
 
-  WristbandConfigModel wristbandConfig = WristbandConfigModel();
+  WristbandConfigModel wristbandConfig = WristbandConfigModel.terbukti();
 
   bool get punyaPrinterGelang => wristbandPrinter != null;
 
@@ -86,7 +86,11 @@ class PrinterUtil {
   ///
   /// Disimpan di kotak perangkat bersama setelannya, supaya ikut bertahan saat
   /// logout — kunci yang lepas setiap ganti shift tidak mengunci apa-apa.
-  bool setelanGelangTerkunci = false;
+  ///
+  /// Bawaannya **terkunci**: setelan media kini disembunyikan di Setelan
+  /// lanjutan dan bawaannya sudah terbukti, jadi perangkat baru tidak perlu
+  /// menyentuhnya. Perangkat yang pernah membuka kunci tetap terbuka.
+  bool setelanGelangTerkunci = true;
 
   /// Membaca setelan gelang yang tersimpan. Dipanggil sekali saat aplikasi mulai.
   void muatSetelanGelang() {
@@ -96,14 +100,14 @@ class PrinterUtil {
       if (printer is Map) wristbandPrinter = PrinterModel.fromJson(printer);
       final config = _store.read(constant.wristbandConfig);
       if (config is Map) wristbandConfig = WristbandConfigModel.fromJson(config);
-      setelanGelangTerkunci = _store.read(constant.wristbandLocked) == true;
+      setelanGelangTerkunci = _store.read(constant.wristbandLocked) != false;
     } catch (e) {
       // Setelan rusak tidak boleh menggagalkan aplikasi mulai; kembali ke
       // bawaan, dan kasir tinggal memilih ulang printernya.
       logger.safeLog('Setelan gelang gagal dibaca : $e');
       wristbandPrinter = null;
-      wristbandConfig = WristbandConfigModel();
-      setelanGelangTerkunci = false;
+      wristbandConfig = WristbandConfigModel.terbukti();
+      setelanGelangTerkunci = true;
     }
     logger.safeLog('PRINTER GELANG : ${wristbandPrinter?.deviceName ?? "(belum diatur)"}'
         '${setelanGelangTerkunci ? " (setelan terkunci)" : ""}');
