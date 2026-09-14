@@ -49,6 +49,32 @@ class AuthService {
     }
   }
 
+  /// Alamat dan telepon satu lokasi dari master lokasi, untuk kepala struk.
+  Future<Either<String, ({String? alamat, String? telepon})>> getKontakLokasi({
+    required AuthToken authToken,
+    required int locId,
+  }) async {
+    final uri = source.baseUri(path: "mst_location/$locId");
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(sessionToken: authToken),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'];
+      if (data is! Map) return const Left('Data lokasi kosong');
+      return Right((
+        alamat: data['locAddress']?.toString(),
+        telepon: data['locPhone']?.toString(),
+      ));
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
   Future<Either<String, BaseResponse<UserEntity>>> getUserInformation({
     required AuthToken authToken,
     required String userId,

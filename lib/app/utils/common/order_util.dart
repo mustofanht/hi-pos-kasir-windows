@@ -168,6 +168,8 @@ class OrderUtil {
       List<int> data = [];
       data = await generatePrintUtil.dataPaymentTiketPrint(
         locationName: locationName,
+        locationAddress: user?.locationAddress,
+        locationPhone: user?.locationPhone,
         kasirName: kasirName,
         paperSize: PaperSize.mm80,
         body: body,
@@ -486,6 +488,8 @@ class OrderMemberUtil {
       List<int> data = [];
       data = await generateMemberPrintUtil.paymentPrint(
         locationName: locationName,
+        locationAddress: user?.locationAddress,
+        locationPhone: user?.locationPhone,
         kasirName: kasirName,
         paperSize: PaperSize.mm80,
         paymentDate: DateTime.now(),

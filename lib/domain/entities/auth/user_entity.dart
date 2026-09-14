@@ -10,6 +10,11 @@ class UserEntity {
   String? userEnableSts;
   int? userLocId;
   String? locationName;
+
+  /// Alamat dan telepon lokasi utama user, untuk kepala struk. Tidak dikirim
+  /// endpoint `users/{id}`; diisi [AppCommon.getUser] dari master lokasi.
+  String? locationAddress;
+  String? locationPhone;
   int? userUnitId;
   String? unitName;
   int? userRoleid;
@@ -30,6 +35,8 @@ class UserEntity {
     this.userEnableSts,
     this.userLocId,
     this.locationName,
+    this.locationAddress,
+    this.locationPhone,
     this.userUnitId,
     this.unitName,
     this.userRoleid,
@@ -59,6 +66,8 @@ class UserEntity {
     userEnableSts = json['userEnableSts'];
     userLocId = json['userLocId'];
     locationName = json['locationName'];
+    locationAddress = json['locationAddress'];
+    locationPhone = json['locationPhone'];
     userUnitId = json['userUnitId'];
     unitName = json['unitName'];
     userRoleid = json['userRoleid'];

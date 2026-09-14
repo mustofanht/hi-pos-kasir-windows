@@ -315,7 +315,7 @@ class BuktiPembayaranPageController extends GetxController
         logger.safeLog('PRINT DETAIL MODEL : ${detailModel.value.toJson()}');
         if (detailModel.value.trnOrderMember != null &&
             detailModel.value.trnOrderMember!.memberNo != null) {
-          await doPrintMember(locationName);
+          await doPrintMember(locationName, user);
           Get.back();
           return;
         } else {
@@ -446,6 +446,8 @@ class BuktiPembayaranPageController extends GetxController
           List<int> data = [];
           data = await generatePrintUtil.dataPaymentTiketPrint(
             locationName: locationName,
+            locationAddress: user?.locationAddress,
+            locationPhone: user?.locationPhone,
             paperSize: PaperSize.mm80,
             body: orderModel,
             kasirName: detailModel.value.paymentDetail == null
@@ -467,7 +469,7 @@ class BuktiPembayaranPageController extends GetxController
     }
   }
 
-  doPrintMember(String locationName) async {
+  doPrintMember(String locationName, UserEntity? user) async {
     OrderMemberModel orderMemberModel = OrderMemberModel(
       orderName: detailModel.value.trnOrderMember?.memberName,
       orderMemberNo: detailModel.value.trnOrderMember?.memberNo,
@@ -493,6 +495,8 @@ class BuktiPembayaranPageController extends GetxController
       body: orderMemberModel,
       paymentDate: detailModel.value.orderDate,
       locationName: locationName,
+      locationAddress: user?.locationAddress,
+      locationPhone: user?.locationPhone,
       paperSize: PaperSize.mm80,
       kasirName: detailModel.value.paymentDetail == null
           ? ''

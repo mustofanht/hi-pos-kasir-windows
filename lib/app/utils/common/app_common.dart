@@ -60,11 +60,40 @@ class AppCommon {
       }, (r) {
         userEntity = r.data!;
       });
+      if (userEntity != null) {
+        await _lengkapiKontakLokasi(authToken, userEntity!);
+      }
       return userEntity;
     } catch (e) {
       logger.safeLog(e);
       return null;
     }
+  }
+
+  /// Kontak lokasi terakhir yang berhasil dimuat, per id lokasi. Dipakai bila
+  /// server sedang tidak terjangkau saat struk dicetak, supaya kepala struk
+  /// tidak tiba-tiba kehilangan alamatnya.
+  final Map<int, ({String? alamat, String? telepon})> _kontakLokasi = {};
+
+  Future<void> _lengkapiKontakLokasi(AuthToken authToken, UserEntity user) async {
+    final locId = user.userLocId;
+    if (locId == null) return;
+    if (user.locationAddress != null || user.locationPhone != null) return;
+    try {
+      final hasil = await MainService().auth.getKontakLokasi(
+            authToken: authToken,
+            locId: locId,
+          );
+      hasil.fold(
+        (l) => logger.safeLog('Kontak lokasi $locId gagal dimuat : $l'),
+        (r) => _kontakLokasi[locId] = r,
+      );
+    } catch (e) {
+      logger.safeLog('Kontak lokasi $locId gagal dimuat : $e');
+    }
+    final kontak = _kontakLokasi[locId];
+    user.locationAddress = kontak?.alamat;
+    user.locationPhone = kontak?.telepon;
   }
 
   String randomString(int length) {

@@ -391,6 +391,8 @@ class PrintTicketDetailPageController extends GetxController {
             data.addAll(
               await generatePrintUtil.dataLapanganTicketPrint(
                 locationName: locationName,
+                locationAddress: user?.locationAddress,
+                locationPhone: user?.locationPhone,
                 paperSize: PaperSize.mm80,
                 orderNo: orderNo,
                 reffNo: reffNo,

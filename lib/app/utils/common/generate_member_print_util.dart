@@ -1,6 +1,7 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kepala_struk_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
@@ -8,6 +9,8 @@ import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 class GenerateMemberPrintUtil {
   Future<List<int>> paymentPrint({
     String? locationName,
+    String? locationAddress,
+    String? locationPhone,
     String? kasirName,
     DateTime? paymentDate,
     required PaperSize paperSize,
@@ -21,18 +24,12 @@ class GenerateMemberPrintUtil {
     bytes += generator.reset();
 
     // Location Name
-    if (locationName != null) {
-      bytes += generator.text(
-        locationName,
-        styles: const PosStyles(
-          align: PosAlign.center,
-          bold: true,
-          width: PosTextSize.size2,
-          height: PosTextSize.size2,
-        ),
-      );
-      bytes += generator.emptyLines(1);
-    }
+    bytes += KepalaStruk.cetak(
+      generator,
+      nama: locationName,
+      alamat: locationAddress,
+      telepon: locationPhone,
+    );
 
     // Print Store Information
     bytes += generator.text(
