@@ -25,6 +25,47 @@ class ManualExitReasonEntity {
   }
 }
 
+/// Data satu tiket untuk dicetak ulang dari layar Keluar Manual.
+class ManualExitTicketEntity {
+  final String? ticketNo;
+  final String? orderNo;
+  final String? reffNo;
+  final String? ticketName;
+  final DateTime? activeDate;
+  final String? isCompanion;
+  final String? childName;
+  final DateTime? orderDate;
+  final bool alreadyTakeout;
+
+  ManualExitTicketEntity({
+    this.ticketNo,
+    this.orderNo,
+    this.reffNo,
+    this.ticketName,
+    this.activeDate,
+    this.isCompanion,
+    this.childName,
+    this.orderDate,
+    this.alreadyTakeout = false,
+  });
+
+  bool get pendamping => isCompanion == 'Y';
+
+  factory ManualExitTicketEntity.fromJson(Map<String, dynamic> json) {
+    return ManualExitTicketEntity(
+      ticketNo: json['ticketNo']?.toString(),
+      orderNo: json['orderNo']?.toString(),
+      reffNo: json['reffNo']?.toString(),
+      ticketName: json['ticketName']?.toString(),
+      activeDate: _waktuSetempat(json['activeDate']),
+      isCompanion: json['isCompanion']?.toString(),
+      childName: json['childName']?.toString(),
+      orderDate: _waktuSetempat(json['orderDate']),
+      alreadyTakeout: json['alreadyTakeout'] == true,
+    );
+  }
+}
+
 /// Satu permintaan keluar manual beserta jejak persetujuannya.
 class ManualExitEntity {
   final int? requestId;

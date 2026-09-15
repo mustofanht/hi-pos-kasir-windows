@@ -42,6 +42,24 @@ class GateService {
     return _satuManualExit(response);
   }
 
+  /// Data tiket untuk dicetak ulang. Hanya membaca; status order tidak berubah.
+  Future<Either<String, BaseResponse<ManualExitTicketEntity>>> ticketForReprint({
+    required AuthToken authToken,
+    required String ticketNo,
+  }) async {
+    final uri = source.baseUri(path: 'manual-exit/ticket/${Uri.encodeComponent(ticketNo)}');
+    final response = await http.get(uri, headers: common.generateHeader(sessionToken: authToken));
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      return Right(BaseResponse<ManualExitTicketEntity>.fromJson(
+        json.decode(response.body),
+        (data) => ManualExitTicketEntity.fromJson(data),
+      ));
+    }
+    return Left(common.getMetadataMessages(response.body));
+  }
+
   Future<Either<String, BaseResponse<List<ManualExitEntity>>>> pendingManualExit({
     required AuthToken authToken,
     int? locationId,

@@ -146,10 +146,30 @@ class _ManualExitPageState extends State<ManualExitPage> {
                     : 'Ajukan Persetujuan'),
               ),
             ),
+            const SizedBox(height: 10),
+            _tombolCetakUlang(controller, () => _tiketController.text),
           ],
         ),
       );
     });
+  }
+
+  /// Cetak ulang QR tiket di printer struk, memakai nomor tiket yang sedang diisi.
+  Widget _tombolCetakUlang(
+      ManualExitPageController controller, String Function() nomorTiket) {
+    return Obx(() => SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: OutlinedButton.icon(
+            onPressed: controller.isPrinting.value
+                ? null
+                : () => controller.cetakUlangTiket(nomorTiket()),
+            icon: const Icon(Icons.print_outlined),
+            label: Text(controller.isPrinting.value
+                ? 'Mencetak...'
+                : 'Cetak Ulang Tiket (printer struk)'),
+          ),
+        ));
   }
 
   /// Kode ditampilkan besar karena harus dibacakan lewat radio, dan hitung
@@ -197,6 +217,8 @@ class _ManualExitPageState extends State<ManualExitPage> {
           Text('Tiket: ${e.ticketNo}', style: textStyle.blackText),
           Text('Alasan: ${e.reasonLabel ?? '-'}', style: textStyle.greyText),
           const SizedBox(height: 16),
+          _tombolCetakUlang(controller, () => e.ticketNo ?? ''),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
