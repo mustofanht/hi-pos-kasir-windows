@@ -56,8 +56,10 @@ class GelangUtil {
   /// belum diatur, atau bila cetaknya gagal — pelanggan tidak boleh pulang tanpa
   /// tiket karena satu perangkat ngadat.
   ///
-  /// [lokasi], [nomorOrder], dan [waktu] dicetak di samping QR dan sama untuk
-  /// setiap gelang dalam order ini. Baris di bawah lokasi berbeda per tiket —
+  /// [lokasi] dan [waktu] dicetak di samping QR dan sama untuk setiap gelang
+  /// dalam order ini; nomor tiket diambil dari tiketnya sendiri, jadi setiap
+  /// gelang membawa nomor yang benar-benar dipindai gate — bukan nomor order
+  /// yang sama untuk semua gelang. Baris di bawah lokasi berbeda per tiket —
   /// nama anak, atau `Pendamping (nama anak)`; lihat [barisNama]. [pembeli]
   /// hanya dipakai bila nama anak kosong. Semuanya boleh kosong; baris yang
   /// kosong tidak dicetak.
@@ -66,7 +68,6 @@ class GelangUtil {
     required Set<String> namaPlayground,
     String? lokasi,
     String? pembeli,
-    String? nomorOrder,
     DateTime? waktu,
   }) async {
     final semuaKeStruk = HasilGelang(tercetak: const [], keStruk: semua);
@@ -130,7 +131,7 @@ class GelangUtil {
         qrCode: t.ticketNo!,
         lokasi: lokasi,
         nama: namaGelang[t.ticketNo],
-        nomorOrder: nomorOrder,
+        nomorTiket: t.ticketNo,
         waktu: waktu == null ? null : _formatWaktu.format(waktu.toLocal()),
       ));
     }

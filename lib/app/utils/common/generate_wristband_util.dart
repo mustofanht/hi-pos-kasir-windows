@@ -93,7 +93,7 @@ class GenerateWristbandUtil {
   /// Gelang playground: QR diapit dua blok teks yang terbaca **menyusuri
   /// panjang gelang**, meniru gelang cetak outlet playground.
   ///
-  ///     [ LOKASI    ]   [QR]   [ nomor order     ]
+  ///     [ LOKASI    ]   [QR]   [ nomor tiket     ]
   ///     [ nama anak ]          [ waktu pembelian ]
   ///
   /// [nama] adalah baris di bawah lokasi: nama anak untuk tiket anak, dan
@@ -108,15 +108,16 @@ class GenerateWristbandUtil {
   /// **QR tidak pernah dikecilkan demi teks.** Ukurannya dihitung lebih dulu,
   /// persis seperti gelang tanpa teks. Teks yang tidak muat di sisa panjang
   /// lembar dikecilkan hurufnya, lalu dibuang bertahap — lokasi lebih dulu,
-  /// lalu nama, dan nomor order paling akhir, karena nomor order satu-satunya
-  /// yang dipakai untuk menelusuri transaksi. Bila tidak ada teks yang muat,
-  /// hasilnya persis gelang QR-saja yang sudah terbukti di lapangan.
+  /// lalu nama, dan nomor tiket paling akhir. Nomor tiket dipertahankan paling
+  /// lama karena itulah yang dipindai gate dan yang diketik manual saat QR-nya
+  /// tidak terbaca; nomor order tidak dipakai di gate. Bila tidak ada teks yang
+  /// muat, hasilnya persis gelang QR-saja yang sudah terbukti di lapangan.
   List<int> dataGelangPlayground({
     required WristbandConfigModel config,
     required String qrCode,
     String? lokasi,
     String? nama,
-    String? nomorOrder,
+    String? nomorTiket,
     String? waktu,
   }) {
     String? bersih(String? s, {bool kapital = false}) {
@@ -131,11 +132,11 @@ class GenerateWristbandUtil {
 
     final judul = bersih(lokasi, kapital: true);
     final namaGelang = bersih(nama);
-    final order = bersih(nomorOrder);
+    final tiket = bersih(nomorTiket);
     final jam = bersih(waktu);
 
-    final blokOrder = <_BarisGelang>[
-      if (order != null) _BarisGelang(order),
+    final blokTiket = <_BarisGelang>[
+      if (tiket != null) _BarisGelang(tiket),
       if (jam != null) _BarisGelang(jam),
     ];
 
@@ -144,19 +145,19 @@ class GenerateWristbandUtil {
     final calon = <({List<_BarisGelang> awal, List<_BarisGelang> akhir})>[
       (
         awal: [
-          if (judul != null) _BarisGelang(judul, judul: true),
+          if (judul != null) _BarisGelang(judul),
           if (namaGelang != null) _BarisGelang(namaGelang),
         ],
-        akhir: blokOrder,
+        akhir: blokTiket,
       ),
       (
         awal: [if (namaGelang != null) _BarisGelang(namaGelang)],
-        akhir: blokOrder,
+        akhir: blokTiket,
       ),
-      (awal: const <_BarisGelang>[], akhir: blokOrder),
+      (awal: const <_BarisGelang>[], akhir: blokTiket),
       (
         awal: const <_BarisGelang>[],
-        akhir: [if (order != null) _BarisGelang(order)],
+        akhir: [if (tiket != null) _BarisGelang(tiket)],
       ),
     ];
 
@@ -179,15 +180,13 @@ class GenerateWristbandUtil {
   /// muat dan terbuang semuanya.
   static const int _panjangBarisMaks = 32;
 
-  /// Pasangan huruf (judul, isi) yang dicoba berurutan, dari besar ke kecil.
-  static const List<(String, String)> _tingkatHuruf = [
-    ('4', '3'),
-    ('3', '3'),
-    ('3', '2'),
-    ('2', '2'),
-    ('2', '1'),
-    ('1', '1'),
-  ];
+  /// Huruf yang dicoba berurutan, dari besar ke kecil.
+  ///
+  /// Semua baris memakai ukuran yang sama. Sebelumnya nama lokasi satu tingkat
+  /// lebih besar; di lapangan (16 Sep 2026) itu memakan panjang gelang yang
+  /// dibutuhkan nomor tiket dan waktu, padahal lokasi adalah baris yang paling
+  /// tidak dibutuhkan petugas gate — dia sudah tahu sedang berdiri di mana.
+  static const List<String> _tingkatHuruf = ['3', '2', '1'];
 
   /// Menata QR dan dua blok teks berurutan **sepanjang gelang** (sumbu Tinggi).
   ///
@@ -228,8 +227,8 @@ class GenerateWristbandUtil {
     final sisi = selQr * modul;
     final jeda = config.dots(2.5);
 
-    for (final (hurufJudul, hurufIsi) in _tingkatHuruf) {
-      String huruf(_BarisGelang b) => b.judul ? hurufJudul : hurufIsi;
+    for (final hurufBaris in _tingkatHuruf) {
+      String huruf(_BarisGelang b) => hurufBaris;
 
       int tebal(List<_BarisGelang> blok) {
         var total = 0;
@@ -960,13 +959,12 @@ class _TeksJadi {
   _TeksJadi(this.isi, this.font);
 }
 
-/// Satu baris teks gelang playground. [judul] memakai huruf satu tingkat lebih
-/// besar — dipakai untuk nama lokasi.
+/// Satu baris teks gelang playground. Semua baris berukuran sama; yang
+/// membedakan hanya urutannya di atas lembar.
 class _BarisGelang {
   final String isi;
-  final bool judul;
 
-  const _BarisGelang(this.isi, {this.judul = false});
+  const _BarisGelang(this.isi);
 }
 
 GenerateWristbandUtil generateWristbandUtil = GenerateWristbandUtil();

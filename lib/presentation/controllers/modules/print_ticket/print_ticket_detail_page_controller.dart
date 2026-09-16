@@ -354,7 +354,6 @@ class PrintTicketDetailPageController extends GetxController {
             namaPlayground: namaPlayground,
             lokasi: locationName,
             pembeli: model.value.orderName,
-            nomorOrder: orderNo,
             // Waktu order asli, bukan saat cetak ulang: gelang pengganti harus
             // sama persis dengan yang hilang atau rusak.
             waktu: paymentDate,

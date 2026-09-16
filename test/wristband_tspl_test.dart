@@ -24,7 +24,7 @@ void main() {
         qrCode: 'TES-GELANG',
         lokasi: 'UJI GELANG',
         nama: 'Pendamping (nama anak)',
-        nomorOrder: '0000/UJI/TIX/2026',
+        nomorTiket: '301009260015',
         waktu: '2026-01-01 00:00:00',
       );
 
@@ -1115,7 +1115,7 @@ void main() {
       WristbandConfigModel c, {
       String? lokasi = 'Arena Playground Bekasi',
       String? nama = 'rita',
-      String? order = '0161/IV/TIX/2025',
+      String? tiket = '301009260015',
       String? waktu = '2026-04-03 13:52:46',
     }) =>
         gen.dataGelangPlayground(
@@ -1123,7 +1123,7 @@ void main() {
           qrCode: '301009260015',
           lokasi: lokasi,
           nama: nama,
-          nomorOrder: order,
+          nomorTiket: tiket,
           waktu: waktu,
         );
 
@@ -1163,13 +1163,15 @@ void main() {
       expect(semua.every((b) => putaran(b) == 90), isTrue, reason: '$semua');
     });
 
-    test('urutan sepanjang gelang: lokasi, QR, lalu nomor order', () {
+    test('urutan sepanjang gelang: lokasi, QR, lalu nomor tiket', () {
       final p = perintah(bytesGelang(media));
       final yLokasi = elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y;
       final yQr = elemen(qr(p)).y;
-      final yOrder = elemen(teks(p, '0161/IV/TIX/2025')).y;
+      // Nomor tiket dicetak dua kali dalam bentuk berbeda: sebagai isi QR yang
+      // dipindai, dan sebagai teks yang diketik manual saat QR tidak terbaca.
+      final yTiket = elemen(teks(p, '301009260015')).y;
       expect(yLokasi, lessThan(yQr));
-      expect(yQr, lessThan(yOrder));
+      expect(yQr, lessThan(yTiket));
     });
 
     test('baris pertama tiap blok berada di sisi atas bacaan', () {
@@ -1177,23 +1179,26 @@ void main() {
       final p = perintah(bytesGelang(media));
       expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).x,
           greaterThan(elemen(teks(p, 'rita')).x));
-      expect(elemen(teks(p, '0161/IV/TIX/2025')).x,
+      expect(elemen(teks(p, '301009260015')).x,
           greaterThan(elemen(teks(p, '2026-04-03 13:52:46')).x));
     });
 
     test('baris dalam satu blok rata ke awal bacaan yang sama', () {
       // 90 berjalan ke bawah: awal bacaan adalah ujung atas kotaknya.
       final p = perintah(bytesGelang(media));
-      expect(elemen(teks(p, '0161/IV/TIX/2025')).y,
+      expect(elemen(teks(p, '301009260015')).y,
           elemen(teks(p, '2026-04-03 13:52:46')).y);
       expect(elemen(teks(p, 'ARENA PLAYGROUND BEKASI')).y,
           elemen(teks(p, 'rita')).y);
     });
 
-    test('lokasi ditulis kapital dengan huruf lebih besar dari nama', () {
+    test('lokasi ditulis kapital, hurufnya tidak lebih besar dari baris lain', () {
+      // Dulu nama lokasi satu tingkat lebih besar. Di gelang 25mm itu memakan
+      // panjang yang dibutuhkan nomor tiket, padahal petugas gate sudah tahu
+      // sedang berdiri di lokasi mana (permintaan 16 Sep 2026).
       final p = perintah(bytesGelang(media));
       expect(huruf(teks(p, 'ARENA PLAYGROUND BEKASI')),
-          greaterThan(huruf(teks(p, 'rita'))));
+          lessThanOrEqualTo(huruf(teks(p, 'rita'))));
     });
 
     test('baris pendamping tercetak utuh di dalam lembar', () {
@@ -1208,7 +1213,7 @@ void main() {
     test('tanpa data teks hasilnya persis gelang QR-saja yang sudah terbukti', () {
       expect(
           perintah(bytesGelang(media,
-              lokasi: null, nama: null, order: null, waktu: null)),
+              lokasi: null, nama: null, tiket: null, waktu: null)),
           qrSaja);
     });
 

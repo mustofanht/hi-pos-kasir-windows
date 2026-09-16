@@ -207,7 +207,6 @@ class OrderUtil {
           namaPlayground: namaPlayground,
           lokasi: locationName,
           pembeli: body.orderName,
-          nomorOrder: body.orderNumber,
           // Sumber yang sama dengan waktu di kertas struk, supaya keduanya tidak
           // pernah berbeda di tangan pelanggan.
           waktu: body.paymentDate ?? DateTime.now(),
