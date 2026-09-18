@@ -18,7 +18,7 @@ Branch yang terlibat:
 ```
 GitLab  hipos/enhance-hipos          <- kode terbaru (tanpa folder windows/)
                  |
-                 |  rebase: 2 commit build ditumpuk di atasnya
+                 |  rebase: commit build ditumpuk di atasnya
                  v
 GitHub  enhance-hipos-windows        <- branch build (kode + windows/ + CI)
                  |
@@ -29,12 +29,15 @@ GitHub  enhance-hipos-windows        <- branch build (kode + windows/ + CI)
         HI-POS-Kasir-Setup-<env>.exe (artifact, 1 file installer)
 ```
 
-`enhance-hipos-windows` = isi `enhance-hipos` **persis**, ditambah 2 commit:
+`enhance-hipos-windows` = isi `enhance-hipos` **persis**, ditambah beberapa
+commit khusus build:
 
 1. `ci: build Windows EXE dari enhance-hipos` — folder `windows/` (runner C++,
    icon & nama "HI-POS Kasir") + workflow GitHub Actions.
 2. `ci: hasilkan satu file installer HI-POS-Kasir-Setup.exe` — skrip Inno Setup
    + bundling runtime Visual C++.
+3. `docs: panduan build & jalankan versi Windows` — dokumen ini + pilihan target
+   server di workflow.
 
 > **Penting:** jangan menulis kode fitur di branch `enhance-hipos-windows`.
 > Branch ini hanya "pembungkus build" dan akan di-rebase terus-menerus.
@@ -53,14 +56,14 @@ git fetch hipos
 # 2. Pindah ke branch build
 git checkout enhance-hipos-windows
 
-# 3. Tumpuk ulang 2 commit build di atas kode terbaru
+# 3. Tumpuk ulang commit build di atas kode terbaru
 git rebase hipos/enhance-hipos
 
 # 4. Kirim ke GitHub (memicu build otomatis)
 git push github enhance-hipos-windows --force-with-lease
 ```
 
-Kenapa `--force-with-lease`: rebase menulis ulang 2 commit build itu, jadi
+Kenapa `--force-with-lease`: rebase menulis ulang commit build itu, jadi
 riwayat branch berubah. `--force-with-lease` tetap menolak push kalau ada
 perubahan lain di GitHub yang belum Anda ambil, jadi lebih aman dari `-f`.
 
