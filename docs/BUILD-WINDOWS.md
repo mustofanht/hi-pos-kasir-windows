@@ -3,6 +3,20 @@
 Panduan ini khusus untuk **aplikasi kasir versi Windows (EXE)**. Sumber kode
 terbaru selalu berasal dari **GitLab `hipos`, branch `enhance-hipos`**.
 
+## Cara tercepat (ringkas)
+
+```powershell
+# dari folder project, di PowerShell
+.	oolsuild-windows.ps1 -Target production
+```
+
+Skrip itu menarik kode terbaru dari GitLab, mengirimnya ke GitHub, memicu
+GitHub Actions, dan membuka halaman Actions. Tunggu ±6–8 menit → unduh artifact
+**`hipos-kasir-installer-production`** → extract → jalankan
+`HI-POS-Kasir-Setup-production.exe` di PC kasir.
+
+Rincian tiap langkah, cara manual lewat web, dan troubleshooting ada di bawah.
+
 ---
 
 ## 1. Peta repo & branch
@@ -46,6 +60,10 @@ commit khusus build:
 ---
 
 ## 2. Alur rutin: ambil kode terbaru dari GitLab lalu build
+
+Skrip `toolsuild-windows.ps1` sudah menjalankan seluruh langkah di bawah ini
+secara otomatis (lihat **bagian 3, Cara A**). Bagian ini menjelaskan apa yang
+sebenarnya dikerjakan skrip itu — berguna saat ada konflik atau ingin manual.
 
 Jalankan dari folder project (`D:\FLUTTER\POS-WINDOWS-GITHUB\hi-pos-kasir`):
 
@@ -91,24 +109,102 @@ build sama saja.
 
 ---
 
-## 3. Menjalankan build di GitHub Actions
+## 3. Memicu build di GitHub Actions
 
-### 3a. Otomatis (setiap push)
+Ada tiga cara. **Cara A** paling mudah untuk dipakai sehari-hari.
 
-Push ke `enhance-hipos-windows` langsung memicu workflow **Build Windows EXE**.
-Build otomatis ini selalu memakai server **dev** (`dev.hi-pos.id`).
+### Cara A — satu perintah (skrip `tools/build-windows.ps1`)
 
-### 3b. Manual + pilih server (untuk installer produksi)
+Buka **PowerShell** di folder project, lalu:
 
-1. Buka <https://github.com/mustofanht/hi-pos-kasir-windows/actions>
-2. Pilih workflow **Build Windows EXE** → tombol **Run workflow**
-3. Branch: `enhance-hipos-windows`
-4. **Target server aplikasi**: `production` (atau `dev` untuk uji coba)
-5. Klik **Run workflow**, tunggu ±6–8 menit
+```powershell
+# build memakai server dev (untuk uji coba)
+.\tools\build-windows.ps1
 
-### 3c. Mengambil hasilnya
+# build installer untuk PC kasir (server produksi)
+.\tools\build-windows.ps1 -Target production
+```
 
-Buka run yang sudah selesai → bagian **Artifacts** di bawah ringkasan:
+Skrip ini mengerjakan seluruh rangkaian di bagian 2 (fetch dari GitLab → rebase
+→ push ke GitHub), memicu build, lalu membuka halaman Actions di browser.
+
+Yang terjadi di layar:
+
+| Tahap | Tampilan |
+|---|---|
+| `==> Memeriksa perubahan yang belum di-commit` | Berhenti kalau ada file belum di-commit — commit/stash dulu. |
+| `==> Mengambil kode terbaru dari GitLab` | `git fetch hipos` |
+| `==> Menumpuk commit build di atas hipos/enhance-hipos` | Kalau konflik, skrip berhenti dan menampilkan perintah penyelesaiannya. |
+| `==> Mengirim ke GitHub` | Push inilah yang memicu build. |
+| `==> Membuka halaman GitHub Actions` | Browser terbuka ke daftar run. |
+
+Catatan: tanpa GitHub CLI, skrip hanya bisa memicu build **dev** secara
+otomatis (lewat push). Untuk `production`, skrip akan mengarahkan Anda ke
+halaman Actions — lanjutkan dengan **Cara B**. Kalau ingin `production` ikut
+otomatis, pasang GitHub CLI sekali saja (lihat **Cara C**).
+
+Jalankan dengan `-SkipSync` kalau kode di GitHub sudah terbaru dan Anda hanya
+ingin memicu ulang build:
+
+```powershell
+.\tools\build-windows.ps1 -Target production -SkipSync
+```
+
+### Cara B — lewat web GitHub (klik per klik)
+
+1. Buka <https://github.com/mustofanht/hi-pos-kasir-windows/actions/workflows/build-windows.yml>
+2. Di kanan atas daftar run, klik tombol **Run workflow**.
+3. Pada **Use workflow from**, pilih branch **`enhance-hipos-windows`**.
+4. Pada **Target server aplikasi**, pilih **`production`** (atau `dev`).
+5. Klik tombol hijau **Run workflow**.
+6. Muat ulang halaman (±5 detik) — run baru muncul di paling atas dengan
+   lingkaran kuning. Klik run tersebut untuk melihat progres per step.
+7. Tunggu ±6–8 menit sampai lingkaran berubah jadi centang hijau.
+8. Scroll ke bawah ke bagian **Artifacts** → klik
+   **`hipos-kasir-installer-production`** untuk mengunduh.
+9. Extract `.zip` hasil unduhan → isinya `HI-POS-Kasir-Setup-production.exe`.
+
+> **Kalau pilihan "Target server aplikasi" tidak muncul di langkah 4:** GitHub
+> membaca daftar input workflow dari branch default repo (`main`), sementara
+> input ini baru ada di `enhance-hipos-windows`. Pilih dulu branch-nya di
+> langkah 3 lalu muat ulang halaman; kalau tetap tidak muncul, gunakan
+> **Cara C**, atau salin `.github/workflows/build-windows.yml` versi branch ini
+> ke branch `main` di GitHub sekali saja.
+
+### Cara C — GitHub CLI (`gh`), sekali pasang lalu praktis
+
+Pemasangan (sekali saja):
+
+```powershell
+winget install --id GitHub.cli
+gh auth login        # pilih GitHub.com -> HTTPS -> login lewat browser
+```
+
+Pemakaian:
+
+```powershell
+# picu build produksi
+gh workflow run build-windows.yml --ref enhance-hipos-windows -f env=production
+
+# pantau progres di terminal
+gh run watch
+
+# unduh installer langsung ke folder saat ini (tanpa buka browser)
+gh run download --name hipos-kasir-installer-production
+```
+
+Setelah `gh` terpasang, `tools\build-windows.ps1 -Target production` otomatis
+memakai jalur ini, jadi satu perintah saja sudah cukup.
+
+### Kapan build berjalan otomatis
+
+- Setiap **push** ke `enhance-hipos-windows` → build **dev**.
+- Commit yang hanya mengubah `*.md`, `docs/`, atau `tools/` **tidak** memicu
+  build (hemat waktu CI).
+- Build produksi **tidak pernah** otomatis — selalu dijalankan manual lewat
+  Cara A (dengan `gh`), B, atau C.
+
+### Hasil build
 
 | Artifact | Isi |
 |----------|-----|
@@ -118,6 +214,12 @@ Buka run yang sudah selesai → bagian **Artifacts** di bawah ringkasan:
 GitHub selalu membungkus artifact dalam `.zip`, jadi hasil unduhan perlu
 di-extract satu kali. Di dalamnya hanya ada satu file installer — tidak ada
 folder atau file tambahan. Artifact tersimpan 90 hari.
+
+### Kalau build gagal (centang merah)
+
+1. Klik run yang merah → klik job **build**.
+2. Step yang gagal ditandai ✗; klik untuk membuka log-nya.
+3. Cocokkan pesan error dengan tabel di bagian **7. Troubleshooting**.
 
 ---
 
@@ -225,6 +327,8 @@ File pendukung:
   (`main.cpp`), metadata versi (`Runner.rc`), nama EXE `hi-pos-kasir`
   (`windows/CMakeLists.txt`).
 - `windows/runner/resources/app_icon.ico` — icon aplikasi & installer.
+- `tools/build-windows.ps1` — skrip pembantu: sinkron GitLab → GitHub, picu
+  Actions, buka halaman hasil.
 
 Nomor versi installer otomatis: `1.0.0.<nomor run Actions>`.
 
@@ -241,10 +345,20 @@ Nomor versi installer otomatis: `1.0.0.<nomor run Actions>`.
 | SmartScreen memblokir installer | Normal untuk installer tanpa tanda tangan → **More info → Run anyway**. |
 | `git push` ditolak (`non-fast-forward`) | Anda baru rebase; pakai `git push github enhance-hipos-windows --force-with-lease`. |
 | Artifact hilang dari halaman run | Artifact kedaluwarsa setelah 90 hari. Jalankan ulang workflow. |
+| Tombol **Run workflow** atau pilihan **Target server aplikasi** tidak muncul | GitHub membaca definisi `workflow_dispatch` dari branch default (`main`). Pilih branch `enhance-hipos-windows` lalu muat ulang halaman; kalau tetap tidak ada, picu lewat GitHub CLI (bagian 3, Cara C). |
+| Skrip berhenti: "Commit atau 'git stash' dulu" | Ada perubahan lokal yang belum di-commit di folder project. Bersihkan dulu agar rebase aman. |
 
 ---
 
 ## 8. Ringkasan perintah harian
+
+Cara singkat:
+
+```powershell
+.	oolsuild-windows.ps1 -Target production
+```
+
+Cara manual (isi skrip di atas):
 
 ```bash
 # ambil kode terbaru dari GitLab & kirim ke mesin build
@@ -253,6 +367,7 @@ git checkout enhance-hipos-windows
 git rebase hipos/enhance-hipos
 git push github enhance-hipos-windows --force-with-lease
 
-# lalu: Actions -> Build Windows EXE -> Run workflow -> env: production
+# lalu: Actions -> Build Windows EXE -> Run workflow
+#       branch: enhance-hipos-windows, Target server aplikasi: production
 # unduh artifact hipos-kasir-installer-production -> extract -> jalankan setup
 ```
