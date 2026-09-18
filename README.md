@@ -109,6 +109,14 @@ flutter build apk --release
 
 Output: `build/app/outputs/flutter-apk/app-release.apk`.
 
+### Build Windows (EXE / installer)
+
+Versi Windows dibangun lewat GitHub Actions dari branch `enhance-hipos-windows`
+(isi `enhance-hipos` + folder `windows/`), hasilnya satu file
+`HI-POS-Kasir-Setup-<env>.exe`. Panduan lengkap — termasuk cara menarik kode
+terbaru dari GitLab `enhance-hipos`, menjalankan build, dan memasang di PC
+kasir — ada di **[docs/BUILD-WINDOWS.md](docs/BUILD-WINDOWS.md)**.
+
 ## Catatan
 
 - Plugin `presentation_displays` di-vendor secara lokal di `./plugin/presentation_displays`.
