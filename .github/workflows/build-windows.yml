@@ -36,9 +36,45 @@ jobs:
       - name: Build Windows release
         run: flutter build windows --release
 
-      - name: Upload EXE (folder Release lengkap)
+      # Runtime Visual C++ ikut dibundel (app-local) supaya EXE tetap jalan di
+      # PC kasir yang belum pernah dipasangi VC++ Redistributable.
+      - name: Bundel runtime Visual C++
+        shell: pwsh
+        run: |
+          $release = "build\windows\x64\runner\Release"
+          $redistRoot = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\*\VC\Redist\MSVC" -Directory -ErrorAction SilentlyContinue |
+            Sort-Object FullName | Select-Object -Last 1
+          if (-not $redistRoot) { Write-Warning "Folder VC Redist tidak ditemukan, dilewati"; exit 0 }
+          $crt = Join-Path $redistRoot.FullName "x64\Microsoft.VC143.CRT"
+          if (-not (Test-Path $crt)) { Write-Warning "Folder CRT tidak ditemukan: $crt"; exit 0 }
+          foreach ($dll in @("msvcp140.dll","vcruntime140.dll","vcruntime140_1.dll")) {
+            $src = Join-Path $crt $dll
+            if (Test-Path $src) { Copy-Item $src $release -Force; Write-Host "copied $dll" }
+          }
+
+      - name: Siapkan Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            Write-Host "Inno Setup belum ada, memasang lewat Chocolatey..."
+            choco install innosetup -y --no-progress
+          }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe tidak ditemukan setelah instalasi" }
+          "ISCC=$iscc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Bangun installer (satu file EXE)
+        shell: pwsh
+        run: |
+          $src = (Resolve-Path "build\windows\x64\runner\Release").Path
+          $ver = "1.0.0.${{ github.run_number }}"
+          & "$env:ISCC" "/DSourceDir=$src" "/DAppVersion=$ver" "/Obuild\installer" "windows\installer\hipos-kasir.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup gagal (exit $LASTEXITCODE)" }
+          Get-ChildItem "build\installer" | Format-Table Name, Length
+
+      - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: hipos-kasir-windows
-          path: build/windows/x64/runner/Release/
+          name: hipos-kasir-installer
+          path: build/installer/HI-POS-Kasir-Setup.exe
           if-no-files-found: error
