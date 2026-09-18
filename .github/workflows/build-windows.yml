@@ -4,6 +4,16 @@ on:
   push:
     branches: [ main, master, kasir-playground, enhance-hipos-windows ]
   workflow_dispatch:          # bisa dijalankan manual dari tab Actions
+    inputs:
+      env:
+        description: 'Target server aplikasi'
+        type: choice
+        options: [ dev, production ]
+        default: dev
+
+# Dipakai semua step: push otomatis -> dev, run manual -> pilihan di atas.
+env:
+  APP_ENV: ${{ github.event.inputs.env || 'dev' }}
 
 jobs:
   build:
@@ -34,7 +44,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Windows release
-        run: flutter build windows --release
+        run: flutter build windows --release --dart-define=ENV=$env:APP_ENV
 
       # Runtime Visual C++ ikut dibundel (app-local) supaya EXE tetap jalan di
       # PC kasir yang belum pernah dipasangi VC++ Redistributable.
@@ -68,13 +78,14 @@ jobs:
         run: |
           $src = (Resolve-Path "build\windows\x64\runner\Release").Path
           $ver = "1.0.0.${{ github.run_number }}"
-          & "$env:ISCC" "/DSourceDir=$src" "/DAppVersion=$ver" "/Obuild\installer" "windows\installer\hipos-kasir.iss"
+          $name = "HI-POS-Kasir-Setup-$env:APP_ENV"
+          & "$env:ISCC" "/DSourceDir=$src" "/DAppVersion=$ver" "/Obuild\installer" "/F$name" "windows\installer\hipos-kasir.iss"
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup gagal (exit $LASTEXITCODE)" }
           Get-ChildItem "build\installer" | Format-Table Name, Length
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: hipos-kasir-installer
-          path: build/installer/HI-POS-Kasir-Setup.exe
+          name: hipos-kasir-installer-${{ github.event.inputs.env || 'dev' }}
+          path: build/installer/*.exe
           if-no-files-found: error
