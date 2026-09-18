@@ -5,10 +5,6 @@ import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 
-/// Kategori lokasi tiket playground, sama dengan yang memicu input nama anak di
-/// keranjang (`TicketEntity.ticketLocationCategory`).
-const String kategoriPlayground = 'PLGRD';
-
 /// Akhiran yang dibubuhkan server pada nama tiket pendamping.
 ///
 /// `TrnOrderService.createTicketNo` mengirim balik nama tiket pendamping sebagai

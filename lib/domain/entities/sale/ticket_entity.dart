@@ -39,7 +39,8 @@ class TicketEntity {
   String? ticketType;
   int? ticketLocation;
   String? ticketLocationName;
-  // Kategori lokasi tiket (mis. 'PLGRD' = playground). Dipakai untuk memicu input nama anak.
+  // Kategori lokasi tiket (mis. 'PLGRD' = playground). Cadangan bila kategori
+  // tiketnya sendiri belum diisi — lihat [kategoriEfektif].
   String? ticketLocationCategory;
   double? ticketPrice;
   String? ticketState;
@@ -51,6 +52,28 @@ class TicketEntity {
   // satu lokasi multi-kategori, mis. KLMRG/LPNGN/WC.
   String? ticketCategory;
   List<TicketPriceTimeEntity>? ticketPriceTimes;
+
+  /// Kategori yang menentukan perlakuan tiket ini: input nama anak & cetak gelang.
+  ///
+  /// Kategori TIKET dipakai lebih dulu. Satu lokasi bisa menjual beberapa
+  /// kategori sekaligus — Club House menjual playground, kolam renang, dan
+  /// lapangan dari satu terminal — jadi kategori lokasi tidak mewakili
+  /// tiketnya: memakainya membuat tiket kolam ikut diminta nama anak, dan
+  /// tiket playground di lokasi yang kategori utamanya bukan playground
+  /// malah tidak diminta sama sekali.
+  ///
+  /// Kategori lokasi tetap dipakai sebagai cadangan untuk tiket lama yang
+  /// kategorinya belum diisi di Setup Transaction.
+  String? get kategoriEfektif {
+    final tiket = ticketCategory?.trim();
+    if (tiket != null && tiket.isNotEmpty) return tiket.toUpperCase();
+    final lokasi = ticketLocationCategory?.trim();
+    if (lokasi != null && lokasi.isNotEmpty) return lokasi.toUpperCase();
+    return null;
+  }
+
+  /// Tiket playground: yang memicu input nama anak dan dicetak sebagai gelang.
+  bool get isPlayground => kategoriEfektif == 'PLGRD';
 
   TicketEntity({
     this.ticketId,

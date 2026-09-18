@@ -194,8 +194,7 @@ class OrderUtil {
         // pembuatan tiket hanya membawa namanya.
         final namaPlayground = <String>{
           for (final t in body.listTicket)
-            if ((t.ticket?.ticketLocationCategory ?? '') == kategoriPlayground &&
-                t.ticket?.ticketName != null)
+            if (t.ticket?.isPlayground == true && t.ticket?.ticketName != null)
               t.ticket!.ticketName!
         };
 

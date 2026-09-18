@@ -446,8 +446,7 @@ class PrintTicketDetailPageController extends GetxController {
         (l) => logger.safeLog('KATALOG TIKET PLAYGROUND GAGAL : $l'),
         (r) {
           for (final TicketEntity t in (r.data ?? <TicketEntity>[])) {
-            if (t.ticketName != null &&
-                (t.ticketLocationCategory ?? '') == kategoriPlayground) {
+            if (t.ticketName != null && t.isPlayground) {
               nama.add(t.ticketName!);
             }
           }

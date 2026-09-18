@@ -164,16 +164,14 @@ class SaleCartPageController extends GetxController {
   final List<TextEditingController> childNameControllers = [];
 
   bool get isPlaygroundCart =>
-      ticketList.isNotEmpty &&
-      ticketList
-          .any((e) => (e.ticket?.ticketLocationCategory ?? '') == 'PLGRD');
+      ticketList.isNotEmpty && ticketList.any((e) => e.ticket?.isPlayground == true);
 
   int get totalTicketQty =>
       ticketList.fold(0, (sum, e) => sum + (e.qtyOrder ?? 0));
 
   // Jumlah unit tiket khusus kategori playground (non-playground diabaikan).
   int get playgroundTicketQty => ticketList
-      .where((e) => (e.ticket?.ticketLocationCategory ?? '') == 'PLGRD')
+      .where((e) => e.ticket?.isPlayground == true)
       .fold(0, (sum, e) => sum + (e.qtyOrder ?? 0));
 
   bool get needChildNames => playgroundTicketQty > 0;
