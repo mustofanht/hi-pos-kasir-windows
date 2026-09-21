@@ -1238,6 +1238,9 @@ class CustomDialog {
     required String title,
     required String msg,
     required Function(String reffNo) onNext,
+
+    /// Sembunyikan kolom Reference ID, dipakai untuk pembayaran TUNAI
+    bool showReffInput = true,
   }) async {
     final reffNoController = TextEditingController();
     await Get.dialog(
@@ -1292,29 +1295,30 @@ class CustomDialog {
                       SizedBox(
                         height: layoutStyle.defaultMargin / 5,
                       ),
-                      CustomTextBox(
-                        // width: layoutStyle.blockHorizontal * 25,
-                        height: layoutStyle.blockVertical * 6.5,
-                        margin: EdgeInsets.symmetric(
-                          vertical: layoutStyle.defaultMargin / 2,
-                          horizontal: layoutStyle.defaultMargin,
+                      if (showReffInput)
+                        CustomTextBox(
+                          // width: layoutStyle.blockHorizontal * 25,
+                          height: layoutStyle.blockVertical * 6.5,
+                          margin: EdgeInsets.symmetric(
+                            vertical: layoutStyle.defaultMargin / 2,
+                            horizontal: layoutStyle.defaultMargin,
+                          ),
+                          obscureText: false,
+                          border: Border.all(
+                            color: colorStyle.grey,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            layoutStyle.defaultMargin / 2,
+                          ),
+                          controller: reffNoController,
+                          decoration: InputDecoration(
+                            hintText: 'Tulis Nomor Reference ID',
+                            hintStyle: textStyle.greyText,
+                            border: InputBorder.none,
+                          ),
+                          maxLength: 30,
                         ),
-                        obscureText: false,
-                        border: Border.all(
-                          color: colorStyle.grey,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          layoutStyle.defaultMargin / 2,
-                        ),
-                        controller: reffNoController,
-                        decoration: InputDecoration(
-                          hintText: 'Tulis Nomor Reference ID',
-                          hintStyle: textStyle.greyText,
-                          border: InputBorder.none,
-                        ),
-                        maxLength: 30,
-                      ),
                     ],
                   ),
                 ),

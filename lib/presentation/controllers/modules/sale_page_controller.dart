@@ -306,6 +306,7 @@ class SalePageController extends GetxController
         orderPayment.doOrderPayment(
           body: body,
           orderNo: orderNo,
+          paymentCategory: mstPayment.pymntCategory,
         );
       }
       // if (selectedPaymentType.value.id == PaymentMethod.QRIS) {

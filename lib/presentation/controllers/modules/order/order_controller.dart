@@ -199,7 +199,15 @@ class OrderPaymentController extends GetxController {
   final _authToken = Get.arguments[argConstant.authToken];
   var isProcessing = false.obs;
 
-  doOrderPayment({required OrderModel body, Rxn<String>? orderNo}) async {
+  doOrderPayment({
+    required OrderModel body,
+    Rxn<String>? orderNo,
+
+    /// mst_payment.pymnt_category dari metode yang dipilih kasir. Dipakai untuk
+    /// membedakan TUNAI dari EDC; dikirim sebagai kategori (bukan kode) karena
+    /// kode tunai berbeda-beda per lokasi.
+    String? paymentCategory,
+  }) async {
     try {
       // validation on create order service
       bool isSuccess = await doPreCreateOrderPayment(
@@ -208,18 +216,26 @@ class OrderPaymentController extends GetxController {
       );
       if (!isSuccess) return;
 
+      final bool isCash = paymentCategory == PaymentMethod.CASH;
+
       // Display the waiting payment alert
       dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
-        msg: 'Silahkan mengisi reference',
+        msg: isCash
+            ? 'Pastikan uang tunai sudah diterima, lalu lanjutkan.'
+            : 'Silahkan mengisi reference',
+        showReffInput: !isCash,
         onNext: (val) async {
           logger.safeLog('isProcessing : $isProcessing');
           if (isProcessing.value) return;
           isProcessing.value = true;
-          // create Order and waiting the prosess of payment
-          // logger.safeLog('val : $val');
-          if (val != '') {
-            body.orderReffno = val;
+          // Tunai tidak punya nomor reference. Backend masih mewajibkan
+          // orderReffno terisi untuk metode selain QRIS/VA
+          // (TrnOrderService: "Selain QRIS dan VA reffno tidak boleh null"),
+          // jadi diisi penanda '-' alih-alih dikirim kosong.
+          final String reffNo = isCash ? '-' : val;
+          if (reffNo != '') {
+            body.orderReffno = reffNo;
             bool isSuccess = await _doCreateOrderPayment(
               body: body,
               orderNo: orderNo,

@@ -196,20 +196,30 @@ class PaymentMemberController extends GetxController {
   Future<void> doOrderPaymentReffNo({
     required OrderMemberModel body,
     Rxn<String>? orderNo,
+
+    /// mst_payment.pymnt_category metode yang dipilih; lihat catatan yang sama
+    /// pada OrderPaymentController.doOrderPayment.
+    String? paymentCategory,
   }) async {
     try {
+      final bool isCash = paymentCategory == PaymentMethod.CASH;
+
       // Display the waiting payment alert
       await dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
-        msg: 'Silahkan mengisi reference',
+        msg: isCash
+            ? 'Pastikan uang tunai sudah diterima, lalu lanjutkan.'
+            : 'Silahkan mengisi reference',
+        showReffInput: !isCash,
         onNext: (val) async {
           logger.safeLog('isProcessing : $isProcessing');
           if (isProcessing.value) return;
           isProcessing.value = true;
-          // create Order and waiting the prosess of payment
-          // logger.safeLog('val : $val');
-          if (val != '') {
-            body.orderReffno = val;
+          // Tunai tidak punya nomor reference, tetapi backend pendaftaran member
+          // menolak orderReffno null ("Reffno tidak boleh null"), jadi diisi '-'.
+          final String reffNo = isCash ? '-' : val;
+          if (reffNo != '') {
+            body.orderReffno = reffNo;
             bool isSuccess = await _doCreateOrderPayment(
               body: body,
               orderNo: orderNo,

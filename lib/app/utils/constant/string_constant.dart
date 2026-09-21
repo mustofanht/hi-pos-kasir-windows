@@ -91,6 +91,7 @@ class PaymentMethod {
   static String EDC = 'ED';
   static String TRAVELOKA = 'TR';
   static String TICKET = 'TC'; // Ticket.Com
+  static String CASH = 'CS';
 }
 
 final Map<String, String> MapPaymentMethod = {

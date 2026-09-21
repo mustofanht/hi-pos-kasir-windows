@@ -178,6 +178,7 @@ class CartMemberController extends GetxController {
         await paymentController.doOrderPaymentReffNo(
           body: body,
           orderNo: orderNo,
+          paymentCategory: selectedMstPayment.value.pymntCategory,
         );
       }
     }
