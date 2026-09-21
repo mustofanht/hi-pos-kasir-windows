@@ -7,13 +7,26 @@ terbaru selalu berasal dari **GitLab `hipos`, branch `enhance-hipos`**.
 
 ```powershell
 # dari folder project, di PowerShell
-.	oolsuild-windows.ps1 -Target production
+.\tools\build-windows.ps1 -Target production
 ```
 
 Skrip itu menarik kode terbaru dari GitLab, mengirimnya ke GitHub, memicu
 GitHub Actions, dan membuka halaman Actions. Tunggu ±6–8 menit → unduh artifact
 **`hipos-kasir-installer-production`** → extract → jalankan
 `HI-POS-Kasir-Setup-production.exe` di PC kasir.
+
+Syarat supaya perintah itu benar-benar "sekali jalan":
+
+| Syarat | Kenapa |
+|---|---|
+| Sedang berada di branch `enhance-hipos-windows` (`git checkout enhance-hipos-windows`) | File `tools/build-windows.ps1` hanya ada di branch ini. Kalau Anda sedang di `enhance-hipos` / branch lain, file skripnya tidak ada. |
+| Perubahan di GitLab sudah di-**push** | Skrip mengambil dari `hipos/enhance-hipos` di GitLab, bukan dari branch lokal Anda. Commit lokal yang belum di-push tidak ikut ter-build. |
+| Tidak ada perubahan lokal yang belum di-commit | Skrip menolak jalan supaya rebase aman. |
+| **GitHub CLI terpasang & login** (`winget install --id GitHub.cli`, lalu `gh auth login`) | Tanpa `gh`, skrip hanya bisa sinkron + push. Build **production** masih perlu satu klik manual di halaman Actions (bagian 3, Cara B). |
+
+Catatan: push dari skrip juga otomatis memicu satu build **dev**. Jadi saat
+menjalankan `-Target production` akan muncul dua run — pastikan mengunduh
+artifact yang bernama `hipos-kasir-installer-production`.
 
 Rincian tiap langkah, cara manual lewat web, dan troubleshooting ada di bawah.
 
@@ -61,7 +74,7 @@ commit khusus build:
 
 ## 2. Alur rutin: ambil kode terbaru dari GitLab lalu build
 
-Skrip `toolsuild-windows.ps1` sudah menjalankan seluruh langkah di bawah ini
+Skrip `tools\build-windows.ps1` sudah menjalankan seluruh langkah di bawah ini
 secara otomatis (lihat **bagian 3, Cara A**). Bagian ini menjelaskan apa yang
 sebenarnya dikerjakan skrip itu — berguna saat ada konflik atau ingin manual.
 
@@ -355,7 +368,7 @@ Nomor versi installer otomatis: `1.0.0.<nomor run Actions>`.
 Cara singkat:
 
 ```powershell
-.	oolsuild-windows.ps1 -Target production
+.\tools\build-windows.ps1 -Target production
 ```
 
 Cara manual (isi skrip di atas):
