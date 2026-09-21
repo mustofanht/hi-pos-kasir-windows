@@ -8,15 +8,19 @@
       1. Pastikan working tree bersih.
       2. git fetch hipos          (ambil kode terbaru dari GitLab)
       3. git checkout enhance-hipos-windows
-      4. git rebase hipos/enhance-hipos
-      5. git push github enhance-hipos-windows --force-with-lease
+      4. git merge --no-edit hipos/enhance-hipos
+      5. git push github enhance-hipos-windows
       6. Picu build (lewat GitHub CLI kalau ada) & buka halaman Actions.
+
+    Sengaja memakai merge, bukan rebase: rebase sempat memindah working tree ke
+    kode GitLab murni (tanpa tools/ dan windows/), sehingga Git mencoba
+    menghapus folder skrip ini saat skrip sedang berjalan dan Windows menolak.
 
 .PARAMETER Target
     Target server aplikasi: dev (default) atau production.
 
 .PARAMETER SkipSync
-    Lewati langkah fetch/rebase/push; langsung picu build dari kode yang sudah
+    Lewati langkah fetch/merge/push; langsung picu build dari kode yang sudah
     ada di GitHub.
 
 .EXAMPLE
@@ -65,23 +69,23 @@ if (-not $SkipSync) {
     git checkout $BuildBranch
     if ($LASTEXITCODE -ne 0) { throw "Branch $BuildBranch tidak ditemukan." }
 
-    Write-Step "Menumpuk commit build di atas $SourceBranch"
-    git rebase $SourceBranch
+    Write-Step "Menggabungkan kode terbaru dari $SourceBranch"
+    git merge --no-edit $SourceBranch
     if ($LASTEXITCODE -ne 0) {
         Write-Host @"
 
-REBASE BERHENTI KARENA KONFLIK.
+MERGE BERHENTI KARENA KONFLIK.
   - Lihat file bermasalah : git status
-  - Pertahankan versi build: git checkout --theirs <file> ; git add <file>
-  - Lanjutkan             : git rebase --continue
-  - Atau batalkan semuanya: git rebase --abort
+  - Perbaiki isi file tsb, lalu: git add <file>
+  - Selesaikan merge      : git commit --no-edit
+  - Atau batalkan semuanya: git merge --abort
 Setelah selesai, jalankan lagi skrip ini.
 "@ -ForegroundColor Yellow
-        throw "Rebase perlu diselesaikan manual."
+        throw "Merge perlu diselesaikan manual."
     }
 
     Write-Step "Mengirim ke GitHub"
-    git push github $BuildBranch --force-with-lease
+    git push github $BuildBranch
     if ($LASTEXITCODE -ne 0) { throw "git push gagal." }
 }
 

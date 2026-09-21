@@ -21,7 +21,7 @@ Syarat supaya perintah itu benar-benar "sekali jalan":
 |---|---|
 | Sedang berada di branch `enhance-hipos-windows` (`git checkout enhance-hipos-windows`) | File `tools/build-windows.ps1` hanya ada di branch ini. Kalau Anda sedang di `enhance-hipos` / branch lain, file skripnya tidak ada. |
 | Perubahan di GitLab sudah di-**push** | Skrip mengambil dari `hipos/enhance-hipos` di GitLab, bukan dari branch lokal Anda. Commit lokal yang belum di-push tidak ikut ter-build. |
-| Tidak ada perubahan lokal yang belum di-commit | Skrip menolak jalan supaya rebase aman. |
+| Tidak ada perubahan lokal yang belum di-commit | Skrip menolak jalan supaya merge aman. |
 | **GitHub CLI terpasang & login** (`winget install --id GitHub.cli`, lalu `gh auth login`) | Tanpa `gh`, skrip hanya bisa sinkron + push. Build **production** masih perlu satu klik manual di halaman Actions (bagian 3, Cara B). |
 
 Catatan: push dari skrip juga otomatis memicu satu build **dev**. Jadi saat
@@ -45,7 +45,7 @@ Branch yang terlibat:
 ```
 GitLab  hipos/enhance-hipos          <- kode terbaru (tanpa folder windows/)
                  |
-                 |  rebase: commit build ditumpuk di atasnya
+                 |  merge: kode terbaru digabung ke branch build
                  v
 GitHub  enhance-hipos-windows        <- branch build (kode + windows/ + CI)
                  |
@@ -67,7 +67,7 @@ commit khusus build:
    server di workflow.
 
 > **Penting:** jangan menulis kode fitur di branch `enhance-hipos-windows`.
-> Branch ini hanya "pembungkus build" dan akan di-rebase terus-menerus.
+> Branch ini hanya "pembungkus build" yang terus digabung dengan kode GitLab.
 > Fitur tetap dikerjakan & di-push ke `enhance-hipos` di GitLab.
 
 ---
@@ -87,38 +87,36 @@ git fetch hipos
 # 2. Pindah ke branch build
 git checkout enhance-hipos-windows
 
-# 3. Tumpuk ulang commit build di atas kode terbaru
-git rebase hipos/enhance-hipos
+# 3. Gabungkan kode terbaru ke branch build
+git merge --no-edit hipos/enhance-hipos
 
 # 4. Kirim ke GitHub (memicu build otomatis)
-git push github enhance-hipos-windows --force-with-lease
+git push github enhance-hipos-windows
 ```
 
-Kenapa `--force-with-lease`: rebase menulis ulang commit build itu, jadi
-riwayat branch berubah. `--force-with-lease` tetap menolak push kalau ada
-perubahan lain di GitHub yang belum Anda ambil, jadi lebih aman dari `-f`.
+Kenapa `merge`, bukan `rebase`: rebase sempat memindah folder kerja ke kode
+GitLab murni (yang tidak punya `tools/` dan `windows/`), sehingga Git mencoba
+menghapus folder skrip saat skrip sedang berjalan — muncul pesan
+*"Deletion of directory 'tools' failed. Should I try again?"*. Merge tidak
+pernah melakukan itu, tidak perlu force-push, dan riwayat lama tidak ditulis
+ulang. Konsekuensinya hanya muncul commit merge di riwayat branch build — tidak
+masalah untuk branch yang fungsinya membungkus build.
 
-**Kalau rebase konflik:** konflik hampir selalu terjadi di
-`.github/workflows/build-windows.yml`, folder `windows/`, atau `README.md`
-(file yang disentuh commit build). Yang dipertahankan adalah versi commit build
-— kecuali `README.md`, yang perlu digabung manual supaya perubahan dari
-`enhance-hipos` tidak hilang:
+`--no-edit` membuat Git langsung memakai pesan merge standar tanpa membuka
+editor teks.
+
+**Kalau merge konflik:** konflik hanya terjadi kalau `enhance-hipos` dan commit
+build mengubah file yang sama — praktis hanya `README.md`. Buka file itu,
+gabungkan kedua versi (hapus penanda `<<<<<<<`, `=======`, `>>>>>>>`), lalu:
 
 ```bash
-git checkout --theirs .github/workflows/build-windows.yml
-git add .github/workflows/build-windows.yml
-git rebase --continue
+git add README.md
+git commit --no-edit
+git push github enhance-hipos-windows
 ```
 
-> Saat `git rebase`, istilahnya terbalik dari yang biasa dibayangkan:
-> **`--theirs` = commit build milik kita** yang sedang ditumpuk, `--ours` =
-> kode dari `enhance-hipos`. Kalau ragu, batalkan dengan `git rebase --abort`
-> lalu ulangi.
-
-Alternatif tanpa force-push (kalau rebase terasa merepotkan):
-`git merge hipos/enhance-hipos` di branch build, lalu
-`git push github enhance-hipos-windows`. Riwayat jadi lebih berantakan, hasil
-build sama saja.
+Kalau ragu, batalkan dengan `git merge --abort` — branch kembali seperti sebelum
+merge.
 
 ---
 
@@ -138,7 +136,7 @@ Buka **PowerShell** di folder project, lalu:
 .\tools\build-windows.ps1 -Target production
 ```
 
-Skrip ini mengerjakan seluruh rangkaian di bagian 2 (fetch dari GitLab → rebase
+Skrip ini mengerjakan seluruh rangkaian di bagian 2 (fetch dari GitLab → merge
 → push ke GitHub), memicu build, lalu membuka halaman Actions di browser.
 
 Yang terjadi di layar:
@@ -147,7 +145,7 @@ Yang terjadi di layar:
 |---|---|
 | `==> Memeriksa perubahan yang belum di-commit` | Berhenti kalau ada file belum di-commit — commit/stash dulu. |
 | `==> Mengambil kode terbaru dari GitLab` | `git fetch hipos` |
-| `==> Menumpuk commit build di atas hipos/enhance-hipos` | Kalau konflik, skrip berhenti dan menampilkan perintah penyelesaiannya. |
+| `==> Menggabungkan kode terbaru dari hipos/enhance-hipos` | Kalau konflik, skrip berhenti dan menampilkan perintah penyelesaiannya. |
 | `==> Mengirim ke GitHub` | Push inilah yang memicu build. |
 | `==> Membuka halaman GitHub Actions` | Browser terbuka ke daftar run. |
 
@@ -356,10 +354,11 @@ Nomor versi installer otomatis: `1.0.0.<nomor run Actions>`.
 | Aplikasi jalan tapi data salah/kosong | Salah target server. Build otomatis (push) selalu `dev`; untuk PC kasir pakai run manual dengan `production`. |
 | Aplikasi gagal start di PC kasir dengan error DLL | Kalau step "Bundel runtime Visual C++" sempat memberi warning, pasang manual [VC++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe). |
 | SmartScreen memblokir installer | Normal untuk installer tanpa tanda tangan → **More info → Run anyway**. |
-| `git push` ditolak (`non-fast-forward`) | Anda baru rebase; pakai `git push github enhance-hipos-windows --force-with-lease`. |
+| `git push` ditolak (`non-fast-forward`) | Branch di GitHub punya commit yang belum ada di lokal. Jalankan `git pull github enhance-hipos-windows --no-edit`, lalu push lagi. |
+| Muncul *"Deletion of directory 'tools' failed. Should I try again? (y/n)"* | Hanya terjadi dengan skrip versi lama (yang masih memakai rebase). Jawab `n` setiap kali muncul; rebase tetap selesai dan folder terisi lagi. Skrip versi sekarang memakai merge sehingga tidak mengalami ini. |
 | Artifact hilang dari halaman run | Artifact kedaluwarsa setelah 90 hari. Jalankan ulang workflow. |
 | Tombol **Run workflow** atau pilihan **Target server aplikasi** tidak muncul | GitHub membaca definisi `workflow_dispatch` dari branch default (`main`). Pilih branch `enhance-hipos-windows` lalu muat ulang halaman; kalau tetap tidak ada, picu lewat GitHub CLI (bagian 3, Cara C). |
-| Skrip berhenti: "Commit atau 'git stash' dulu" | Ada perubahan lokal yang belum di-commit di folder project. Bersihkan dulu agar rebase aman. |
+| Skrip berhenti: "Commit atau 'git stash' dulu" | Ada perubahan lokal yang belum di-commit di folder project. Bersihkan dulu agar merge aman. |
 
 ---
 
@@ -377,8 +376,8 @@ Cara manual (isi skrip di atas):
 # ambil kode terbaru dari GitLab & kirim ke mesin build
 git fetch hipos
 git checkout enhance-hipos-windows
-git rebase hipos/enhance-hipos
-git push github enhance-hipos-windows --force-with-lease
+git merge --no-edit hipos/enhance-hipos
+git push github enhance-hipos-windows
 
 # lalu: Actions -> Build Windows EXE -> Run workflow
 #       branch: enhance-hipos-windows, Target server aplikasi: production
