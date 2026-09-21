@@ -27,6 +27,34 @@ import 'package:jaya_propertiy/presentation/controllers/modules/member/cart_memb
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
+/// Penutup sebuah transaksi: tutup semua dialog/halaman yang masih menumpuk
+/// sehingga kasir kembali ke menu utama.
+///
+/// Dipakai di keempat titik akhir transaksi (penjualan & pendaftaran member,
+/// masing-masing lewat jalur cetak maupun "Pesanan Baru"). Sebelumnya tiap
+/// titik hanya memanggil `Get.back()` — itu cuma menutup dialog loading
+/// terakhir, sehingga sisa dialog/halaman bisa tertinggal di layar.
+///
+/// JANGAN memakai `Get.offAllNamed(RouteName.homePage)` di sini.
+///
+/// HomePage adalah route DASAR dan modul penjualan hidup di dalamnya
+/// (`HomePageController.selectedContent`), bukan sebagai route tersendiri.
+/// Membuang route-nya ikut membuang SalePageController & SaleCartPageController,
+/// padahal `sale_page.dart` mendaftarkan controller lewat
+/// `GetBuilder(init: controller, tag: 'SaleCartPage')` sementara `SaleCartPage`
+/// di panel kanan membacanya TANPA tag. Setelah route dibuat ulang, keduanya
+/// bisa menunjuk instance berbeda: tiket yang diklik masuk ke instance satu,
+/// panel kanan membaca instance lain — panel order tampak kosong sampai menu
+/// sidebar di-switch bolak-balik.
+///
+/// `Get.until(route.isFirst)` cukup: seluruh dialog dan halaman yang menumpuk
+/// ditutup sampai kembali ke HomePage, tanpa menghidupkan ulang controller.
+/// Reset isi layarnya sendiri sudah dikerjakan `clearCartOrder()`, yang
+/// mengembalikan `openPayment` ke false dan memuat ulang daftar tiket.
+void _selesaiKeMenuUtama() {
+  Get.until((route) => route.isFirst);
+}
+
 class OrderUtil {
   final _service = MainService();
   DisplayUtil displayUtil = DisplayUtil();
@@ -141,7 +169,7 @@ class OrderUtil {
     await Future.delayed(const Duration(seconds: 1), () {});
     await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
     await orderUtil.clearOrder();
-    Get.back();
+    _selesaiKeMenuUtama();
   }
 
   _handleOnPrintOrder(
@@ -260,7 +288,7 @@ class OrderUtil {
         paymentMethod: PaymentMethod.QRIS,
       );
       await clearOrder();
-      Get.back();
+      _selesaiKeMenuUtama();
     } else {
       alert.error('Error', 'please check connection printer');
       printerUtil.connectPrinter();
@@ -459,7 +487,7 @@ class OrderMemberUtil {
     await Future.delayed(const Duration(seconds: 1), () {});
     await doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
     await clearOrderMember();
-    Get.back();
+    _selesaiKeMenuUtama();
   }
 
   _handleOnPrintOrder(
@@ -501,7 +529,7 @@ class OrderMemberUtil {
         paymentMethod: PaymentMethod.QRIS,
       );
       await clearOrderMember();
-      Get.back();
+      _selesaiKeMenuUtama();
     } else {
       alert.error('Error', 'please check connection printer');
       printerUtil.connectPrinter();

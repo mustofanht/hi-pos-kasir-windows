@@ -30,6 +30,21 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 
+/// True hanya bila controller-nya SUDAH benar-benar dibuat.
+///
+/// `Get.isRegistered` juga bernilai true untuk `lazyPut` yang belum pernah
+/// dipakai — dan memanggil `Get.find` dalam kondisi itu justru MEMBUAT
+/// instance-nya saat itu juga. Itu berbahaya di sini, karena pembersihan
+/// keranjang berjalan ketika dialog loading masih terbuka: pada saat itu
+/// `Get.arguments` bukan lagi milik HomePage melainkan null, padahal seluruh
+/// Sale*Controller membaca `Get.arguments[argConstant.authToken]` di field
+/// initializer-nya. Akibatnya `NoSuchMethodError: []("token")` yang ditelan
+/// try/catch, dan sisa `clearCartOrder()` — termasuk `openPayment(false)` —
+/// batal dijalankan sehingga kasir tertinggal di form pembayaran.
+///
+/// Tab yang belum pernah dibuka juga memang tidak perlu dimuat ulang.
+bool _sudahDibuat<T>() => Get.isRegistered<T>() && !Get.isPrepared<T>();
+
 class SaleCartPageController extends GetxController {
   SaleCartPageController();
   final SalePageController salePageController = Get.find<SalePageController>();
@@ -517,7 +532,7 @@ class SaleCartPageController extends GetxController {
   }
 
   SaleLapanganPageController? get _lapanganController =>
-      Get.isRegistered<SaleLapanganPageController>()
+      _sudahDibuat<SaleLapanganPageController>()
           ? Get.find<SaleLapanganPageController>()
           : null;
 
@@ -528,16 +543,16 @@ class SaleCartPageController extends GetxController {
   /// akan langsung terlihat begitu order beres.
   void refreshSaleLists() {
     try {
-      if (Get.isRegistered<SaleTicketPageController>()) {
+      if (_sudahDibuat<SaleTicketPageController>()) {
         Get.find<SaleTicketPageController>().doPrepareList(page: 0);
       }
-      if (Get.isRegistered<SaleLapanganPageController>()) {
+      if (_sudahDibuat<SaleLapanganPageController>()) {
         Get.find<SaleLapanganPageController>().doPrepareCourtList();
       }
-      if (Get.isRegistered<SaleVoucherPageController>()) {
+      if (_sudahDibuat<SaleVoucherPageController>()) {
         Get.find<SaleVoucherPageController>().doPrepareList(page: 0);
       }
-      if (Get.isRegistered<SaleAddonPageController>()) {
+      if (_sudahDibuat<SaleAddonPageController>()) {
         final addonController = Get.find<SaleAddonPageController>();
         addonController.doPrepareList(
           page: 0,
