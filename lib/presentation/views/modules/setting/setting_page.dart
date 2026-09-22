@@ -599,8 +599,6 @@ class SettingPage extends GetView<SettingPageController> {
                         ),
                         SizedBox(height: layoutStyle.defaultMargin),
                         _printerGelang(controller),
-                        SizedBox(height: layoutStyle.defaultMargin),
-                        _simulasiPerangkat(controller),
                       ],
                     ),
                   ),
@@ -622,8 +620,8 @@ class SettingPage extends GetView<SettingPageController> {
   /// dikunci.
   Widget _printerGelang(SettingPageController controller) {
     return Obx(() {
-      // Kunci hanya berlaku untuk Setelan lanjutan. Pilihan printer dan saklar
-      // pendamping diatur per perangkat / per outlet, jadi selalu bisa diubah.
+      // Kunci hanya berlaku untuk Setelan lanjutan. Pilihan printer diatur per
+      // perangkat, jadi selalu bisa diubah.
       final aktif = !controller.terkunciGelang.value;
       final bawaan = controller.setelanGelangBawaan;
       return Container(
@@ -665,38 +663,6 @@ class SettingPage extends GetView<SettingPageController> {
                   (e) => e.id?.toString() == val,
                   orElse: () => CustomIdNameEntity(id: null),
                 ),
-              ),
-            ),
-            // Peringatan paling penting di kartu ini. Tanpanya, cetak gelang
-            // melaporkan berhasil sementara printer diam — dan yang dicurigai
-            // orang pertama kali adalah kabelnya, bukan saklar simulasi.
-            if (controller.simulatePrinter.value)
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.only(top: layoutStyle.defaultMargin / 2),
-                padding: EdgeInsets.all(layoutStyle.defaultMargin / 3),
-                color: colorStyle.yellow.withOpacity(0.25),
-                child: Text(
-                  'Simulasi Printer sedang menyala, jadi gelang tidak akan '
-                  'keluar dari printer. Matikan Simulasi Printer supaya gelang '
-                  'bisa dicetak.',
-                  style: textStyle.blackText.copyWith(fontSize: fontSize.small),
-                ),
-              ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              value: controller.gelangPendamping.value,
-              onChanged: controller.doToggleGelangPendamping,
-              title:
-                  Text('Cetak gelang pendamping', style: textStyle.blackText),
-              subtitle: Text(
-                controller.gelangPendamping.value
-                    ? 'Setiap tiket playground mencetak 2 gelang: satu untuk '
-                        'anak, satu untuk pendampingnya.'
-                    : 'Pendamping tidak dapat gelang, QR-nya dicetak di struk. '
-                        'Nyalakan lagi sebelum outlet buka.',
-                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
               ),
             ),
             // Setelan media disembunyikan: bawaannya sudah terbukti di printer
@@ -1022,78 +988,5 @@ class SettingPage extends GetView<SettingPageController> {
     );
   }
 
-  /// Mode simulasi perangkat: printer gelang dan layar pelanggan bisa diuji
-  /// tanpa perangkatnya. Ditaruh di menu Setting, bukan disembunyikan di balik
-  /// gerakan rahasia, supaya siapa pun di tim bisa menyalakannya sendiri — dan
-  /// supaya sama jelasnya saat harus dimatikan lagi.
-  Widget _simulasiPerangkat(SettingPageController controller) {
-    return Obx(
-      () => Container(
-        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
-        decoration: BoxDecoration(
-          color: controller.simulatePrinter.value ||
-                  controller.simulateCustomerDisplay.value
-              ? colorStyle.yellow.withOpacity(0.15)
-              : colorStyle.transparent,
-          border: Border.all(color: colorStyle.grey.withOpacity(0.5)),
-          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Simulasi Perangkat',
-              style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
-            ),
-            Text(
-              'Untuk pengembangan tanpa printer & layar pelanggan. '
-              'Matikan lagi sebelum dipakai di outlet.',
-              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              value: controller.simulatePrinter.value,
-              onChanged: controller.doToggleSimulatePrinter,
-              title: Text('Simulasi Printer', style: textStyle.blackText),
-              subtitle: Text(
-                'Hasil cetak ditangkap, tidak dikirim ke perangkat',
-                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-              ),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              value: controller.simulateCustomerDisplay.value,
-              onChanged: controller.doToggleSimulateCustomerDisplay,
-              title:
-                  Text('Simulasi Layar Pelanggan', style: textStyle.blackText),
-              subtitle: Text(
-                'Layar kedua dibuka sebagai jendela di aplikasi ini',
-                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: controller.doOpenPrintPreview,
-                    icon: const Icon(Icons.receipt_long, size: 18),
-                    label: const Text('Hasil Cetak'),
-                  ),
-                ),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: controller.doOpenCustomerSimulator,
-                    icon: const Icon(Icons.desktop_windows, size: 18),
-                    label: const Text('Layar Pelanggan'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -40,14 +39,7 @@ class CustomerSurveyController extends GetxController {
   static const Duration _durasiTerimaKasih = Duration(seconds: 3);
   static const Duration _batasDiam = Duration(seconds: 45);
 
-  /// Di perangkat sungguhan layar pelanggan selalu terlihat, jadi 45 detik sudah
-  /// cukup. Saat disimulasikan, satu layar dipakai bergantian — penguji harus
-  /// kembali dari layar kasir dulu, dan batas 45 detik akan menutup survei
-  /// sebelum sempat dilihat.
-  static const Duration _batasDiamSimulasi = Duration(minutes: 5);
-
-  Duration get _batasTutupOtomatis =>
-      deviceSimulation.customerDisplay ? _batasDiamSimulasi : _batasDiam;
+  Duration get _batasTutupOtomatis => _batasDiam;
 
   final _service = MainService();
 

@@ -17,9 +17,6 @@ class AppStringConstant {
   final bool testingMode = true;
   final String refreshAds = 'REFRESH_ADS';
 
-  // Mode simulasi perangkat (lihat DeviceSimulationUtil)
-  final String simulatePrinter = "simulate_printer";
-  final String simulateCustomerDisplay = "simulate_customer_display";
 
   // Printer gelang (lihat PrinterUtil) — disimpan agar pilihan perangkat dan
   // ukuran medianya bertahan setelah aplikasi ditutup.

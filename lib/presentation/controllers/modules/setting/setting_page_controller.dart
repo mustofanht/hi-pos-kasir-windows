@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
-import 'package:jaya_propertiy/app/main/app_route.dart';
-import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -54,10 +52,6 @@ class SettingPageController extends GetxController
 
   final currentPrinterConnect = RxString('');
 
-  // Mode simulasi perangkat (printer gelang & layar pelanggan belum ada di tangan)
-  final simulatePrinter = false.obs;
-  final simulateCustomerDisplay = false.obs;
-
   // --- Printer gelang -------------------------------------------------------
   // Perangkat kedua, memakai bahasa TSPL, terpisah dari printer struk.
   final selectedPrinterGelang = CustomIdNameEntity().obs;
@@ -75,7 +69,6 @@ class SettingPageController extends GetxController
   final kecepatanGelang = 4.obs;
   final arahGelang = 1.obs;
   final potongGelang = ModePotong.sobek.obs;
-  final gelangPendamping = true.obs;
   final terkunciGelang = false.obs;
 
   /// Setelan media tersimpan sama dengan setelan terbukti. Diperbarui setiap
@@ -88,8 +81,6 @@ class SettingPageController extends GetxController
 
   @override
   Future<void> onInit() async {
-    simulatePrinter.value = deviceSimulation.printer;
-    simulateCustomerDisplay.value = deviceSimulation.customerDisplay;
     doPrepared();
     await doInitializeScreen();
     await doInitializePrinter();
@@ -303,7 +294,6 @@ class SettingPageController extends GetxController
     kecepatanGelang.value = c.speed;
     arahGelang.value = c.direction;
     potongGelang.value = c.potong;
-    gelangPendamping.value = c.gelangPendamping;
     putarIsiGelang.value = c.putarIsi;
     terkunciGelang.value = printerUtil.setelanGelangTerkunci;
     _gelangBawaan.value = c.samaDenganTerbukti;
@@ -338,7 +328,6 @@ class SettingPageController extends GetxController
       ];
 
   String _jenisPrinter(PrinterModel p) {
-    if (PrinterUtil.isSimulated(p)) return 'Simulasi';
     switch (p.typePrinter) {
       case PrinterType.usb:
         return 'USB';
@@ -370,13 +359,7 @@ class SettingPageController extends GetxController
 
     // Printer gelang dan printer struk tidak boleh perangkat yang sama —
     // gelang akan keluar di atas kertas struk dan sebaliknya.
-    //
-    // Kecuali printer tiruan: ia bukan perangkat, hanya penampung hasil cetak,
-    // dan di mode simulasi ia satu-satunya pilihan yang ada. Melarangnya di sini
-    // membuat alur cetak gelang mustahil diuji tanpa membeli printernya dulu —
-    // persis kebalikan dari gunanya mode simulasi.
-    if (!PrinterUtil.isSimulated(pilihan) &&
-        printerUtil.currPrinter != null &&
+    if (printerUtil.currPrinter != null &&
         printerUtil.currPrinter!.kunci == pilihan.kunci) {
       alert.warning('Perangkat Sama',
           'Printer ini sudah dipakai untuk struk. Pilih printer gelang yang lain.');
@@ -451,7 +434,6 @@ class SettingPageController extends GetxController
       qrMaksMm: qrMaks,
       geserXMm: geserX,
       geserYMm: geserY,
-      gelangPendamping: gelangPendamping.value,
       putarIsi: putarIsiGelang.value,
       posisi: posisiGelang.value,
       sensor: sensorGelang.value,
@@ -462,27 +444,7 @@ class SettingPageController extends GetxController
     update();
   }
 
-  /// Saklar cetak gelang pendamping.
-  ///
-  /// Disimpan seketika, bukan menunggu tombol Simpan Ukuran: ini saklar, dan
-  /// saklar yang tidak langsung berlaku akan dikira rusak. Menyimpannya di atas
-  /// setelan tersimpan — bukan isi formulir — supaya perubahan ukuran yang
-  /// sedang diketik tapi belum disimpan tidak ikut terbawa.
-  void doToggleGelangPendamping(bool value) {
-    gelangPendamping.value = value;
-    printerUtil.simpanSetelanGelang(
-        printerUtil.wristbandConfig.salin(gelangPendamping: value));
-    if (!value) {
-      alert.warning('Gelang Pendamping Dimatikan',
-          'Tiket pendamping tetap berlaku untuk masuk, tapi QR-nya dicetak '
-          'di struk, bukan di gelang. Nyalakan lagi sebelum outlet buka.');
-    }
-    update();
-  }
-
   /// Kembali ke setelan media yang terbukti ([WristbandConfigModel.terbukti]).
-  ///
-  /// Saklar pendamping dipertahankan — itu keputusan outlet, bukan media.
   Future<void> doPakaiSetelanBawaan() async {
     if (_gelangTerkunci()) return;
     final yakin = await Get.dialog<bool>(
@@ -505,8 +467,7 @@ class SettingPageController extends GetxController
       ),
     );
     if (yakin != true) return;
-    printerUtil.simpanSetelanGelang(WristbandConfigModel.terbukti(
-        gelangPendamping: printerUtil.wristbandConfig.gelangPendamping));
+    printerUtil.simpanSetelanGelang(WristbandConfigModel.terbukti());
     muatSetelanGelang();
     alert.success('Tersimpan', 'Setelan printer gelang kembali ke standar.');
     update();
@@ -561,32 +522,6 @@ class SettingPageController extends GetxController
     if (kunci) muatSetelanGelang();
     update();
   }
-
-  /// Menyalakan simulasi printer sekaligus menyegarkan daftar perangkat, supaya
-  /// "Printer Simulasi" langsung muncul di dropdown tanpa perlu keluar-masuk menu.
-  Future<void> doToggleSimulatePrinter(bool value) async {
-    deviceSimulation.setPrinter(value);
-    simulatePrinter.value = value;
-    if (!value && PrinterUtil.isSimulated(printerUtil.currPrinter)) {
-      // Jangan tinggalkan printer tiruan sebagai perangkat aktif setelah
-      // simulasinya dimatikan — pencetakan berikutnya akan diam tanpa hasil.
-      await printerUtil.disconnectAll();
-      currentPrinterConnect.value = '';
-    }
-    await doInitializePrinter();
-    update();
-  }
-
-  void doToggleSimulateCustomerDisplay(bool value) {
-    deviceSimulation.setCustomerDisplay(value);
-    simulateCustomerDisplay.value = value;
-    update();
-  }
-
-  void doOpenPrintPreview() => Get.toNamed(RouteName.printPreviewPage);
-
-  void doOpenCustomerSimulator() =>
-      Get.toNamed(RouteName.customerDisplaySimulatorPage);
 
   doDisconnectPrinter() async {
     isLoadingPrinterDiconect.value = true;

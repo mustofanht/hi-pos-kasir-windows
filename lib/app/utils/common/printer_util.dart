@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:jaya_propertiy/app/utils/common/device_simulation_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/common/print_capture_util.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/printer_model.dart';
@@ -93,11 +91,23 @@ class PrinterUtil {
   bool setelanGelangTerkunci = true;
 
   /// Membaca setelan gelang yang tersimpan. Dipanggil sekali saat aplikasi mulai.
+  /// Alamat "Printer Simulasi" dari mode simulasi yang sudah dihapus.
+  static const String _alamatSimulasiLama = 'simulasi';
+
   void muatSetelanGelang() {
     _pindahkanDariSesi();
     try {
       final printer = _store.read(constant.wristbandPrinter);
       if (printer is Map) wristbandPrinter = PrinterModel.fromJson(printer);
+      // Mode simulasi sudah dihapus. Perangkat yang dulu memilih "Printer
+      // Simulasi" sebagai printer gelang akan mencoba menyambung ke alamat
+      // "simulasi" dan gagal setiap cetak; dilepas di sini supaya jatuh ke
+      // perilaku "belum diatur" (QR di struk) sampai kasir memilih printernya.
+      if (wristbandPrinter?.address == _alamatSimulasiLama) {
+        logger.safeLog('PRINTER GELANG simulasi lama dilepas');
+        wristbandPrinter = null;
+        _store.remove(constant.wristbandPrinter);
+      }
       final config = _store.read(constant.wristbandConfig);
       if (config is Map) wristbandConfig = WristbandConfigModel.fromJson(config);
       setelanGelangTerkunci = _store.read(constant.wristbandLocked) != false;
@@ -214,11 +224,6 @@ class PrinterUtil {
 
   Future<void> connect(PrinterModel selectedPrinter) async {
     logger.safeLog('CONNECT TO : ${selectedPrinter.toJson()}');
-    if (isSimulated(selectedPrinter)) {
-      currPrinter = selectedPrinter;
-      _isConnected = true;
-      return;
-    }
     switch (selectedPrinter.typePrinter) {
       case PrinterType.usb:
         await printerManager.connect(
@@ -254,11 +259,6 @@ class PrinterUtil {
   }
 
   Future<void> disconnect(PrinterModel selectedPrinter) async {
-    if (isSimulated(selectedPrinter)) {
-      currPrinter = null;
-      _isConnected = false;
-      return;
-    }
     printerManager.disconnect(type: selectedPrinter.typePrinter);
     _isConnected = false;
     pendingTask = null;
@@ -280,12 +280,6 @@ class PrinterUtil {
 
   Future<List<PrinterModel>> getListDevices() async {
     List<PrinterModel> deviceList = [];
-    // Ditaruh paling depan supaya jadi pilihan pertama saat mengembangkan tanpa
-    // perangkat; pemindaian USB/Bluetooth tetap jalan agar printer sungguhan
-    // yang kebetulan terpasang tidak hilang dari daftar.
-    if (deviceSimulation.printer) {
-      deviceList.add(simulatedPrinter);
-    }
     _subscription = printerManager
         .discovery(type: defaultPrinterType, isBle: _isBle)
         .listen((device) {
@@ -322,9 +316,6 @@ class PrinterUtil {
 
   Future<List<PrinterModel>> getListDevicesUsb() async {
     List<PrinterModel> deviceList = [];
-    if (deviceSimulation.printer) {
-      deviceList.add(simulatedPrinter);
-    }
     _subscription = printerManager
         .discovery(type: defaultPrinterType, isBle: _isBle)
         .listen((device) {
@@ -456,27 +447,7 @@ class PrinterUtil {
     return Future.value(_isConnected);
   }
 
-  /// Printer tiruan yang ditawarkan saat mode simulasi menyala, supaya alur
-  /// "pilih printer lalu cetak" bisa dijalani utuh tanpa perangkat.
-  static final PrinterModel simulatedPrinter = PrinterModel(
-    deviceName: 'Printer Simulasi',
-    address: 'simulasi',
-    typePrinter: PrinterType.network,
-    state: true,
-  );
-
-  static bool isSimulated(PrinterModel? printer) =>
-      printer?.address == simulatedPrinter.address;
-
   Future<void> print(PrinterModel selectedPrinter, List<int> bytes) async {
-    // Mode simulasi memutus jalur ke perangkat sepenuhnya: byte-nya ditangkap,
-    // tidak ada yang dikirim ke USB/Bluetooth/TCP. Diperiksa paling awal supaya
-    // tidak ada cabang di bawah yang bisa lolos ke perangkat.
-    if (deviceSimulation.printer || isSimulated(selectedPrinter)) {
-      await printCapture.capture(bytes);
-      return;
-    }
-
     // logger.safeLog('_currentStatus : $_currentStatus');
     // logger.safeLog('selectedPrinter : ${selectedPrinter.typePrinter}');
     // logger.safeLog('Platform.isAndroid : ${Platform.isAndroid}');
@@ -730,15 +701,6 @@ class PrinterUtil {
     final target = wristbandPrinter;
     if (target == null) return HasilCetakGelang.belumDiatur;
 
-    // Mode simulasi memutus jalur ke perangkat sepenuhnya. Dilaporkan sebagai
-    // hasil tersendiri, bukan sebagai "berhasil": tidak ada gelang yang keluar,
-    // dan menyebutnya berhasil membuat orang menunggu kertas yang tidak akan
-    // pernah datang.
-    if (deviceSimulation.printer || isSimulated(target)) {
-      await printCapture.capture(bytes);
-      return HasilCetakGelang.simulasi;
-    }
-
     final printerStruk = currPrinter;
 
     try {
@@ -770,9 +732,6 @@ enum HasilCetakGelang {
 
   /// Printer gelang belum dipilih di Setting.
   belumDiatur,
-
-  /// Mode simulasi menyala — cetakan ditangkap ke pratinjau, tidak ada kertas.
-  simulasi,
 
   /// Perangkat menolak atau sambungannya putus.
   gagal,

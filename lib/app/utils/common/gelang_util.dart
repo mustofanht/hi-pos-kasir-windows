@@ -68,12 +68,6 @@ class GelangUtil {
   }) async {
     final semuaKeStruk = HasilGelang(tercetak: const [], keStruk: semua);
 
-    // Dipisah lebih dulu, bahkan saat printernya belum ada, supaya log bisa
-    // membedakan "tidak ada tiket playground" dari "ada tapi printernya belum
-    // diatur". Keduanya berakhir sama di kertas, tapi sebabnya jauh berbeda dan
-    // itulah yang dicari saat menelusuri gelang yang tidak keluar.
-    final bolehPendamping = printerUtil.wristbandConfig.gelangPendamping;
-
     // Satu baris per tiket, sebelum apa pun diputuskan.
     //
     // Ditambahkan setelah dua gelang keluar dari order yang seharusnya
@@ -81,8 +75,7 @@ class GelangUtil {
     // yang berbeda — tiket pendamping yang lolos saringan, cetakan yang terbelah
     // media, atau gelang kosong yang terdorong keluar printer — dan ketiganya
     // terlihat sama di tangan.
-    logger.safeLog('CETAK GELANG saklar pendamping='
-        '${bolehPendamping ? "NYALA" : "MATI"}, katalog playground='
+    logger.safeLog('CETAK GELANG katalog playground='
         '${namaPlayground.length} nama, tiket=${semua.length}');
     for (final t in semua) {
       logger.safeLog('  tiket ${t.ticketNo} nama="${t.ticketName}" '
@@ -90,11 +83,11 @@ class GelangUtil {
           'playground=${namaPlayground.contains(namaDasar(t))}');
     }
 
-    final (:gelang, :struk) = pisahkan(
-      semua,
-      namaPlayground,
-      gelangPendamping: bolehPendamping,
-    );
+    // Dipisah lebih dulu, bahkan saat printernya belum ada, supaya log bisa
+    // membedakan "tidak ada tiket playground" dari "ada tapi printernya belum
+    // diatur". Keduanya berakhir sama di kertas, tapi sebabnya jauh berbeda dan
+    // itulah yang dicari saat menelusuri gelang yang tidak keluar.
+    final (:gelang, :struk) = pisahkan(semua, namaPlayground);
 
     logger.safeLog('CETAK GELANG keputusan: '
         'gelang=[${gelang.map((e) => e.ticketNo).join(", ")}] '
@@ -134,12 +127,10 @@ class GelangUtil {
 
     logger.safeLog('CETAK GELANG : ${gelang.length} gelang playground '
         '(${struk.length} tiket lain ke struk'
-        '${bolehPendamping ? "" : ", pendamping dimatikan"}'
         '), ${bytes.length} byte, ${bytes.where((b) => b == 0x0A).length} baris');
 
     final hasil = await printerUtil.printWristband(bytes);
-    if (hasil == HasilCetakGelang.terkirim ||
-        hasil == HasilCetakGelang.simulasi) {
+    if (hasil == HasilCetakGelang.terkirim) {
       return HasilGelang(tercetak: gelang, keStruk: struk);
     }
 
@@ -157,24 +148,24 @@ class GelangUtil {
   /// Tiket tanpa nomor ikut ke struk, bukan dibuang: nomor kosong berarti ada
   /// yang salah di hulu, dan menghilangkannya diam-diam hanya menyembunyikannya.
   ///
-  /// [gelangPendamping] false membuang tiket pendamping dari cetak gelang —
-  /// QR-nya tetap keluar di struk, jadi tidak ada tiket yang kehilangan QR.
+  /// Tiket pendamping selalu ikut dicetak sebagai gelang. Dulu ada saklar di
+  /// kasir untuk mematikannya; sekarang jatah gelang diatur lewat setup tiket
+  /// (bundling barang "Gelang" di back office), jadi keputusan itu tidak lagi
+  /// dibuat per perangkat.
   static ({
     List<ResponseCreateTicketNoEntity> gelang,
     List<ResponseCreateTicketNoEntity> struk,
   }) pisahkan(
     List<ResponseCreateTicketNoEntity> semua,
-    Set<String> namaPlayground, {
-    bool gelangPendamping = true,
-  }) {
+    Set<String> namaPlayground,
+  ) {
     final gelang = <ResponseCreateTicketNoEntity>[];
     final struk = <ResponseCreateTicketNoEntity>[];
     for (final t in semua) {
       final nomor = t.ticketNo;
       final layak = nomor != null &&
           nomor.trim().isNotEmpty &&
-          namaPlayground.contains(namaDasar(t)) &&
-          (gelangPendamping || t.isCompanion != 'Y');
+          namaPlayground.contains(namaDasar(t));
       (layak ? gelang : struk).add(t);
     }
     return (gelang: gelang, struk: struk);

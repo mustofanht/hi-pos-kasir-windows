@@ -31,28 +31,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/presentation/views/modules/setting/setting_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/shift/shift_page.dart';
-import 'package:jaya_propertiy/presentation/views/modules/simulation/customer_display_simulator_page.dart';
-import 'package:jaya_propertiy/presentation/views/modules/simulation/print_preview_page.dart';
 
 class AppRoute {
   static final pages = [
-    // Halaman mode simulasi perangkat. Tanpa binding karena keduanya memakai
-    // controller yang sudah hidup (layar pelanggan) atau tidak butuh controller
-    // sama sekali (pratinjau cetak).
-    GetPage(
-      name: RouteName.printPreviewPage,
-      page: () => const PrintPreviewPage(),
-      curve: Curves.easeInOut,
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: RouteName.customerDisplaySimulatorPage,
-      page: () => const CustomerDisplaySimulatorPage(),
-      curve: Curves.easeInOut,
-      transition: Transition.rightToLeftWithFade,
-      transitionDuration: const Duration(milliseconds: 300),
-    ),
     GetPage(
       name: RouteName.presentationPage,
       page: () => const CustomerPage(),
@@ -206,8 +187,6 @@ abstract class RouteName {
   static const presentationPage = '/presentation';
 
   // Mode simulasi perangkat
-  static const printPreviewPage = '/print-preview-page';
-  static const customerDisplaySimulatorPage = '/customer-display-simulator-page';
   // static const slidePage = '/';
   static const homePage = '/home';
 
