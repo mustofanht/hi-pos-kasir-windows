@@ -156,22 +156,24 @@ class SettingPageController extends GetxController
 
     for (var element in printers) {
       logger.safeLog('PRINTER : ${element.toJson()}');
-      // logger.safeLog('PRINTER : ${element.deviceName}');
+      // Kuncinya [PrinterModel.kunci], bukan vendorId/alamat. Di Windows printer
+      // dikenali dari nama antrean cetaknya saja — vendorId, productId, dan
+      // alamatnya selalu kosong — sehingga semua printer dulu mendapat id null
+      // dan memilih salah satunya selalu berakhir "please select active
+      // printer". Kunci yang sama sudah dipakai pilihan printer gelang.
       listPrinter.add(
         CustomIdNameEntity(
-          id: element.vendorId ?? element.address,
+          id: element.kunci,
           name: element.deviceName,
         ),
       );
     }
 
-    // logger.safeLog('SELECT PRINTER : ${printerUtil.currPrinter?.toJson()}');
-
-    if (printerUtil.currPrinter != null) {
+    final aktif = printerUtil.currPrinter;
+    if (aktif != null) {
       selectedCurrPrinter.value = listPrinter.firstWhere(
-        (element) =>
-            element.id.toString() ==
-            printerUtil.currPrinter?.vendorId.toString(),
+        (element) => element.id == aktif.kunci,
+        orElse: () => CustomIdNameEntity(id: null, name: '--- Select Printer ---'),
       );
     }
     // logger.safeLog('LIST PRINTER : ${listPrinter.length}');
@@ -209,10 +211,8 @@ class SettingPageController extends GetxController
     if (val != null && val.id != null) {
       isLoadingConnectPrinter.value = true;
       // List<PrinterModel> printers = await printerUtil.getListDevices();
-      if (printers.isNotEmpty) {
-        PrinterModel selected = printers.firstWhere(
-          (element) => (element.vendorId ?? element.address) == val.id,
-        );
+      final selected = printers.firstWhereOrNull((element) => element.kunci == val.id);
+      if (selected != null) {
         // await printerUtil.init();
         // await printerUtil.disconnect(selected);
         await printerUtil.disconnectAll();
@@ -221,17 +221,19 @@ class SettingPageController extends GetxController
         // logger.safeLog("CONNECTED CURR : ${printerUtil.currPrinter?.toJson()}");
         // logger.safeLog("listPrinter : ${listPrinter.length}");
         selectedCurrPrinter.value = listPrinter.firstWhere(
-          (element) =>
-              element.id.toString() ==
-              (printerUtil.currPrinter?.vendorId ??
-                      printerUtil.currPrinter?.address)
-                  .toString(),
+          (element) => element.id == printerUtil.currPrinter?.kunci,
           orElse: () => CustomIdNameEntity(
             id: null,
             name: '--- Select Printer ---',
           ),
         );
         alert.success('Success', 'Set Printer ${val.name} Active');
+        isLoadingConnectPrinter.value = false;
+      } else {
+        // Daftar perangkat berubah sejak dropdown dibuat (printer dicabut atau
+        // daftar disegarkan). Dulu kondisi ini melempar error dari firstWhere
+        // dan tombolnya berputar terus tanpa pesan.
+        alert.error('Error', 'Printer tidak ditemukan, segarkan daftar printer.');
         isLoadingConnectPrinter.value = false;
       }
     } else {
