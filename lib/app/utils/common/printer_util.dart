@@ -226,12 +226,15 @@ class PrinterUtil {
     logger.safeLog('CONNECT TO : ${selectedPrinter.toJson()}');
     switch (selectedPrinter.typePrinter) {
       case PrinterType.usb:
-        await printerManager.connect(
+        final terbuka = await printerManager.connect(
             type: selectedPrinter.typePrinter,
             model: UsbPrinterInput(
                 name: selectedPrinter.deviceName,
                 productId: selectedPrinter.productId,
                 vendorId: selectedPrinter.vendorId));
+        if (Platform.isWindows) {
+          _windowsAktif = terbuka ? selectedPrinter.deviceName : null;
+        }
         currPrinter = selectedPrinter;
         _isConnected = true;
         break;
@@ -260,6 +263,7 @@ class PrinterUtil {
 
   Future<void> disconnect(PrinterModel selectedPrinter) async {
     printerManager.disconnect(type: selectedPrinter.typePrinter);
+    if (selectedPrinter.typePrinter == PrinterType.usb) _windowsAktif = null;
     _isConnected = false;
     pendingTask = null;
     _currentStatus = BTStatus.none;
@@ -273,6 +277,7 @@ class PrinterUtil {
           await printerManager.disconnect(type: element.typePrinter);
       logger.safeLog('${element.deviceName} : $isDisconnect');
     }
+    _windowsAktif = null;
     _isConnected = false;
     pendingTask = null;
     _currentStatus = BTStatus.none;
@@ -514,6 +519,7 @@ class PrinterUtil {
   Future<bool> _pastikanSiap(PrinterModel target) async {
     switch (target.typePrinter) {
       case PrinterType.usb:
+        if (Platform.isWindows) return _pastikanWindowsSiap(target);
         if (!Platform.isAndroid) return true;
         return _pastikanUsbSiap(target);
       case PrinterType.bluetooth:
@@ -613,6 +619,39 @@ class PrinterUtil {
   /// Sisi Android selalu menyiarkan keadaannya saat `selectDevice` dipanggil,
   /// termasuk saat perangkatnya memang sudah terpilih — jadi diamnya siaran
   /// berarti ada yang tidak beres, bukan berarti sudah siap.
+  /// Nama printer yang sedang dibuka plugin di Windows.
+  ///
+  /// Plugin thermal_printer di Windows memegang SATU sambungan untuk semua
+  /// printer (`static HANDLE _hPrinter`): `connectPrinter` membuka printer
+  /// berdasarkan nama dan menimpa sambungan sebelumnya, lalu `printBytes`
+  /// selalu menulis ke printer yang terakhir dibuka. Dulu jalur ini langsung
+  /// mengirim tanpa berpindah printer, sehingga cetakan gelang keluar di
+  /// printer struk — printer itulah yang dibuka saat dipilih di Setting.
+  String? _windowsAktif;
+
+  /// Membuka [target] di plugin Windows bila belum menjadi printer aktif.
+  ///
+  /// Sambungan lama ditutup lebih dulu supaya handle-nya tidak bocor setiap
+  /// kali struk dan gelang bergantian. Printer di Windows dikenali dari nama
+  /// antrean cetaknya, jadi nama itulah kuncinya.
+  Future<bool> _pastikanWindowsSiap(PrinterModel target) async {
+    final nama = target.deviceName;
+    if (nama == null || nama.isEmpty) return false;
+    if (_windowsAktif == nama) return true;
+
+    if (_windowsAktif != null) {
+      await printerManager.disconnect(type: PrinterType.usb);
+    }
+    final terbuka = await printerManager.connect(
+      type: PrinterType.usb,
+      model: UsbPrinterInput(name: nama),
+    );
+    _windowsAktif = terbuka ? nama : null;
+    logger.safeLog('PRINTER WINDOWS AKTIF : '
+        '${terbuka ? nama : "(gagal membuka $nama)"}');
+    return terbuka;
+  }
+
   Future<bool> _pastikanUsbSiap(PrinterModel target) async {
     logger.safeLog('USB SIAPKAN : ${target.deviceName} '
         'vendor=${target.vendorId} product=${target.productId} '
@@ -704,9 +743,9 @@ class PrinterUtil {
     final printerStruk = currPrinter;
 
     try {
-      // Tidak ada tarian sambung–putus di sini. `disconnect()` untuk USB di
-      // Android tidak melakukan apa-apa (plugin hanya menutup sambungan di
-      // Windows), jadi mengandalkannya justru menyembunyikan masalah.
+      // Perpindahan ke printer gelang — dan kembali ke printer struk pada
+      // cetakan berikutnya — ditangani [_kirim] lewat [_pastikanSiap], termasuk
+      // di Windows yang hanya bisa membuka satu printer sekaligus.
       final terkirim = await _kirim(target, bytes);
       return terkirim ? HasilCetakGelang.terkirim : HasilCetakGelang.gagal;
     } catch (e) {
