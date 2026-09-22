@@ -285,13 +285,12 @@ void main() {
       expect(ulang.potong, ModePotong.akhirBatch);
     });
 
-    test('saklar gelang pendamping bertahan dan bawaannya menyala', () {
-      expect(WristbandConfigModel().gelangPendamping, isTrue);
-      expect(WristbandConfigModel.fromJson({}).gelangPendamping, isTrue,
-          reason: 'setelan lama tanpa kunci ini tidak boleh mematikannya');
-      final ulang = WristbandConfigModel.fromJson(
-          WristbandConfigModel(gelangPendamping: false).toJson());
-      expect(ulang.gelangPendamping, isFalse);
+    test('setelan lama yang masih membawa saklar pendamping tetap terbaca', () {
+      // Saklar Cetak gelang pendamping sudah dihapus; berkas setelan di
+      // perangkat lama masih menyimpan kuncinya dan tidak boleh gagal dibaca.
+      final lama = WristbandConfigModel.terbukti().toJson()
+        ..['gelangPendamping'] = false;
+      expect(WristbandConfigModel.fromJson(lama).samaDenganTerbukti, isTrue);
     });
 
     test('mode tidak dikenal kembali ke sobek manual', () {
@@ -1047,13 +1046,11 @@ void main() {
       expect(c.posisi, PosisiIsi.atas);
       expect(c.potong, ModePotong.sobek);
       expect(c.putarIsi, isFalse);
-      expect(c.gelangPendamping, isTrue);
     });
 
-    test('status bawaan bertahan lewat penyimpanan dan mengabaikan pendamping',
-        () {
+    test('status bawaan bertahan lewat penyimpanan', () {
       final simpan = WristbandConfigModel.fromJson(
-          WristbandConfigModel.terbukti(gelangPendamping: false).toJson());
+          WristbandConfigModel.terbukti().toJson());
       expect(simpan.samaDenganTerbukti, isTrue);
       expect(simpan.salin(density: 10).samaDenganTerbukti, isFalse);
       expect(WristbandConfigModel().samaDenganTerbukti, isFalse);

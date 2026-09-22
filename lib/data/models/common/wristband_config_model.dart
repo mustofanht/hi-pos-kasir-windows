@@ -173,18 +173,6 @@ class WristbandConfigModel {
   /// TSPL. Nyalakan hanya setelah dibuktikan dengan cetakan sungguhan.
   bool putarIsi;
 
-  /// Apakah tiket pendamping ikut dicetak sebagai gelang.
-  ///
-  /// Dimatikan saat mengkalibrasi media: order playground membuat satu tiket
-  /// pendamping gratis per tiket berbayar, jadi setiap percobaan memakan dua
-  /// kali lipat gelang.
-  ///
-  /// Yang dimatikan **cetaknya saja**, bukan tiketnya. Tiket pendamping tetap
-  /// dibuat server dan tetap sah di gate; QR-nya kembali dicetak menyambung
-  /// struk, persis seperti sebelum ada printer gelang. Mematikan tiketnya
-  /// sendiri akan mengubah data dan membuat pendamping tidak bisa masuk.
-  bool gelangPendamping;
-
   WristbandConfigModel({
     this.dpi = 203,
     this.widthMm = 50,
@@ -197,7 +185,6 @@ class WristbandConfigModel {
     this.potong = ModePotong.sobek,
     this.geserXMm = 0,
     this.geserYMm = 0,
-    this.gelangPendamping = true,
     this.putarIsi = false,
     this.qrMaksMm = 0,
     this.posisi = PosisiIsi.tengah,
@@ -212,7 +199,7 @@ class WristbandConfigModel {
   /// Inilah bawaan perangkat yang belum pernah diatur, dan tujuan tombol
   /// "Pakai Setelan Bawaan". Konstruktor biasa sengaja tidak diubah: nilainya
   /// dipakai sebagai media netral di banyak uji tata letak.
-  factory WristbandConfigModel.terbukti({bool gelangPendamping = true}) =>
+  factory WristbandConfigModel.terbukti() =>
       WristbandConfigModel(
         dpi: 203,
         widthMm: 25,
@@ -225,7 +212,6 @@ class WristbandConfigModel {
         potong: ModePotong.sobek,
         geserXMm: 0,
         geserYMm: 0,
-        gelangPendamping: gelangPendamping,
         putarIsi: false,
         qrMaksMm: 19,
         posisi: PosisiIsi.atas,
@@ -234,10 +220,9 @@ class WristbandConfigModel {
       );
 
   /// true bila setelan media ini sama dengan [WristbandConfigModel.terbukti].
-  /// Saklar pendamping tidak dihitung — itu keputusan outlet, bukan media.
   bool get samaDenganTerbukti {
-    final a = toJson()..remove('gelangPendamping');
-    final b = WristbandConfigModel.terbukti().toJson()..remove('gelangPendamping');
+    final a = toJson();
+    final b = WristbandConfigModel.terbukti().toJson();
     return a.keys.every((k) => a[k] == b[k]);
   }
 
@@ -262,7 +247,6 @@ class WristbandConfigModel {
     ModePotong? potong,
     double? geserXMm,
     double? geserYMm,
-    bool? gelangPendamping,
     bool? putarIsi,
     double? qrMaksMm,
     PosisiIsi? posisi,
@@ -281,7 +265,6 @@ class WristbandConfigModel {
       potong: potong ?? this.potong,
       geserXMm: geserXMm ?? this.geserXMm,
       geserYMm: geserYMm ?? this.geserYMm,
-      gelangPendamping: gelangPendamping ?? this.gelangPendamping,
       putarIsi: putarIsi ?? this.putarIsi,
       qrMaksMm: qrMaksMm ?? this.qrMaksMm,
       posisi: posisi ?? this.posisi,
@@ -302,7 +285,6 @@ class WristbandConfigModel {
         'potong': potong.name,
         'geserXMm': geserXMm,
         'geserYMm': geserYMm,
-        'gelangPendamping': gelangPendamping,
         'putarIsi': putarIsi,
         'qrMaksMm': qrMaksMm,
         'posisi': posisi.name,
@@ -343,9 +325,6 @@ class WristbandConfigModel {
       ),
       geserXMm: angka('geserXMm', 0, -100, 100),
       geserYMm: angka('geserYMm', 0, -100, 100),
-      // Bawaan menyala: pendamping yang diam-diam tidak dapat gelang lebih
-      // merepotkan daripada gelang yang terbuang saat menguji.
-      gelangPendamping: json['gelangPendamping'] != false,
       putarIsi: json['putarIsi'] == true,
       qrMaksMm: angka('qrMaksMm', 0, 0, 50),
       // Setelan lama tidak punya kunci ini. Menyimpulkannya dari Jarak, bukan

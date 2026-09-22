@@ -3,12 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart';
 import 'package:jaya_propertiy/app/utils/common/escpos_decoder_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
-import 'package:jaya_propertiy/app/utils/common/print_capture_util.dart';
 
 /// Menguji penerjemah ESC/POS dengan byte yang dibuat oleh generator yang sama
-/// dipakai aplikasi. Kalau penerjemahnya salah baca, pratinjau di mode simulasi
-/// akan menyesatkan — dan simulasi yang menyesatkan lebih buruk daripada tidak
-/// ada simulasi sama sekali.
+/// dipakai aplikasi. Penerjemah ini dipakai uji lain untuk memeriksa isi struk;
+/// kalau ia salah baca, uji-uji itu ikut menyesatkan.
 void main() {
   late Generator generator;
 
@@ -122,39 +120,5 @@ void main() {
     });
   });
 
-  group('PrintCaptureUtil', () {
-    setUp(printCapture.clear);
 
-    test('hasil cetak tersimpan dengan terjemahan dan jumlah byte', () async {
-      final bytes = <int>[
-        ...generator.reset(),
-        ...generator.text('TIKET GELANG'),
-        ...generator.cut(),
-      ];
-
-      await printCapture.capture(bytes);
-
-      expect(printCapture.captures.length, 1);
-      final item = printCapture.captures.first;
-      expect(item.jumlahByte, bytes.length);
-      expect(item.ringkasan, 'TIKET GELANG');
-      expect(item.baris, contains('[potong kertas]'));
-    });
-
-    test('cetak terbaru berada di urutan paling atas', () async {
-      await printCapture.capture(generator.text('PERTAMA'));
-      await printCapture.capture(generator.text('KEDUA'));
-
-      expect(printCapture.captures.first.ringkasan, 'KEDUA');
-      expect(printCapture.captures.last.ringkasan, 'PERTAMA');
-    });
-
-    test('daftar dibatasi supaya sesi panjang tidak menggerus memori', () async {
-      for (var i = 0; i < 35; i++) {
-        await printCapture.capture(generator.text('CETAK $i'));
-      }
-      expect(printCapture.captures.length, 30);
-      expect(printCapture.captures.first.ringkasan, 'CETAK 34');
-    });
-  });
 }
