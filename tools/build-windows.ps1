@@ -41,6 +41,26 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Dijalankan dengan klik-ganda, jendelanya menutup begitu skrip berhenti --
+# termasuk saat berhenti karena error, sehingga pesan kesalahannya tidak pernah
+# terbaca dan skripnya tampak "langsung closed". Penahan ini menunggu Enter
+# dulu, dan hanya kalau skripnya memang dijalankan di jendela console.
+$script:Interaktif = $Host.Name -eq 'ConsoleHost'
+
+function Tahan-Jendela([string]$pesan) {
+    if ($script:Interaktif) {
+        Write-Host ''
+        Read-Host $pesan | Out-Null
+    }
+}
+
+trap {
+    Write-Host ''
+    Write-Host "GAGAL: $($_.Exception.Message)" -ForegroundColor Red
+    Tahan-Jendela 'Tekan Enter untuk menutup jendela ini'
+    exit 1
+}
+
 $BuildBranch   = 'enhance-hipos-windows'
 $SourceBranch  = 'hipos/enhance-hipos'
 $WorkflowFile  = 'build-windows.yml'
@@ -112,3 +132,4 @@ else {
 Write-Step "Membuka halaman GitHub Actions"
 Start-Process $ActionsUrl
 Write-Note "Artifact hasil build: hipos-kasir-installer-$Target"
+Tahan-Jendela 'Selesai. Tekan Enter untuk menutup jendela ini'
