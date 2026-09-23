@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -25,6 +28,26 @@ class _CustomerPageState extends State<CustomerPage> {
     logger.safeLog('CUSTOMER PAGE');
     super.initState();
     CustomerSaleCartPageController.instance;
+    // Di Android data datang lewat Presentation API (widget SecondaryDisplay di
+    // bawah). Di Windows halaman ini adalah jendela kedua aplikasi, jadi
+    // datanya datang lewat saluran antar-jendela.
+    if (Platform.isWindows) {
+      LayarPelangganWindows.pasangPenerima(_terima);
+    }
+  }
+
+  /// Satu pembaruan dari layar kasir.
+  ///
+  /// Bentuk muatannya sama di Android maupun Windows, jadi penanganannya satu.
+  Future<void> _terima(dynamic argument) async {
+    final controller = CustomerSaleCartPageController.instance;
+    logger.safeLog('Data From main display : $argument');
+    if (argument != null && argument.toString() == constant.refreshAds) {
+      await controller.loadImages();
+    }
+    if (argument != null) {
+      controller.updateDataCustomer(argument);
+    }
   }
 
   @override
@@ -183,19 +206,8 @@ class _CustomerPageState extends State<CustomerPage> {
           ],
         ),
       ),
-      body: Obx(
-        () => SecondaryDisplay(
-          callback: (dynamic argument) async {
-            logger.safeLog('Data From main display : ${argument}');
-            if (argument != null &&
-                argument.toString() == constant.refreshAds) {
-              await customerSaleCartPageController.loadImages();
-            }
-            if (argument != null) {
-              customerSaleCartPageController.updateDataCustomer(argument);
-            }
-          },
-          child: Container(
+      body: Obx(() {
+        final isi = Container(
             width: layoutStyle.screenWidth,
             height: layoutStyle.screenHeight,
             color: colorStyle.lightGrey.withOpacity(0.70),
@@ -222,9 +234,14 @@ class _CustomerPageState extends State<CustomerPage> {
                 const Positioned.fill(child: CustomerSurveyPanel()),
               ],
             ),
-          ),
-        ),
-      ),
+        );
+        // Jendela kedua di Windows tidak lewat Presentation API, jadi tidak
+        // dibungkus SecondaryDisplay — pembungkus itu memasang saluran khusus
+        // Android yang di Windows tidak akan pernah dijawab.
+        return Platform.isWindows
+            ? isi
+            : SecondaryDisplay(callback: _terima, child: isi);
+      }),
     );
   }
 }
