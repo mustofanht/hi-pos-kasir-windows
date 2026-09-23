@@ -42,16 +42,20 @@
 
 import 'dart:io';
 
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/app/utils/translation/app_translation.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
+import 'package:window_manager/window_manager.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -84,8 +88,70 @@ Future<void> main() async {
   // Harus sebelum halaman mana pun terbuka: pemilihan otomatis printer struk
   // melewati printer gelang yang tersimpan, dan tanpa itu gelang TSPL bisa
   // terpilih sebagai printer struk lagi.
+  // Windows: satu berkas aplikasi menjalankan dua jendela. Engine jendela
+  // kedua memulai `main()` dari awal, dan yang membedakannya hanya argumen
+  // jendela — jadi cabang ini harus diperiksa sebelum apa pun yang khusus
+  // kasir (printer, rute, sesi) disiapkan.
+  if (Platform.isWindows) {
+    await windowManager.ensureInitialized();
+    final argumen = await _argumenJendela();
+    if (argumen != null) {
+      await LayarPelangganWindows.siapkanJendela(argumen);
+      runApp(const LayarPelangganApp());
+      return;
+    }
+  }
+
   printerUtil.muatSetelanGelang();
   runApp(MyApp());
+
+  // Dibuka setelah jendela kasir berjalan: kasir yang terakhir memakai layar
+  // pelanggan tidak perlu menyalakannya lagi setiap pagi.
+  if (Platform.isWindows && layarPelangganWindows.seharusnyaTerbuka) {
+    final gagal = await layarPelangganWindows.buka();
+    if (gagal != null) logger.safeLog('LAYAR PELANGGAN OTOMATIS : $gagal');
+  }
+}
+
+/// Argumen jendela ini, atau null bila plugin jendela ganda tidak menjawab.
+///
+/// Jendela kasir berjalan tanpa argumen; kegagalan plugin juga diperlakukan
+/// sebagai jendela kasir supaya aplikasi tetap terbuka apa pun keadaannya.
+Future<Map<String, dynamic>?> _argumenJendela() async {
+  try {
+    final jendela = await WindowController.fromCurrentEngine();
+    return LayarPelangganWindows.bacaArgumen(jendela.arguments);
+  } catch (e) {
+    logger.safeLog('ARGUMEN JENDELA TIDAK TERBACA : $e');
+    return null;
+  }
+}
+
+/// Aplikasi untuk jendela layar pelanggan.
+///
+/// Dipisah dari [MyApp]: jendela ini tidak punya rute, tidak butuh splash, dan
+/// tidak boleh ikut memuat halaman kasir — isinya hanya satu halaman pelanggan.
+class LayarPelangganApp extends StatelessWidget {
+  const LayarPelangganApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Layar Pelanggan',
+      debugShowCheckedModeBanner: false,
+      theme: theme.light(),
+      translations: AppTranslation(),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: const Locale('id', 'ID'),
+      fallbackLocale: const Locale('id', 'ID'),
+      supportedLocales: const [Locale('id', 'ID')],
+      home: const CustomerPage(),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

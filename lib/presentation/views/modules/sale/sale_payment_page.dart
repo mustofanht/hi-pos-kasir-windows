@@ -290,19 +290,21 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                     layoutStyle.defaultMargin / 2,
                                   ),
                                   label: Text(
-                                    'No WA',
+                                    'No WA *',
                                     style: textStyle.greyText.copyWith(
                                       fontSize: fontSize.small,
                                     ),
                                   ),
                                   controller: controller.noWaController,
                                   decoration: InputDecoration(
-                                    hintText: 'Nomor Whatsaap',
+                                    hintText: 'Wajib diisi, mis. 081234567890',
                                     hintStyle: textStyle.greyText,
                                     border: InputBorder.none,
                                   ),
                                   keyboardType: TextInputType.phone,
-                                  maxLength: 13,
+                                  // 15 angka menampung nomor berawalan +62 yang
+                                  // panjang; batas 13 dulu menolak nomor sah.
+                                  maxLength: 15,
                                 ),
                               ],
                             ),

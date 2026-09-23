@@ -246,6 +246,24 @@ class SalePageController extends GetxController
     update();
   }
 
+  /// Nomor telepon tanpa spasi, tanda hubung, atau kurung.
+  ///
+  /// Yang dibuang hanya pemisah yang diketik orang; awalan tetap apa adanya
+  /// (`08…` atau `+62…`) supaya nomor yang tersimpan sama dengan yang dibaca
+  /// kasir di layar.
+  static String nomorTelpBersih(String teks) =>
+      teks.replaceAll(RegExp(r'[\s\-()./]'), '').trim();
+
+  /// Nomor telepon dianggap sah bila angkanya 8-15 digit.
+  ///
+  /// Batas bawah menolak salah ketik seperti "08"; batas atas mengikuti panjang
+  /// nomor internasional. Sengaja tidak memaksa awalan tertentu — nomor bisa
+  /// ditulis 0812…, 62812…, atau +62812… dan ketiganya sah.
+  static bool nomorTelpSah(String teks) {
+    final angka = nomorTelpBersih(teks).replaceAll(RegExp(r'\D'), '');
+    return angka.length >= 8 && angka.length <= 15;
+  }
+
   bool doVerifyRequest() {
     bool isValid = true;
     // if (isValid && orderNameController.text.isEmpty) {
@@ -263,6 +281,20 @@ class SalePageController extends GetxController
     //   alert.error(
     //       "Terjadi Kesalahan!", messagesConstant.requiredField("No Wa"));
     // }
+    // Nomor telepon wajib: dipakai menghubungi pelanggan bila ada tiket
+    // tertinggal atau keluhan, dan menjadi penghubung ke survei kepuasan yang
+    // diisi di layar pelanggan.
+    if (isValid && noWaController.text.trim().isEmpty) {
+      isValid = false;
+      alert.error('No WA Belum Diisi',
+          'Isi nomor WhatsApp/telepon pelanggan dulu sebelum pembayaran.');
+    }
+    if (isValid && !nomorTelpSah(noWaController.text)) {
+      isValid = false;
+      alert.error('No WA Tidak Lengkap',
+          'Periksa lagi nomornya — isi 8 sampai 15 angka, '
+          'contoh 081234567890.');
+    }
     if (isValid && selectedPaymentType.value.id == null) {
       isValid = false;
       alert.error('Warning', 'Pilih Pembayaran terlebih dahulu!');
@@ -634,7 +666,11 @@ class SalePageController extends GetxController
     return OrderModel(
       orderName:
           orderNameController.text.isEmpty ? ' ' : orderNameController.text,
-      orderPhoneNumber: noWaController.text.isEmpty ? ' ' : noWaController.text,
+      // Sudah dipastikan terisi oleh doVerifyRequest; spasi hanya pengaman
+      // untuk pemanggil lain yang belum lewat pemeriksaan itu.
+      orderPhoneNumber: noWaController.text.trim().isEmpty
+          ? ' '
+          : nomorTelpBersih(noWaController.text),
       orderEmail: emailController.text.isEmpty ? ' ' : emailController.text,
       orderReffno: null,
       orderMemberNo: memberNo.text,

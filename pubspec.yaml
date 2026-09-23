@@ -40,6 +40,15 @@ dependencies:
   # flutter_thermal_printer: ^0.0.10
   presentation_displays:
     path: ./plugin/presentation_displays
+  # Layar pelanggan di Windows: jendela kedua milik aplikasi yang sama,
+  # ditempatkan di monitor kedua. presentation_displays hanya punya
+  # implementasi Android, jadi jalur desktop memakai dua paket ini.
+  desktop_multi_window: ^0.3.1
+  screen_retriever: ^0.2.2
+  # Ditahan di 0.4.x: 0.5.x memakai Color.r/g/b yang baru ada di Flutter 3.27,
+  # sementara proyek ini dibangun dengan Flutter 3.24.5 — versi barunya gagal
+  # dikompilasi, dan kegagalannya hanya muncul saat build, bukan saat analyze.
+  window_manager: ^0.4.3
   table_sticky_headers: ^2.0.5
   device_info_plus: ^9.1.2
   auto_size_text: ^3.0.0

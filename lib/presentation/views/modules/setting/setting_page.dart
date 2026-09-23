@@ -599,6 +599,8 @@ class SettingPage extends GetView<SettingPageController> {
                         ),
                         SizedBox(height: layoutStyle.defaultMargin),
                         _printerGelang(controller),
+                        SizedBox(height: layoutStyle.defaultMargin),
+                        _layarPelanggan(controller),
                       ],
                     ),
                   ),
@@ -838,6 +840,107 @@ class SettingPage extends GetView<SettingPageController> {
                 SizedBox(height: layoutStyle.defaultMargin / 2),
                 _panduanGelang(),
               ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  /// Layar pelanggan di monitor kedua — hanya untuk kasir Windows.
+  ///
+  /// Di tablet Android layar kedua ditangani sistem lewat Presentation API dan
+  /// tidak ada yang perlu dipilih, jadi kartu ini disembunyikan di sana supaya
+  /// tidak menimbulkan kesan ada setelan yang belum diisi.
+  Widget _layarPelanggan(SettingPageController controller) {
+    if (!controller.dukungLayarPelanggan) return const SizedBox.shrink();
+    return Obx(() {
+      final terbuka = controller.layarPelangganTerbuka.value;
+      final sibuk = controller.isLoadingLayarPelanggan.value;
+      final adaMonitor = controller.listMonitor.length > 1;
+      return Container(
+        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+        decoration: BoxDecoration(
+          border: Border.all(color: colorStyle.grey.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Layar Pelanggan',
+              style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
+            ),
+            Text(
+              adaMonitor
+                  ? (terbuka
+                      ? 'Layar pelanggan sedang tampil di monitor kedua.'
+                      : 'Pilih monitor untuk pelanggan, lalu nyalakan. '
+                          'Layar kasir tetap di monitor utama.')
+                  : 'Monitor kedua belum terbaca. Pastikan kabel VGA/HDMI '
+                      'tersambung dan Windows sudah mengatur layarnya '
+                      '"Extend", bukan "Duplicate".',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String?>(
+                    value: controller.selectedMonitor.value.id,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Monitor',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: controller.listMonitor
+                        .map((e) => DropdownMenuItem<String?>(
+                              value: e.id,
+                              child: Text('${e.name}'),
+                            ))
+                        .toList(),
+                    onChanged: sibuk
+                        ? null
+                        : (val) => controller.doPilihMonitorLayarPelanggan(
+                              controller.listMonitor.firstWhere(
+                                (e) => e.id == val,
+                                orElse: () => CustomIdNameEntity(id: null),
+                              ),
+                            ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Segarkan daftar monitor',
+                  onPressed:
+                      sibuk ? null : controller.muatMonitorLayarPelanggan,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 4),
+            Wrap(
+              children: [
+                TextButton.icon(
+                  onPressed: sibuk || terbuka
+                      ? null
+                      : controller.doBukaLayarPelanggan,
+                  icon: const Icon(Icons.desktop_windows_outlined, size: 18),
+                  label: const Text('Nyalakan'),
+                ),
+                TextButton.icon(
+                  onPressed: sibuk || !terbuka
+                      ? null
+                      : controller.doTutupLayarPelanggan,
+                  icon: const Icon(Icons.cancel_presentation, size: 18),
+                  label: const Text('Matikan'),
+                ),
+              ],
+            ),
+            Text(
+              'Pilihan monitor diingat, jadi layar pelanggan menyala sendiri '
+              'setiap aplikasi dibuka sampai dimatikan dari sini.',
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
           ],
         ),

@@ -3,8 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  desktop_multi_window
   file_selector_windows
+  screen_retriever_windows
   thermal_printer
+  window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

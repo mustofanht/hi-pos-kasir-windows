@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
@@ -52,6 +53,17 @@ class SettingPageController extends GetxController
 
   final currentPrinterConnect = RxString('');
 
+  // --- Layar pelanggan (Windows) --------------------------------------------
+  // Di tablet Android layar kedua digambar lewat Presentation API dan tidak ada
+  // yang perlu diatur. Di kasir Windows layar pelanggan adalah jendela kedua
+  // aplikasi, jadi monitornya harus dipilih di sini.
+  final listMonitor = <CustomIdNameEntity>[].obs;
+  final selectedMonitor = CustomIdNameEntity().obs;
+  final layarPelangganTerbuka = false.obs;
+  final isLoadingLayarPelanggan = false.obs;
+
+  bool get dukungLayarPelanggan => layarPelangganWindows.didukung;
+
   // --- Printer gelang -------------------------------------------------------
   // Perangkat kedua, memakai bahasa TSPL, terpisah dari printer struk.
   final selectedPrinterGelang = CustomIdNameEntity().obs;
@@ -86,6 +98,7 @@ class SettingPageController extends GetxController
     await doInitializePrinter();
     super.onInit();
     muatSetelanGelang();
+    await muatMonitorLayarPelanggan();
     tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
     currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
@@ -254,6 +267,73 @@ class SettingPageController extends GetxController
     // await displayUtil.updateSecondDisplay(constant.refreshAds);
     // await orderUtil.doRefreshCustomerDisplay(paymentMethod: PaymentMethod.QRIS);
     isLoadingRefreshCustScreeen.value = false;
+    update();
+  }
+
+  /// Mengisi daftar monitor dan menandai pilihan kasir yang tersimpan.
+  Future<void> muatMonitorLayarPelanggan() async {
+    if (!dukungLayarPelanggan) return;
+    final monitors = await layarPelangganWindows.daftarMonitor();
+    listMonitor.clear();
+    for (var i = 0; i < monitors.length; i++) {
+      listMonitor.add(
+        CustomIdNameEntity(
+          id: LayarPelangganWindows.kunciMonitor(monitors[i]),
+          name: LayarPelangganWindows.namaMonitor(monitors[i], i),
+        ),
+      );
+    }
+    final tersimpan = layarPelangganWindows.monitorTersimpan;
+    selectedMonitor.value = listMonitor.firstWhereOrNull(
+          (e) => e.id == tersimpan,
+        ) ??
+        // Monitor kasir selalu di posisi 0,0 dan ditandai begitu di namanya;
+        // yang lain adalah kandidat layar pelanggan.
+        listMonitor.firstWhereOrNull(
+          (e) => !(e.name ?? '').contains('layar kasir'),
+        ) ??
+        (listMonitor.isNotEmpty
+            ? listMonitor.first
+            : CustomIdNameEntity(id: null, name: '--- Tidak ada monitor ---'));
+    layarPelangganTerbuka.value = layarPelangganWindows.terbuka;
+    update();
+  }
+
+  Future<void> doPilihMonitorLayarPelanggan(CustomIdNameEntity? val) async {
+    if (val == null) return;
+    selectedMonitor.value = val;
+    // Jendelanya sudah terbuka di monitor lama: dipindahkan langsung supaya
+    // kasir tidak perlu menutup lalu membuka lagi.
+    if (layarPelangganWindows.terbuka) {
+      await layarPelangganWindows.tutup();
+      await doBukaLayarPelanggan();
+    }
+    update();
+  }
+
+  Future<void> doBukaLayarPelanggan() async {
+    isLoadingLayarPelanggan.value = true;
+    final gagal = await layarPelangganWindows.buka(
+      idMonitor: selectedMonitor.value.id,
+    );
+    layarPelangganTerbuka.value = layarPelangganWindows.terbuka;
+    isLoadingLayarPelanggan.value = false;
+    if (gagal != null) {
+      alert.error('Layar Pelanggan', gagal);
+    } else {
+      // Isi layar pelanggan datang dari transaksi; tanpa ini jendelanya kosong
+      // sampai kasir menyentuh keranjang.
+      await common.doRefreshAds(_authToken);
+      alert.success('Layar Pelanggan', 'Layar pelanggan dinyalakan.');
+    }
+    update();
+  }
+
+  Future<void> doTutupLayarPelanggan() async {
+    isLoadingLayarPelanggan.value = true;
+    await layarPelangganWindows.tutup();
+    layarPelangganTerbuka.value = layarPelangganWindows.terbuka;
+    isLoadingLayarPelanggan.value = false;
     update();
   }
 
