@@ -42,8 +42,10 @@ dependencies:
     path: ./plugin/presentation_displays
   # Layar pelanggan di Windows: jendela kedua milik aplikasi yang sama,
   # ditempatkan di monitor kedua. presentation_displays hanya punya
-  # implementasi Android, jadi jalur desktop memakai dua paket ini.
-  desktop_multi_window: ^0.3.1
+  # implementasi Android, jadi jalur desktop memakai tiga paket berikut.
+  # Ditahan di 0.2.x: 0.3.x memanggil set_ui_thread_policy pada embedder
+  # Windows, yang baru ada di Flutter 3.29 — build C++-nya gagal di 3.24.5.
+  desktop_multi_window: ^0.2.0
   screen_retriever: ^0.2.2
   # Ditahan di 0.4.x: 0.5.x memakai Color.r/g/b yang baru ada di Flutter 3.27,
   # sementara proyek ini dibangun dengan Flutter 3.24.5 — versi barunya gagal

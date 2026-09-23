@@ -42,7 +42,6 @@
 
 import 'dart:io';
 
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
@@ -72,7 +71,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   }
 }
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
   await GetStorage.init("sessions");
@@ -90,16 +89,13 @@ Future<void> main() async {
   // terpilih sebagai printer struk lagi.
   // Windows: satu berkas aplikasi menjalankan dua jendela. Engine jendela
   // kedua memulai `main()` dari awal, dan yang membedakannya hanya argumen
-  // jendela — jadi cabang ini harus diperiksa sebelum apa pun yang khusus
-  // kasir (printer, rute, sesi) disiapkan.
-  if (Platform.isWindows) {
+  // yang diberikan plugin — jadi cabang ini harus diperiksa sebelum apa pun
+  // yang khusus kasir (printer, rute, sesi) disiapkan.
+  if (LayarPelangganWindows.bacaArgumen(args) != null) {
     await windowManager.ensureInitialized();
-    final argumen = await _argumenJendela();
-    if (argumen != null) {
-      await LayarPelangganWindows.siapkanJendela(argumen);
-      runApp(const LayarPelangganApp());
-      return;
-    }
+    await LayarPelangganWindows.siapkanJendela();
+    runApp(const LayarPelangganApp());
+    return;
   }
 
   printerUtil.muatSetelanGelang();
@@ -110,20 +106,6 @@ Future<void> main() async {
   if (Platform.isWindows && layarPelangganWindows.seharusnyaTerbuka) {
     final gagal = await layarPelangganWindows.buka();
     if (gagal != null) logger.safeLog('LAYAR PELANGGAN OTOMATIS : $gagal');
-  }
-}
-
-/// Argumen jendela ini, atau null bila plugin jendela ganda tidak menjawab.
-///
-/// Jendela kasir berjalan tanpa argumen; kegagalan plugin juga diperlakukan
-/// sebagai jendela kasir supaya aplikasi tetap terbuka apa pun keadaannya.
-Future<Map<String, dynamic>?> _argumenJendela() async {
-  try {
-    final jendela = await WindowController.fromCurrentEngine();
-    return LayarPelangganWindows.bacaArgumen(jendela.arguments);
-  } catch (e) {
-    logger.safeLog('ARGUMEN JENDELA TIDAK TERBACA : $e');
-    return null;
   }
 }
 

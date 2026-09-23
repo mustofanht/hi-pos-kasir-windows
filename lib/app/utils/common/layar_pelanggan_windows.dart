@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -13,7 +13,7 @@ import 'package:window_manager/window_manager.dart';
 /// Di Android layar kedua digambar lewat Presentation API (plugin
 /// `presentation_displays`), dan itu tidak ada padanannya di Windows. Di sini
 /// layar pelanggan adalah **jendela kedua milik aplikasi yang sama**, dipasang
-/// penuh di monitor yang dipilih kasir.
+/// memenuhi monitor yang dipilih kasir.
 ///
 /// Jendela kedua berjalan pada engine Flutter terpisah — sama seperti
 /// Presentation di Android — jadi datanya tidak bisa dibagi lewat memori.
@@ -24,22 +24,19 @@ class LayarPelangganWindows {
   /// Nama metode antar-jendela untuk satu pembaruan layar pelanggan.
   static const String metodeKirim = 'layar-pelanggan';
 
-  /// Perintah agar jendela pelanggan menutup dirinya sendiri.
-  ///
-  /// Jendela hanya bisa ditutup dari dalam engine-nya; pengelola di jendela
-  /// kasir tidak punya cara menutup jendela lain.
-  static const String metodeTutup = 'layar-pelanggan-tutup';
-
   /// Penanda di argumen jendela: inilah yang membedakan jendela pelanggan dari
   /// jendela kasir saat `main()` dijalankan ulang untuk engine baru.
   static const String _penanda = 'layar-pelanggan';
+
+  /// Argumen pertama yang selalu dikirim plugin ke engine jendela kedua.
+  static const String penandaJendelaKedua = 'multi_window';
 
   static const String _kunciMonitor = 'layar_pelanggan_monitor';
   static const String _kunciAktif = 'layar_pelanggan_aktif';
 
   final GetStorage _store = GetStorage('perangkat');
 
-  String? _windowId;
+  int? _windowId;
 
   bool get didukung => Platform.isWindows;
 
@@ -76,6 +73,24 @@ class LayarPelangganWindows {
     return '$label - ${ukuran.width.round()}x${ukuran.height.round()}$utama';
   }
 
+  /// Letak dan ukuran monitor dalam piksel nyata.
+  ///
+  /// Pembaca monitor memberi ukuran logis — sudah dibagi penskalaan Windows —
+  /// sedangkan pemindah jendela memakai piksel nyata. Tanpa dikalikan kembali,
+  /// di monitor berpenskalaan 125% jendelanya berhenti di tengah layar dan
+  /// menyisakan bagian kanan-bawah kosong.
+  static Rect bidangFisik(Display monitor) {
+    final skala = (monitor.scaleFactor ?? 1).toDouble();
+    final posisi = monitor.visiblePosition ?? Offset.zero;
+    final ukuran = monitor.size;
+    return Rect.fromLTWH(
+      posisi.dx * skala,
+      posisi.dy * skala,
+      ukuran.width * skala,
+      ukuran.height * skala,
+    );
+  }
+
   Future<List<Display>> daftarMonitor() async {
     if (!didukung) return [];
     try {
@@ -109,41 +124,24 @@ class LayarPelangganWindows {
       ),
     );
 
-    final posisi = pilihan.visiblePosition ?? Offset.zero;
-    final ukuran = pilihan.visibleSize ?? pilihan.size;
+    final bidang = bidangFisik(pilihan);
 
     try {
-      final jendela = await WindowController.create(
-        WindowConfiguration(
-          arguments: jsonEncode({
-            'mode': _penanda,
-            'x': posisi.dx,
-            'y': posisi.dy,
-            'w': ukuran.width,
-            'h': ukuran.height,
-          }),
-          hiddenAtLaunch: true,
-        ),
-      );
+      // Jendela baru belum tampil sampai diminta: ditempatkan dulu di monitor
+      // pelanggan, baru ditampilkan, supaya tidak berkedip di layar kasir.
+      final jendela = await DesktopMultiWindow.createWindow(jsonEncode({
+        'mode': _penanda,
+      }));
+      await jendela.setTitle('Layar Pelanggan');
+      await jendela.setFrame(bidang);
+      await jendela.show();
       _windowId = jendela.windowId;
       _store.write(_kunciMonitor, kunciMonitor(pilihan));
       _store.write(_kunciAktif, true);
-      // Jendela dibuat tersembunyi supaya tidak berkedip di monitor kasir
-      // sebelum pindah ke monitor pelanggan; jendela itu memunculkan dirinya
-      // sendiri setelah menempati posisinya. Perintah ini pengaman kalau
-      // pengatur jendela di dalamnya gagal — lebih baik tampil di tempat yang
-      // salah daripada layar pelanggan tinggal hitam.
-      Future.delayed(const Duration(seconds: 2), () async {
-        try {
-          await jendela.show();
-        } catch (e) {
-          logger.safeLog('LAYAR PELANGGAN GAGAL DIMUNCULKAN : $e');
-        }
-      });
       logger.safeLog('LAYAR PELANGGAN dibuka di monitor '
           '${kunciMonitor(pilihan)} '
-          '(${ukuran.width.round()}x${ukuran.height.round()} '
-          'di ${posisi.dx.round()},${posisi.dy.round()}) '
+          '(${bidang.width.round()}x${bidang.height.round()} '
+          'di ${bidang.left.round()},${bidang.top.round()}) '
           'window=${jendela.windowId}');
       return null;
     } catch (e) {
@@ -158,7 +156,7 @@ class LayarPelangganWindows {
     _windowId = null;
     if (id == null) return;
     try {
-      await WindowController.fromWindowId(id).invokeMethod(metodeTutup);
+      await WindowController.fromWindowId(id).close();
       logger.safeLog('LAYAR PELANGGAN ditutup');
     } catch (e) {
       logger.safeLog('LAYAR PELANGGAN gagal ditutup : $e');
@@ -184,8 +182,7 @@ class LayarPelangganWindows {
     }
 
     try {
-      await WindowController.fromWindowId(id)
-          .invokeMethod(metodeKirim, muatan);
+      await DesktopMultiWindow.invokeMethod(id, metodeKirim, muatan);
     } catch (e) {
       // Jendela sudah ditutup orang lewat tombol X: lupakan penunjuknya supaya
       // pembaruan berikutnya tidak terus mencoba jendela yang tidak ada.
@@ -198,11 +195,14 @@ class LayarPelangganWindows {
   // Sisi jendela pelanggan
   // ===========================================================================
 
-  /// Membaca argumen jendela; null berarti ini jendela kasir, bukan pelanggan.
-  static Map<String, dynamic>? bacaArgumen(String argumen) {
-    if (argumen.isEmpty) return null;
+  /// Membaca argumen `main()`; null berarti ini jendela kasir.
+  ///
+  /// Engine jendela kedua menjalankan `main()` dari awal dengan tiga argumen
+  /// tetap dari plugin: penanda, id jendela, lalu argumen dari pembuatnya.
+  static Map<String, dynamic>? bacaArgumen(List<String> args) {
+    if (args.length < 3 || args.first != penandaJendelaKedua) return null;
     try {
-      final isi = jsonDecode(argumen);
+      final isi = jsonDecode(args[2]);
       if (isi is Map && isi['mode'] == _penanda) {
         return Map<String, dynamic>.from(isi);
       }
@@ -212,22 +212,17 @@ class LayarPelangganWindows {
     return null;
   }
 
-  /// Menempatkan jendela pelanggan memenuhi monitor yang dipilih.
-  static Future<void> siapkanJendela(Map<String, dynamic> argumen) async {
-    final x = (argumen['x'] as num?)?.toDouble() ?? 0;
-    final y = (argumen['y'] as num?)?.toDouble() ?? 0;
-    final w = (argumen['w'] as num?)?.toDouble() ?? 1280;
-    final h = (argumen['h'] as num?)?.toDouble() ?? 720;
+  /// Merapikan jendela pelanggan dari dalam engine-nya sendiri.
+  ///
+  /// Letak dan ukurannya sudah diatur jendela kasir saat membuat jendela ini;
+  /// yang belum adalah menghilangkan bilah judul supaya pelanggan tidak bisa
+  /// menggeser atau menutup layarnya. Kalau gagal, jendelanya tetap benar —
+  /// hanya masih berbingkai — jadi kegagalannya cukup dicatat.
+  static Future<void> siapkanJendela() async {
     try {
-      await windowManager.setTitle('Layar Pelanggan');
-      // Urutannya penting: diletakkan dulu di monitor tujuan, ditampilkan, baru
-      // dipenuhkan. Penuh layar mengikuti monitor tempat jendelanya berada saat
-      // itu, dan jendela yang masih tersembunyi tidak selalu ikut dipenuhkan.
-      await windowManager.setBounds(Rect.fromLTWH(x, y, w, h));
-      await windowManager.show();
       await windowManager.setFullScreen(true);
     } catch (e) {
-      logger.safeLog('SIAPKAN JENDELA PELANGGAN GAGAL : $e');
+      logger.safeLog('LAYAR PELANGGAN GAGAL DIPENUHKAN : $e');
     }
   }
 
@@ -236,25 +231,15 @@ class LayarPelangganWindows {
   /// [onData] menerima muatan yang bentuknya sama dengan jalur Android: sebuah
   /// Map hasil `CustomerDisplay.toJson()`, atau String penanda seperti
   /// `refreshAds`.
-  static Future<void> pasangPenerima(
-      Future<void> Function(Object? data) onData) async {
-    try {
-      final jendela = await WindowController.fromCurrentEngine();
-      await jendela.setWindowMethodHandler((call) async {
-        switch (call.method) {
-          case metodeKirim:
-            final mentah = call.arguments;
-            await onData(mentah is String ? jsonDecode(mentah) : mentah);
-            break;
-          case metodeTutup:
-            await windowManager.close();
-            break;
-        }
+  static void pasangPenerima(Future<void> Function(Object? data) onData) {
+    DesktopMultiWindow.setMethodHandler(
+      (MethodCall call, int fromWindowId) async {
+        if (call.method != metodeKirim) return null;
+        final mentah = call.arguments;
+        await onData(mentah is String ? jsonDecode(mentah) : mentah);
         return null;
-      });
-    } catch (e) {
-      logger.safeLog('PENERIMA LAYAR PELANGGAN GAGAL DIPASANG : $e');
-    }
+      },
+    );
   }
 }
 

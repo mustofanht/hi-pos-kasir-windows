@@ -15,6 +15,7 @@ Display monitor({
   String? name,
   Size size = const Size(1920, 1080),
   Offset posisi = Offset.zero,
+  num skala = 1,
 }) {
   return Display(
     id: id,
@@ -22,6 +23,7 @@ Display monitor({
     size: size,
     visiblePosition: posisi,
     visibleSize: size,
+    scaleFactor: skala,
   );
 }
 
@@ -91,35 +93,68 @@ void main() {
   });
 
   group('Argumen jendela', () {
+    // Engine jendela kedua menjalankan main() dari awal dengan tiga argumen
+    // tetap dari plugin: penanda, id jendela, lalu argumen pembuatnya.
+    List<String> argumenJendelaKedua(String isi) => ['multi_window', '1', isi];
+
     test('jendela kasir dikenali dari argumen kosong', () {
       // Jendela kasir dijalankan tanpa argumen. Salah baca di sini berarti
       // kasirnya yang berubah jadi layar pelanggan dan aplikasi tidak bisa
       // dipakai sama sekali.
-      expect(LayarPelangganWindows.bacaArgumen(''), isNull);
+      expect(LayarPelangganWindows.bacaArgumen([]), isNull);
+    });
+
+    test('argumen baris perintah biasa tetap jendela kasir', () {
+      expect(LayarPelangganWindows.bacaArgumen(['--observatory-port=0']), isNull);
     });
 
     test('argumen yang bukan JSON dianggap jendela kasir', () {
-      expect(LayarPelangganWindows.bacaArgumen('bukan json'), isNull);
-    });
-
-    test('argumen JSON tanpa penanda dianggap jendela kasir', () {
       expect(
-        LayarPelangganWindows.bacaArgumen(jsonEncode({'mode': 'lain'})),
+        LayarPelangganWindows.bacaArgumen(argumenJendelaKedua('bukan json')),
         isNull,
       );
     });
 
-    test('argumen jendela pelanggan terbaca lengkap dengan ukurannya', () {
-      final hasil = LayarPelangganWindows.bacaArgumen(jsonEncode({
-        'mode': 'layar-pelanggan',
-        'x': 1920.0,
-        'y': 0.0,
-        'w': 1366.0,
-        'h': 768.0,
-      }));
+    test('argumen JSON tanpa penanda dianggap jendela kasir', () {
+      expect(
+        LayarPelangganWindows.bacaArgumen(
+          argumenJendelaKedua(jsonEncode({'mode': 'lain'})),
+        ),
+        isNull,
+      );
+    });
+
+    test('argumen jendela pelanggan terbaca', () {
+      final hasil = LayarPelangganWindows.bacaArgumen(
+        argumenJendelaKedua(jsonEncode({'mode': 'layar-pelanggan'})),
+      );
       expect(hasil, isNotNull);
-      expect(hasil!['x'], 1920.0);
-      expect(hasil['w'], 1366.0);
+      expect(hasil!['mode'], 'layar-pelanggan');
+    });
+  });
+
+  group('Bidang monitor', () {
+    test('monitor tanpa penskalaan dipakai apa adanya', () {
+      final bidang = LayarPelangganWindows.bidangFisik(monitor(
+        posisi: const Offset(1920, 0),
+      ));
+      expect(bidang.left, 1920);
+      expect(bidang.width, 1920);
+      expect(bidang.height, 1080);
+    });
+
+    test('penskalaan Windows dikembalikan ke piksel nyata', () {
+      // Pembaca monitor memberi ukuran logis; pemindah jendela memakai piksel
+      // nyata. Tanpa dikalikan kembali, di monitor 125% jendelanya berhenti di
+      // tengah layar dan menyisakan bagian kanan-bawah kosong.
+      final bidang = LayarPelangganWindows.bidangFisik(monitor(
+        size: const Size(1536, 864),
+        posisi: const Offset(1536, 0),
+        skala: 1.25,
+      ));
+      expect(bidang.left, 1920);
+      expect(bidang.width, 1920);
+      expect(bidang.height, 1080);
     });
   });
 }
