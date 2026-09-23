@@ -493,6 +493,7 @@ class PrinterUtil {
       // pulih, cetakan yang tertunda dikirim ulang.
       pendingTask = bytes;
     }
+    if (Platform.isWindows && isPrinted) _windowsKirimTerakhir = DateTime.now();
     logger.safeLog('IS PRINT : $isPrinted (${selectedPrinter.deviceName})');
     return isPrinted;
   }
@@ -629,6 +630,18 @@ class PrinterUtil {
   /// printer struk — printer itulah yang dibuka saat dipilih di Setting.
   String? _windowsAktif;
 
+  /// Kapan byte terakhir dikirim ke printer Windows yang sedang dibuka.
+  ///
+  /// Menutup sambungan tepat setelah job dikirim bisa memotong cetakan pada
+  /// antrean yang disetel "print directly to the printer": spooler belum
+  /// selesai menyerahkan byte-nya ke driver, lalu ClosePrinter menghentikan
+  /// job itu. Gejalanya gelang keluar tapi kosong — persis yang terjadi saat
+  /// struk dicetak segera setelah gelang.
+  DateTime? _windowsKirimTerakhir;
+
+  /// Jeda minimum sebelum sambungan printer Windows boleh ditutup.
+  static const Duration _jedaTutupWindows = Duration(milliseconds: 900);
+
   /// Membuka [target] di plugin Windows bila belum menjadi printer aktif.
   ///
   /// Sambungan lama ditutup lebih dulu supaya handle-nya tidak bocor setiap
@@ -640,6 +653,7 @@ class PrinterUtil {
     if (_windowsAktif == nama) return true;
 
     if (_windowsAktif != null) {
+      await _tungguJobWindowsSelesai();
       await printerManager.disconnect(type: PrinterType.usb);
     }
     final terbuka = await printerManager.connect(
@@ -647,9 +661,25 @@ class PrinterUtil {
       model: UsbPrinterInput(name: nama),
     );
     _windowsAktif = terbuka ? nama : null;
+    _windowsKirimTerakhir = null;
     logger.safeLog('PRINTER WINDOWS AKTIF : '
         '${terbuka ? nama : "(gagal membuka $nama)"}');
     return terbuka;
+  }
+
+  /// Menunggu sisa [_jedaTutupWindows] sejak kiriman terakhir, bila ada.
+  ///
+  /// Hanya terasa saat berpindah printer — mencetak berturut-turut ke printer
+  /// yang sama tidak menutup sambungan, jadi tidak pernah menunggu.
+  Future<void> _tungguJobWindowsSelesai() async {
+    final terakhir = _windowsKirimTerakhir;
+    if (terakhir == null) return;
+    final berlalu = DateTime.now().difference(terakhir);
+    final sisa = _jedaTutupWindows - berlalu;
+    if (sisa > Duration.zero) {
+      logger.safeLog('TUNGGU JOB WINDOWS : ${sisa.inMilliseconds} ms');
+      await Future.delayed(sisa);
+    }
   }
 
   Future<bool> _pastikanUsbSiap(PrinterModel target) async {
