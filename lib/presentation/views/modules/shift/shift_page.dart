@@ -551,6 +551,41 @@ class ShiftPage extends GetView<ShiftPageController> {
                               vertical: layoutStyle.defaultMargin,
                             ),
                           ),
+                          // Jalan masuk untuk meralat modal: dialog saat buka
+                          // kasir hanya muncul sekali, dan salah hitung di awal
+                          // shift akan terbawa sampai perhitungan selisih.
+                          if (detail.pakaiModal && detail.shftEnd == null)
+                            CustomButton(
+                              margin: EdgeInsets.only(
+                                bottom: layoutStyle.defaultMargin / 2,
+                              ),
+                              onPressed: () {
+                                controller.doUbahModal(detail);
+                              },
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.white),
+                                foregroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        colorStyle.primary),
+                                side: MaterialStateProperty.all<BorderSide>(
+                                  BorderSide(
+                                    color: colorStyle.primary,
+                                    width: 1,
+                                  ),
+                                ),
+                                elevation:
+                                    MaterialStateProperty.all<double>(0),
+                              ),
+                              label: Text(
+                                detail.modalSudahDiisi
+                                    ? 'Ubah Modal Kasir'
+                                    : 'Isi Modal Kasir',
+                              ),
+                              width: layoutStyle.screenWidth,
+                              height: layoutStyle.blockVertical * 7,
+                            ),
                           detail.shftEnd == null
                               ? CustomButton(
                                   onPressed: () {

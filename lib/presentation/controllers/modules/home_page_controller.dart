@@ -178,6 +178,12 @@ class HomePageController extends GetxController {
       // berakhir tidak perlu ditanyai modal sama sekali.
       if (isValid) {
         isValid = await pastikanModalKasTerisi();
+        // Penjualan adalah menu bawaan saat aplikasi dibuka, jadi menolak
+        // perpindahan saja tidak cukup — kasir tetap berdiri di layar itu.
+        // Dipindahkan ke Bukti Pembayaran, sama seperti saat shift berakhir.
+        if (!isValid && selectedMenu.value == 1) {
+          selectedMenu.value = 2;
+        }
       }
     }
 

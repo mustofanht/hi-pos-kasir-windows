@@ -15,6 +15,7 @@ import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_kas_pecahan_entity.dart';
+import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/views/modules/shift/hitung_kas_dialog.dart';
 
@@ -182,6 +183,48 @@ class ShiftPageController extends GetxController {
       logger.safeLog(e);
       isLoadingShiftCurrent.value = false;
     }
+    update();
+  }
+
+  /// Mengisi atau meralat modal awal shift yang sedang berjalan.
+  ///
+  /// Dialog modal saat buka kasir hanya muncul sekali — begitu tersimpan, kasir
+  /// tidak punya jalan lain untuk memperbaiki salah hitung. Tombol ini jalan
+  /// masuknya, dan sengaja hanya untuk shift yang belum ditutup: setelah shift
+  /// ditutup, modalnya sudah dipakai menghitung selisih.
+  Future<void> doUbahModal(ShiftDetailEntity? val) async {
+    if (val == null || val.shftUserid == null || val.shftDate == null) return;
+
+    final lembar = await tampilkanHitungKas(
+      judul: val.modalSudahDiisi ? 'Ubah Modal Kasir' : 'Isi Modal Kasir',
+      keterangan: 'Hitung uang modal awal shift ini, isi jumlah lembar tiap '
+          'pecahan. Angka yang tersimpan akan dipakai menghitung selisih kas '
+          'saat shift ditutup.',
+      labelSimpan: 'Simpan Modal',
+      awal: kasTersimpan(val.listPecahanModal),
+    );
+    if (lembar == null) return;
+
+    isLoadingShiftDetail.value = true;
+    final hasil = await _service.shift.simpanModal(
+      authToken: _authToken,
+      shiftDate: dateTimeUtil.getFormattedDate(
+        date: dateTimeUtil.convertToDateTime(val.shftDate!),
+        format: dateFormat.yyyyMMdd,
+      ),
+      userId: val.shftUserid!,
+      pecahan: lembar,
+    );
+    isLoadingShiftDetail.value = false;
+
+    hasil.fold(
+      (l) => alert.error('Modal Kasir', l),
+      (r) => alert.success(
+        'Modal Kasir',
+        'Modal Rp ${common.currencyFormat(r.modalAwal ?? 0)} tersimpan.',
+      ),
+    );
+    await doPrepared();
     update();
   }
 
