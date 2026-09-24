@@ -55,6 +55,10 @@ class CustomerSaleCartPageController extends GetxController {
 
   // final showBarcode = RxBool(false);
   final qrCode = Rxn<String>(null);
+
+  /// Logo outlet dan teks sambutan di bilah atas; null = pakai bawaan.
+  final logoOutlet = Rxn<String>(null);
+  final teksSambutan = Rxn<String>(null);
   final showPaymentSuccess = RxBool(false);
 
   @override
@@ -118,6 +122,15 @@ class CustomerSaleCartPageController extends GetxController {
             logger.safeLog('PAYMENT QRIS');
             doShowPaymentQris(customerDisplay.value!);
             // showBarcode.value = true;
+          } else if (customerDisplay.key == CustomerDisplayAction.BRANDING) {
+            logger.safeLog('BRANDING LAYAR PELANGGAN');
+            final isi = customerDisplay.value!;
+            // String kosong berarti outlet menghapus setelannya: kembali ke
+            // logo bawaan, bukan tetap memakai gambar lama.
+            final logo = isi['logo']?.toString().trim() ?? '';
+            final teks = isi['teks']?.toString().trim() ?? '';
+            logoOutlet.value = logo.isEmpty ? null : logo;
+            teksSambutan.value = teks.isEmpty ? null : teks;
           } else if (customerDisplay.key == CustomerDisplayAction.SURVEY) {
             logger.safeLog('SURVEY');
             CustomerSurveyController.instance.buka(

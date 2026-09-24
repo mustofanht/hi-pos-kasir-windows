@@ -53,17 +53,22 @@ class _CustomerPageState extends State<CustomerPage> {
 
   /// Logo outlet di bilah atas; jatuh ke logo bawaan bila belum disetel.
   ///
+  /// Dua sumber, dan urutannya penting. Kiriman dari layar kasir dipakai lebih
+  /// dulu karena itu yang paling baru; penyimpanan perangkat menjadi cadangan
+  /// supaya bilah atas sudah benar sejak layar pertama digambar, sebelum kasir
+  /// sempat mengirim apa pun.
+  ///
   /// Gambarnya diambil dari jaringan, dan layar pelanggan harus tetap wajar
-  /// saat jaringan sedang mati — karena itu ada logo bawaan sebagai cadangan,
-  /// bukan kotak kosong atau ikon rusak.
-  Widget _logoOutlet() {
+  /// saat jaringan sedang mati — karena itu logo bawaan aplikasi dipakai bila
+  /// gambarnya gagal dimuat, bukan kotak kosong atau ikon rusak.
+  Widget _logoOutlet(CustomerSaleCartPageController controller) {
     final bawaan = Image.asset(
       assetsConstant.imgLogo,
       width: layoutStyle.blockHorizontal * 10,
       height: layoutStyle.blockVertical * 10,
     );
 
-    final alamat = layarPelangganTampilan.logo;
+    final alamat = controller.logoOutlet.value ?? layarPelangganTampilan.logo;
     if (alamat == null) return bawaan;
 
     return Image.network(
@@ -76,8 +81,8 @@ class _CustomerPageState extends State<CustomerPage> {
   }
 
   /// Teks sambutan outlet; kosong berarti bilah atas tanpa tulisan.
-  Widget _sambutan() {
-    final teks = layarPelangganTampilan.teks;
+  Widget _sambutan(CustomerSaleCartPageController controller) {
+    final teks = controller.teksSambutan.value ?? layarPelangganTampilan.teks;
     if (teks == null) return const SizedBox.shrink();
     return Text(
       teks,
@@ -236,12 +241,17 @@ class _CustomerPageState extends State<CustomerPage> {
         shadowColor: colorStyle.transparent,
         elevation: layoutStyle.defaultMargin,
         leadingWidth: layoutStyle.blockHorizontal * 14,
-        leading: Padding(
-          padding: EdgeInsets.all(layoutStyle.defaultMargin / 4),
-          child: _logoOutlet(),
+        // Dibungkus Obx: kiriman logo/sambutan dari layar kasir bisa datang
+        // kapan saja, dan bilah atas harus ikut berubah tanpa menunggu layar
+        // ini dibuka ulang.
+        leading: Obx(
+          () => Padding(
+            padding: EdgeInsets.all(layoutStyle.defaultMargin / 4),
+            child: _logoOutlet(customerSaleCartPageController),
+          ),
         ),
         centerTitle: true,
-        title: _sambutan(),
+        title: Obx(() => _sambutan(customerSaleCartPageController)),
       ),
       body: Obx(() {
         final isi = Container(

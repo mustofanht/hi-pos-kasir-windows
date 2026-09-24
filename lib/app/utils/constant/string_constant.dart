@@ -81,6 +81,15 @@ class CustomerDisplayAction {
   /// maknanya "bersihkan layar", bukan "pembayaran gagal". Menumpanginya berarti
   /// survei hanya muncul pada pembayaran QRIS.
   static String SURVEY = 'survey';
+
+  /// Logo outlet dan teks sambutan untuk bilah atas layar pelanggan.
+  ///
+  /// Dikirim sebagai aksi tersendiri, bukan dibaca layar pelanggan dari
+  /// penyimpanan perangkat: layar itu berjalan di engine Flutter tersendiri
+  /// yang membaca penyimpanan satu kali saat dibuka — dan ia biasanya dibuka
+  /// SEBELUM kasir login, sehingga setelan yang baru disimpan tidak pernah
+  /// terbaca sampai aplikasi dijalankan ulang.
+  static String BRANDING = 'branding';
 }
 
 class PaymentMethod {
