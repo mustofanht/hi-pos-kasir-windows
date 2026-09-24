@@ -70,6 +70,9 @@ class _HitungKasIsiState extends State<HitungKasIsi> {
   final Map<int, TextEditingController> _isian = {};
   final Map<int, int> _lembar = {};
 
+  /// Sudah menutup layar; menahan sentuhan kedua pada tombol yang sama.
+  bool _menutup = false;
+
   @override
   void initState() {
     super.initState();
@@ -93,86 +96,113 @@ class _HitungKasIsiState extends State<HitungKasIsi> {
     setState(() => _lembar[pecahan] = KasUtil.bacaLembar(teks));
   }
 
+  /// Menutup layar sekali saja.
+  ///
+  /// Tombol yang tersentuh dua kali pada tablet yang sedang berat akan menutup
+  /// dua rute: layar ini dan halaman di belakangnya — kasir melihat layar
+  /// kosong dan mengira aplikasinya mati.
+  void _tutup(Map<int, int>? hasil) {
+    if (_menutup) return;
+    _menutup = true;
+    Get.back<Map<int, int>>(result: hasil);
+  }
+
   @override
   Widget build(BuildContext context) {
     final total = KasUtil.total(_lembar);
+    final media = MediaQuery.of(context);
 
-    return Container(
-      width: layoutStyle.blockHorizontal * 55,
-      padding: EdgeInsets.all(layoutStyle.defaultMargin),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.judul,
-            style: textStyle.blackText.copyWith(
-              fontSize: fontSize.header,
-              fontWeight: fontWeight.bold,
-            ),
-          ),
-          SizedBox(height: layoutStyle.defaultMargin / 4),
-          Text(
-            widget.keterangan,
-            style: textStyle.greyText.copyWith(fontSize: fontSize.small),
-          ),
-          SizedBox(height: layoutStyle.defaultMargin / 2),
-          Flexible(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (final pecahan in KasUtil.pecahan)
-                    _baris(pecahan),
-                ],
+    // Tinggi dibatasi ruang yang benar-benar tersisa di atas papan ketik.
+    // Tanpa batas ini isinya memanjang ke bawah layar: baris pecahan terakhir,
+    // total, dan tombolnya tidak bisa dijangkau sama sekali saat mengetik.
+    final sisaTinggi =
+        media.size.height - media.viewInsets.bottom - layoutStyle.defaultMargin * 4;
+    final tinggiMaks = sisaTinggi < 260 ? 260.0 : sisaTinggi;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: tinggiMaks),
+      child: Container(
+        width: layoutStyle.blockHorizontal * 55,
+        padding: EdgeInsets.all(layoutStyle.defaultMargin),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.judul,
+              style: textStyle.blackText.copyWith(
+                fontSize: fontSize.header,
+                fontWeight: fontWeight.bold,
               ),
             ),
-          ),
-          const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total',
-                style: textStyle.blackText.copyWith(
-                  fontSize: fontSize.subtitle,
-                  fontWeight: fontWeight.bold,
+            SizedBox(height: layoutStyle.defaultMargin / 4),
+            Text(
+              widget.keterangan,
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            // Total dan tombol ikut di dalam gulungan, bukan dipaku di bawah:
+            // yang dipaku justru yang paling sering tertutup papan ketik.
+            Flexible(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final pecahan in KasUtil.pecahan) _baris(pecahan),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total',
+                          style: textStyle.blackText.copyWith(
+                            fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Rp ${common.currencyFormat(total.toDouble())}',
+                          style: textStyle.blackText.copyWith(
+                            fontSize: fontSize.subtitle,
+                            fontWeight: fontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: layoutStyle.defaultMargin / 2),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (widget.bolehBatal)
+                          TextButton(
+                            onPressed: _menutup ? null : () => _tutup(null),
+                            child: const Text('Batal'),
+                          ),
+                        SizedBox(width: layoutStyle.defaultMargin / 2),
+                        ElevatedButton(
+                          onPressed: _menutup
+                              ? null
+                              : () => _tutup(Map<int, int>.from(_lembar)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorStyle.primary,
+                            foregroundColor: colorStyle.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: layoutStyle.defaultMargin,
+                              vertical: layoutStyle.defaultMargin / 2,
+                            ),
+                          ),
+                          child: Text(widget.labelSimpan),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                'Rp ${common.currencyFormat(total.toDouble())}',
-                style: textStyle.blackText.copyWith(
-                  fontSize: fontSize.subtitle,
-                  fontWeight: fontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: layoutStyle.defaultMargin / 2),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (widget.bolehBatal)
-                TextButton(
-                  onPressed: () => Get.back<Map<int, int>>(result: null),
-                  child: const Text('Batal'),
-                ),
-              SizedBox(width: layoutStyle.defaultMargin / 2),
-              ElevatedButton(
-                onPressed: () =>
-                    Get.back<Map<int, int>>(result: Map<int, int>.from(_lembar)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorStyle.primary,
-                  foregroundColor: colorStyle.white,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.defaultMargin,
-                    vertical: layoutStyle.defaultMargin / 2,
-                  ),
-                ),
-                child: Text(widget.labelSimpan),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

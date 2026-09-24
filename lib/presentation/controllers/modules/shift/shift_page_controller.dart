@@ -228,10 +228,25 @@ class ShiftPageController extends GetxController {
     update();
   }
 
+  /// Menahan sentuhan kedua pada tombol Akhiri Shift.
+  ///
+  /// Dua sentuhan cepat membuka dua dialog bertumpuk, dan penutupannya nanti
+  /// ikut menutup halaman di belakangnya — kasir melihat layar kosong.
+  bool _sedangTutupShift = false;
+
   doShiftEnded(ShiftDetailEntity? val) async {
-    if (val == null) {
+    if (val == null || _sedangTutupShift) {
       return;
     }
+    _sedangTutupShift = true;
+    try {
+      await _tutupShift(val);
+    } finally {
+      _sedangTutupShift = false;
+    }
+  }
+
+  Future<void> _tutupShift(ShiftDetailEntity val) async {
 
     // Lokasi yang memakai modal kas menghitung laci dulu: rekap selisih hanya
     // ada artinya kalau hitungannya diambil sebelum shift ditutup, bukan
@@ -251,7 +266,9 @@ class ShiftPageController extends GetxController {
       }
     }
 
-    dialog.dialogCustomerLeftRight(
+    // Ditunggu sampai dialognya tertutup: selama masih terbuka, tombol Akhiri
+    // Shift di belakangnya tidak boleh membuka dialog kedua.
+    await dialog.dialogCustomerLeftRight(
       title: 'Shift Ended',
       msg: val.pakaiModal
           ? 'Uang di laci Rp ${common.currencyFormat(KasUtil.total(pecahanAkhir!).toDouble())}. Akhiri shift?'
@@ -259,12 +276,17 @@ class ShiftPageController extends GetxController {
       labelLeft: 'Batal',
       labelRight: 'Akhiri Shift',
       onLeft: () {
-        Get.back();
+        if (Get.isDialogOpen ?? false) Get.back();
       },
       onRight: () async {
+        // Dialog ditutup DULU, baru pekerjaan jaringannya dijalankan.
+        // Sebelumnya urutannya terbalik: dialog tetap terbuka selama dua
+        // panggilan jaringan, dan bila kasir menekan tombol kembali sambil
+        // menunggu, Get.back() yang menyusul kemudian menutup halamannya —
+        // layar jadi kosong.
+        if (Get.isDialogOpen ?? false) Get.back();
         await _shiftEnded(val, pecahanAkhir: pecahanAkhir);
         await doPrepared();
-        Get.back();
       },
     );
   }
