@@ -143,10 +143,87 @@ class ShiftService {
     }
   }
 
+  /// Keadaan kas shift hari ini: apakah lokasi memakai modal, dan apakah
+  /// modalnya sudah diisi.
+  ///
+  /// Dipanggil setiap kasir membuka menu Penjualan, jadi sengaja ringan —
+  /// tidak ikut menjumlahkan tiket, voucher, dan potongan seperti [detail].
+  Future<Either<String, ShiftDetailEntity>> getKas({
+    required AuthToken authToken,
+    required String shiftDate,
+    required String userId,
+  }) async {
+    final uri = source.baseUri(path: "trn_shift_kasir/kas");
+
+    final response = await http.post(
+      uri,
+      body: json.encode({
+        'shftDate': shiftDate,
+        'shftUserid': userId,
+      }),
+      headers: common.generateHeader(sessionToken: authToken),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<ShiftDetailEntity> result =
+          BaseResponse<ShiftDetailEntity>.fromJson(
+        json.decode(response.body),
+        (data) => ShiftDetailEntity.fromJson(data),
+      );
+      return Right(result.data ?? ShiftDetailEntity());
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
+  /// Menyimpan modal awal yang dihitung kasir saat buka kasir.
+  ///
+  /// Yang dikirim hanya rincian lembarnya; totalnya dihitung server dari
+  /// rincian itu supaya angka yang tersimpan tidak pernah berbeda dengan
+  /// lembaran yang dipertanggungjawabkan kasir.
+  Future<Either<String, ShiftDetailEntity>> simpanModal({
+    required AuthToken authToken,
+    required String shiftDate,
+    required String userId,
+    required Map<int, int> pecahan,
+  }) async {
+    final uri = source.baseUri(path: "trn_shift_kasir/modal");
+
+    final response = await http.post(
+      uri,
+      body: json.encode({
+        'shftDate': shiftDate,
+        'shftUserid': userId,
+        'listPecahan': KasUtil.terisi(pecahan)
+            .entries
+            .map((e) => {'pecahan': e.key, 'lembar': e.value})
+            .toList(),
+      }),
+      headers: common.generateHeader(sessionToken: authToken),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<ShiftDetailEntity> result =
+          BaseResponse<ShiftDetailEntity>.fromJson(
+        json.decode(response.body),
+        (data) => ShiftDetailEntity.fromJson(data),
+      );
+      return Right(result.data ?? ShiftDetailEntity());
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
+  /// Menutup shift, sekalian menyimpan hitungan laci bila kasir menghitungnya.
   Future<Either<String, BaseResponse<ShiftDetailEntity>>> shiftEnded({
     required AuthToken authToken,
     required String shiftDate,
     required String userId,
+    Map<int, int>? pecahanAkhir,
   }) async {
     var path = "trn_shift_kasir";
 
@@ -157,6 +234,11 @@ class ShiftService {
     var bodyRequest = json.encode({
       'shftDate': shiftDate,
       'shftUserid': userId,
+      if (pecahanAkhir != null)
+        'listPecahan': KasUtil.terisi(pecahanAkhir)
+            .entries
+            .map((e) => {'pecahan': e.key, 'lembar': e.value})
+            .toList(),
     });
 
     logger.safeLog('bodyRequest : $bodyRequest');

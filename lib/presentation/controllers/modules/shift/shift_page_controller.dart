@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -12,7 +14,9 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_kas_pecahan_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
+import 'package:jaya_propertiy/presentation/views/modules/shift/hitung_kas_dialog.dart';
 
 class ShiftPageController extends GetxController {
   ShiftPageController();
@@ -186,23 +190,51 @@ class ShiftPageController extends GetxController {
       return;
     }
 
+    // Lokasi yang memakai modal kas menghitung laci dulu: rekap selisih hanya
+    // ada artinya kalau hitungannya diambil sebelum shift ditutup, bukan
+    // sesudah uangnya diserahkan.
+    Map<int, int>? pecahanAkhir;
+    if (val.pakaiModal) {
+      pecahanAkhir = await tampilkanHitungKas(
+        judul: 'Hitung Uang di Laci',
+        keterangan: 'Hitung seluruh uang tunai di laci sebelum shift ditutup. '
+            'Selisihnya dihitung terhadap modal awal ditambah penjualan tunai.',
+        labelSimpan: 'Lanjut Tutup Shift',
+        awal: kasTersimpan(val.listPecahanAkhir),
+      );
+      if (pecahanAkhir == null) {
+        // Kasir membatalkan hitungan: shift dibiarkan tetap terbuka.
+        return;
+      }
+    }
+
     dialog.dialogCustomerLeftRight(
       title: 'Shift Ended',
-      msg: 'Are you sure?',
+      msg: val.pakaiModal
+          ? 'Uang di laci Rp ${common.currencyFormat(KasUtil.total(pecahanAkhir!).toDouble())}. Akhiri shift?'
+          : 'Are you sure?',
       labelLeft: 'Batal',
       labelRight: 'Akhiri Shift',
       onLeft: () {
         Get.back();
       },
       onRight: () async {
-        await _shiftEnded(val);
+        await _shiftEnded(val, pecahanAkhir: pecahanAkhir);
         await doPrepared();
         Get.back();
       },
     );
   }
 
-  _shiftEnded(ShiftDetailEntity val) async {
+  /// Hitungan yang sudah pernah tersimpan, sebagai isian awal dialog.
+  ///
+  /// Kasir yang mengulang perhitungan tidak perlu mengetik ulang seluruh laci.
+  Map<int, int>? kasTersimpan(List<ShiftKasPecahanEntity>? list) {
+    if (list == null || list.isEmpty) return null;
+    return {for (final e in list) e.pecahan: e.lembar};
+  }
+
+  _shiftEnded(ShiftDetailEntity val, {Map<int, int>? pecahanAkhir}) async {
     isLoadingShiftDetail.value = true;
     try {
       var result;
@@ -211,6 +243,7 @@ class ShiftPageController extends GetxController {
         authToken: _authToken,
         shiftDate: DateTime.now().toLocal().toIso8601String(),
         userId: val.shftUserid!,
+        pecahanAkhir: pecahanAkhir,
       );
       result.fold((l) {
         logger.safeLog(l);

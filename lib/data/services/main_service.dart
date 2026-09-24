@@ -35,6 +35,7 @@ import 'package:jaya_propertiy/domain/entities/sale/ticket_bundle_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/domain/entities/gate/gate_entity.dart';
+import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/survey/survey_reason_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';

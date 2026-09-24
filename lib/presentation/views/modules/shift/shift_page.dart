@@ -424,6 +424,87 @@ class ShiftPage extends GetView<ShiftPageController> {
                                               head: false),
                                         )
                                         .toList(),
+                                  // Blok kas hanya untuk lokasi yang memakai
+                                  // modal; lokasi lain tidak punya angka kas
+                                  // seharusnya maupun selisih.
+                                  if (detail.pakaiModal) ...[
+                                    columnShift(
+                                      key: 'Kas',
+                                      head: true,
+                                    ),
+                                    columnShift(
+                                      key: 'Modal Awal',
+                                      value: detail.modalAwal == null
+                                          ? 'Belum diisi'
+                                          : 'Rp.${common.currencyFormat(detail.modalAwal!)}',
+                                      colorValue: detail.modalAwal == null
+                                          ? colorStyle.red
+                                          : null,
+                                      head: false,
+                                    ),
+                                    if (detail.listPecahanModal != null)
+                                      ...detail.listPecahanModal!.map(
+                                        (e) => columnShift(
+                                          key:
+                                              '${common.currencyFormat(e.pecahan.toDouble())} x ${e.lembar}',
+                                          value:
+                                              'Rp.${common.currencyFormat(e.jumlah)}',
+                                          head: false,
+                                          paddingKey: EdgeInsets.only(
+                                            left: layoutStyle.defaultMargin,
+                                          ),
+                                        ),
+                                      ),
+                                    columnShift(
+                                      key: 'Penjualan Tunai',
+                                      value:
+                                          'Rp.${common.currencyFormat(detail.tunaiSum ?? 0)}',
+                                      head: false,
+                                    ),
+                                    columnShift(
+                                      key: 'Kas Seharusnya',
+                                      value:
+                                          'Rp.${common.currencyFormat(detail.kasSeharusnya ?? 0)}',
+                                      head: false,
+                                    ),
+                                    columnShift(
+                                      key: 'Kas Dihitung',
+                                      value: detail.kasAkhir == null
+                                          ? 'Belum dihitung'
+                                          : 'Rp.${common.currencyFormat(detail.kasAkhir!)}',
+                                      colorValue: detail.kasAkhir == null
+                                          ? colorStyle.grey
+                                          : null,
+                                      head: false,
+                                    ),
+                                    if (detail.listPecahanAkhir != null)
+                                      ...detail.listPecahanAkhir!.map(
+                                        (e) => columnShift(
+                                          key:
+                                              '${common.currencyFormat(e.pecahan.toDouble())} x ${e.lembar}',
+                                          value:
+                                              'Rp.${common.currencyFormat(e.jumlah)}',
+                                          head: false,
+                                          paddingKey: EdgeInsets.only(
+                                            left: layoutStyle.defaultMargin,
+                                          ),
+                                        ),
+                                      ),
+                                    if (detail.selisihKas != null)
+                                      columnShift(
+                                        key: detail.selisihKas! < 0
+                                            ? 'Selisih (kurang)'
+                                            : detail.selisihKas! > 0
+                                                ? 'Selisih (lebih)'
+                                                : 'Selisih',
+                                        value:
+                                            'Rp.${common.currencyFormat(detail.selisihKas!.abs())}',
+                                        colorValue: detail.selisihKas == 0
+                                            ? colorStyle.green
+                                            : colorStyle.red,
+                                        head: false,
+                                      ),
+                                  ],
                                   // columnShift(
                                   //   key: 'QRIS',
                                   //   value: (detail.qrisSum ?? 0).toString(),
