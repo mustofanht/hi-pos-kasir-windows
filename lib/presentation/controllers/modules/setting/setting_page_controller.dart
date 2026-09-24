@@ -324,6 +324,8 @@ class SettingPageController extends GetxController
       // Isi layar pelanggan datang dari transaksi; tanpa ini jendelanya kosong
       // sampai kasir menyentuh keranjang.
       await common.doRefreshAds(_authToken);
+      // Jendela yang baru dibuka belum tahu logo dan sambutan outletnya.
+      await common.kirimTampilanLayarPelanggan();
       alert.success('Layar Pelanggan', 'Layar pelanggan dinyalakan.');
     }
     update();

@@ -95,6 +95,11 @@ class HomePageController extends GetxController {
     //   logger.safeLog('Payload : ${receivedNotification.toJson()}');
     // });
 
+    // Logo & sambutan layar pelanggan dimuat di sini, bukan menunggu alur
+    // cetak: keterangan lokasi dulu hanya ikut terbawa saat mencetak, sehingga
+    // bilah atas layar pelanggan baru berubah setelah kasir kebetulan mencetak.
+    common.muatTampilanLayarPelanggan(_authToken);
+
     onSelectedMenu(
         MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined));
 

@@ -107,17 +107,37 @@ class AppCommon {
       logo: kontak?.logoPelanggan,
       teks: kontak?.teksPelanggan,
     );
+    await kirimTampilanLayarPelanggan();
+  }
 
-    // Sekaligus dikirim ke layar pelanggan yang mungkin sudah terbuka. Layar itu
-    // membaca penyimpanan satu kali saat dibuka, dan biasanya ia dibuka sebelum
-    // kasir login — tanpa kiriman ini, setelan baru tidak akan pernah tampil
-    // sampai aplikasi dijalankan ulang.
+  /// Memuat logo & teks sambutan outlet, lalu mengirimkannya ke layar pelanggan.
+  ///
+  /// Dipanggil saat kasir sampai di halaman utama. Sebelumnya keterangan lokasi
+  /// hanya dimuat lewat [getUser], dan [getUser] hanya dipanggil pada alur
+  /// cetak — sehingga logo dan sambutan tidak pernah tampil sampai kasir
+  /// kebetulan mencetak sesuatu.
+  Future<void> muatTampilanLayarPelanggan(AuthToken authToken) async {
+    try {
+      final user = await getUser(authToken: authToken);
+      if (user == null) await kirimTampilanLayarPelanggan();
+    } catch (e) {
+      logger.safeLog('Tampilan layar pelanggan gagal dimuat : $e');
+    }
+  }
+
+  /// Mengirim logo & teks yang tersimpan ke layar pelanggan yang sedang terbuka.
+  ///
+  /// Layar pelanggan berjalan di engine Flutter tersendiri dan membaca
+  /// penyimpanan perangkat satu kali saat dibuka — padahal ia biasanya dibuka
+  /// sebelum kasir login. Tanpa kiriman ini, setelan yang baru disimpan tidak
+  /// akan tampil sampai aplikasi dijalankan ulang.
+  Future<void> kirimTampilanLayarPelanggan() async {
     await displayUtil.updateSecondDisplay(
       CustomerDisplay(
         key: CustomerDisplayAction.BRANDING,
         value: {
-          'logo': kontak?.logoPelanggan ?? '',
-          'teks': kontak?.teksPelanggan ?? '',
+          'logo': layarPelangganTampilan.logo ?? '',
+          'teks': layarPelangganTampilan.teks ?? '',
         },
       ).toJson(),
     );
