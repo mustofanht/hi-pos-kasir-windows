@@ -231,24 +231,32 @@ void main() {
       ),
     );
 
-    // 5. Keadaan awal shift: modal belum diisi, laci belum dihitung.
-    final belum = ShiftDetailEntity(
+    // 5. Shift yang sedang berjalan: modal sudah diisi, transaksi sudah ada,
+    //    laci belum dihitung karena shiftnya memang belum ditutup.
+    final berjalan = ShiftDetailEntity(
       shftDate: '2026-09-24',
       shftUserid: 'kasir01',
       pakaiModalKas: 'Y',
-      tunaiSum: 0,
-      kasSeharusnya: 0,
-      listPecahanModal: const [],
+      modalAwal: 600000,
+      tunaiSum: 948000,
+      kasSeharusnya: 1548000,
+      listPecahanModal: [
+        _pecahan(100000, 1),
+        _pecahan(50000, 5),
+        _pecahan(20000, 5),
+        _pecahan(10000, 10),
+        _pecahan(5000, 10),
+      ],
       listPecahanAkhir: const [],
     );
 
     await _rekam(
       tester,
-      nama: '5-rincian-shift-belum-diisi',
+      nama: '5-rincian-shift-sedang-berjalan',
       lebar: 640,
       isi: Column(
         mainAxisSize: MainAxisSize.min,
-        children: blokKasShift(belum),
+        children: blokKasShift(berjalan),
       ),
     );
   });

@@ -95,9 +95,14 @@ List<Widget> blokKasShift(ShiftDetailEntity detail) {
     ),
     barisShift(
       key: 'Kas Dihitung',
-      value: detail.kasAkhir == null
-          ? 'Belum dihitung'
-          : 'Rp.${common.currencyFormat(detail.kasAkhir!)}',
+      // Selama shift berjalan, kosongnya angka ini bukan kelalaian: uang di
+      // laci masih berubah tiap transaksi dan baru dihitung saat tutup shift.
+      // Kalimatnya dibedakan supaya kasir tidak mengira ada yang terlewat.
+      value: detail.kasAkhir != null
+          ? 'Rp.${common.currencyFormat(detail.kasAkhir!)}'
+          : detail.shftEnd == null
+              ? 'Dihitung saat tutup shift'
+              : 'Belum dihitung',
       colorValue: detail.kasAkhir == null ? colorStyle.grey : null,
       head: false,
     ),
@@ -109,6 +114,13 @@ List<Widget> blokKasShift(ShiftDetailEntity detail) {
           head: false,
           paddingKey: EdgeInsets.only(left: layoutStyle.defaultMargin),
         ),
+      ),
+    if (detail.selisihKas == null && detail.shftEnd == null)
+      barisShift(
+        key: 'Selisih',
+        value: 'Setelah laci dihitung',
+        colorValue: colorStyle.grey,
+        head: false,
       ),
     if (detail.selisihKas != null)
       barisShift(
