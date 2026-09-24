@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_tampilan.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
@@ -48,6 +49,47 @@ class _CustomerPageState extends State<CustomerPage> {
     if (argument != null) {
       controller.updateDataCustomer(argument);
     }
+  }
+
+  /// Logo outlet di bilah atas; jatuh ke logo bawaan bila belum disetel.
+  ///
+  /// Gambarnya diambil dari jaringan, dan layar pelanggan harus tetap wajar
+  /// saat jaringan sedang mati — karena itu ada logo bawaan sebagai cadangan,
+  /// bukan kotak kosong atau ikon rusak.
+  Widget _logoOutlet() {
+    final bawaan = Image.asset(
+      assetsConstant.imgLogo,
+      width: layoutStyle.blockHorizontal * 10,
+      height: layoutStyle.blockVertical * 10,
+    );
+
+    final alamat = layarPelangganTampilan.logo;
+    if (alamat == null) return bawaan;
+
+    return Image.network(
+      alamat,
+      width: layoutStyle.blockHorizontal * 10,
+      height: layoutStyle.blockVertical * 10,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => bawaan,
+    );
+  }
+
+  /// Teks sambutan outlet; kosong berarti bilah atas tanpa tulisan.
+  Widget _sambutan() {
+    final teks = layarPelangganTampilan.teks;
+    if (teks == null) return const SizedBox.shrink();
+    return Text(
+      teks,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: colorStyle.white,
+        fontSize: fontSize.header,
+        fontWeight: fontWeight.bold,
+      ),
+    );
   }
 
   @override
@@ -193,18 +235,13 @@ class _CustomerPageState extends State<CustomerPage> {
         foregroundColor: colorStyle.white,
         shadowColor: colorStyle.transparent,
         elevation: layoutStyle.defaultMargin,
-        leadingWidth: 100,
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.asset(
-              assetsConstant.imgLogo,
-              width: layoutStyle.blockHorizontal * 10,
-              height: layoutStyle.blockVertical * 10,
-            ),
-          ],
+        leadingWidth: layoutStyle.blockHorizontal * 14,
+        leading: Padding(
+          padding: EdgeInsets.all(layoutStyle.defaultMargin / 4),
+          child: _logoOutlet(),
         ),
+        centerTitle: true,
+        title: _sambutan(),
       ),
       body: Obx(() {
         final isi = Container(

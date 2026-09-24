@@ -113,6 +113,19 @@ class ManualExitPageController extends GetxController {
       printerUtil.connectPrinter();
       return;
     }
+    // Printer aktif ternyata printer gelang. Ini bukan kesalahan mengetik:
+    // kasir yang sedang menguji gelang memang pernah memilih perangkat gelang
+    // sebagai printer aktif, dan kalau diteruskan, lembar QR tercetak di pita
+    // gelang — terbuang, dan tidak terbaca.
+    final gelang = printerUtil.wristbandPrinter;
+    if (gelang != null && gelang.kunci == printerUtil.currPrinter!.kunci) {
+      alert.error(
+        'Printer Aktif Masih Printer Gelang',
+        'Cetak ulang tiket hanya ke printer struk. Ganti printer aktif di '
+            'Setting ke printer struk, lalu ulangi.',
+      );
+      return;
+    }
 
     isPrinting.value = true;
     try {

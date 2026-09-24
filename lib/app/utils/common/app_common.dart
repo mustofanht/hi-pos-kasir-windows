@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_tampilan.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -73,7 +74,8 @@ class AppCommon {
   /// Kontak lokasi terakhir yang berhasil dimuat, per id lokasi. Dipakai bila
   /// server sedang tidak terjangkau saat struk dicetak, supaya kepala struk
   /// tidak tiba-tiba kehilangan alamatnya.
-  final Map<int, ({String? alamat, String? telepon})> _kontakLokasi = {};
+  final Map<int, ({String? alamat, String? telepon, String? logoPelanggan, String? teksPelanggan})>
+      _kontakLokasi = {};
 
   Future<void> _lengkapiKontakLokasi(AuthToken authToken, UserEntity user) async {
     final locId = user.userLocId;
@@ -94,6 +96,16 @@ class AppCommon {
     final kontak = _kontakLokasi[locId];
     user.locationAddress = kontak?.alamat;
     user.locationPhone = kontak?.telepon;
+
+    // Disimpan ke penyimpanan perangkat, bukan sekadar disimpan di memori:
+    // layar pelanggan berjalan di engine Flutter tersendiri — jendela kedua di
+    // Windows, Presentation di Android — jadi ia tidak bisa membaca objek user
+    // milik layar kasir. Lewat penyimpanan, bilah atasnya sudah benar sejak
+    // layar itu pertama digambar, tanpa menunggu transaksi pertama.
+    layarPelangganTampilan.simpan(
+      logo: kontak?.logoPelanggan,
+      teks: kontak?.teksPelanggan,
+    );
   }
 
   String randomString(int length) {

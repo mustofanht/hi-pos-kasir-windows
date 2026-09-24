@@ -1,4 +1,5 @@
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_payment_entity.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_kas_pecahan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_sum_potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_sum_voucher_entity.dart';
 
@@ -21,6 +22,36 @@ class ShiftDetailEntity {
   final List<ShiftDetailSumVoucherEntity>? listSumVoucher;
   final List<ShiftDetailSumPotonganEntity>? listSumPotongan;
 
+  // --- Kas shift ------------------------------------------------------------
+  // Hanya terisi untuk lokasi yang memakai modal kas. Lokasi lain menerima
+  // rekap yang sama persis seperti sebelumnya, dengan pakaiModalKas 'N'.
+
+  /// 'Y' bila lokasi kasir ini memakai modal kas.
+  final String? pakaiModalKas;
+
+  /// Modal yang diterima kasir di awal shift; null = belum diisi.
+  final double? modalAwal;
+
+  /// Penjualan yang dibayar tunai selama shift.
+  final double? tunaiSum;
+
+  /// Modal awal + penjualan tunai: uang yang seharusnya ada di laci.
+  final double? kasSeharusnya;
+
+  /// Uang yang benar-benar dihitung kasir; null = belum dihitung.
+  final double? kasAkhir;
+
+  /// Kas dihitung - kas seharusnya. Negatif berarti kurang.
+  final double? selisihKas;
+
+  final List<ShiftKasPecahanEntity>? listPecahanModal;
+
+  final List<ShiftKasPecahanEntity>? listPecahanAkhir;
+
+  bool get pakaiModal => (pakaiModalKas ?? 'N').toUpperCase() == 'Y';
+
+  bool get modalSudahDiisi => modalAwal != null;
+
   ShiftDetailEntity({
     this.shftDate,
     this.shftUserid,
@@ -39,7 +70,29 @@ class ShiftDetailEntity {
     this.listSumPayment,
     this.listSumVoucher,
     this.listSumPotongan,
+    this.pakaiModalKas,
+    this.modalAwal,
+    this.tunaiSum,
+    this.kasSeharusnya,
+    this.kasAkhir,
+    this.selisihKas,
+    this.listPecahanModal,
+    this.listPecahanAkhir,
   });
+
+  static double? _angka(dynamic nilai) {
+    if (nilai == null) return null;
+    if (nilai is num) return nilai.toDouble();
+    return double.tryParse(nilai.toString());
+  }
+
+  static List<ShiftKasPecahanEntity>? _pecahan(dynamic nilai) {
+    if (nilai is! List) return null;
+    return nilai
+        .map((e) => ShiftKasPecahanEntity.fromJson(
+            Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
 
   factory ShiftDetailEntity.fromJson(Map<String, dynamic> json) {
     return ShiftDetailEntity(
@@ -76,6 +129,14 @@ class ShiftDetailEntity {
               .map((i) => ShiftDetailSumPotonganEntity.fromJson(i))
               .toList()
           : null,
+      pakaiModalKas: json['pakaiModalKas'],
+      modalAwal: _angka(json['modalAwal']),
+      tunaiSum: _angka(json['tunaiSum']),
+      kasSeharusnya: _angka(json['kasSeharusnya']),
+      kasAkhir: _angka(json['kasAkhir']),
+      selisihKas: _angka(json['selisihKas']),
+      listPecahanModal: _pecahan(json['listPecahanModal']),
+      listPecahanAkhir: _pecahan(json['listPecahanAkhir']),
     );
   }
 
@@ -98,6 +159,14 @@ class ShiftDetailEntity {
       'listSumPayment': listSumPayment?.map((e) => e.toJson()).toList(),
       'listSumVoucher': listSumVoucher?.map((e) => e.toJson()).toList(),
       'listSumPotongan': listSumPotongan?.map((e) => e.toJson()).toList(),
+      'pakaiModalKas': pakaiModalKas,
+      'modalAwal': modalAwal,
+      'tunaiSum': tunaiSum,
+      'kasSeharusnya': kasSeharusnya,
+      'kasAkhir': kasAkhir,
+      'selisihKas': selisihKas,
+      'listPecahanModal': listPecahanModal?.map((e) => e.toJson()).toList(),
+      'listPecahanAkhir': listPecahanAkhir?.map((e) => e.toJson()).toList(),
     };
   }
 }

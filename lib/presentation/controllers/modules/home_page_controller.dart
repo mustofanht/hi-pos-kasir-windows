@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -10,6 +11,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/menu_item_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/member_page_controller.dart';
@@ -35,6 +37,7 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/presentation/views/modules/gate/manual_exit_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/gate/take_out_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/setting/setting_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/shift/hitung_kas_dialog.dart';
 import 'package:jaya_propertiy/presentation/views/modules/shift/shift_page.dart';
 
 class HomePageController extends GetxController {
@@ -170,6 +173,18 @@ class HomePageController extends GetxController {
           selectedMenu.value = 2;
         }
       }
+
+      // Modal kas diperiksa sesudah shift, bukan sebelumnya: shift yang sudah
+      // berakhir tidak perlu ditanyai modal sama sekali.
+      if (isValid) {
+        isValid = await pastikanModalKasTerisi();
+        // Penjualan adalah menu bawaan saat aplikasi dibuka, jadi menolak
+        // perpindahan saja tidak cukup — kasir tetap berdiri di layar itu.
+        // Dipindahkan ke Bukti Pembayaran, sama seperti saat shift berakhir.
+        if (!isValid && selectedMenu.value == 1) {
+          selectedMenu.value = 2;
+        }
+      }
     }
 
     if (isValid) {
@@ -187,6 +202,72 @@ class HomePageController extends GetxController {
         update();
       }
     }
+  }
+
+  /// Memastikan modal kasir sudah diisi sebelum penjualan dibuka.
+  ///
+  /// Hanya menahan di lokasi yang memang memakai modal kas dan hanya sekali per
+  /// shift. Kalau server tidak menjawab, penjualan tetap dibuka: menahan kasir
+  /// karena gangguan jaringan jauh lebih merugikan daripada modal yang
+  /// tercatat belakangan.
+  Future<bool> pastikanModalKasTerisi() async {
+    final userId = sessionUtil.getUserName();
+    final tanggal = dateTimeUtil.getFormattedDate(
+      date: DateTime.now(),
+      format: dateFormat.yyyyMMdd,
+    );
+
+    ShiftDetailEntity? kas;
+    final hasil = await _service.shift.getKas(
+      authToken: _authToken,
+      shiftDate: tanggal,
+      userId: userId,
+    );
+    hasil.fold(
+      (l) => logger.safeLog('MODAL KAS TIDAK TERBACA : $l'),
+      (r) => kas = r,
+    );
+    if (kas == null) return true;
+
+    if (!KasUtil.wajibIsiModal(
+      pakaiModalKas: kas!.pakaiModal,
+      modalAwal: kas!.modalAwal,
+    )) {
+      return true;
+    }
+
+    final lembar = await tampilkanHitungKas(
+      judul: 'Modal Kasir',
+      keterangan: 'Hitung uang modal yang diterima di awal shift, '
+          'isi jumlah lembar tiap pecahan.',
+      labelSimpan: 'Simpan Modal',
+    );
+    if (lembar == null) {
+      alert.warning(
+        'Modal Kasir',
+        'Isi modal kasir dulu sebelum mulai berjualan.',
+      );
+      return false;
+    }
+
+    var berhasil = false;
+    final simpan = await _service.shift.simpanModal(
+      authToken: _authToken,
+      shiftDate: tanggal,
+      userId: userId,
+      pecahan: lembar,
+    );
+    simpan.fold(
+      (l) => alert.error('Modal Kasir', l),
+      (r) {
+        berhasil = true;
+        alert.success(
+          'Modal Kasir',
+          'Modal Rp ${common.currencyFormat(r.modalAwal ?? 0)} tersimpan.',
+        );
+      },
+    );
+    return berhasil;
   }
 
   getUser() async {

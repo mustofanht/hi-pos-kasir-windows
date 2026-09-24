@@ -49,8 +49,13 @@ class AuthService {
     }
   }
 
-  /// Alamat dan telepon satu lokasi dari master lokasi, untuk kepala struk.
-  Future<Either<String, ({String? alamat, String? telepon})>> getKontakLokasi({
+  /// Keterangan satu lokasi dari master lokasi.
+  ///
+  /// Alamat dan telepon dipakai kepala struk; logo serta teks sambutan dipakai
+  /// bilah atas layar pelanggan. Semuanya datang dari satu permintaan yang sama
+  /// karena sumbernya memang satu baris lokasi.
+  Future<Either<String, ({String? alamat, String? telepon, String? logoPelanggan, String? teksPelanggan})>>
+      getKontakLokasi({
     required AuthToken authToken,
     required int locId,
   }) async {
@@ -69,6 +74,8 @@ class AuthService {
       return Right((
         alamat: data['locAddress']?.toString(),
         telepon: data['locPhone']?.toString(),
+        logoPelanggan: data['locCustLogoPath']?.toString(),
+        teksPelanggan: data['locCustWelcomeText']?.toString(),
       ));
     } else {
       return Left(common.getMetadataMessages(response.body));

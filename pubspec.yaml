@@ -74,6 +74,10 @@ flutter:
   uses-material-design: true
 
   assets:
+    # Poppins ikut dibundel, bukan diunduh google_fonts saat aplikasi berjalan:
+    # tablet kasir di outlet sering tanpa internet pada pemakaian pertama, dan
+    # tanpa berkas ini tulisannya jatuh ke font bawaan perangkat.
+    - assets/fonts/
     - assets/images/
     - assets/images/svg/
     - assets/icons/
