@@ -48,6 +48,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -106,6 +107,9 @@ Future<void> main(List<String> args) async {
   if (Platform.isWindows && layarPelangganWindows.seharusnyaTerbuka) {
     final gagal = await layarPelangganWindows.buka();
     if (gagal != null) logger.safeLog('LAYAR PELANGGAN OTOMATIS : $gagal');
+    // Logo & sambutan dari pemakaian sebelumnya dikirimkan lebih dulu, supaya
+    // bilah atasnya sudah benar sebelum kasir sempat login.
+    if (gagal == null) await common.kirimTampilanLayarPelanggan();
   }
 }
 
