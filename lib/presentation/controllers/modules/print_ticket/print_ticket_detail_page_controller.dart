@@ -6,7 +6,6 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
-import 'package:jaya_propertiy/app/utils/common/gelang_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -328,10 +327,6 @@ class PrintTicketDetailPageController extends GetxController {
           // Booking lapangan dicetak seperti struk penjualan (court + jam +
           // durasi + harga) TANPA QR; hanya tiket non-lapangan yang ber-QR.
           final lapanganPriceTimes = await _fetchLapanganPriceTimes();
-          // Nama tiket berkategori playground, untuk memisahkan mana yang
-          // dicetak sebagai gelang. Pada cetak ulang entitas tiketnya sudah
-          // tidak ada di tangan, jadi katalognya diambil ulang dari server.
-          final namaPlayground = await _fetchPlaygroundTicketNames();
 
           final String reffNo = model.value.paymentDetail?.pymntReffno ?? '';
           final String orderNo = parentModel.value.orderNumber ?? '';
@@ -347,19 +342,12 @@ class PrintTicketDetailPageController extends GetxController {
 
           List<int> data = [];
 
-          // Tiket playground -> gelang; sisanya QR gate di kertas struk seperti
-          // perilaku lama.
-          final hasilGelang = await gelangUtil.cetak(
-            gateTickets,
-            namaPlayground: namaPlayground,
-            lokasi: locationName,
-            pembeli: model.value.orderName,
-            // Waktu order asli, bukan saat cetak ulang: gelang pengganti harus
-            // sama persis dengan yang hilang atau rusak.
-            waktu: paymentDate,
-          );
-
-          final tiketDiStruk = hasilGelang.keStruk;
+          // Cetak ulang selalu ke printer struk, termasuk tiket playground.
+          // Sebelumnya tiket playground keluar sebagai gelang baru; itu memotong
+          // stok gelang lagi padahal yang dibutuhkan pelanggan cuma QR yang bisa
+          // dipindai. Keputusan rapat 15 September, dan sudah lebih dulu berlaku
+          // di layar Keluar Manual.
+          final tiketDiStruk = gateTickets;
           int count = 1;
           int totalPak = tiketDiStruk.length;
           for (var element in tiketDiStruk) {
@@ -402,10 +390,7 @@ class PrintTicketDetailPageController extends GetxController {
           }
 
           if (data.isEmpty) {
-            // Tidak ada yang perlu keluar di printer struk. Itu hasil yang benar
-            // bila seluruh tiketnya sudah tercetak sebagai gelang; hanya di luar
-            // itu ia berarti tidak ada data.
-            if (!hasilGelang.adaGelang) alert.error('Error', 'Data Empty');
+            alert.error('Error', 'Data Empty');
             return;
           }
           await printerUtil.print(printerUtil.currPrinter!, data);
@@ -424,39 +409,6 @@ class PrintTicketDetailPageController extends GetxController {
   /// dipetakan dari nama tiket ke setup harga per jam (ticket_price_time).
   /// Dipakai untuk mengenali baris booking lapangan pada order dan menghitung
   /// harganya saat cetak reprint.
-  /// Nama tiket yang lokasinya berkategori playground.
-  ///
-  /// Gagal mengambil katalog **tidak** menghentikan cetak: himpunan kosong
-  /// berarti tidak ada yang dianggap playground, dan seluruh QR kembali dicetak
-  /// di kertas struk. Struk yang benar lebih baik daripada tidak ada cetakan.
-  Future<Set<String>> _fetchPlaygroundTicketNames() async {
-    final nama = <String>{};
-    try {
-      final Map<String, dynamic> param = {
-        'page': '0',
-        'size': '500',
-        'flMobile': 'Y',
-        'locationId': sessionUtil.getLocationIdsQueryParam(),
-      };
-      final result = await _service.sale.ticketService.getAll(
-        authToken: _authToken,
-        paramsFilter: param,
-      );
-      result.fold(
-        (l) => logger.safeLog('KATALOG TIKET PLAYGROUND GAGAL : $l'),
-        (r) {
-          for (final TicketEntity t in (r.data ?? <TicketEntity>[])) {
-            if (t.ticketName != null && t.isPlayground) {
-              nama.add(t.ticketName!);
-            }
-          }
-        },
-      );
-    } catch (e) {
-      logger.safeLog('KATALOG TIKET PLAYGROUND GAGAL : $e');
-    }
-    return nama;
-  }
 
   Future<Map<String, List<TicketPriceTimeEntity>>>
       _fetchLapanganPriceTimes() async {
