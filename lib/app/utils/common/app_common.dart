@@ -13,6 +13,7 @@ import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
+import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
@@ -105,6 +106,20 @@ class AppCommon {
     layarPelangganTampilan.simpan(
       logo: kontak?.logoPelanggan,
       teks: kontak?.teksPelanggan,
+    );
+
+    // Sekaligus dikirim ke layar pelanggan yang mungkin sudah terbuka. Layar itu
+    // membaca penyimpanan satu kali saat dibuka, dan biasanya ia dibuka sebelum
+    // kasir login — tanpa kiriman ini, setelan baru tidak akan pernah tampil
+    // sampai aplikasi dijalankan ulang.
+    await displayUtil.updateSecondDisplay(
+      CustomerDisplay(
+        key: CustomerDisplayAction.BRANDING,
+        value: {
+          'logo': kontak?.logoPelanggan ?? '',
+          'teks': kontak?.teksPelanggan ?? '',
+        },
+      ).toJson(),
     );
   }
 
