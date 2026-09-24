@@ -26,7 +26,7 @@ Future<Map<int, int>?> tampilkanHitungKas({
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
       ),
-      child: _HitungKasIsi(
+      child: HitungKasIsi(
         judul: judul,
         keterangan: keterangan,
         labelSimpan: labelSimpan,
@@ -41,8 +41,14 @@ Future<Map<int, int>?> tampilkanHitungKas({
   );
 }
 
-class _HitungKasIsi extends StatefulWidget {
-  const _HitungKasIsi({
+/// Isi layar hitung uang, tanpa pembungkus dialognya.
+///
+/// Dipisah dari [tampilkanHitungKas] supaya isinya bisa digambar apa adanya di
+/// luar dialog — dipakai perekam gambar panduan kasir, sehingga panduannya
+/// memakai layar yang sama dengan yang dilihat kasir, bukan tiruannya.
+class HitungKasIsi extends StatefulWidget {
+  const HitungKasIsi({
+    super.key,
     required this.judul,
     required this.keterangan,
     required this.labelSimpan,
@@ -57,10 +63,10 @@ class _HitungKasIsi extends StatefulWidget {
   final Map<int, int>? awal;
 
   @override
-  State<_HitungKasIsi> createState() => _HitungKasIsiState();
+  State<HitungKasIsi> createState() => _HitungKasIsiState();
 }
 
-class _HitungKasIsiState extends State<_HitungKasIsi> {
+class _HitungKasIsiState extends State<HitungKasIsi> {
   final Map<int, TextEditingController> _isian = {};
   final Map<int, int> _lembar = {};
 

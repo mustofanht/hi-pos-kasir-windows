@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
+import 'package:jaya_propertiy/presentation/views/modules/shift/blok_kas_shift.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dynamic_dot.dart';
@@ -245,51 +246,6 @@ class ShiftPage extends GetView<ShiftPageController> {
       );
     }
 
-    Widget columnShift({
-      required String key,
-      String? value,
-      required bool head,
-      Color? colorValue,
-      EdgeInsetsGeometry? paddingKey,
-    }) {
-      return Container(
-        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: colorStyle.black,
-              width: 1.0,
-            ),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: paddingKey ?? EdgeInsets.zero,
-              child: Text(
-                key,
-                style: TextStyle(
-                  color: colorStyle.black,
-                  fontSize: fontSize.body,
-                  fontWeight: head ? fontWeight.bold : fontWeight.regular,
-                ),
-              ),
-            ),
-            Text(
-              value ?? '',
-              style: TextStyle(
-                color: colorValue ?? colorStyle.black,
-                fontSize: fontSize.body,
-                fontWeight: fontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     Widget rightSection({ShiftDetailEntity? detail}) {
       return Obx(
         () => Expanded(
@@ -326,12 +282,12 @@ class ShiftPage extends GetView<ShiftPageController> {
                               scrollDirection: Axis.vertical,
                               child: Column(
                                 children: [
-                                  columnShift(
+                                  barisShift(
                                     key: 'Name',
                                     value: detail.userFullName ?? '',
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Shift Mulai',
                                     // value: 'Senin, 17 Juli 2024 | 09:00',
                                     value: detail.shftStart == null
@@ -345,12 +301,12 @@ class ShiftPage extends GetView<ShiftPageController> {
                                     // ),
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Lokasi',
                                     value: detail.lokasiName,
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Shift Berakhir',
                                     value: detail.shftEnd != null
                                         ? controller.formatShiftDate(
@@ -360,152 +316,72 @@ class ShiftPage extends GetView<ShiftPageController> {
                                     colorValue: colorStyle.primary,
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Tiket',
                                     value: (detail.tiketCount ?? 0).toString(),
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Item',
                                     value: (detail.itemCount ?? 0).toString(),
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Potongan',
                                     value:
                                         (detail.potonganCount ?? 0).toString(),
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Voucher',
                                     value:
                                         (detail.voucherCount ?? 0).toString(),
                                     head: false,
                                   ),
-                                  columnShift(
+                                  barisShift(
                                     key: '',
                                     head: true,
                                   ),
                                   if (detail.listSumPayment != null)
                                     ...detail.listSumPayment!
                                         .map(
-                                          (e) => columnShift(
+                                          (e) => barisShift(
                                               key: e.name ?? '',
                                               value:
                                                   'Rp.${common.currencyFormat(e.amount ?? 0)}',
                                               head: false),
                                         )
                                         .toList(),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Voucher',
                                     head: true,
                                   ),
                                   if (detail.listSumVoucher != null)
                                     ...detail.listSumVoucher!
                                         .map(
-                                          (e) => columnShift(
+                                          (e) => barisShift(
                                               key: e.name ?? '',
                                               value:
                                                   'Rp.${common.currencyFormat(e.amount ?? 0)}',
                                               head: false),
                                         )
                                         .toList(),
-                                  columnShift(
+                                  barisShift(
                                     key: 'Potongan',
                                     head: true,
                                   ),
                                   if (detail.listSumPotongan != null)
                                     ...detail.listSumPotongan!
                                         .map(
-                                          (e) => columnShift(
+                                          (e) => barisShift(
                                               key: e.name ?? '',
                                               value:
                                                   'Rp.${common.currencyFormat(e.amount ?? 0)}',
                                               head: false),
                                         )
                                         .toList(),
-                                  // Blok kas hanya untuk lokasi yang memakai
-                                  // modal; lokasi lain tidak punya angka kas
-                                  // seharusnya maupun selisih.
-                                  if (detail.pakaiModal) ...[
-                                    columnShift(
-                                      key: 'Kas',
-                                      head: true,
-                                    ),
-                                    columnShift(
-                                      key: 'Modal Awal',
-                                      value: detail.modalAwal == null
-                                          ? 'Belum diisi'
-                                          : 'Rp.${common.currencyFormat(detail.modalAwal!)}',
-                                      colorValue: detail.modalAwal == null
-                                          ? colorStyle.red
-                                          : null,
-                                      head: false,
-                                    ),
-                                    if (detail.listPecahanModal != null)
-                                      ...detail.listPecahanModal!.map(
-                                        (e) => columnShift(
-                                          key:
-                                              '${common.currencyFormat(e.pecahan.toDouble())} x ${e.lembar}',
-                                          value:
-                                              'Rp.${common.currencyFormat(e.jumlah)}',
-                                          head: false,
-                                          paddingKey: EdgeInsets.only(
-                                            left: layoutStyle.defaultMargin,
-                                          ),
-                                        ),
-                                      ),
-                                    columnShift(
-                                      key: 'Penjualan Tunai',
-                                      value:
-                                          'Rp.${common.currencyFormat(detail.tunaiSum ?? 0)}',
-                                      head: false,
-                                    ),
-                                    columnShift(
-                                      key: 'Kas Seharusnya',
-                                      value:
-                                          'Rp.${common.currencyFormat(detail.kasSeharusnya ?? 0)}',
-                                      head: false,
-                                    ),
-                                    columnShift(
-                                      key: 'Kas Dihitung',
-                                      value: detail.kasAkhir == null
-                                          ? 'Belum dihitung'
-                                          : 'Rp.${common.currencyFormat(detail.kasAkhir!)}',
-                                      colorValue: detail.kasAkhir == null
-                                          ? colorStyle.grey
-                                          : null,
-                                      head: false,
-                                    ),
-                                    if (detail.listPecahanAkhir != null)
-                                      ...detail.listPecahanAkhir!.map(
-                                        (e) => columnShift(
-                                          key:
-                                              '${common.currencyFormat(e.pecahan.toDouble())} x ${e.lembar}',
-                                          value:
-                                              'Rp.${common.currencyFormat(e.jumlah)}',
-                                          head: false,
-                                          paddingKey: EdgeInsets.only(
-                                            left: layoutStyle.defaultMargin,
-                                          ),
-                                        ),
-                                      ),
-                                    if (detail.selisihKas != null)
-                                      columnShift(
-                                        key: detail.selisihKas! < 0
-                                            ? 'Selisih (kurang)'
-                                            : detail.selisihKas! > 0
-                                                ? 'Selisih (lebih)'
-                                                : 'Selisih',
-                                        value:
-                                            'Rp.${common.currencyFormat(detail.selisihKas!.abs())}',
-                                        colorValue: detail.selisihKas == 0
-                                            ? colorStyle.green
-                                            : colorStyle.red,
-                                        head: false,
-                                      ),
-                                  ],
-                                  // columnShift(
+                                  ...blokKasShift(detail),
+                                  // barisShift(
                                   //   key: 'QRIS',
                                   //   value: (detail.qrisSum ?? 0).toString(),
                                   //   head: false,
@@ -513,7 +389,7 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   //   //   left: layoutStyle.defaultMargin,
                                   //   // ),
                                   // ),
-                                  // columnShift(
+                                  // barisShift(
                                   //   key: 'EDC',
                                   //   value: (detail.edcSum ?? 0).toString(),
                                   //   head: false,
@@ -521,7 +397,7 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   //   //   left: layoutStyle.defaultMargin,
                                   //   // ),
                                   // ),
-                                  // columnShift(
+                                  // barisShift(
                                   //   key: 'TRAVELOKA',
                                   //   value:
                                   //       (detail.travelokaSum ?? 0).toString(),
@@ -530,7 +406,7 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   //   //   left: layoutStyle.defaultMargin,
                                   //   // ),
                                   // ),
-                                  // columnShift(
+                                  // barisShift(
                                   //   key: 'TICKET.COM',
                                   //   value: (detail.ticketdotcomSum ?? 0)
                                   //       .toString(),
