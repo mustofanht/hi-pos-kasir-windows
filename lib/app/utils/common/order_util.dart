@@ -337,14 +337,27 @@ class OrderUtil {
     }
   }
 
+  /// Jeda sebelum survei muncul, dihitung sejak kasir menekan cetak.
+  ///
+  /// Tanpa jeda, survei muncul tepat saat kasir masih menyerahkan struk dan
+  /// kembalian — pelanggan belum memandang layar, lalu layarnya keburu
+  /// tergantikan keranjang transaksi berikutnya. Lima detik memberi jeda
+  /// menyerahkan uang dulu. Permintaan outlet, 25 September 2026.
+  static const Duration jedaSurvei = Duration(seconds: 5);
+
   /// Minta layar pelanggan menampilkan survei kepuasan.
+  ///
+  /// Sengaja tidak ditunggu: kasir tidak boleh menunggu lima detik hanya untuk
+  /// bisa melanjutkan transaksi berikutnya.
   void mintaSurvei(String? orderNo) {
-    displayUtil.updateSecondDisplay(
-      CustomerDisplay(
-        key: CustomerDisplayAction.SURVEY,
-        value: {'orderNo': orderNo},
-      ).toJson(),
-    );
+    Future.delayed(jedaSurvei, () {
+      displayUtil.updateSecondDisplay(
+        CustomerDisplay(
+          key: CustomerDisplayAction.SURVEY,
+          value: {'orderNo': orderNo},
+        ).toJson(),
+      );
+    });
   }
 
   doRefreshCustomerDisplay({required String paymentMethod}) {

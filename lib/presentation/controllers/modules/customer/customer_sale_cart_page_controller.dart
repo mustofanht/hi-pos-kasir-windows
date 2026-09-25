@@ -112,11 +112,15 @@ class CustomerSaleCartPageController extends GetxController {
         if (customerDisplay.value != null) {
           if (customerDisplay.key == CustomerDisplayAction.MEMBER_ADD_CART) {
             logger.safeLog('MEMBER ADD CART');
-            _tutupSurvei();
+            _tutupSurvei(
+              keranjangKosong: _keranjangKosong(customerDisplay.value!),
+            );
             doMemberAddCart(customerDisplay.value!);
           } else if (customerDisplay.key == CustomerDisplayAction.ADD_CART) {
             logger.safeLog('ADD CART');
-            _tutupSurvei();
+            _tutupSurvei(
+              keranjangKosong: _keranjangKosong(customerDisplay.value!),
+            );
             doAddCart(customerDisplay.value!);
           } else if (customerDisplay.key == CustomerDisplayAction.PAYMENT) {
             logger.safeLog('PAYMENT QRIS');
@@ -150,10 +154,35 @@ class CustomerSaleCartPageController extends GetxController {
   /// setiap kiriman data. Payload pembayaran masih bagian dari transaksi yang
   /// sama; menutup survei di situ membuatnya hilang tepat setelah dibuka, karena
   /// pada jalur QRIS payload "pembayaran berhasil" justru dikirim paling akhir.
-  void _tutupSurvei() {
+  ///
+  /// Keranjang KOSONG juga tidak menutupnya. Selesai satu penjualan, layar kasir
+  /// membersihkan keranjang dan kiriman itu sampai beberapa saat setelah survei
+  /// muncul — pelanggan melihat surveinya berkedip lalu hilang sebelum sempat
+  /// disentuh. Keranjang kosong berarti "tidak ada transaksi berjalan", bukan
+  /// transaksi baru.
+  void _tutupSurvei({bool keranjangKosong = false}) {
+    if (keranjangKosong) return;
     if (Get.isRegistered<CustomerSurveyController>()) {
       CustomerSurveyController.instance.tutup();
     }
+  }
+
+  /// Keranjang tanpa satu pun baris jualan.
+  bool _keranjangKosong(Map<String, dynamic> val) {
+    const kunci = [
+      'ticketList',
+      'addonList',
+      'bundleList',
+      'potonganList',
+      'voucherList',
+      'depositList',
+      'memberList',
+    ];
+    for (final k in kunci) {
+      final isi = val[k];
+      if (isi is List && isi.isNotEmpty) return false;
+    }
+    return true;
   }
 
   doShowPaymentQris(Map<String, dynamic> val) {
