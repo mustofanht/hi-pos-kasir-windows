@@ -48,6 +48,9 @@ class TicketEntity {
   String? pathImg;
   TicketDaysEntity? ticketDays;
   String? ticketFlLapangan;
+  /// 'Y' = tiket dipakai tanpa dipindai (Setup Tiket → Aktivasi di TV: Tanpa
+  /// Scan). Lihat [tanpaScan].
+  String? ticketFlAutoActive;
   // Kategori tiket (setup transaction) untuk membedakan setup per kategori pada
   // satu lokasi multi-kategori, mis. KLMRG/LPNGN/WC.
   String? ticketCategory;
@@ -75,6 +78,14 @@ class TicketEntity {
   /// Tiket playground: yang memicu input nama anak dan dicetak sebagai gelang.
   bool get isPlayground => kategoriEfektif == 'PLGRD';
 
+  /// Tiket yang tidak pernah dipindai — Setup Tiket → Aktivasi di TV: **Tanpa
+  /// Scan**. QR-nya tidak dicetak: kertas yang tidak pernah dipindai hanya
+  /// menghabiskan struk dan membuat pelanggan mengira ada yang harus
+  /// ditunjukkan di gate.
+  ///
+  /// Kosong berarti perlu scan, mengikuti bawaan setupnya.
+  bool get tanpaScan => (ticketFlAutoActive ?? '').trim().toUpperCase() == 'Y';
+
   TicketEntity({
     this.ticketId,
     this.ticketName,
@@ -88,6 +99,7 @@ class TicketEntity {
     this.pathImg,
     this.ticketDays,
     this.ticketFlLapangan,
+    this.ticketFlAutoActive,
     this.ticketCategory,
     this.ticketPriceTimes,
   });
@@ -107,6 +119,7 @@ class TicketEntity {
       ticketMinimum = json['ticketMinimum'];
       pathImg = json['pathImg'];
       ticketFlLapangan = json['ticketFlLapangan'];
+      ticketFlAutoActive = json['ticketFlAutoActive'];
       ticketCategory = json['ticketCategory'];
 
       if (json['ticketDays'] != null) {
@@ -145,6 +158,7 @@ class TicketEntity {
       "pathImg": pathImg,
       "ticketDays": ticketDays?.toJson(),
       "ticketFlLapangan": ticketFlLapangan,
+      "ticketFlAutoActive": ticketFlAutoActive,
       "ticketCategory": ticketCategory,
       "ticketPriceTimes": ticketPriceTimes?.map((v) => v.toJson()).toList(),
     };

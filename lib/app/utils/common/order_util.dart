@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/gelang_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/common/qr_tiket_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -213,9 +214,20 @@ class OrderUtil {
           for (final l in (body.lapanganPrintLines ?? []))
             if (l.addOn?.productName != null) l.addOn!.productName!
         };
-        final ticketsToPrint = body.listCreateTicket!
-            .where((e) => !lapanganNames.contains(e.ticketName))
-            .toList();
+        // Tiket yang disetup Tanpa Scan tidak dicetak sama sekali — tidak
+        // sebagai gelang, tidak pula sebagai kertas QR. Tiket yang tidak pernah
+        // dipindai tidak membutuhkan keduanya, dan gelang yang tetap keluar
+        // hanya menghabiskan pita. Disaring sebelum cetak gelang supaya
+        // keputusannya hanya ada di satu tempat.
+        final namaTanpaScan = QrTiketUtil.namaTanpaScan(
+          body.listTicket.map((e) => e.ticket),
+        );
+        final ticketsToPrint = QrTiketUtil.perluDicetak(
+          body.listCreateTicket!
+              .where((e) => !lapanganNames.contains(e.ticketName))
+              .toList(),
+          namaTanpaScan,
+        );
 
         // Hanya tiket playground yang dicetak sebagai gelang. Kategorinya
         // diambil dari keranjang, tempat entitas tiketnya masih utuh; balasan
@@ -337,14 +349,27 @@ class OrderUtil {
     }
   }
 
+  /// Jeda sebelum survei muncul, dihitung sejak kasir menekan cetak.
+  ///
+  /// Tanpa jeda, survei muncul tepat saat kasir masih menyerahkan struk dan
+  /// kembalian — pelanggan belum memandang layar, lalu layarnya keburu
+  /// tergantikan keranjang transaksi berikutnya. Lima detik memberi jeda
+  /// menyerahkan uang dulu. Permintaan outlet, 25 September 2026.
+  static const Duration jedaSurvei = Duration(seconds: 5);
+
   /// Minta layar pelanggan menampilkan survei kepuasan.
+  ///
+  /// Sengaja tidak ditunggu: kasir tidak boleh menunggu lima detik hanya untuk
+  /// bisa melanjutkan transaksi berikutnya.
   void mintaSurvei(String? orderNo) {
-    displayUtil.updateSecondDisplay(
-      CustomerDisplay(
-        key: CustomerDisplayAction.SURVEY,
-        value: {'orderNo': orderNo},
-      ).toJson(),
-    );
+    Future.delayed(jedaSurvei, () {
+      displayUtil.updateSecondDisplay(
+        CustomerDisplay(
+          key: CustomerDisplayAction.SURVEY,
+          value: {'orderNo': orderNo},
+        ).toJson(),
+      );
+    });
   }
 
   doRefreshCustomerDisplay({required String paymentMethod}) {

@@ -42,11 +42,29 @@ class ShiftPageController extends GetxController {
     shiftDetail.value = ShiftDetailEntity();
     await _getShiftCurrent();
     await _getShiftEnded(page: 0);
-    doSelectedShift(shiftCurrent.value);
+
+    // Sesudah shift ditutup, tidak ada lagi shift berjalan. Dulu yang dipilih
+    // tetap shift berjalan yang sudah kosong, dan pemilihannya gagal diam-diam
+    // di tengah jalan: panel kanan tinggal kosong, seolah halamannya tidak
+    // ter-refresh. Yang ditampilkan sekarang shift terakhir yang baru ditutup.
+    final berjalan = shiftCurrent.value;
+    final terpilih = berjalan.shftDate != null
+        ? berjalan
+        : (dataListShiftEnded.isNotEmpty ? dataListShiftEnded.first : null);
+    if (terpilih != null) doSelectedShift(terpilih);
+    update();
   }
 
   doSelectedShift(ShiftEntity? val) {
-    selectedShift.value = val!;
+    // Shift tanpa tanggal tidak punya rincian yang bisa diminta; dulu keadaan
+    // ini melempar kesalahan yang tertelan catch, dan layarnya diam saja.
+    if (val == null || val.shftDate == null) {
+      selectedShift.value = ShiftEntity();
+      shiftDetail.value = ShiftDetailEntity();
+      update();
+      return;
+    }
+    selectedShift.value = val;
     _getDetailShift(val);
   }
 
@@ -54,7 +72,10 @@ class ShiftPageController extends GetxController {
     isLoadingShiftDetail.value = true;
 
     try {
-      if (val != null) {
+      // Tanggal dan user wajib ada: keduanya kunci rincian shift, dan tanpa
+      // penjagaan ini tanda seru di bawah melempar kesalahan yang berakhir
+      // sebagai layar kosong tanpa penjelasan.
+      if (val != null && val.shftDate != null && val.shftUserid != null) {
         var result;
         result = await _service.shift.detail(
           authToken: _authToken,
