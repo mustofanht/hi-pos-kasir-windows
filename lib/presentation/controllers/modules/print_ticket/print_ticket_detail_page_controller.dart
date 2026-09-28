@@ -6,6 +6,7 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/qr_tiket_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -347,7 +348,11 @@ class PrintTicketDetailPageController extends GetxController {
           // stok gelang lagi padahal yang dibutuhkan pelanggan cuma QR yang bisa
           // dipindai. Keputusan rapat 15 September, dan sudah lebih dulu berlaku
           // di layar Keluar Manual.
-          final tiketDiStruk = gateTickets;
+          // Tiket yang disetup Tanpa Scan tidak dicetak QR-nya, sama seperti
+          // pada alur penjualan: tiket yang tidak pernah dipindai tidak perlu
+          // kertas QR, termasuk saat dicetak ulang.
+          final namaTanpaScan = await _fetchNamaTanpaScan();
+          final tiketDiStruk = QrTiketUtil.perluQr(gateTickets, namaTanpaScan);
           int count = 1;
           int totalPak = tiketDiStruk.length;
           for (var element in tiketDiStruk) {
@@ -402,6 +407,36 @@ class PrintTicketDetailPageController extends GetxController {
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+    }
+  }
+
+  /// Nama tiket yang disetup **Tanpa Scan** untuk lokasi kasir aktif.
+  ///
+  /// Cetak ulang tidak punya keranjang, jadi setup tiketnya diambil ulang dari
+  /// server — sama seperti cara daftar tiket lapangan diambil di bawah. Gagal
+  /// mengambilnya berarti himpunan kosong: lebih baik QR tercetak padahal tidak
+  /// perlu daripada pelanggan pulang tanpa QR yang memang dibutuhkan.
+  Future<Set<String>> _fetchNamaTanpaScan() async {
+    try {
+      final Map<String, dynamic> param = {
+        'page': '0',
+        'size': '1000',
+        'flMobile': 'Y',
+        'locationId': sessionUtil.getLocationIdsQueryParam(),
+      };
+      final result = await _service.sale.ticketService.getAll(
+        authToken: _authToken,
+        paramsFilter: param,
+      );
+      Set<String> nama = {};
+      result.fold(
+        (l) => logger.safeLog(l),
+        (r) => nama = QrTiketUtil.namaTanpaScan(r.data ?? <TicketEntity>[]),
+      );
+      return nama;
+    } catch (e) {
+      logger.safeLog(e);
+      return {};
     }
   }
 

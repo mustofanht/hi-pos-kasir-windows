@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/gelang_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
+import 'package:jaya_propertiy/app/utils/common/qr_tiket_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -239,7 +240,15 @@ class OrderUtil {
           waktu: body.paymentDate ?? DateTime.now(),
         );
 
-        final tiketDiStruk = hasilGelang.keStruk;
+        // Tiket yang disetup Tanpa Scan tidak dicetak QR-nya: tidak pernah
+        // dipindai di gate maupun TV, jadi kertasnya hanya memanjangkan struk.
+        // Gelangnya tetap keluar seperti biasa — gelang dipakai anaknya, bukan
+        // alat pindai.
+        final namaTanpaScan = QrTiketUtil.namaTanpaScan(
+          body.listTicket.map((e) => e.ticket),
+        );
+        final tiketDiStruk =
+            QrTiketUtil.perluQr(hasilGelang.keStruk, namaTanpaScan);
         jumlahKeStruk = tiketDiStruk.length;
         int count = 1;
         int totalPak = tiketDiStruk.length;
