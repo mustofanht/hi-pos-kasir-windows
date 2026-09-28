@@ -21,6 +21,7 @@ import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
+import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -219,9 +220,7 @@ class OrderUtil {
         // dipindai tidak membutuhkan keduanya, dan gelang yang tetap keluar
         // hanya menghabiskan pita. Disaring sebelum cetak gelang supaya
         // keputusannya hanya ada di satu tempat.
-        final namaTanpaScan = QrTiketUtil.namaTanpaScan(
-          body.listTicket.map((e) => e.ticket),
-        );
+        final namaTanpaScan = await _namaTiketTanpaScan(authToken, body);
         final ticketsToPrint = QrTiketUtil.perluDicetak(
           body.listCreateTicket!
               .where((e) => !lapanganNames.contains(e.ticketName))
@@ -305,6 +304,42 @@ class OrderUtil {
       alert.error('Error', 'please check connection printer');
       printerUtil.connectPrinter();
     }
+  }
+
+  /// Nama tiket yang disetup **Tanpa Scan**, dari keranjang **dan** dari setup
+  /// terbaru di server.
+  ///
+  /// Keranjang saja tidak cukup. Entitas tiket di keranjang berasal dari daftar
+  /// tiket yang dimuat saat kasir membuka halaman penjualan — bisa jauh lebih
+  /// awal daripada perubahan setupnya, dan pada sebagian jalur pembayaran
+  /// entitas itu bahkan tidak ikut terbawa sampai ke pencetakan. Setup dibaca
+  /// ulang di sini supaya yang menentukan adalah keadaan saat kertas dicetak.
+  ///
+  /// Gagal membaca setup berarti hanya keranjang yang dipakai: lebih baik ada
+  /// tiket tercetak yang sebenarnya tidak perlu daripada pelanggan pulang tanpa
+  /// tiket yang dibutuhkan.
+  Future<Set<String>> _namaTiketTanpaScan(
+      AuthToken authToken, OrderModel body) async {
+    final nama = QrTiketUtil.namaTanpaScan(body.listTicket.map((e) => e.ticket));
+    try {
+      final result = await _service.sale.ticketService.getAll(
+        authToken: authToken,
+        paramsFilter: {
+          'page': '0',
+          'size': '1000',
+          'flMobile': 'Y',
+          'locationId': sessionUtil.getLocationIdsQueryParam(),
+        },
+      );
+      result.fold(
+        (l) => logger.safeLog('TANPA SCAN: setup tiket tidak terbaca - $l'),
+        (r) => nama.addAll(QrTiketUtil.namaTanpaScan(r.data ?? <TicketEntity>[])),
+      );
+    } catch (e) {
+      logger.safeLog('TANPA SCAN: setup tiket tidak terbaca - $e');
+    }
+    logger.safeLog('TANPA SCAN: ${nama.length} tiket tidak dicetak QR-nya $nama');
+    return nama;
   }
 
   Future<void> _createTicket(AuthToken authToken, OrderModel body,
