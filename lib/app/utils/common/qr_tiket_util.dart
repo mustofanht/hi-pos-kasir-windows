@@ -1,12 +1,13 @@
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 
-/// Penyaring tiket yang QR-nya perlu dicetak.
+/// Penyaring tiket yang masih perlu dicetak.
 ///
 /// Tiket yang disetup **Tanpa Scan** (Setup Tiket → Aktivasi di TV) tidak
-/// pernah dipindai di gate maupun di papan TV, jadi QR-nya tidak ada gunanya:
-/// kertasnya hanya memanjangkan struk dan membuat pelanggan mengira ada yang
-/// harus ditunjukkan.
+/// pernah dipindai di gate maupun di papan TV, jadi QR-nya tidak ada gunanya —
+/// baik sebagai kertas di struk maupun sebagai gelang. Kertasnya hanya
+/// memanjangkan struk dan membuat pelanggan mengira ada yang harus
+/// ditunjukkan, dan gelangnya hanya menghabiskan pita.
 ///
 /// Penyaringan memakai **nama tiket**, bukan id, karena hanya nama itulah yang
 /// dibawa balasan pembuatan tiket — cara yang sama dipakai alur ini untuk
@@ -44,12 +45,12 @@ class QrTiketUtil {
     return nama;
   }
 
-  /// Tiket yang QR-nya masih perlu dicetak.
+  /// Tiket yang masih perlu dicetak — sebagai gelang maupun kertas QR.
   ///
   /// Daftar kosong berarti tidak ada yang perlu dicetak sama sekali — keadaan
   /// yang wajar bila seluruh isi order memang tanpa scan, dan harus bisa
   /// dibedakan dari "printer tidak ada" oleh pemanggilnya.
-  static List<ResponseCreateTicketNoEntity> perluQr(
+  static List<ResponseCreateTicketNoEntity> perluDicetak(
     List<ResponseCreateTicketNoEntity> tiket,
     Set<String> namaTanpaScan,
   ) {

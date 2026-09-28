@@ -40,14 +40,14 @@ void main() {
     });
   });
 
-  group('memilih tiket yang QR-nya dicetak', () {
-    test('tiket tanpa scan tidak ikut dicetak', () {
+  group('memilih tiket yang dicetak', () {
+    test('tiket tanpa scan tidak ikut dicetak, gelang maupun kertas QR', () {
       final katalog = QrTiketUtil.namaTanpaScan([
         tiket('Tiket Kelas Renang', autoActive: 'Y'),
         tiket('Kolam Renang Dewasa', autoActive: 'N'),
       ]);
 
-      final hasil = QrTiketUtil.perluQr(
+      final hasil = QrTiketUtil.perluDicetak(
         [dibuat('Tiket Kelas Renang'), dibuat('Kolam Renang Dewasa')],
         katalog,
       );
@@ -62,7 +62,7 @@ void main() {
       final katalog =
           QrTiketUtil.namaTanpaScan([tiket('Playground 2 Jam', autoActive: 'Y')]);
 
-      final hasil = QrTiketUtil.perluQr(
+      final hasil = QrTiketUtil.perluDicetak(
         [dibuat('Playground 2 Jam'), dibuat('Playground 2 Jam (Pendamping)')],
         katalog,
       );
@@ -74,7 +74,7 @@ void main() {
       final katalog =
           QrTiketUtil.namaTanpaScan([tiket('  Tiket Kelas Renang ', autoActive: 'Y')]);
 
-      final hasil = QrTiketUtil.perluQr([dibuat('TIKET KELAS RENANG')], katalog);
+      final hasil = QrTiketUtil.perluDicetak([dibuat('TIKET KELAS RENANG')], katalog);
 
       expect(hasil, isEmpty);
     });
@@ -86,7 +86,7 @@ void main() {
       ]);
 
       final semua = [dibuat('Kolam Renang Dewasa'), dibuat('Kolam Renang Anak')];
-      expect(QrTiketUtil.perluQr(semua, katalog), equals(semua));
+      expect(QrTiketUtil.perluDicetak(semua, katalog), equals(semua));
     });
 
     test('tiket yang tidak ada di katalog tetap dicetak', () {
@@ -96,7 +96,7 @@ void main() {
       final katalog =
           QrTiketUtil.namaTanpaScan([tiket('Tiket Kelas Renang', autoActive: 'Y')]);
 
-      final hasil = QrTiketUtil.perluQr([dibuat('Tiket Lama')], katalog);
+      final hasil = QrTiketUtil.perluDicetak([dibuat('Tiket Lama')], katalog);
 
       expect(namaDari(hasil), ['Tiket Lama']);
     });
@@ -105,7 +105,7 @@ void main() {
       final katalog = QrTiketUtil.namaTanpaScan([tiket('', autoActive: 'Y')]);
 
       expect(katalog, isEmpty);
-      expect(QrTiketUtil.perluQr([dibuat('Kolam Renang')], katalog).length, 1);
+      expect(QrTiketUtil.perluDicetak([dibuat('Kolam Renang')], katalog).length, 1);
     });
   });
 }

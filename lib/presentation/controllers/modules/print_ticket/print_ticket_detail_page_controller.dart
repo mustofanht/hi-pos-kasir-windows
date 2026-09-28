@@ -352,7 +352,7 @@ class PrintTicketDetailPageController extends GetxController {
           // pada alur penjualan: tiket yang tidak pernah dipindai tidak perlu
           // kertas QR, termasuk saat dicetak ulang.
           final namaTanpaScan = await _fetchNamaTanpaScan();
-          final tiketDiStruk = QrTiketUtil.perluQr(gateTickets, namaTanpaScan);
+          final tiketDiStruk = QrTiketUtil.perluDicetak(gateTickets, namaTanpaScan);
           int count = 1;
           int totalPak = tiketDiStruk.length;
           for (var element in tiketDiStruk) {

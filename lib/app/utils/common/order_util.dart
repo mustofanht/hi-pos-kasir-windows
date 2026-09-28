@@ -214,9 +214,20 @@ class OrderUtil {
           for (final l in (body.lapanganPrintLines ?? []))
             if (l.addOn?.productName != null) l.addOn!.productName!
         };
-        final ticketsToPrint = body.listCreateTicket!
-            .where((e) => !lapanganNames.contains(e.ticketName))
-            .toList();
+        // Tiket yang disetup Tanpa Scan tidak dicetak sama sekali — tidak
+        // sebagai gelang, tidak pula sebagai kertas QR. Tiket yang tidak pernah
+        // dipindai tidak membutuhkan keduanya, dan gelang yang tetap keluar
+        // hanya menghabiskan pita. Disaring sebelum cetak gelang supaya
+        // keputusannya hanya ada di satu tempat.
+        final namaTanpaScan = QrTiketUtil.namaTanpaScan(
+          body.listTicket.map((e) => e.ticket),
+        );
+        final ticketsToPrint = QrTiketUtil.perluDicetak(
+          body.listCreateTicket!
+              .where((e) => !lapanganNames.contains(e.ticketName))
+              .toList(),
+          namaTanpaScan,
+        );
 
         // Hanya tiket playground yang dicetak sebagai gelang. Kategorinya
         // diambil dari keranjang, tempat entitas tiketnya masih utuh; balasan
@@ -240,15 +251,7 @@ class OrderUtil {
           waktu: body.paymentDate ?? DateTime.now(),
         );
 
-        // Tiket yang disetup Tanpa Scan tidak dicetak QR-nya: tidak pernah
-        // dipindai di gate maupun TV, jadi kertasnya hanya memanjangkan struk.
-        // Gelangnya tetap keluar seperti biasa — gelang dipakai anaknya, bukan
-        // alat pindai.
-        final namaTanpaScan = QrTiketUtil.namaTanpaScan(
-          body.listTicket.map((e) => e.ticket),
-        );
-        final tiketDiStruk =
-            QrTiketUtil.perluQr(hasilGelang.keStruk, namaTanpaScan);
+        final tiketDiStruk = hasilGelang.keStruk;
         jumlahKeStruk = tiketDiStruk.length;
         int count = 1;
         int totalPak = tiketDiStruk.length;
