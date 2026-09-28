@@ -9,15 +9,13 @@ import 'package:get/get.dart';
 class SaleTicketPage extends GetView<SaleTicketPageController> {
   const SaleTicketPage({super.key});
 
-  static const Map<String, String> _categoryLabels = {
-    'KLMRG': 'Kolam Renang',
-    'LPNGN': 'Lapangan',
-    'WC': 'Toilet',
-  };
-
-  String _categoryLabel(String code) {
-    return _categoryLabels[code] ?? code;
-  }
+  // Kategori tiket sengaja TIDAK ditampilkan pada kartu tiket (keputusan
+  // 28 September 2026). Badge-nya sebenarnya sudah lama ada di sini, tapi tidak
+  // pernah terlihat karena kategorinya selalu kosong sampai kolomnya diperbaiki;
+  // begitu terlihat, tulisannya hanya memadati kartu yang sudah penuh.
+  //
+  // Kategorinya sendiri tetap dipakai di balik layar — penentu input nama anak
+  // dan cetak gelang — jadi jangan berhenti mengirimnya dari server.
 
   @override
   Widget build(BuildContext context) {
@@ -180,38 +178,6 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                                             );
                                           },
                                         ),
-                                        if (e.ticketCategory != null &&
-                                            e.ticketCategory!.isNotEmpty) ...[
-                                          SizedBox(
-                                            height: layoutStyle.defaultMargin /
-                                                2,
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal:
-                                                  layoutStyle.defaultMargin / 2,
-                                              vertical:
-                                                  layoutStyle.defaultMargin / 5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: colorStyle.primary
-                                                  .withOpacity(0.12),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                layoutStyle.defaultMargin / 2,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              _categoryLabel(e.ticketCategory!),
-                                              style: TextStyle(
-                                                fontSize: fontSize.superSmall,
-                                                fontWeight: fontWeight.semiBold,
-                                                color: colorStyle.primary,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
                                       ],
                                     ),
                                   ),
