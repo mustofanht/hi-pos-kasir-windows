@@ -479,6 +479,8 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                           if (!cart.needChildNames) {
                             return const SizedBox.shrink();
                           }
+                          final bool banyakTiket = cart.playgroundTicketQty > 1;
+                          final bool samaSemua = cart.applyNameForAll.value;
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -493,9 +495,57 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                   ),
                                 ),
                               ),
-                              ...List.generate(
-                                cart.playgroundTicketQty,
-                                (i) => CustomTextBox(
+                              // Pilihan ini cuma relevan kalau tiketnya lebih dari 1 —
+                              // qty 1 selalu satu nama saja, tidak perlu pilihan apa pun.
+                              if (banyakTiket)
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal:
+                                        layoutStyle.defaultMargin - 12,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: RadioListTile<bool>(
+                                          value: false,
+                                          groupValue: samaSemua,
+                                          dense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          visualDensity: VisualDensity.compact,
+                                          title: Text(
+                                            'Isi per anak',
+                                            style: textStyle.blackText
+                                                .copyWith(
+                                              fontSize: fontSize.small,
+                                            ),
+                                          ),
+                                          onChanged: (_) =>
+                                              cart.setApplyNameForAll(false),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: RadioListTile<bool>(
+                                          value: true,
+                                          groupValue: samaSemua,
+                                          dense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          visualDensity: VisualDensity.compact,
+                                          title: Text(
+                                            'Sama untuk semua',
+                                            style: textStyle.blackText
+                                                .copyWith(
+                                              fontSize: fontSize.small,
+                                            ),
+                                          ),
+                                          onChanged: (_) =>
+                                              cart.setApplyNameForAll(true),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (samaSemua)
+                                CustomTextBox(
                                   height: layoutStyle.blockVertical * 6.5,
                                   margin: EdgeInsets.symmetric(
                                     horizontal: layoutStyle.defaultMargin,
@@ -510,20 +560,51 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                     layoutStyle.defaultMargin / 2,
                                   ),
                                   label: Text(
-                                    'Nama Anak ${i + 1}',
+                                    'Nama Anak (berlaku untuk ${cart.playgroundTicketQty} tiket)',
                                     style: textStyle.greyText.copyWith(
                                       fontSize: fontSize.small,
                                     ),
                                   ),
-                                  controller: cart.childNameControllerAt(i),
+                                  controller: cart.childNameControllerAt(0),
                                   decoration: InputDecoration(
-                                    hintText: 'Masukkan nama anak ke-${i + 1}',
+                                    hintText: 'Masukkan nama anak',
                                     hintStyle: textStyle.greyText,
                                     border: InputBorder.none,
                                   ),
                                   keyboardType: TextInputType.text,
+                                )
+                              else
+                                ...List.generate(
+                                  cart.playgroundTicketQty,
+                                  (i) => CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
+                                    ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      'Nama Anak ${i + 1}',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: cart.childNameControllerAt(i),
+                                    decoration: InputDecoration(
+                                      hintText: 'Masukkan nama anak ke-${i + 1}',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    keyboardType: TextInputType.text,
+                                  ),
                                 ),
-                              ),
                               SizedBox(height: layoutStyle.defaultMargin / 2),
                             ],
                           );

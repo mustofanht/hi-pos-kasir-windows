@@ -107,25 +107,10 @@ class SaleCartPageController extends GetxController {
     return addonControllers[id]!;
   }
 
-  // ── Batas stok di keranjang ──────────────────────────────────────────────
-  // Pengecekan di layar pilih barang saja tidak cukup: dari keranjang, tombol
-  // "+" dan kotak qty bisa menaikkan jumlah tanpa melewati layar itu lagi.
-  // Backend tetap memvalidasi ulang saat order disimpan; pemeriksaan di sini
-  // supaya kasir tahu sebelum menagih, bukan setelahnya.
-
-  /// Sisa stok yang boleh dipesan, atau null bila barangnya tidak dipantau.
-  double? _sisaStok(AddonEntity? addon) {
-    if (addon == null || !addon.isInventoryTracked) return null;
-    return addon.stockAvailable ?? 0;
-  }
-
-  void _peringatanStok(AddonEntity addon, double sisa) {
-    alert.warning(
-      'Stok Tidak Cukup',
-      'Sisa ${addon.productName} tinggal '
-          '${sisa.toStringAsFixed(0)} ${addon.stockUom ?? 'pcs'}.',
-    );
-  }
+  // ── Stok item di keranjang ───────────────────────────────────────────────
+  // Item yang stoknya sudah habis TETAP boleh dijual (kasir dilepas dari
+  // validasi stok) — stok dibiarkan terhitung minus di backend. Layar ini
+  // hanya menampilkan sisa stok sebagai informasi, tidak lagi membatasi qty.
 
   /// Samakan isi kotak qty dengan nilai sesungguhnya, tanpa memindahkan kursor
   /// ke awal — kalau kursornya melompat, mengetik angka dua digit jadi kacau.
@@ -141,16 +126,10 @@ class SaleCartPageController extends GetxController {
     );
   }
 
-  /// Qty diketik langsung di keranjang. Nilai yang melebihi sisa stok dipangkas
-  /// ke sisa yang ada, bukan ditolak — operator sudah tahu mau berapa, yang
-  /// perlu diberi tahu adalah batasnya.
+  /// Qty diketik langsung di keranjang. Tidak lagi dibatasi sisa stok — item
+  /// yang stoknya habis tetap boleh dijual dan stoknya dibiarkan minus.
   onChangeQtyAddonCart(CartAddon val, int qty) {
     if (qty < 1) return;
-    final sisa = _sisaStok(val.addon);
-    if (sisa != null && qty > sisa) {
-      qty = sisa.toInt();
-      _peringatanStok(val.addon!, sisa);
-    }
     val.qtyOrder = qty;
     val.totalPrice = (val.addon?.productPrice ?? 0) * qty;
     _sinkronKotakAddon(val);
@@ -191,6 +170,18 @@ class SaleCartPageController extends GetxController {
 
   bool get needChildNames => playgroundTicketQty > 0;
 
+  // Order dengan banyak tiket playground (mis. 10 tiket) berarti kasir harus
+  // mengetik 10 nama anak satu-satu dan bikin antrian kasa. Opsi ini membiarkan
+  // kasir isi SATU nama saja dan dipakai untuk semua tiket di order tersebut.
+  // Default per-anak (false) supaya kasus normal (anak-anak berbeda nama) tidak
+  // berubah perilakunya.
+  final RxBool applyNameForAll = false.obs;
+
+  void setApplyNameForAll(bool value) {
+    applyNameForAll.value = value;
+    update();
+  }
+
   // Grow-only: hindari dispose saat rebuild/focus. Dibersihkan di clearCartOrder.
   TextEditingController childNameControllerAt(int index) {
     while (childNameControllers.length <= index) {
@@ -201,12 +192,22 @@ class SaleCartPageController extends GetxController {
 
   // Nama anak sepanjang jumlah tiket PLAYGROUND (urut sesuai ekspansi listTicket
   // di backend; backend hanya memetakan childNames saat lokasi order = PLGRD).
-  List<String> get childNames =>
-      List.generate(
-          playgroundTicketQty, (i) => childNameControllerAt(i).text.trim());
+  // Saat applyNameForAll aktif, satu-satunya nama yang diisi (index 0) diulang
+  // untuk semua tiket — bukan tiap gelang jadi "tanpa nama".
+  List<String> get childNames {
+    if (applyNameForAll.value) {
+      final nama = childNameControllerAt(0).text.trim();
+      return List.filled(playgroundTicketQty, nama);
+    }
+    return List.generate(
+        playgroundTicketQty, (i) => childNameControllerAt(i).text.trim());
+  }
 
   bool validateChildNames() {
     if (!needChildNames) return true;
+    if (applyNameForAll.value) {
+      return childNameControllerAt(0).text.trim().isNotEmpty;
+    }
     for (int i = 0; i < playgroundTicketQty; i++) {
       if (childNameControllerAt(i).text.trim().isEmpty) return false;
     }
@@ -214,6 +215,7 @@ class SaleCartPageController extends GetxController {
   }
 
   void _disposeChildNameControllers() {
+    applyNameForAll.value = false;
     for (final c in childNameControllers) {
       c.dispose();
     }
@@ -254,44 +256,6 @@ class SaleCartPageController extends GetxController {
     if (aturan == null) return tersimpan ?? <TicketBundleEntity>[];
     _aturanBundle[ticketId] = aturan;
     return aturan;
-  }
-
-  /// Jumlah tiket terbanyak yang masih bisa dijual dengan stok merchandise yang
-  /// ada. null = tidak dibatasi stok.
-  int? _batasTiketDariStok(List<TicketBundleEntity> aturan) {
-    int? batas;
-    for (final r in aturan) {
-      if (!r.isMandatory) continue;
-      final maks = r.maxTicketByStock();
-      if (maks == null) continue;
-      batas = batas == null || maks < batas ? maks : batas;
-    }
-    return batas;
-  }
-
-  /// true bila tiket boleh dijual sebanyak [qtyTiket]. Menampilkan peringatan
-  /// dan mengembalikan false bila stok merchandise bundlingnya tidak cukup.
-  Future<bool> _stokBundleCukup(TicketEntity ticket, int qtyTiket) async {
-    final id = ticket.ticketId;
-    if (id == null || qtyTiket <= 0) return true;
-    final aturan = await _muatAturanBundle(id);
-    final batas = _batasTiketDariStok(aturan);
-    if (batas == null || qtyTiket <= batas) return true;
-
-    final kurang = aturan.firstWhere(
-      (r) => r.isMandatory && (r.maxTicketByStock() ?? 1 << 30) < qtyTiket,
-      orElse: () => aturan.first,
-    );
-    alert.warning(
-      'Stok Bundling Tidak Cukup',
-      batas <= 0
-          ? 'Stok ${kurang.bundleProductName} habis, sedangkan tiket '
-              '${ticket.ticketName} wajib disertai item tersebut. '
-              'Tiket ini belum bisa dijual.'
-          : 'Stok ${kurang.bundleProductName} hanya cukup untuk $batas tiket '
-              '${ticket.ticketName}.',
-    );
-    return false;
   }
 
   /// Ambil ulang aturan bundling semua tiket di keranjang dari server, lalu
@@ -366,7 +330,6 @@ class SaleCartPageController extends GetxController {
     if (ticket.ticketId != null) {
       await _muatAturanBundle(ticket.ticketId!, segarkan: true);
     }
-    if (!await _stokBundleCukup(ticket, ticket.ticketMinimum ?? 1)) return;
     ticketList.add(
       CartTicket(
         qtyOrder: ticket.ticketMinimum,
@@ -397,7 +360,6 @@ class SaleCartPageController extends GetxController {
     if (qty < (ticket.ticket?.ticketMinimum ?? 0)) {
       return;
     }
-    if (!await _stokBundleCukup(ticket.ticket!, qty)) return;
     ticket.qtyOrder = qty;
     ticket.totalPrice = ((ticket.ticket!.ticketPrice ?? 0) * qty);
     calculateTotalOrder();
@@ -405,9 +367,6 @@ class SaleCartPageController extends GetxController {
   }
 
   addTicketCart(CartTicket ticket) async {
-    if (!await _stokBundleCukup(ticket.ticket!, (ticket.qtyOrder ?? 0) + 1)) {
-      return;
-    }
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
     ticket.totalPrice =
         ((ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0));
@@ -498,11 +457,6 @@ class SaleCartPageController extends GetxController {
   addAddonCart(CartAddon val) {
     if (val.rentModel != null) {
     } else {
-      final sisa = _sisaStok(val.addon);
-      if (sisa != null && (val.qtyOrder ?? 0) + 1 > sisa) {
-        _peringatanStok(val.addon!, sisa);
-        return;
-      }
       val.qtyOrder = (val.qtyOrder ?? 0) + 1;
       val.totalPrice = (val.totalPrice ?? 0) + (val.addon!.productPrice ?? 0);
       _sinkronKotakAddon(val);
