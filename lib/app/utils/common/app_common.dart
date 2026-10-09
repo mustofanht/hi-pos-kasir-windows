@@ -75,7 +75,7 @@ class AppCommon {
   /// Kontak lokasi terakhir yang berhasil dimuat, per id lokasi. Dipakai bila
   /// server sedang tidak terjangkau saat struk dicetak, supaya kepala struk
   /// tidak tiba-tiba kehilangan alamatnya.
-  final Map<int, ({String? alamat, String? telepon, String? logoPelanggan, String? teksPelanggan})>
+  final Map<int, ({String? alamat, String? telepon, String? email, String? logoStruk, String? logoPelanggan, String? teksPelanggan})>
       _kontakLokasi = {};
 
   Future<void> _lengkapiKontakLokasi(AuthToken authToken, UserEntity user) async {
@@ -97,6 +97,8 @@ class AppCommon {
     final kontak = _kontakLokasi[locId];
     user.locationAddress = kontak?.alamat;
     user.locationPhone = kontak?.telepon;
+    user.locationEmail = kontak?.email;
+    user.locationLogoPath = kontak?.logoStruk;
 
     // Disimpan ke penyimpanan perangkat, bukan sekadar disimpan di memori:
     // layar pelanggan berjalan di engine Flutter tersendiri — jendela kedua di

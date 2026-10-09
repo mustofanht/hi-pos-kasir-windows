@@ -1,9 +1,13 @@
-import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'dart:typed_data';
 
-/// Kepala struk: nama lokasi, lalu alamat dan nomor telepon lokasi itu.
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:image/image.dart' as img;
+
+/// Kepala struk: logo (bila ada), nama lokasi, lalu alamat, telepon, dan
+/// email lokasi itu.
 ///
-/// Satu tempat untuk semua struk (penjualan tiket, booking lapangan, member),
-/// supaya kepala struk tidak berbeda antar jenis transaksi.
+/// Satu tempat untuk semua struk (penjualan tiket, booking lapangan, member,
+/// settlement shift), supaya kepala struk tidak berbeda antar jenis transaksi.
 class KepalaStruk {
   KepalaStruk._();
 
@@ -23,10 +27,21 @@ class KepalaStruk {
     String? nama,
     String? alamat,
     String? telepon,
+    String? email,
+    img.Image? logo,
     int lebarBaris = lebarBaris80mm,
   }) {
     List<int> bytes = [];
     if (nama == null) return bytes;
+
+    if (logo != null) {
+      // imageRaster (GS v 0) dipakai, BUKAN image() (ESC *): ESC * tidak
+      // didukung konsisten di printer thermal generik — byte gambarnya
+      // berakhir dicetak sebagai karakter acak alih-alih gambar (terbukti di
+      // percobaan cetak settlement pertama). GS v 0 jauh lebih universal.
+      bytes += generator.imageRaster(logo);
+      bytes += generator.emptyLines(1);
+    }
 
     bytes += generator.text(
       nama,
@@ -40,6 +55,7 @@ class KepalaStruk {
 
     final a = _rapikan(alamat);
     final t = formatTelepon(telepon);
+    final e = _rapikan(email);
     if (a != null) {
       bytes += jeda();
       for (final baris in pecahBaris(a, lebarBaris)) {
@@ -56,9 +72,41 @@ class KepalaStruk {
         styles: const PosStyles(align: PosAlign.center),
       );
     }
+    if (e != null) {
+      bytes += jeda();
+      bytes += generator.text(
+        e,
+        styles: const PosStyles(align: PosAlign.center),
+      );
+    }
 
     bytes += generator.emptyLines(1);
     return bytes;
+  }
+
+  /// Menyiapkan gambar logo untuk dicetak: diperkecil ke lebar kertas dan
+  /// diubah ke skala abu-abu (printer thermal hanya cetak hitam-putih).
+  ///
+  /// Mengembalikan null bila [bytes] kosong atau bukan gambar yang valid,
+  /// supaya pemanggil cukup melewatkan logo tanpa menggagalkan seluruh struk.
+  ///
+  /// Bawaan [lebarMaks] = lebar kertas 80 mm (`PaperSize.mm80.width`, 576 dot)
+  /// — satu-satunya ukuran kertas yang dipakai di seluruh aplikasi ini.
+  /// `generator.image()` tidak memotong gambar yang lebih lebar dari kertas;
+  /// bila logo tidak diperkecil dulu di sini, printer bisa mencetaknya
+  /// terpotong atau melebar ke luar kertas.
+  static img.Image? siapkanLogo(Uint8List? bytes, {int lebarMaks = 576}) {
+    if (bytes == null || bytes.isEmpty) return null;
+    try {
+      var gambar = img.decodeImage(bytes);
+      if (gambar == null) return null;
+      if (gambar.width > lebarMaks) {
+        gambar = img.copyResize(gambar, width: lebarMaks);
+      }
+      return img.grayscale(gambar);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Baris alamat (dipecah per kata agar muat satu baris kertas) diikuti baris

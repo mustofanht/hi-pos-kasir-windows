@@ -1238,4 +1238,83 @@ void main() {
           c.dots(10));
     });
   });
+
+  /// Posisi QR tidak boleh bergantung pada panjang nama di gelang.
+  ///
+  /// Teks gelang diputar 90 derajat sehingga membaca menyusuri panjang gelang —
+  /// artinya panjang tulisan langsung memakan panjang gelang. Dulu baris nama
+  /// ikut menentukan panjang blok pertama, sehingga gelang pendamping
+  /// "Pendamping (DEDE)" mendorong QR 144 dot (±18 mm) lebih jauh daripada
+  /// gelang anak "DEDE" di order yang sama.
+  ///
+  /// Akibatnya di lapangan (9 Okt 2026): gelang anak jatuh pas di area bersih,
+  /// gelang pendampingnya mendarat di atas cetakan pabrik. Setelan media tidak
+  /// bisa memperbaikinya — Geser lembar menggeser semua gelang sama rata, jadi
+  /// membetulkan yang satu merusak yang lain.
+  group('Posisi QR tidak terpengaruh panjang nama', () {
+    final media = WristbandConfigModel.terbukti();
+
+    String barisQr(List<String> p) =>
+        p.firstWhere((b) => b.startsWith('QRCODE'));
+
+    int yQr(String? nama) => elemen(barisQr(perintah(gen.dataGelangPlayground(
+          config: media,
+          qrCode: '09102400001',
+          lokasi: 'GOGOPLAY',
+          nama: nama,
+          nomorTiket: '09102400001',
+          waktu: '2026-10-09 15:27:53',
+        )))).y;
+
+    test('nama sependek apa pun dan sepanjang apa pun, QR di titik yang sama', () {
+      final acuan = yQr('DEDE');
+      for (final nama in <String?>[
+        null,
+        'A',
+        'Pendamping (DEDE)',
+        'Muhamad Ridwan Ahfi',
+        'Pendamping (Muhamad Ridwan Ahfi)',
+      ]) {
+        expect(yQr(nama), acuan, reason: 'nama="$nama" menggeser QR');
+      }
+    });
+
+    test('gelang anak tidak ikut berubah posisinya', () {
+      // Nilai yang sudah terbukti benar di outlet. Kalau uji ini gagal, gelang
+      // yang selama ini jatuh pas ikut bergeser — kerugian yang lebih besar
+      // daripada masalah yang sedang diperbaiki.
+      expect(yQr('DEDE'), 162);
+    });
+  });
+
+  group('Nama yang kepanjangan mengalah, bukan menggeser QR', () {
+    final media = WristbandConfigModel.terbukti();
+
+    List<String> barisTeks(String nama) => perintah(gen.dataGelangPlayground(
+          config: media,
+          qrCode: '09102400001',
+          lokasi: 'GOGOPLAY',
+          nama: nama,
+          nomorTiket: '09102400001',
+          waktu: '2026-10-09 15:27:53',
+        )).where((b) => b.startsWith('TEXT') && b.contains(',0,')).toList();
+
+    test('hurufnya dikecilkan supaya muat di panjang yang dipesan judul', () {
+      final anak = barisTeks('DEDE');
+      final pdp = barisTeks('Pendamping (DEDE)');
+      // Judul tetap pada huruf blok; hanya baris nama yang mengalah.
+      expect(anak.any((b) => b.contains('"GOGOPLAY"') && b.contains('"3"')), isTrue);
+      expect(pdp.any((b) => b.contains('"GOGOPLAY"') && b.contains('"3"')), isTrue);
+      expect(anak.any((b) => b.contains('"DEDE"') && b.contains('"3"')), isTrue);
+      expect(pdp.any((b) => b.contains('Pendamping') && b.contains('"1"')), isTrue,
+          reason: 'nama panjang harus turun ke huruf terkecil');
+    });
+
+    test('pemotongan tidak meninggalkan kurung menggantung', () {
+      // "Pendamping (DEDE" terbaca seperti cetakan rusak, padahal sengaja
+      // dipendekkan. Kurungnya ditutup kembali.
+      final pdp = barisTeks('Pendamping (DEDE)').join();
+      expect(pdp.contains('Pendamping (DED)'), isTrue, reason: pdp);
+    });
+  });
 }

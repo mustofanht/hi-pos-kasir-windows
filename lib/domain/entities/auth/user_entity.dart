@@ -11,10 +11,13 @@ class UserEntity {
   int? userLocId;
   String? locationName;
 
-  /// Alamat dan telepon lokasi utama user, untuk kepala struk. Tidak dikirim
-  /// endpoint `users/{id}`; diisi [AppCommon.getUser] dari master lokasi.
+  /// Alamat, telepon, email, dan logo lokasi utama user, untuk kepala struk.
+  /// Tidak dikirim endpoint `users/{id}`; diisi [AppCommon.getUser] dari
+  /// master lokasi.
   String? locationAddress;
   String? locationPhone;
+  String? locationEmail;
+  String? locationLogoPath;
   int? userUnitId;
   String? unitName;
   int? userRoleid;
