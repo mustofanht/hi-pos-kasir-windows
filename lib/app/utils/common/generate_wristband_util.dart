@@ -146,7 +146,11 @@ class GenerateWristbandUtil {
       (
         awal: [
           if (judul != null) _BarisGelang(judul),
-          if (namaGelang != null) _BarisGelang(namaGelang),
+          // Nama MENYESUAIKAN panjang judul. Judul adalah nama lokasi — sama
+          // untuk semua gelang di satu outlet — sehingga QR selalu mulai di
+          // titik yang sama, baik pada gelang anak maupun pendamping.
+          if (namaGelang != null)
+            _BarisGelang(namaGelang, menyesuaikan: judul != null),
         ],
         akhir: blokTiket,
       ),
@@ -228,23 +232,51 @@ class GenerateWristbandUtil {
     final jeda = config.dots(2.5);
 
     for (final hurufBaris in _tingkatHuruf) {
-      String huruf(_BarisGelang b) => hurufBaris;
+      // Panjang blok DIPESAN oleh baris yang tidak menyesuaikan — biasanya
+      // judul lokasi, yang sama untuk semua gelang di satu outlet. Baris yang
+      // menyesuaikan (nama) tidak boleh ikut menentukannya, karena panjangnya
+      // berbeda tiap pelanggan dan itu yang dulu menggeser QR.
+      //
+      // Bila SEMUA barisnya menyesuaikan, tidak ada yang bisa dijadikan acuan;
+      // blok itu kembali memakai baris terpanjangnya sendiri.
+      int pesanan(List<_BarisGelang> blok) {
+        final acuan = blok.where((b) => !b.menyesuaikan).toList();
+        final dipakai = acuan.isEmpty ? blok : acuan;
+        if (dipakai.isEmpty) return 0;
+        return dipakai
+            .map((b) => b.isi.length * fontDots[hurufBaris]![0])
+            .reduce((a, b) => a > b ? a : b);
+      }
+
+      /// Isi dan huruf satu baris, sesudah dipaskan ke panjang pesanan blok.
+      ({String isi, String font}) pas(_BarisGelang b, int batas) {
+        if (!b.menyesuaikan) return (isi: b.isi, font: hurufBaris);
+        for (final f in _fontMenurun) {
+          // Tidak boleh lebih besar dari huruf blok: baris penyesuai hanya
+          // boleh mengalah, tidak boleh menonjol.
+          if (fontDots[f]![0] > fontDots[hurufBaris]![0]) continue;
+          if (b.isi.length * fontDots[f]![0] <= batas) return (isi: b.isi, font: f);
+        }
+        // Huruf terkecil pun tidak cukup. Dipotong, bukan dibiarkan menjulur:
+        // teks yang melewati pesanan akan menggeser QR lagi — persis masalah
+        // yang sedang diperbaiki.
+        const kecil = '1';
+        final muat = batas ~/ fontDots[kecil]![0];
+        return (isi: _potongRapi(b.isi, muat), font: kecil);
+      }
 
       int tebal(List<_BarisGelang> blok) {
+        final batas = pesanan(blok);
         var total = 0;
         for (var i = 0; i < blok.length; i++) {
-          final f = huruf(blok[i]);
+          final f = pas(blok[i], batas).font;
           total += fontDots[f]![1];
           if (i < blok.length - 1) total += _jarak(f);
         }
         return total;
       }
 
-      int panjang(List<_BarisGelang> blok) => blok.isEmpty
-          ? 0
-          : blok
-              .map((b) => b.isi.length * fontDots[huruf(b)]![0])
-              .reduce((a, b) => a > b ? a : b);
+      int panjang(List<_BarisGelang> blok) => blok.isEmpty ? 0 : pesanan(blok);
 
       if (tebal(awal) > w - 2 * m || tebal(akhir) > w - 2 * m) continue;
       final total = panjang(awal) +
@@ -263,14 +295,17 @@ class GenerateWristbandUtil {
           continue;
         }
         if (blok.isEmpty) continue;
+        final batas = pesanan(blok);
         final t = tebal(blok);
         // Pada 90 derajat badan huruf menjulur ke kiri jangkarnya, jadi baris
         // pertama berada paling kanan dan baris berikutnya bergeser ke kiri.
         var x = ((w - t) / 2).round() + t;
         for (final b in blok) {
-          final f = huruf(b);
-          hasil.add('TEXT $x,$y,"$f",90,1,1,"${_kutip(b.isi)}"');
-          x -= fontDots[f]![1] + _jarak(f);
+          final baris = pas(b, batas);
+          if (baris.isi.isEmpty) continue;
+          hasil.add(
+              'TEXT $x,$y,"${baris.font}",90,1,1,"${_kutip(baris.isi)}"');
+          x -= fontDots[baris.font]![1] + _jarak(baris.font);
         }
         y += panjang(blok) + jeda;
       }
@@ -766,6 +801,26 @@ class GenerateWristbandUtil {
   /// besar baris-barisnya nyaris bersinggungan, dan bila ukuran huruf yang
   /// sebenarnya dicetak printer lebih besar dari tabel di sini, barisnya
   /// benar-benar saling menimpa sampai nomor tiketnya tidak terbaca.
+  /// Memotong teks ke [muat] karakter tanpa meninggalkan kurung menggantung.
+  ///
+  /// Nama pendamping berbentuk `Pendamping (nama anak)`. Dipotong apa adanya,
+  /// hasilnya `Pendamping (DEDE` — terbaca seperti cetakan yang rusak, padahal
+  /// sengaja dipendekkan. Kurungnya ditutup kembali supaya terlihat utuh,
+  /// dengan mengorbankan satu huruf nama.
+  static String _potongRapi(String isi, int muat) {
+    if (muat <= 0) return '';
+    if (isi.length <= muat) return isi;
+    var hasil = isi.substring(0, muat).trimRight();
+    final bukaTerakhir = hasil.lastIndexOf('(');
+    if (bukaTerakhir >= 0 && !hasil.substring(bukaTerakhir).contains(')')) {
+      // Sisakan satu tempat untuk kurung tutup.
+      hasil = hasil.length >= muat
+          ? '${hasil.substring(0, muat - 1).trimRight()})'
+          : '$hasil)';
+    }
+    return hasil;
+  }
+
   static int _jarak(String font) {
     final j = fontDots[font]![1] ~/ 3;
     return j < 6 ? 6 : j;
@@ -964,7 +1019,24 @@ class _TeksJadi {
 class _BarisGelang {
   final String isi;
 
-  const _BarisGelang(this.isi);
+  /// Baris yang panjangnya MENYESUAIKAN baris lain di bloknya, bukan sebaliknya.
+  ///
+  /// Teks gelang diputar 90 derajat sehingga membaca menyusuri panjang gelang —
+  /// artinya panjang tulisan langsung memakan panjang gelang, dan baris
+  /// terpanjang di blok pertama menentukan di mana QR mulai.
+  ///
+  /// Tanpa penanda ini, nama yang lebih panjang mendorong QR menjauhi awal
+  /// gelang. Itu bukan soal teori: gelang pendamping bernama
+  /// "Pendamping (DEDE)" menggeser QR 144 dot (±18 mm) dibanding gelang anak
+  /// bernama "DEDE", sehingga QR-nya mendarat di atas cetakan pabrik sementara
+  /// gelang anak di order yang sama jatuh pas (9 Okt 2026).
+  ///
+  /// Baris bertanda ini dikecilkan hurufnya sampai muat di panjang yang sudah
+  /// dipesan blok, jadi QR selalu mulai di titik yang sama berapa pun panjang
+  /// namanya.
+  final bool menyesuaikan;
+
+  const _BarisGelang(this.isi, {this.menyesuaikan = false});
 }
 
 GenerateWristbandUtil generateWristbandUtil = GenerateWristbandUtil();
