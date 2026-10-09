@@ -11,6 +11,7 @@ class KasUtil {
   /// yang dicatat adalah nilainya, dan laci tidak membedakan keduanya.
   static const List<int> pecahan = [
     100000,
+    75000,
     50000,
     20000,
     10000,
@@ -20,6 +21,7 @@ class KasUtil {
     500,
     200,
     100,
+    1,
   ];
 
   /// Jumlah uang dari sebuah hitungan lembar per pecahan.

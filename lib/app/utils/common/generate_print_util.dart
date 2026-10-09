@@ -1,12 +1,15 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:image/image.dart' as img;
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/app/utils/common/kepala_struk_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 // import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 
 class GeneratePrintUtil {
@@ -331,27 +334,27 @@ class GeneratePrintUtil {
           align: PosAlign.left,
         ),
       );
-        bytes += generator.row(
-          [
-            PosColumn(
-              text: 'Rp',
-              width: 2,
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Rp',
+            width: 2,
+          ),
+          PosColumn(
+            text: element.entity?.dpAmount != null
+                ? common.currencyFormat(element.entity!.dpAmount!)
+                : '',
+            width: 4,
+          ),
+          PosColumn(
+            text: '- ${common.currencyFormat(element.odpTotalAmount)}',
+            width: 6,
+            styles: const PosStyles(
+              align: PosAlign.right,
             ),
-            PosColumn(
-              text: element.entity?.dpAmount != null
-                  ? common.currencyFormat(element.entity!.dpAmount!)
-                  : '',
-              width: 4,
-            ),
-            PosColumn(
-              text: '- ${common.currencyFormat(element.odpTotalAmount)}',
-              width: 6,
-              styles: const PosStyles(
-                align: PosAlign.right,
-              ),
-            )
-          ],
-        );
+          )
+        ],
+      );
     }
     bytes += generator.hr();
     if (body.adminFeeAmt > 0) {
@@ -540,7 +543,7 @@ class GeneratePrintUtil {
         align: PosAlign.center,
       ),
     );
-    
+
     // Tambahkan text "TIKET PENDAMPING (GRATIS)" jika ini QR pendamping
     if (isCompanion == 'Y') {
       bytes += generator.text(
@@ -553,7 +556,7 @@ class GeneratePrintUtil {
         ),
       );
     }
-    
+
     bytes += generator.text(
       '$pakOf of $pakTotal PAK',
       styles: const PosStyles(
@@ -578,6 +581,373 @@ class GeneratePrintUtil {
       ),
     );
     // bytes += generator.emptyLines(1);
+    bytes += generator.cut();
+
+    return bytes;
+  }
+
+  /// Struk settlement/tutup shift, formatnya mengikuti contoh "Cashier
+  /// Report" (`print_out.png`): kepala struk (nama, alamat, telepon, email,
+  /// logo — dari master lokasi), hitungan uang laci per pecahan (SEMUA
+  /// pecahan, termasuk yang nol lembar — bukan cuma yang terisi), ringkasan
+  /// pembayaran per metode, rekonsiliasi kas per metode (Aktual/Komputer/
+  /// Selisih), rincian penjualan, lalu rincian laci tunai sampai total tunai.
+  ///
+  /// HANYA dipanggil untuk lokasi yang memakai modal kas ([ShiftDetailEntity.
+  /// pakaiModal]) — pemanggil (lihat [ShiftPageController.doPrintSettlement])
+  /// sudah menjaga ini; dipastikan lagi di sini supaya fungsi ini sendiri
+  /// tidak pernah menghasilkan struk yang section kasnya kosong/tidak relevan.
+  ///
+  /// Dibangun dari field yang sudah ada di [ShiftDetailEntity] (API yang sama
+  /// dipakai layar Shift) — tidak ada angka yang direka; bagian yang
+  /// datanya tidak pernah dihitung di aplikasi ini (mis. kas masuk/keluar,
+  /// retur, custom price — ada di contoh `print_out.png` tapi itu dari sistem
+  /// POS lain) sengaja tidak ditampilkan, bukan ditulis nol.
+  Future<List<int>> dataSettlementPrint({
+    String? locationName,
+    String? locationAddress,
+    String? locationPhone,
+    String? locationEmail,
+    img.Image? logo,
+    required PaperSize paperSize,
+    required ShiftDetailEntity detail,
+  }) async {
+    List<int> bytes = [];
+    final profile = await CapabilityProfile.load();
+    final generator = Generator(paperSize, profile);
+    bytes += generator.setGlobalFont(PosFontType.fontA);
+    bytes += generator.reset();
+
+    bytes += KepalaStruk.cetak(
+      generator,
+      nama: locationName,
+      alamat: locationAddress,
+      telepon: locationPhone,
+      email: locationEmail,
+      logo: logo,
+    );
+
+    final tanggal = detail.shftEnd ?? detail.shftStart;
+    bytes += generator.text(
+      'CASHIER REPORT'
+      '${detail.lokasiName != null ? ' (${detail.lokasiName})' : ''}',
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
+    bytes += generator.emptyLines(1);
+    bytes += generator.row([
+      PosColumn(text: 'Kasir', width: 4),
+      PosColumn(text: ': ${detail.userFullName ?? '-'}', width: 8),
+    ]);
+    bytes += generator.row([
+      PosColumn(text: 'Tanggal', width: 4),
+      PosColumn(
+        text:
+            ': ${tanggal != null ? dateTimeUtil.getFormattedDate(date: tanggal, format: dateFormat.dateWithoutTime) : '-'}',
+        width: 8,
+      ),
+    ]);
+    bytes += generator.hr();
+
+    // Hitungan uang laci saat tutup shift — SEMUA pecahan yang dikenal
+    // aplikasi (KasUtil.pecahan), bukan cuma yang lembarnya diisi, supaya
+    // bentuknya sama seperti contoh (tiap pecahan selalu tampil, 0 pun
+    // ditulis apa adanya).
+    if (detail.pakaiModal) {
+      final lembarPerPecahan = <int, int>{
+        for (final p in detail.listPecahanAkhir ?? const [])
+          p.pecahan: p.lembar,
+      };
+      bytes += generator.text(
+        'HITUNGAN UANG LACI',
+        styles: const PosStyles(align: PosAlign.left, bold: true),
+      );
+      for (final pecahan in KasUtil.pecahan) {
+        final lembar = lembarPerPecahan[pecahan] ?? 0;
+        final jumlah = (pecahan * lembar).toDouble();
+        bytes += generator.row([
+          PosColumn(
+            text: '${common.currencyFormat(pecahan.toDouble())} x $lembar ',
+            width: 8,
+          ),
+          PosColumn(
+            text: common.currencyFormat(jumlah),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+        ]);
+      }
+      bytes += generator.hr();
+    }
+
+    // Ringkasan pembayaran per metode, persis seperti yang dijumlahkan server
+    // (listSumPayment) — satu sumber yang sama dengan layar Rincian Shift.
+    final listPembayaran = detail.listSumPayment ?? [];
+    double totalPembayaran = 0;
+    for (final p in listPembayaran) {
+      totalPembayaran += p.amount ?? 0;
+      bytes += generator.row([
+        PosColumn(text: p.name ?? '-', width: 7),
+        PosColumn(
+          text: common.currencyFormat(p.amount ?? 0),
+          width: 5,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+    }
+    bytes += generator.hr();
+    bytes += generator.row([
+      PosColumn(text: 'Total', width: 7, styles: const PosStyles(bold: true)),
+      PosColumn(
+        text: common.currencyFormat(totalPembayaran),
+        width: 5,
+        styles: const PosStyles(align: PosAlign.right, bold: true),
+      ),
+    ]);
+    bytes += generator.hr();
+
+    // Rekonsiliasi per metode pembayaran: Aktual / Komputer / Selisih.
+    // Tunai BENAR-BENAR direkonsiliasi (kasAkhir = uang yang dihitung kasir,
+    // kasSeharusnya = modal + penjualan tunai menurut sistem, selisihnya bisa
+    // tidak nol). Metode lain (EDC/QRIS/dst) tidak pernah dihitung ulang
+    // manual di aplikasi ini — settlement-nya otomatis lewat sistem
+    // pembayaran itu sendiri — jadi Aktual = Komputer = nilainya di
+    // listSumPayment, Selisih selalu nol. Ini BUKAN disamakan asal-asalan:
+    // memang tidak ada proses hitung-ulang manual untuk metode nontunai.
+    if (detail.pakaiModal && listPembayaran.isNotEmpty) {
+      bytes += generator.text(
+        'REKONSILIASI (AKTUAL VS KOMPUTER)',
+        styles: const PosStyles(align: PosAlign.left, bold: true),
+      );
+      bytes += generator.row([
+        PosColumn(text: '', width: 4),
+        PosColumn(
+          text: 'Aktual',
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+        PosColumn(
+          text: 'Komputer',
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+      ]);
+      double totalAktual = 0;
+      double totalKomputer = 0;
+      for (final p in listPembayaran) {
+        final isTunai = (p.name ?? '').trim().toLowerCase() == 'tunai';
+        final aktual = isTunai ? (detail.kasAkhir ?? 0) : (p.amount ?? 0);
+        final komputer =
+            isTunai ? (detail.kasSeharusnya ?? 0) : (p.amount ?? 0);
+        totalAktual += aktual;
+        totalKomputer += komputer;
+        bytes += generator.text(p.name ?? '-');
+        bytes += generator.row([
+          PosColumn(text: '', width: 4),
+          PosColumn(
+            text: common.currencyFormat(aktual),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+          PosColumn(
+            text: common.currencyFormat(komputer),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+        ]);
+      }
+      bytes += generator.hr();
+      final selisihTotal = totalAktual - totalKomputer;
+      bytes += generator.text('Total', styles: const PosStyles(bold: true));
+      bytes += generator.row([
+        PosColumn(text: '', width: 4),
+        PosColumn(
+          text: common.currencyFormat(totalAktual),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+        PosColumn(
+          text: common.currencyFormat(totalKomputer),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+      ]);
+      bytes += generator.row([
+        PosColumn(
+          text: selisihTotal < 0
+              ? 'Selisih (Kurang)'
+              : selisihTotal > 0
+                  ? 'Selisih (Lebih)'
+                  : 'Selisih',
+          width: 8,
+          styles: const PosStyles(bold: true),
+        ),
+        PosColumn(
+          text: common.currencyFormat(selisihTotal.abs()),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+      ]);
+      bytes += generator.hr();
+    }
+
+    // Rincian penjualan: total netto (= total pembayaran di atas, karena
+    // voucher/potongan sudah dipotong sebelum tersimpan sebagai pembayaran),
+    // lalu voucher & potongan sebagai informasi jumlah yang terpakai.
+    bytes += generator.text(
+      'RINCIAN TRANSAKSI',
+      styles: const PosStyles(align: PosAlign.left, bold: true),
+    );
+    final jmlTransaksi = (detail.tiketCount ?? 0) + (detail.itemCount ?? 0);
+    bytes += generator.row([
+      PosColumn(text: 'Total Penjualan (${jmlTransaksi}x)', width: 8),
+      PosColumn(
+        text: common.currencyFormat(totalPembayaran),
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+    ]);
+    if (detail.listSumVoucher != null && detail.listSumVoucher!.isNotEmpty) {
+      final totalVoucher = detail.listSumVoucher!
+          .fold<double>(0, (jumlah, v) => jumlah + (v.amount ?? 0));
+      bytes += generator.row([
+        PosColumn(text: 'Voucher (${detail.voucherCount ?? 0}x)', width: 8),
+        PosColumn(
+          text: common.currencyFormat(totalVoucher),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+    }
+    if (detail.listSumPotongan != null && detail.listSumPotongan!.isNotEmpty) {
+      final totalPotongan = detail.listSumPotongan!
+          .fold<double>(0, (jumlah, p) => jumlah + (p.amount ?? 0));
+      bytes += generator.row([
+        PosColumn(text: 'Potongan (${detail.potonganCount ?? 0}x)', width: 8),
+        PosColumn(
+          text: common.currencyFormat(totalPotongan),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+    }
+    bytes += generator.hr();
+
+    // Rincian laci tunai: penjualan netto dikurangi tiap metode nontunai,
+    // menyisakan bagian tunainya saja, ditambah modal awal — hasilnya adalah
+    // kas yang seharusnya ada di laci (sama dengan kasSeharusnya di atas).
+    if (detail.pakaiModal) {
+      bytes += generator.text(
+        'RINCIAN LACI TUNAI',
+        styles: const PosStyles(align: PosAlign.left, bold: true),
+      );
+      bytes += generator.row([
+        PosColumn(text: 'Penjualan Netto', width: 8),
+        PosColumn(
+          text: common.currencyFormat(totalPembayaran),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+      for (final p in listPembayaran) {
+        final isTunai = (p.name ?? '').trim().toLowerCase() == 'tunai';
+        if (isTunai) continue;
+        bytes += generator.row([
+          PosColumn(text: '(-) ${p.name ?? '-'}', width: 8),
+          PosColumn(
+            text: common.currencyFormat(p.amount ?? 0),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+        ]);
+      }
+      bytes += generator.row([
+        PosColumn(
+            text: 'Penjualan Tunai',
+            width: 8,
+            styles: const PosStyles(bold: true)),
+        PosColumn(
+          text: common.currencyFormat(detail.tunaiSum ?? 0),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+      ]);
+      bytes += generator.row([
+        PosColumn(text: 'Modal Awal', width: 8),
+        PosColumn(
+          text: common.currencyFormat(detail.modalAwal ?? 0),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+      bytes += generator.hr();
+      bytes += generator.row([
+        PosColumn(
+            text: 'TOTAL TUNAI', width: 8, styles: const PosStyles(bold: true)),
+        PosColumn(
+          text: common.currencyFormat(detail.kasSeharusnya ?? 0),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+      ]);
+      bytes += generator.hr();
+    }
+
+    bytes += generator.row([
+      PosColumn(text: 'Tiket', width: 8),
+      PosColumn(
+        text: '${detail.tiketCount ?? 0}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+    ]);
+    bytes += generator.row([
+      PosColumn(text: 'Item', width: 8),
+      PosColumn(
+        text: '${detail.itemCount ?? 0}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+    ]);
+    bytes += generator.hr();
+
+    bytes += generator.text(
+      'Printed : ${dateTimeUtil.now(format: dateFormat.fullTimePrinted)}',
+      styles: const PosStyles(align: PosAlign.left),
+    );
+    bytes += generator.emptyLines(2);
+    bytes += generator.row([
+      PosColumn(
+        text: 'Dibuat Oleh,',
+        width: 6,
+        styles: const PosStyles(align: PosAlign.center),
+      ),
+      PosColumn(
+        text: 'Mengetahui,',
+        width: 6,
+        styles: const PosStyles(align: PosAlign.center),
+      ),
+    ]);
+    bytes += generator.emptyLines(3);
+    bytes += generator.row([
+      PosColumn(
+        text: '( .............. )',
+        width: 6,
+        styles: const PosStyles(align: PosAlign.center),
+      ),
+      PosColumn(
+        text: '( .............. )',
+        width: 6,
+        styles: const PosStyles(align: PosAlign.center),
+      ),
+    ]);
+    bytes += generator.emptyLines(1);
+    if (locationName != null) {
+      bytes += generator.text(
+        locationName,
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      );
+    }
+    bytes += generator.hr();
     bytes += generator.cut();
 
     return bytes;

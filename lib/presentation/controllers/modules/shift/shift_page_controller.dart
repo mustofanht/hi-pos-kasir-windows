@@ -1,16 +1,23 @@
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kepala_struk_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
@@ -31,6 +38,7 @@ class ShiftPageController extends GetxController {
   final isLoadingShiftEnded = false.obs;
   final isLoadingShiftCurrent = false.obs;
   final isLoadingShiftDetail = false.obs;
+  final isPrintingSettlement = false.obs;
 
   final scrollController = ScrollController();
   final pagination = Pagination().obs;
@@ -307,9 +315,95 @@ class ShiftPageController extends GetxController {
         // layar jadi kosong.
         if (Get.isDialogOpen ?? false) Get.back();
         await _shiftEnded(val, pecahanAkhir: pecahanAkhir);
+        // Dicetak otomatis begitu shift ditutup — "print out saat settlement"
+        // — HANYA untuk lokasi yang memakai modal kas. Lokasi yang tidak
+        // memakai modal tetap memakai jalur lama: email rekap dari backend
+        // (endShift mengirimnya sendiri), tanpa struk settlement; struknya
+        // memang isinya rekonsiliasi kas, tidak relevan tanpa modal.
+        if (val.pakaiModal) {
+          // shiftDetail SETELAH _shiftEnded TIDAK CUKUP untuk dicetak:
+          // endpoint tutup shift (trn_shift_kasir, POST) di backend cuma
+          // mengembalikan entity mentah, tanpa listSumPayment/listSumVoucher/
+          // listSumPotongan maupun rekap kas (pakaiModalKas, modalAwal,
+          // kasSeharusnya, dst) — rekap lengkap itu cuma dihitung untuk badan
+          // email internal, tidak ikut dikirim ke aplikasi. Rincian struk
+          // jadi kosong kalau langsung dicetak dari situ. _getDetailShift
+          // (endpoint /detail) adalah yang benar-benar menghitung semuanya —
+          // sama seperti yang dipakai layar Rincian Shift — jadi diminta
+          // ulang di sini sebelum mencetak.
+          await _getDetailShift(
+            ShiftEntity(shftDate: val.shftDate, shftUserid: val.shftUserid),
+          );
+          await doPrintSettlement(shiftDetail.value);
+        }
         await doPrepared();
       },
     );
+  }
+
+  /// Mencetak struk settlement (laporan tutup shift) ke printer struk yang
+  /// sedang tersambung.
+  ///
+  /// Dipanggil otomatis begitu shift ditutup, dan juga tersedia sebagai
+  /// tombol cetak ulang untuk shift yang sudah berakhir — kertas bisa macet
+  /// atau habis tepat saat cetak otomatis, dan kasir perlu jalan untuk
+  /// mencetak ulang tanpa membuka shift baru.
+  ///
+  /// HANYA untuk lokasi yang memakai modal kas: isi struknya adalah
+  /// rekonsiliasi kas (hitungan laci, aktual vs komputer, dst), yang tidak
+  /// punya arti tanpa modal. Dijaga di sini juga — bukan cuma di pemanggil —
+  /// supaya method ini sendiri tidak pernah mencetak struk yang kosong/tidak
+  /// relevan, siapa pun yang memanggilnya nanti.
+  Future<void> doPrintSettlement(ShiftDetailEntity? detail) async {
+    if (detail == null ||
+        detail.shftDate == null ||
+        !detail.pakaiModal ||
+        isPrintingSettlement.value) {
+      return;
+    }
+    isPrintingSettlement.value = true;
+    update();
+    try {
+      await printerUtil.connectPrinter();
+      if (printerUtil.currPrinter == null) {
+        alert.error('Cetak Settlement', 'Printer belum tersambung.');
+        return;
+      }
+
+      final UserEntity? user = await common.getUser(authToken: _authToken);
+
+      // Logo dicetak dari master lokasi (loc_logo_path); gagal diunduh tidak
+      // boleh menggagalkan seluruh struk, cukup dicetak tanpa logo.
+      img.Image? logo;
+      final logoUrl = user?.locationLogoPath;
+      if (logoUrl != null && logoUrl.isNotEmpty) {
+        try {
+          final response = await http.get(Uri.parse(logoUrl));
+          if (response.statusCode == 200) {
+            logo = KepalaStruk.siapkanLogo(response.bodyBytes);
+          }
+        } catch (e) {
+          logger.safeLog('Logo settlement gagal dimuat : $e');
+        }
+      }
+
+      final data = await generatePrintUtil.dataSettlementPrint(
+        locationName: user?.locationName,
+        locationAddress: user?.locationAddress,
+        locationPhone: user?.locationPhone,
+        locationEmail: user?.locationEmail,
+        logo: logo,
+        paperSize: PaperSize.mm80,
+        detail: detail,
+      );
+      await printerUtil.print(printerUtil.currPrinter!, data);
+    } catch (e) {
+      logger.safeLog('Cetak settlement gagal : $e');
+      alert.error('Cetak Settlement', 'Gagal mencetak struk settlement.');
+    } finally {
+      isPrintingSettlement.value = false;
+      update();
+    }
   }
 
   /// Hitungan yang sudah pernah tersimpan, sebagai isian awal dialog.

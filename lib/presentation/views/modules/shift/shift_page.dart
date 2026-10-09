@@ -501,7 +501,46 @@ class ShiftPage extends GetView<ShiftPageController> {
                                   width: layoutStyle.screenWidth,
                                   height: layoutStyle.blockVertical * 7,
                                 )
-                              : Container(),
+                              // Shift yang sudah ditutup: tawarkan cetak
+                              // ulang — HANYA untuk lokasi yang memakai modal
+                              // kas (isi struknya rekonsiliasi kas, tidak
+                              // relevan tanpa modal; lokasi itu tetap dapat
+                              // email rekap seperti biasa). Struknya sudah
+                              // dicetak otomatis saat shift ditutup, tombol
+                              // ini untuk jaga-jaga kertas macet/habis.
+                              : !detail.pakaiModal
+                                  ? Container()
+                                  : CustomButton(
+                                  onPressed: () {
+                                    if (controller.isPrintingSettlement.value) {
+                                      return;
+                                    }
+                                    controller.doPrintSettlement(detail);
+                                  },
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.white),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            colorStyle.primary),
+                                    side: MaterialStateProperty.all<BorderSide>(
+                                      BorderSide(
+                                        color: colorStyle.primary,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    elevation:
+                                        MaterialStateProperty.all<double>(0),
+                                  ),
+                                  label: Text(
+                                    controller.isPrintingSettlement.value
+                                        ? 'Mencetak...'
+                                        : 'Cetak Settlement',
+                                  ),
+                                  width: layoutStyle.screenWidth,
+                                  height: layoutStyle.blockVertical * 7,
+                                ),
                         ],
                       ),
           ),

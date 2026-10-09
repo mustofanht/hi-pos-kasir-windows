@@ -113,7 +113,7 @@ void main() {
       expect(KasUtil.pecahan, urut);
       expect(KasUtil.pecahan.every((e) => e > 0), isTrue);
       expect(KasUtil.pecahan.first, 100000);
-      expect(KasUtil.pecahan.last, 100);
+      expect(KasUtil.pecahan.last, 1);
     });
   });
 }
