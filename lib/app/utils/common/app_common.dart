@@ -173,18 +173,32 @@ class AppCommon {
     return result;
   }
 
+  /// Mengambil field "message" dari badan respons API yang gagal (non-200).
+  ///
+  /// Dulu memanggil `json.decode(jsonData)["message"]` langsung — kalau
+  /// badan responsnya bukan objek JSON (mis. literal `null`, array, string
+  /// polos, atau HTML dari proxy saat server 502/503), `json.decode` bisa
+  /// mengembalikan apa saja selain Map, dan `[...]` pada nilai itu (apalagi
+  /// pada `null`) melempar `NoSuchMethodError: The method '[]' was called on
+  /// null` — muncul sebagai "Another exception was thrown" generik tanpa
+  /// menunjuk baris aslinya. Sekarang dijaga: hanya dibaca kalau hasil
+  /// decode-nya benar Map, apa pun kegagalannya jatuh ke pesan bawaan.
   String getMetadataMessages(String jsonData) {
-    String messages = "";
-    if (jsonData.isNotEmpty) {
-      if (json.decode(jsonData)["message"].runtimeType == List) {
-        messages = json.decode(jsonData)["message"].first;
-      } else {
-        messages = json.decode(jsonData)["message"];
+    const pesanBawaan = "gagal ambil data!";
+    if (jsonData.isEmpty) return pesanBawaan;
+    try {
+      final decoded = json.decode(jsonData);
+      if (decoded is Map && decoded['message'] != null) {
+        final pesan = decoded['message'];
+        if (pesan is List) {
+          return pesan.isNotEmpty ? pesan.first.toString() : pesanBawaan;
+        }
+        return pesan.toString();
       }
-    } else {
-      messages = "gagal ambil data!";
+    } catch (e) {
+      logger.safeLog('getMetadataMessages gagal mengurai body : $e');
     }
-    return messages;
+    return pesanBawaan;
   }
 
   Map<String, String> generateHeader({

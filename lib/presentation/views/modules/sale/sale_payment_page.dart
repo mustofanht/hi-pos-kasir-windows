@@ -36,6 +36,14 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final saleCart = Get.find<SaleCartPageController>();
+
+    // Nama & No WA cuma wajib untuk item sewa (sewa barang maupun booking
+    // lapangan, dua-duanya baris addonList dengan rentModel terisi); label
+    // "*" mengikuti validasi sesungguhnya di SalePageController.doVerifyRequest,
+    // supaya kasir tidak melihat tanda wajib padahal boleh dikosongkan.
+    bool adaItemSewa() => saleCart.addonList.any((e) => e.rentModel != null);
+
     Widget cardPayment(CustomIdNameEntity element) {
       if (element.id == null) {
         return Container();
@@ -217,35 +225,39 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                           Expanded(
                             child: Column(
                               children: [
-                                CustomTextBox(
-                                  height: layoutStyle.blockVertical * 6.5,
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: layoutStyle.defaultMargin,
-                                    vertical: layoutStyle.defaultMargin / 4,
-                                  ),
-                                  obscureText: false,
-                                  border: Border.all(
-                                    color: colorStyle.grey,
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(
-                                    layoutStyle.defaultMargin / 2,
-                                  ),
-                                  label: Text(
-                                    'Nama Pemesan',
-                                    style: textStyle.greyText.copyWith(
-                                      fontSize: fontSize.small,
+                                Obx(
+                                  () => CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
                                     ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      adaItemSewa()
+                                          ? 'Nama Pemesan *'
+                                          : 'Nama Pemesan',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.orderNameController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Tulis Nama',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    onChanged: (val) {
+                                      logger.safeLog(val);
+                                    },
                                   ),
-                                  controller: controller.orderNameController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Tulis Nama',
-                                    hintStyle: textStyle.greyText,
-                                    border: InputBorder.none,
-                                  ),
-                                  onChanged: (val) {
-                                    logger.safeLog(val);
-                                  },
                                 ),
                                 CustomTextBox(
                                   height: layoutStyle.blockVertical * 6.5,
@@ -275,36 +287,39 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                   ),
                                   keyboardType: TextInputType.emailAddress,
                                 ),
-                                CustomTextBox(
-                                  height: layoutStyle.blockVertical * 6.5,
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: layoutStyle.defaultMargin,
-                                    vertical: layoutStyle.defaultMargin / 4,
-                                  ),
-                                  obscureText: false,
-                                  border: Border.all(
-                                    color: colorStyle.grey,
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(
-                                    layoutStyle.defaultMargin / 2,
-                                  ),
-                                  label: Text(
-                                    'No WA *',
-                                    style: textStyle.greyText.copyWith(
-                                      fontSize: fontSize.small,
+                                Obx(
+                                  () => CustomTextBox(
+                                    height: layoutStyle.blockVertical * 6.5,
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                      vertical: layoutStyle.defaultMargin / 4,
                                     ),
+                                    obscureText: false,
+                                    border: Border.all(
+                                      color: colorStyle.grey,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      layoutStyle.defaultMargin / 2,
+                                    ),
+                                    label: Text(
+                                      adaItemSewa() ? 'No WA *' : 'No WA',
+                                      style: textStyle.greyText.copyWith(
+                                        fontSize: fontSize.small,
+                                      ),
+                                    ),
+                                    controller: controller.noWaController,
+                                    decoration: InputDecoration(
+                                      hintText: 'mis. 081234567890',
+                                      hintStyle: textStyle.greyText,
+                                      border: InputBorder.none,
+                                    ),
+                                    keyboardType: TextInputType.phone,
+                                    // 15 angka menampung nomor berawalan +62
+                                    // yang panjang; batas 13 dulu menolak
+                                    // nomor sah.
+                                    maxLength: 15,
                                   ),
-                                  controller: controller.noWaController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Wajib diisi, mis. 081234567890',
-                                    hintStyle: textStyle.greyText,
-                                    border: InputBorder.none,
-                                  ),
-                                  keyboardType: TextInputType.phone,
-                                  // 15 angka menampung nomor berawalan +62 yang
-                                  // panjang; batas 13 dulu menolak nomor sah.
-                                  maxLength: 15,
                                 ),
                               ],
                             ),

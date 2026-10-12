@@ -590,8 +590,10 @@ class GeneratePrintUtil {
   /// Report" (`print_out.png`): kepala struk (nama, alamat, telepon, email,
   /// logo — dari master lokasi), hitungan uang laci per pecahan (SEMUA
   /// pecahan, termasuk yang nol lembar — bukan cuma yang terisi), ringkasan
-  /// pembayaran per metode, rekonsiliasi kas per metode (Aktual/Komputer/
-  /// Selisih), rincian penjualan, lalu rincian laci tunai sampai total tunai.
+  /// pembayaran per metode, rincian penjualan (termasuk total yang dibayar
+  /// pakai voucher/potongan/deposit), lalu rincian laci tunai sampai total
+  /// tunai. TIDAK ada lagi rekonsiliasi Aktual vs Komputer per metode
+  /// (dihapus atas permintaan — dianggap tidak perlu di struk).
   ///
   /// HANYA dipanggil untuk lokasi yang memakai modal kas ([ShiftDetailEntity.
   /// pakaiModal]) — pemanggil (lihat [ShiftPageController.doPrintSettlement])
@@ -705,94 +707,10 @@ class GeneratePrintUtil {
     ]);
     bytes += generator.hr();
 
-    // Rekonsiliasi per metode pembayaran: Aktual / Komputer / Selisih.
-    // Tunai BENAR-BENAR direkonsiliasi (kasAkhir = uang yang dihitung kasir,
-    // kasSeharusnya = modal + penjualan tunai menurut sistem, selisihnya bisa
-    // tidak nol). Metode lain (EDC/QRIS/dst) tidak pernah dihitung ulang
-    // manual di aplikasi ini — settlement-nya otomatis lewat sistem
-    // pembayaran itu sendiri — jadi Aktual = Komputer = nilainya di
-    // listSumPayment, Selisih selalu nol. Ini BUKAN disamakan asal-asalan:
-    // memang tidak ada proses hitung-ulang manual untuk metode nontunai.
-    if (detail.pakaiModal && listPembayaran.isNotEmpty) {
-      bytes += generator.text(
-        'REKONSILIASI (AKTUAL VS KOMPUTER)',
-        styles: const PosStyles(align: PosAlign.left, bold: true),
-      );
-      bytes += generator.row([
-        PosColumn(text: '', width: 4),
-        PosColumn(
-          text: 'Aktual',
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right, bold: true),
-        ),
-        PosColumn(
-          text: 'Komputer',
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right, bold: true),
-        ),
-      ]);
-      double totalAktual = 0;
-      double totalKomputer = 0;
-      for (final p in listPembayaran) {
-        final isTunai = (p.name ?? '').trim().toLowerCase() == 'tunai';
-        final aktual = isTunai ? (detail.kasAkhir ?? 0) : (p.amount ?? 0);
-        final komputer =
-            isTunai ? (detail.kasSeharusnya ?? 0) : (p.amount ?? 0);
-        totalAktual += aktual;
-        totalKomputer += komputer;
-        bytes += generator.text(p.name ?? '-');
-        bytes += generator.row([
-          PosColumn(text: '', width: 4),
-          PosColumn(
-            text: common.currencyFormat(aktual),
-            width: 4,
-            styles: const PosStyles(align: PosAlign.right),
-          ),
-          PosColumn(
-            text: common.currencyFormat(komputer),
-            width: 4,
-            styles: const PosStyles(align: PosAlign.right),
-          ),
-        ]);
-      }
-      bytes += generator.hr();
-      final selisihTotal = totalAktual - totalKomputer;
-      bytes += generator.text('Total', styles: const PosStyles(bold: true));
-      bytes += generator.row([
-        PosColumn(text: '', width: 4),
-        PosColumn(
-          text: common.currencyFormat(totalAktual),
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right, bold: true),
-        ),
-        PosColumn(
-          text: common.currencyFormat(totalKomputer),
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right, bold: true),
-        ),
-      ]);
-      bytes += generator.row([
-        PosColumn(
-          text: selisihTotal < 0
-              ? 'Selisih (Kurang)'
-              : selisihTotal > 0
-                  ? 'Selisih (Lebih)'
-                  : 'Selisih',
-          width: 8,
-          styles: const PosStyles(bold: true),
-        ),
-        PosColumn(
-          text: common.currencyFormat(selisihTotal.abs()),
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right, bold: true),
-        ),
-      ]);
-      bytes += generator.hr();
-    }
-
     // Rincian penjualan: total netto (= total pembayaran di atas, karena
-    // voucher/potongan sudah dipotong sebelum tersimpan sebagai pembayaran),
-    // lalu voucher & potongan sebagai informasi jumlah yang terpakai.
+    // voucher/potongan/deposit sudah dipotong sebelum tersimpan sebagai
+    // pembayaran), lalu voucher, potongan, & deposit sebagai informasi jumlah
+    // yang terpakai.
     bytes += generator.text(
       'RINCIAN TRANSAKSI',
       styles: const PosStyles(align: PosAlign.left, bold: true),
@@ -825,6 +743,18 @@ class GeneratePrintUtil {
         PosColumn(text: 'Potongan (${detail.potonganCount ?? 0}x)', width: 8),
         PosColumn(
           text: common.currencyFormat(totalPotongan),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+    }
+    if (detail.listSumDeposit != null && detail.listSumDeposit!.isNotEmpty) {
+      final totalDeposit = detail.listSumDeposit!
+          .fold<double>(0, (jumlah, d) => jumlah + (d.amount ?? 0));
+      bytes += generator.row([
+        PosColumn(text: 'Deposit (${detail.depositCount ?? 0}x)', width: 8),
+        PosColumn(
+          text: common.currencyFormat(totalDeposit),
           width: 4,
           styles: const PosStyles(align: PosAlign.right),
         ),

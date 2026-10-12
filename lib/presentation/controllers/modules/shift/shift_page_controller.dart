@@ -1,14 +1,11 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as img;
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
-import 'package:jaya_propertiy/app/utils/common/kepala_struk_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
@@ -17,6 +14,7 @@ import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
+import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
@@ -29,7 +27,30 @@ import 'package:jaya_propertiy/presentation/views/modules/shift/hitung_kas_dialo
 class ShiftPageController extends GetxController {
   ShiftPageController();
   final _service = MainService();
-  final _authToken = Get.arguments[argConstant.authToken];
+  final AuthToken _authToken = _resolveAuthToken();
+
+  /// Token sesi yang andal, tidak bergantung pada `Get.arguments`.
+  ///
+  /// ShiftPage dibuka sebagai tab di dalam HomePage (lewat `selectedContent`
+  /// di home_page_controller.dart), bukan route baru — jadi `Get.arguments`
+  /// di titik controller ini dibuat sebenarnya masih milik route HomePage
+  /// yang sedang aktif, bukan argumen yang sengaja dikirim untuk Shift.
+  /// Kalau instance HomePage yang aktif saat itu kebetulan tidak membawa
+  /// authToken di arguments-nya (tergantung jalur navigasi sebelumnya),
+  /// `Get.arguments` bisa null, dan `Get.arguments[...]` langsung meledak
+  /// dengan `NoSuchMethodError: []("token")` — persis bug yang sudah pernah
+  /// ditemukan & didokumentasikan untuk Sale*Controller (lihat `_sudahDibuat`
+  /// di sale_cart_page_controller.dart). Token sesi yang SELALU bisa
+  /// diandalkan, tidak peduli jalur navigasinya, adalah yang tersimpan di
+  /// storage lewat sessionUtil — dipakai sebagai fallback di sini.
+  static AuthToken _resolveAuthToken() {
+    final args = Get.arguments;
+    if (args is Map && args[argConstant.authToken] is AuthToken) {
+      return args[argConstant.authToken] as AuthToken;
+    }
+    return sessionUtil.getToken();
+  }
+
   final selectedShift = ShiftEntity().obs;
   final shiftCurrent = ShiftEntity().obs;
   final dataListShiftEnded = <ShiftEntity>[].obs;
@@ -372,27 +393,14 @@ class ShiftPageController extends GetxController {
 
       final UserEntity? user = await common.getUser(authToken: _authToken);
 
-      // Logo dicetak dari master lokasi (loc_logo_path); gagal diunduh tidak
-      // boleh menggagalkan seluruh struk, cukup dicetak tanpa logo.
-      img.Image? logo;
-      final logoUrl = user?.locationLogoPath;
-      if (logoUrl != null && logoUrl.isNotEmpty) {
-        try {
-          final response = await http.get(Uri.parse(logoUrl));
-          if (response.statusCode == 200) {
-            logo = KepalaStruk.siapkanLogo(response.bodyBytes);
-          }
-        } catch (e) {
-          logger.safeLog('Logo settlement gagal dimuat : $e');
-        }
-      }
-
+      // Struk settlement dicetak TANPA logo (dihilangkan atas permintaan) —
+      // berbeda dari KepalaStruk.cetak di struk lain yang masih bisa
+      // menerima logo; di sini parameternya sengaja tidak diisi.
       final data = await generatePrintUtil.dataSettlementPrint(
         locationName: user?.locationName,
         locationAddress: user?.locationAddress,
         locationPhone: user?.locationPhone,
         locationEmail: user?.locationEmail,
-        logo: logo,
         paperSize: PaperSize.mm80,
         detail: detail,
       );
