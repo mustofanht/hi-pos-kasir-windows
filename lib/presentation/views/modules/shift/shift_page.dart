@@ -548,9 +548,22 @@ class ShiftPage extends GetView<ShiftPageController> {
       );
     }
 
+    // TANPA `tag:` di sini — sengaja. ShiftPageController didaftarkan TANPA
+    // tag lewat Get.lazyPut di home_page_controller.dart, dan GetView<
+    // ShiftPageController>.controller (dipakai sebagai `controller` polos di
+    // seluruh leftSection/rightSection/cardShift di bawah) juga mencari TANPA
+    // tag. Dulu baris ini punya `tag: 'ShiftPage'` — GetBuilder.initState
+    // melihat tag itu BELUM terdaftar (yang terdaftar memang yang tanpa tag),
+    // jadi ia mendaftarkan instance yang sama SEKALI LAGI di bawah tag
+    // 'ShiftPage' dan menganggap dirinya "pencipta"-nya. Begitu GetBuilder ini
+    // dibuang dari tree (mis. kasir pindah tab lain di HomePage) ia MENGHAPUS
+    // controller yang didaftarkan ganda itu — instance yang sama dengan yang
+    // dipakai Obx di leftSection/rightSection — sehingga semua `Get.find`
+    // berikutnya gagal dengan "ShiftPageController not found" berulang-ulang.
+    // Tanpa tag di sini, GetBuilder mengenali registrasi yang sudah ada,
+    // TIDAK mendaftar ulang, dan TIDAK ikut menghapusnya saat dibuang.
     return GetBuilder(
       init: controller,
-      tag: 'ShiftPage',
       initState: (state) async {
         await controller.doPrepared();
       },

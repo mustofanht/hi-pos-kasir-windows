@@ -266,30 +266,31 @@ class SalePageController extends GetxController
 
   bool doVerifyRequest() {
     bool isValid = true;
-    // if (isValid && orderNameController.text.isEmpty) {
-    //   isValid = false;
-    //   alert.error(
-    //       "Terjadi Kesalahan!", messagesConstant.requiredField("Name Pemesan"));
-    // }
-    // if (isValid && emailController.text.isEmpty) {
-    //   isValid = false;
-    //   alert.error(
-    //       "Terjadi Kesalahan!", messagesConstant.requiredField("Email"));
-    // }
-    // if (isValid && noWaController.text.isEmpty) {
-    //   isValid = false;
-    //   alert.error(
-    //       "Terjadi Kesalahan!", messagesConstant.requiredField("No Wa"));
-    // }
-    // Nomor telepon wajib: dipakai menghubungi pelanggan bila ada tiket
-    // tertinggal atau keluhan, dan menjadi penghubung ke survei kepuasan yang
-    // diisi di layar pelanggan.
-    if (isValid && noWaController.text.trim().isEmpty) {
+    final SaleCartPageController saleCart = Get.find<SaleCartPageController>();
+
+    // Item sewa (sewa barang MAUPUN booking lapangan — keduanya baris
+    // addonList dengan rentModel terisi, beda dari item biasa yang dibeli
+    // lewat addAddon) mewajibkan nama & no WA pemesan: barangnya/lapangannya
+    // dipinjamkan/dipakai dan harus bisa ditelusuri. Penjualan item biasa
+    // TIDAK mewajibkan keduanya.
+    final adaItemSewa = saleCart.addonList.any((e) => e.rentModel != null);
+
+    if (isValid && adaItemSewa && orderNameController.text.trim().isEmpty) {
+      isValid = false;
+      alert.error('Nama Belum Diisi',
+          'Isi nama pemesan dulu sebelum pembayaran (wajib untuk item sewa).');
+    }
+    if (isValid && adaItemSewa && noWaController.text.trim().isEmpty) {
       isValid = false;
       alert.error('No WA Belum Diisi',
-          'Isi nomor WhatsApp/telepon pelanggan dulu sebelum pembayaran.');
+          'Isi nomor WhatsApp/telepon pelanggan dulu sebelum pembayaran '
+          '(wajib untuk item sewa).');
     }
-    if (isValid && !nomorTelpSah(noWaController.text)) {
+    // Format nomor tetap diperiksa walau tidak wajib — kalau kasir sudah
+    // mengetik sesuatu, isinya harus masuk akal, bukan asal ketik.
+    if (isValid &&
+        noWaController.text.trim().isNotEmpty &&
+        !nomorTelpSah(noWaController.text)) {
       isValid = false;
       alert.error('No WA Tidak Lengkap',
           'Periksa lagi nomornya — isi 8 sampai 15 angka, '
@@ -301,7 +302,6 @@ class SalePageController extends GetxController
     }
     // Playground >1 tiket: nama anak wajib lengkap sebelum order dibuat.
     if (isValid) {
-      final SaleCartPageController saleCart = Get.find<SaleCartPageController>();
       if (!saleCart.validateChildNames()) {
         isValid = false;
         alert.error(

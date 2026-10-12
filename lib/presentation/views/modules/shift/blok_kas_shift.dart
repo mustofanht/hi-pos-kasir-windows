@@ -53,11 +53,15 @@ Widget barisShift({
   );
 }
 
-/// Blok kas pada Rincian Shift: modal awal, penjualan tunai, kas seharusnya,
-/// kas yang dihitung, dan selisihnya.
+/// Blok kas pada Rincian Shift: modal awal, penjualan tunai, dan kas yang
+/// dihitung.
 ///
-/// Kosong untuk lokasi yang tidak memakai modal kas — di sana kas seharusnya
-/// dan selisih tidak punya arti.
+/// Kosong untuk lokasi yang tidak memakai modal kas. "Kas Seharusnya" dan
+/// "Selisih" SENGAJA tidak ditampilkan di sini (disembunyikan dari layar POS
+/// kasir atas permintaan) — kasir cukup memasukkan hasil hitungan laci tanpa
+/// melihat angka pembandingnya; rekonsiliasinya tetap tersimpan di server
+/// (kasSeharusnya/selisihKas di [ShiftDetailEntity]) untuk ditinjau di tempat
+/// lain, cuma tidak dicetak/ditampilkan di sini.
 List<Widget> blokKasShift(ShiftDetailEntity detail) {
   if (!detail.pakaiModal) return const [];
 
@@ -89,11 +93,6 @@ List<Widget> blokKasShift(ShiftDetailEntity detail) {
       head: false,
     ),
     barisShift(
-      key: 'Kas Seharusnya',
-      value: 'Rp.${common.currencyFormat(detail.kasSeharusnya ?? 0)}',
-      head: false,
-    ),
-    barisShift(
       key: 'Kas Dihitung',
       // Selama shift berjalan, kosongnya angka ini bukan kelalaian: uang di
       // laci masih berubah tiap transaksi dan baru dihitung saat tutup shift.
@@ -114,24 +113,6 @@ List<Widget> blokKasShift(ShiftDetailEntity detail) {
           head: false,
           paddingKey: EdgeInsets.only(left: layoutStyle.defaultMargin),
         ),
-      ),
-    if (detail.selisihKas == null && detail.shftEnd == null)
-      barisShift(
-        key: 'Selisih',
-        value: 'Setelah laci dihitung',
-        colorValue: colorStyle.grey,
-        head: false,
-      ),
-    if (detail.selisihKas != null)
-      barisShift(
-        key: detail.selisihKas! < 0
-            ? 'Selisih (kurang)'
-            : detail.selisihKas! > 0
-                ? 'Selisih (lebih)'
-                : 'Selisih',
-        value: 'Rp.${common.currencyFormat(detail.selisihKas!.abs())}',
-        colorValue: detail.selisihKas == 0 ? colorStyle.green : colorStyle.red,
-        head: false,
       ),
   ];
 }

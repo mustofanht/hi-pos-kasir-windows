@@ -14,6 +14,7 @@ class ShiftDetailEntity {
   final int? itemCount;
   final int? potonganCount;
   final int? voucherCount;
+  final int? depositCount;
   final String? qrisSum;
   final String? edcSum;
   final String? travelokaSum;
@@ -21,6 +22,10 @@ class ShiftDetailEntity {
   final List<ShiftDetailPaymentEntity>? listSumPayment;
   final List<ShiftDetailSumVoucherEntity>? listSumVoucher;
   final List<ShiftDetailSumPotonganEntity>? listSumPotongan;
+
+  /// Total deposit yang dipakai sebagai (sebagian) pembayaran selama shift,
+  /// per metode deposit — sama bentuknya dengan listSumVoucher/listSumPotongan.
+  final List<ShiftDetailSumVoucherEntity>? listSumDeposit;
 
   // --- Kas shift ------------------------------------------------------------
   // Hanya terisi untuk lokasi yang memakai modal kas. Lokasi lain menerima
@@ -63,6 +68,7 @@ class ShiftDetailEntity {
     this.itemCount,
     this.potonganCount,
     this.voucherCount,
+    this.depositCount,
     this.qrisSum,
     this.edcSum,
     this.travelokaSum,
@@ -70,6 +76,7 @@ class ShiftDetailEntity {
     this.listSumPayment,
     this.listSumVoucher,
     this.listSumPotongan,
+    this.listSumDeposit,
     this.pakaiModalKas,
     this.modalAwal,
     this.tunaiSum,
@@ -110,6 +117,7 @@ class ShiftDetailEntity {
       itemCount: json['itemCount'],
       potonganCount: json['potonganCount'],
       voucherCount: json['voucherCount'],
+      depositCount: json['depositCount'],
       qrisSum: json['qrisSum'],
       edcSum: json['edcSum'],
       travelokaSum: json['travelokaSum'],
@@ -127,6 +135,11 @@ class ShiftDetailEntity {
       listSumPotongan: json['listSumPotongan'] != null
           ? (json['listSumPotongan'] as List)
               .map((i) => ShiftDetailSumPotonganEntity.fromJson(i))
+              .toList()
+          : null,
+      listSumDeposit: json['listSumDeposit'] != null
+          ? (json['listSumDeposit'] as List)
+              .map((i) => ShiftDetailSumVoucherEntity.fromJson(i))
               .toList()
           : null,
       pakaiModalKas: json['pakaiModalKas'],
@@ -152,6 +165,7 @@ class ShiftDetailEntity {
       'itemCount': itemCount,
       'potonganCount': potonganCount,
       'voucherCount': voucherCount,
+      'depositCount': depositCount,
       'qrisSum': qrisSum,
       'edcSum': edcSum,
       'travelokaSum': travelokaSum,
@@ -159,6 +173,7 @@ class ShiftDetailEntity {
       'listSumPayment': listSumPayment?.map((e) => e.toJson()).toList(),
       'listSumVoucher': listSumVoucher?.map((e) => e.toJson()).toList(),
       'listSumPotongan': listSumPotongan?.map((e) => e.toJson()).toList(),
+      'listSumDeposit': listSumDeposit?.map((e) => e.toJson()).toList(),
       'pakaiModalKas': pakaiModalKas,
       'modalAwal': modalAwal,
       'tunaiSum': tunaiSum,
