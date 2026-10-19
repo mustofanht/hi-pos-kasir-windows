@@ -43,15 +43,7 @@ class KepalaStruk {
       bytes += generator.emptyLines(1);
     }
 
-    bytes += generator.text(
-      nama,
-      styles: const PosStyles(
-        align: PosAlign.center,
-        bold: true,
-        width: PosTextSize.size2,
-        height: PosTextSize.size2,
-      ),
-    );
+    bytes += cetakNama(generator, nama, lebarBaris: lebarBaris);
 
     final a = _rapikan(alamat);
     final t = formatTelepon(telepon);
@@ -81,6 +73,36 @@ class KepalaStruk {
     }
 
     bytes += generator.emptyLines(1);
+    return bytes;
+  }
+
+  /// Mencetak nama lokasi besar (lebar & tinggi ganda), tebal, tengah —
+  /// dipecah per baris kalau nama lokasi panjang supaya TIDAK terpotong.
+  ///
+  /// Pada lebar ganda, kapasitas satu baris cuma SEPARUH [lebarBaris] biasa
+  /// (tiap karakter dua kali lebih lebar) — tanpa pemecahan ini, nama lokasi
+  /// yang melebihi itu akan terpotong atau terlempar aneh oleh printer,
+  /// bukannya pindah baris dengan rapi. Dipakai bersama di kepala struk
+  /// ([cetak]) dan kepala cetak QR gate (`dataGatePrint`), supaya keduanya
+  /// konsisten.
+  static List<int> cetakNama(
+    Generator generator,
+    String nama, {
+    int lebarBaris = lebarBaris80mm,
+  }) {
+    List<int> bytes = [];
+    final kapasitasLebarGanda = (lebarBaris / 2).floor();
+    for (final baris in pecahBaris(nama, kapasitasLebarGanda)) {
+      bytes += generator.text(
+        baris,
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          width: PosTextSize.size2,
+          height: PosTextSize.size2,
+        ),
+      );
+    }
     return bytes;
   }
 

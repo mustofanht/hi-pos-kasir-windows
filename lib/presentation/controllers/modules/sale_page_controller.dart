@@ -274,17 +274,23 @@ class SalePageController extends GetxController
     // dipinjamkan/dipakai dan harus bisa ditelusuri. Penjualan item biasa
     // TIDAK mewajibkan keduanya.
     final adaItemSewa = saleCart.addonList.any((e) => e.rentModel != null);
+    // Tiket (ticketList — tiket masuk/playground/kelas/lapangan, beda dari
+    // addonList) mewajibkan no WA saja (untuk follow-up/notifikasi), nama
+    // TETAP opsional — beda dengan item sewa yang mewajibkan keduanya.
+    final adaTiket = saleCart.ticketList.isNotEmpty;
 
     if (isValid && adaItemSewa && orderNameController.text.trim().isEmpty) {
       isValid = false;
       alert.error('Nama Belum Diisi',
           'Isi nama pemesan dulu sebelum pembayaran (wajib untuk item sewa).');
     }
-    if (isValid && adaItemSewa && noWaController.text.trim().isEmpty) {
+    if (isValid &&
+        (adaItemSewa || adaTiket) &&
+        noWaController.text.trim().isEmpty) {
       isValid = false;
       alert.error('No WA Belum Diisi',
           'Isi nomor WhatsApp/telepon pelanggan dulu sebelum pembayaran '
-          '(wajib untuk item sewa).');
+          '(wajib untuk item sewa maupun tiket).');
     }
     // Format nomor tetap diperiksa walau tidak wajib — kalau kasir sudah
     // mengetik sesuatu, isinya harus masuk akal, bukan asal ketik.

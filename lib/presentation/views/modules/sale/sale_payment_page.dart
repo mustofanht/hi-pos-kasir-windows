@@ -38,11 +38,13 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
   Widget build(BuildContext context) {
     final saleCart = Get.find<SaleCartPageController>();
 
-    // Nama & No WA cuma wajib untuk item sewa (sewa barang maupun booking
-    // lapangan, dua-duanya baris addonList dengan rentModel terisi); label
-    // "*" mengikuti validasi sesungguhnya di SalePageController.doVerifyRequest,
-    // supaya kasir tidak melihat tanda wajib padahal boleh dikosongkan.
+    // Nama cuma wajib untuk item sewa (sewa barang maupun booking lapangan,
+    // dua-duanya baris addonList dengan rentModel terisi). No WA wajib untuk
+    // item sewa MAUPUN tiket (ticketList). Label "*" mengikuti validasi
+    // sesungguhnya di SalePageController.doVerifyRequest, supaya kasir tidak
+    // melihat tanda wajib padahal boleh dikosongkan.
     bool adaItemSewa() => saleCart.addonList.any((e) => e.rentModel != null);
+    bool adaTiket() => saleCart.ticketList.isNotEmpty;
 
     Widget cardPayment(CustomIdNameEntity element) {
       if (element.id == null) {
@@ -303,7 +305,9 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                                       layoutStyle.defaultMargin / 2,
                                     ),
                                     label: Text(
-                                      adaItemSewa() ? 'No WA *' : 'No WA',
+                                      (adaItemSewa() || adaTiket())
+                                          ? 'No WA *'
+                                          : 'No WA',
                                       style: textStyle.greyText.copyWith(
                                         fontSize: fontSize.small,
                                       ),
