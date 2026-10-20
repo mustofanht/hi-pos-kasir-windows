@@ -492,17 +492,9 @@ class GeneratePrintUtil {
     bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
 
-    // Location Name
+    // Location Name -- dipecah per baris kalau panjang, lihat KepalaStruk.cetakNama
     if (locationName != null) {
-      bytes += generator.text(
-        locationName,
-        styles: const PosStyles(
-          align: PosAlign.center,
-          bold: true,
-          width: PosTextSize.size2,
-          height: PosTextSize.size2,
-        ),
-      );
+      bytes += KepalaStruk.cetakNama(generator, locationName);
       bytes += generator.emptyLines(1);
     }
 
@@ -544,15 +536,16 @@ class GeneratePrintUtil {
       ),
     );
 
-    // Tambahkan text "TIKET PENDAMPING (GRATIS)" jika ini QR pendamping
+    // Tambahkan text "TIKET PENDAMPING (GRATIS)" jika ini QR pendamping.
+    // Font NORMAL (bukan size2) -- di lebar ganda, teks 25 karakter ini
+    // melebihi kapasitas satu baris (24 karakter di kertas 80mm) dan
+    // tanda kurung tutup ")" terlempar ke baris berikutnya saat dicetak.
     if (isCompanion == 'Y') {
       bytes += generator.text(
         'TIKET PENDAMPING (GRATIS)',
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
-          width: PosTextSize.size2,
-          height: PosTextSize.size2,
         ),
       );
     }
