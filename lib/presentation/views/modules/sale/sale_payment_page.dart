@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
@@ -43,6 +44,45 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
     // "*" mengikuti validasi sesungguhnya di SalePageController.doVerifyRequest,
     // supaya kasir tidak melihat tanda wajib padahal boleh dikosongkan.
     bool adaItemSewa() => saleCart.addonList.any((e) => e.rentModel != null);
+
+    // Tanggal lahir anak: opsional, jadi tidak diberi tanda "*" dan tidak pernah
+    // menghalangi pembayaran. Mode ketik dipakai supaya kasir tidak perlu
+    // menelusuri kalender mundur bertahun-tahun saat ada antrian.
+    Widget kotakTanggalLahir({
+      required String label,
+      required DateTime? nilai,
+      required void Function(DateTime) onPilih,
+    }) {
+      return CustomDateTimePicker(
+        firstState: nilai == null,
+        newDate: nilai,
+        placeholder: 'Pilih Tgl Lahir',
+        useInputEntryMode: true,
+        firstDate: DateTime(1920),
+        // Tidak ada anak yang lahir besok; batas atas hari ini membuat salah ketik
+        // tahun (mis. 2062) ditolak pemilihnya, bukan tersimpan diam-diam.
+        lastDate: DateTime.now(),
+        dateFormat: 'dd-MM-yyyy',
+        onDateChanged: onPilih,
+        padding: EdgeInsets.symmetric(
+          horizontal: layoutStyle.defaultMargin,
+          vertical: layoutStyle.defaultMargin / 4,
+        ),
+        borderRadius: BorderRadius.circular(
+          layoutStyle.defaultMargin / 2,
+        ),
+        border: Border.all(
+          color: colorStyle.grey,
+          width: 1,
+        ),
+        label: Text(
+          label,
+          style: textStyle.greyText.copyWith(
+            fontSize: fontSize.small,
+          ),
+        ),
+      );
+    }
 
     Widget cardPayment(CustomIdNameEntity element) {
       if (element.id == null) {
@@ -327,6 +367,31 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                           Expanded(
                             child: Column(
                               children: [
+                                // Playground + "Sama untuk semua": satu tanggal lahir untuk
+                                // seluruh tiket, diletakkan bersebelahan dengan Nama Pemesan
+                                // karena di mode itu satu nama & satu tanggal itulah yang
+                                // dipakai semua gelang. Mode "Isi per anak" tidak memakai
+                                // kotak ini - tanggalnya menempel pada tiap nama anak.
+                                //
+                                // autoRemove: false - GetBuilder bawaannya MENGHAPUS
+                                // controller dari GetX saat dilepas, dan keranjang masih
+                                // dipakai layar lain sesudah pembayaran ditutup.
+                                GetBuilder<SaleCartPageController>(
+                                  autoRemove: false,
+                                  builder: (cart) {
+                                    if (!cart.needChildNames ||
+                                        !cart.applyNameForAll.value) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return kotakTanggalLahir(
+                                      label:
+                                          'Tgl Lahir (berlaku untuk ${cart.playgroundTicketQty} tiket)',
+                                      nilai: cart.childDobAt(0),
+                                      onPilih: (nilai) =>
+                                          cart.setChildDob(0, nilai),
+                                    );
+                                  },
+                                ),
                                 CustomTextBox(
                                   height: layoutStyle.blockVertical * 6.5,
                                   margin: EdgeInsets.symmetric(
@@ -591,33 +656,56 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                               else
                                 ...List.generate(
                                   cart.playgroundTicketQty,
-                                  (i) => CustomTextBox(
-                                    height: layoutStyle.blockVertical * 6.5,
-                                    margin: EdgeInsets.symmetric(
-                                      horizontal: layoutStyle.defaultMargin,
-                                      vertical: layoutStyle.defaultMargin / 4,
-                                    ),
-                                    obscureText: false,
-                                    border: Border.all(
-                                      color: colorStyle.grey,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      layoutStyle.defaultMargin / 2,
-                                    ),
-                                    label: Text(
-                                      'Nama Anak ${i + 1}',
-                                      style: textStyle.greyText.copyWith(
-                                        fontSize: fontSize.small,
+                                  // Tanggal lahir bersebelahan dengan namanya supaya pasangan
+                                  // nama-tanggal tidak bisa tertukar antar anak.
+                                  (i) => Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: CustomTextBox(
+                                          height:
+                                              layoutStyle.blockVertical * 6.5,
+                                          margin: EdgeInsets.symmetric(
+                                            horizontal:
+                                                layoutStyle.defaultMargin,
+                                            vertical:
+                                                layoutStyle.defaultMargin / 4,
+                                          ),
+                                          obscureText: false,
+                                          border: Border.all(
+                                            color: colorStyle.grey,
+                                            width: 1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            layoutStyle.defaultMargin / 2,
+                                          ),
+                                          label: Text(
+                                            'Nama Anak ${i + 1}',
+                                            style:
+                                                textStyle.greyText.copyWith(
+                                              fontSize: fontSize.small,
+                                            ),
+                                          ),
+                                          controller:
+                                              cart.childNameControllerAt(i),
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                'Masukkan nama anak ke-${i + 1}',
+                                            hintStyle: textStyle.greyText,
+                                            border: InputBorder.none,
+                                          ),
+                                          keyboardType: TextInputType.text,
+                                        ),
                                       ),
-                                    ),
-                                    controller: cart.childNameControllerAt(i),
-                                    decoration: InputDecoration(
-                                      hintText: 'Masukkan nama anak ke-${i + 1}',
-                                      hintStyle: textStyle.greyText,
-                                      border: InputBorder.none,
-                                    ),
-                                    keyboardType: TextInputType.text,
+                                      Expanded(
+                                        child: kotakTanggalLahir(
+                                          label: 'Tgl Lahir ${i + 1}',
+                                          nilai: cart.childDobAt(i),
+                                          onPilih: (nilai) =>
+                                              cart.setChildDob(i, nilai),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               SizedBox(height: layoutStyle.defaultMargin / 2),

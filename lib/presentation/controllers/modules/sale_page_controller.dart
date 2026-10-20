@@ -695,6 +695,10 @@ class SalePageController extends GetxController
       childNames: saleCartPageController.needChildNames
           ? saleCartPageController.childNames
           : null,
+      // Tanggal lahir anak (opsional) — urut & sepanjang childNames.
+      childDobs: saleCartPageController.needChildNames
+          ? saleCartPageController.childDobs
+          : null,
       trnOrderBookeds: listBooked,
       lapanganPrintLines: listBookedPrint,
       checkIn: memberCheckIn,

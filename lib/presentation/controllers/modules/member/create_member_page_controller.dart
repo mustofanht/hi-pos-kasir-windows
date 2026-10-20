@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/tanggal_lahir_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
@@ -31,6 +32,11 @@ class CreateMemberPageController extends GetxController {
   final emailController = TextEditingController();
   final addressController = TextEditingController();
   final noPhoneController = TextEditingController();
+
+  /// Tanggal lahir pemilik kartu. OPSIONAL - tidak diperiksa validateForm(),
+  /// supaya pendaftaran member tidak tertahan hanya karena tanggalnya belum
+  /// ditanyakan.
+  final tglLahir = Rx<DateTime?>(null);
 
   final paymentType = <CustomIdNameEntity>[].obs;
   final selectedPaymentType = CustomIdNameEntity().obs;
@@ -65,6 +71,7 @@ class CreateMemberPageController extends GetxController {
       emailController.text = memberValid?.cardEmail ?? '';
       addressController.text = memberValid?.cardAddress ?? '';
       noPhoneController.text = memberValid?.cardNoHp ?? '';
+      tglLahir.value = memberValid?.cardBirthDate;
 
       if (memberValid!.memberListResponses != null &&
           memberValid!.memberListResponses!.isNotEmpty) {
@@ -275,6 +282,12 @@ class CreateMemberPageController extends GetxController {
   ) {
     return OrderMemberModel(
       custIdentityNo: noKtpController.text,
+      // Tanggal kosong dikirim null (bukan string kosong) supaya backend tahu
+      // bedanya "tidak diisi" dengan "dihapus" — pada perpanjangan kartu, isian
+      // kosong TIDAK boleh menghapus tanggal yang sudah tersimpan.
+      custBirthDate: tglLahir.value == null
+          ? null
+          : tanggalLahirUtil.iso(tglLahir.value),
       orderName: nameController.text,
       orderPhoneNumber: noPhoneController.text,
       memberId: membership.membId,
