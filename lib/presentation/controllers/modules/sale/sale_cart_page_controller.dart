@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/tanggal_lahir_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_deposit_model.dart';
@@ -182,6 +183,25 @@ class SaleCartPageController extends GetxController {
     update();
   }
 
+  // Tanggal lahir anak, satu per tiket playground. OPSIONAL: null berarti tidak
+  // diisi, dan itu tidak boleh menghalangi pembayaran. Indeksnya sejajar dengan
+  // childNameControllers; indeks 0 juga menjadi satu-satunya tanggal saat
+  // applyNameForAll aktif, persis seperti namanya.
+  final List<DateTime?> childDobList = [];
+
+  DateTime? childDobAt(int index) {
+    while (childDobList.length <= index) {
+      childDobList.add(null);
+    }
+    return childDobList[index];
+  }
+
+  void setChildDob(int index, DateTime? value) {
+    childDobAt(index);
+    childDobList[index] = value;
+    update();
+  }
+
   // Grow-only: hindari dispose saat rebuild/focus. Dibersihkan di clearCartOrder.
   TextEditingController childNameControllerAt(int index) {
     while (childNameControllers.length <= index) {
@@ -203,6 +223,14 @@ class SaleCartPageController extends GetxController {
         playgroundTicketQty, (i) => childNameControllerAt(i).text.trim());
   }
 
+  // Tanggal lahir per tiket playground dalam bentuk kiriman server ("yyyy-MM-dd"),
+  // urut & sepanjang childNames. String kosong = tidak diisi.
+  List<String> get childDobs => tanggalLahirUtil.daftar(
+        jumlah: playgroundTicketQty,
+        samaSemua: applyNameForAll.value,
+        nilai: childDobList,
+      );
+
   bool validateChildNames() {
     if (!needChildNames) return true;
     if (applyNameForAll.value) {
@@ -220,6 +248,7 @@ class SaleCartPageController extends GetxController {
       c.dispose();
     }
     childNameControllers.clear();
+    childDobList.clear();
   }
 
   // ── Tiket Bundling Merchandise ───────────────────────────────────────────

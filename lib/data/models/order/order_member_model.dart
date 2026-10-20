@@ -12,6 +12,11 @@ class OrderMemberModel {
   String? orderPaidBy;
   String? custAddres;
   String? custIdentityNo;
+
+  /// Tanggal lahir pemilik kartu, "yyyy-MM-dd". Opsional: null berarti kasir
+  /// tidak mengisinya, dan pada perpanjangan kartu lama tanggal yang sudah
+  /// tersimpan di server TIDAK dihapus.
+  String? custBirthDate;
   int? memberId;
   double? totalPrice;
   double? adminFeeAmt;
@@ -34,6 +39,7 @@ class OrderMemberModel {
     this.orderPaidBy,
     this.custAddres,
     this.custIdentityNo,
+    this.custBirthDate,
     this.memberId,
     this.totalPrice,
     this.adminFeeAmt,
@@ -57,6 +63,7 @@ class OrderMemberModel {
       orderPaidBy: json['orderPaidBy'],
       custAddres: json['custAddres'],
       custIdentityNo: json['custIdentityNo'],
+      custBirthDate: json['custBirthDate'],
       memberId: json['memberId'],
       totalPrice: json['totalPrice'],
       adminFeeAmt: json['adminFeeAmt'],
@@ -83,6 +90,7 @@ class OrderMemberModel {
       'orderPaidBy': orderPaidBy,
       'custAddres': custAddres,
       'custIdentityNo': custIdentityNo,
+      'custBirthDate': custBirthDate,
       'memberId': memberId,
       'totalPrice': totalPrice,
       'adminFeeAmt': adminFeeAmt,

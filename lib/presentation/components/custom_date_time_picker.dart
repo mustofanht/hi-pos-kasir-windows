@@ -25,6 +25,20 @@ class CustomDateTimePicker extends StatefulWidget {
   final bool useTimePicker;
   final DateTime? minDateTime;
 
+  /// Batas tahun yang boleh dipilih. Bawaannya 1980-2030 seperti sebelumnya;
+  /// tanggal lahir butuh rentang lain (mis. 1920 sampai hari ini) karena pemilik
+  /// kartu member bisa lahir sebelum 1980 dan tidak ada yang lahir besok.
+  final DateTime? firstDate;
+  final DateTime? lastDate;
+
+  /// Buka langsung dalam mode ketik, bukan kalender. Untuk tanggal lahir jauh
+  /// lebih cepat diketik daripada ditelusuri mundur puluhan tahun - dan kasir
+  /// sedang melayani antrian.
+  final bool useInputEntryMode;
+
+  /// Tulisan saat belum ada tanggal yang dipilih ([firstState] masih true).
+  final String? placeholder;
+
   const CustomDateTimePicker({
     Key? key,
     this.label,
@@ -42,6 +56,10 @@ class CustomDateTimePicker extends StatefulWidget {
     this.enable = true,
     this.useTimePicker = false,
     this.minDateTime,
+    this.firstDate,
+    this.lastDate,
+    this.useInputEntryMode = false,
+    this.placeholder,
   }) : super(key: key);
 
   @override
@@ -138,12 +156,28 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
 
   // select  date method
   Future<void> _selectDate(BuildContext context) async {
+    final DateTime pertama = widget.firstDate ?? DateTime(1980);
+    final DateTime terakhir = widget.lastDate ?? DateTime(2030);
+    // initialDate WAJIB berada di dalam rentangnya - showDatePicker meng-assert itu,
+    // dan tanggal awal di sini bisa saja hari ini sementara rentangnya berakhir
+    // kemarin (atau sebaliknya untuk tanggal lahir). Dijepit, bukan dibiarkan
+    // menjatuhkan layar pembayaran.
+    DateTime awal = date;
+    if (awal.isBefore(pertama)) {
+      awal = pertama;
+    }
+    if (awal.isAfter(terakhir)) {
+      awal = terakhir;
+    }
     final DateTime? newDate = await showDatePicker(
       context: context,
       locale: const Locale('id'),
-      initialDate: date,
-      firstDate: DateTime(1980),
-      lastDate: DateTime(2030),
+      initialDate: awal,
+      firstDate: pertama,
+      lastDate: terakhir,
+      initialEntryMode: widget.useInputEntryMode
+          ? DatePickerEntryMode.input
+          : DatePickerEntryMode.calendar,
       helpText: 'Pilih Tanggal',
     );
 
@@ -253,7 +287,7 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                   Expanded(
                     child: Text(
                       widget.firstState
-                          ? 'Select  Date'
+                          ? (widget.placeholder ?? 'Select  Date')
                           : (widget.type == DateTimePickerType.OnlyYear)
                               ? dateTimeUtil.onlyYear(selectedYear)
                               : widget.type == DateTimePickerType.OnlyTime

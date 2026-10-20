@@ -11,6 +11,9 @@ class MemberValid {
   int? cardMembId;
   String? cardEmail;
   String? cardAddress;
+
+  /// Tanggal lahir pemilik kartu (V133). Null untuk kartu lama yang belum punya.
+  DateTime? cardBirthDate;
   Membership? mstMembership;
   List<MemberListResponse>? memberListResponses;
   MemberDetail? memberDetail;
@@ -24,6 +27,7 @@ class MemberValid {
     this.cardMembId,
     this.cardEmail,
     this.cardAddress,
+    this.cardBirthDate,
     this.mstMembership,
     this.memberListResponses,
     this.memberDetail,
@@ -39,6 +43,11 @@ class MemberValid {
       cardMembId: json['cardMembId'],
       cardEmail: json['cardEmail'],
       cardAddress: json['cardAddress'],
+      // Dikirim server sebagai "yyyy-MM-dd" (LocalDate). tryParse, bukan parse:
+      // satu nilai aneh tidak boleh menggagalkan seluruh pencarian member.
+      cardBirthDate: json['cardBirthDate'] != null
+          ? DateTime.tryParse(json['cardBirthDate'].toString())
+          : null,
       mstMembership: json['mstMembership'] != null
           ? Membership.fromJson(json['mstMembership'])
           : null,
@@ -64,6 +73,7 @@ class MemberValid {
       'cardMembId': cardMembId,
       'cardEmail': cardEmail,
       'cardAddress': cardAddress,
+      'cardBirthDate': cardBirthDate?.toIso8601String(),
       'mstMembership': mstMembership?.toJson(),
       'memberDetail': memberDetail?.toJson(),
       'memberListResponses': memberListResponses,

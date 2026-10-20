@@ -8,6 +8,7 @@ import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_payment.dart';
+import 'package:jaya_propertiy/presentation/components/custom_date_time_picker.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dropdown_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_text_box.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/member/create_member_page_controller.dart';
@@ -286,36 +287,38 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              CustomTextBox(
-                height: layoutStyle.blockVertical * 6.5,
-                isDisabled: true,
-                margin: EdgeInsets.symmetric(
-                  horizontal: layoutStyle.defaultMargin,
-                  vertical: layoutStyle.defaultMargin / 4,
-                ),
-                obscureText: false,
-                border: Border.all(
-                  color: colorStyle.grey,
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(
-                  layoutStyle.defaultMargin / 2,
-                ),
-                label: Text(
-                  'No Member',
-                  style: textStyle.greyText.copyWith(
-                    fontSize: fontSize.small,
-                  ),
-                ),
-                controller: controller.noMemberController,
-                decoration: InputDecoration(
-                  hintText: 'Nomor Member',
-                  hintStyle: textStyle.greyText,
-                  border: InputBorder.none,
-                ),
-              ),
               Row(
                 children: [
+                  Expanded(
+                    child: CustomTextBox(
+                      height: layoutStyle.blockVertical * 6.5,
+                      isDisabled: true,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin,
+                        vertical: layoutStyle.defaultMargin / 4,
+                      ),
+                      obscureText: false,
+                      border: Border.all(
+                        color: colorStyle.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                      label: Text(
+                        'No Member',
+                        style: textStyle.greyText.copyWith(
+                          fontSize: fontSize.small,
+                        ),
+                      ),
+                      controller: controller.noMemberController,
+                      decoration: InputDecoration(
+                        hintText: 'Nomor Member',
+                        hintStyle: textStyle.greyText,
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
                   Expanded(
                     child: CustomTextBox(
                       height: layoutStyle.blockVertical * 6.5,
@@ -350,6 +353,11 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                       maxLength: 16,
                     ),
                   ),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
                   Expanded(
                     child: CustomTextBox(
                       isMandatory: true,
@@ -377,6 +385,44 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
                         hintText: 'Nama',
                         hintStyle: textStyle.greyText,
                         border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Obx(
+                      () => CustomDateTimePicker(
+                        // Opsional: tidak diberi tanda "*" dan tidak diperiksa
+                        // validateForm(). Mode ketik dipakai karena menelusuri
+                        // kalender mundur puluhan tahun terlalu lama di kasir.
+                        firstState: controller.tglLahir.value == null,
+                        newDate: controller.tglLahir.value,
+                        placeholder: 'Pilih Tgl Lahir',
+                        useInputEntryMode: true,
+                        // Pemilik kartu bisa lahir sebelum 1980 (batas bawaan
+                        // pemilihnya), dan tidak ada yang lahir besok.
+                        firstDate: DateTime(1920),
+                        lastDate: DateTime.now(),
+                        dateFormat: 'dd-MM-yyyy',
+                        onDateChanged: (nilai) {
+                          controller.tglLahir.value = nilai;
+                        },
+                        padding: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin,
+                          vertical: layoutStyle.defaultMargin / 4,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          layoutStyle.defaultMargin / 2,
+                        ),
+                        border: Border.all(
+                          color: colorStyle.grey,
+                          width: 1,
+                        ),
+                        label: Text(
+                          'Tgl Lahir',
+                          style: textStyle.greyText.copyWith(
+                            fontSize: fontSize.small,
+                          ),
+                        ),
                       ),
                     ),
                   ),

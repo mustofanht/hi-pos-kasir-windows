@@ -34,6 +34,11 @@ class OrderModel {
   // Playground: nama anak per tiket berbayar (urut). Null bila bukan playground / order 1 tiket.
   List<String>? childNames;
 
+  /// Playground: tanggal lahir anak per tiket berbayar ("yyyy-MM-dd"), urut &
+  /// sepanjang [childNames]. Elemen kosong = kasir tidak mengisinya; tanggal
+  /// lahir memang opsional, jadi daftar ini boleh berisi string kosong.
+  List<String>? childDobs;
+
   /// Booking lapangan per jam. Kosong/null untuk order non-lapangan (blok
   /// aditif di backend — order biasa tidak terpengaruh).
   List<OrderBookedModel>? trnOrderBookeds;
@@ -77,6 +82,7 @@ class OrderModel {
     required this.listDepositUse,
     this.listCreateTicket,
     this.childNames,
+    this.childDobs,
     this.trnOrderBookeds,
     this.lapanganPrintLines,
     this.checkIn,
@@ -154,6 +160,7 @@ class OrderModel {
           ? []
           : listCreateTicket?.map((e) => e.toJson()).toList(),
       "childNames": childNames,
+      "childDobs": childDobs,
       "trnOrderBookeds": trnOrderBookeds == null
           ? []
           : trnOrderBookeds!.map((e) => e.toJson()).toList(),
