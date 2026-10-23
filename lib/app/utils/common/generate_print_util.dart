@@ -76,6 +76,13 @@ class GeneratePrintUtil {
     bool strukVoid = false,
     String? alasanVoid,
     String? disetujuiOleh,
+    /// true = struk ini CETAK ULANG, bukan cetakan pertama.
+    ///
+    /// Pelanggan maupun pemeriksa kas tidak bisa membedakan struk kedua dari
+    /// struk asli: isinya sama persis, termasuk nomor transaksi dan nominalnya.
+    /// Satu transaksi dengan dua lembar struk tanpa tanda adalah dua bukti
+    /// pembayaran yang sama sahnya - dan itu jalan termudah menggandakan bukti.
+    bool cetakUlang = false,
   }) async {
     List<int> bytes = [];
     // Using default profile
@@ -103,6 +110,30 @@ class GeneratePrintUtil {
       alamat: locationAddress,
       telepon: locationPhone,
     );
+
+    // Penanda CETAK ULANG ditaruh paling atas bersama penanda pembatalan:
+    // penanda yang tersembunyi di kaki struk tidak terbaca siapa pun yang
+    // hanya melihat lembarnya sekilas.
+    if (cetakUlang) {
+      bytes += generator.text(
+        '*** CETAK ULANG ***',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+      );
+      bytes += generator.text(
+        'BUKAN STRUK ASLI',
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      );
+      bytes += generator.text(
+        'Dicetak ulang: ${dateTimeUtil.now(format: dateFormat.fullTimePrinted)}',
+        styles: const PosStyles(align: PosAlign.center),
+      );
+      bytes += generator.hr();
+    }
 
     // Penanda pembatalan ditaruh PALING ATAS, besar, sebelum nomor apa pun.
     // Struk void yang bentuknya sama dengan struk pembelian dan hanya berbeda
@@ -470,6 +501,16 @@ class GeneratePrintUtil {
         ),
       ],
     );
+    if (cetakUlang) {
+      // Diulang di bawah dengan sengaja: struk yang panjang sering dipotong
+      // atau difoto sebagian, dan bagian atasnya hilang.
+      bytes += generator.hr();
+      bytes += generator.text(
+        '*** CETAK ULANG - BUKAN STRUK ASLI ***',
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      );
+    }
+
     if (strukVoid) {
       bytes += generator.hr();
       bytes += generator.text(
