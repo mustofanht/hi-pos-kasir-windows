@@ -7,6 +7,10 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
 
 class GenerateMemberPrintUtil {
+  /// Struk pendaftaran/perpanjangan membership.
+  ///
+  /// [cetakUlang] menandai lembar kedua; lihat alasannya di
+  /// GeneratePrintUtil.dataPaymentTiketPrint.
   Future<List<int>> paymentPrint({
     String? locationName,
     String? locationAddress,
@@ -15,6 +19,7 @@ class GenerateMemberPrintUtil {
     DateTime? paymentDate,
     required PaperSize paperSize,
     required OrderMemberModel body,
+    bool cetakUlang = false,
   }) async {
     List<int> bytes = [];
     // Using default profile
@@ -22,6 +27,26 @@ class GenerateMemberPrintUtil {
     final generator = Generator(paperSize, profile);
     bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
+
+    // Penanda cetak ulang, alasannya sama dengan struk penjualan: satu
+    // transaksi dengan dua lembar struk tanpa tanda adalah dua bukti
+    // pembayaran yang sama sahnya.
+    if (cetakUlang) {
+      bytes += generator.text(
+        '*** CETAK ULANG ***',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+      );
+      bytes += generator.text(
+        'BUKAN STRUK ASLI',
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      );
+      bytes += generator.hr();
+    }
 
     // Location Name
     bytes += KepalaStruk.cetak(

@@ -388,7 +388,11 @@ class BuktiPembayaranPageController extends GetxController
         logger.safeLog('PRINT DETAIL MODEL : ${detailModel.value.toJson()}');
         if (detailModel.value.trnOrderMember != null &&
             detailModel.value.trnOrderMember!.memberNo != null) {
-          await doPrintMember(locationName, user);
+          // Layar ini memang layar BUKTI pembayaran: struknya sudah tercetak
+          // saat transaksi. Apa pun yang dicetak dari sini adalah cetakan
+          // kedua - kecuali struk pembatalan, yang memang baru dicetak sekali
+          // dan sudah punya penandanya sendiri.
+          await doPrintMember(locationName, user, cetakUlang: !strukVoid);
           Get.back();
           return true;
         } else {
@@ -488,6 +492,11 @@ class BuktiPembayaranPageController extends GetxController
 
           OrderModel orderModel = OrderModel(
             orderNumber: selectedData.value.orderNumber ?? '',
+            // Nama pembeli HARUS diisi di sini. Model struk ini dirakit ulang
+            // dari data layar, dan sebelum ini kolomnya dilewatkan — sehingga
+            // baris "Nama Pembeli" pada struk cetak ulang selalu tercetak "-"
+            // meski namanya ada di order.
+            orderName: detailModel.value.orderName ?? selectedData.value.orderName,
             orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
             orderTotalItem: detailModel.value.orderTotalItem!,
             orderTotalAmt: detailModel.value.orderTotalAmt!,
@@ -529,6 +538,7 @@ class BuktiPembayaranPageController extends GetxController
             strukVoid: strukVoid,
             alasanVoid: detailModel.value.orderVoidReason,
             disetujuiOleh: detailModel.value.orderVoidbySpv,
+            cetakUlang: !strukVoid,
           );
 
           logger.safeLog('==============================> PRINT EXISTING ');
@@ -548,7 +558,9 @@ class BuktiPembayaranPageController extends GetxController
     }
   }
 
-  doPrintMember(String locationName, UserEntity? user) async {
+  /// Struk membership. [cetakUlang] menandai lembar kedua.
+  doPrintMember(String locationName, UserEntity? user,
+      {bool cetakUlang = false}) async {
     OrderMemberModel orderMemberModel = OrderMemberModel(
       orderName: detailModel.value.trnOrderMember?.memberName,
       orderMemberNo: detailModel.value.trnOrderMember?.memberNo,
@@ -580,6 +592,7 @@ class BuktiPembayaranPageController extends GetxController
       kasirName: detailModel.value.paymentDetail == null
           ? ''
           : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
+      cetakUlang: cetakUlang,
     );
 
     logger.safeLog('==============================> PRINT MEMBER ');
