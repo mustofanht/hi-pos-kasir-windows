@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/otorisasi_util.dart';
 import 'package:jaya_propertiy/app/utils/common/tanggal_lahir_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
@@ -872,7 +873,30 @@ class SaleCartPageController extends GetxController {
     updateCustomer();
   }
 
+  /// Void yang belum disetujui leader memblokir transaksi berikutnya (V136).
+  ///
+  /// Diperiksa di sini — sebelum layar pembayaran terbuka — bukan hanya
+  /// mengandalkan penolakan server: kalau kasir baru mengetahuinya saat tombol
+  /// Bayar ditolak, uang pelanggan sudah ada di tangannya dan keranjangnya
+  /// sudah penuh.
+  ///
+  /// Gagal memeriksa TIDAK memblokir penjualan: jaringan yang terganggu bukan
+  /// alasan menghentikan loket, dan server tetap menolak transaksinya kalau
+  /// memang ada void tertunda.
+  Future<bool> _terblokirVoidTertunda() async {
+    final tertunda = await otorisasiUtil.voidTertunda(authToken: _authToken);
+    if (tertunda == null || !tertunda.terblokir) return false;
+    alert.error(
+      'Void Belum Disetujui',
+      tertunda.pesan ??
+          'Masih ada void yang belum disetujui leader. Transaksi baru bisa '
+              'dilakukan setelah void itu disetujui atau ditolak.',
+    );
+    return true;
+  }
+
   onPayment() async {
+    if (await _terblokirVoidTertunda()) return;
     // logger.safeLog('TOTAL AMT : ${finalTotalOrderAmt.value}');
     // logger.safeLog('TICKERT LIST : ${ticketList.length}');
     // logger.safeLog('TICKERT LIST : ${ticketList.isEmpty}');

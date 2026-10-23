@@ -159,6 +159,9 @@ class ManualExitPageController extends GetxController {
         ticketName: tiket.ticketName,
         isCompanion: tiket.isCompanion,
         paymentDate: tiket.orderDate,
+        // Nama anak dipakai bila ada (playground); pada tiket biasa kolomnya
+        // kosong dan tercetak "-". Nama pemesan tidak dikirim endpoint ini.
+        namaPembeli: tiket.childName,
       );
       await printerUtil.print(printerUtil.currPrinter!, data);
       alert.success('Tercetak', 'Tiket ${tiket.ticketNo} dicetak ulang di printer struk.');

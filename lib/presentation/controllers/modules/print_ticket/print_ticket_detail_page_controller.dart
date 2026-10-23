@@ -6,6 +6,8 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/otorisasi_util.dart';
+import 'package:jaya_propertiy/domain/entities/otorisasi/otorisasi_entity.dart';
 import 'package:jaya_propertiy/app/utils/common/qr_tiket_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
@@ -295,7 +297,47 @@ class PrintTicketDetailPageController extends GetxController {
     return isValid;
   }
 
+  /// Print Tiket dari menu Cek Order — perlu otorisasi leader/SPV.
+  ///
+  /// Aksi ini menerbitkan tiket yang bisa dipakai masuk gate, dan dari layar
+  /// ini bisa dilakukan berulang kali. Alurnya dibuat sama seperti void:
+  /// ajukan, leader menyetujui di back office, baru tercetak — dan satu izin
+  /// berlaku untuk satu cetakan.
   doPrintTicket() async {
+    final orderNo = model.value.orderNumber;
+    if (orderNo == null || orderNo.isEmpty) {
+      alert.error('Error', 'Order belum dipilih.');
+      return;
+    }
+    if (!doVerifiedPrintTicket()) {
+      // Penjagaan lama (status order/tiket) tetap diperiksa LEBIH DULU: tidak
+      // ada gunanya mengganggu leader untuk cetakan yang memang akan ditolak
+      // layar ini sendiri.
+      return;
+    }
+
+    final izin = await otorisasiUtil.minta(
+      authToken: _authToken,
+      jenis: OtorisasiEntity.jenisCetakTiket,
+      ref: orderNo,
+      keterangan: _keteranganOtorisasi(),
+    );
+    if (izin == null) return;
+
+    final tercetak = await _cetakTiket();
+    if (tercetak) {
+      await otorisasiUtil.tandaiDipakai(authToken: _authToken, id: izin);
+    }
+  }
+
+  /// Rincian singkat untuk dibaca penyetuju di back office.
+  String _keteranganOtorisasi() {
+    final nama = (model.value.orderName ?? '').trim();
+    return nama.isEmpty ? 'Cetak tiket' : 'Cetak tiket - $nama';
+  }
+
+  /// Mencetak tiketnya. true bila kertasnya benar-benar keluar.
+  Future<bool> _cetakTiket() async {
     try {
       if (doVerifiedPrintTicket()) {
         if (printerUtil.currPrinter != null) {
@@ -307,12 +349,12 @@ class PrintTicketDetailPageController extends GetxController {
             );
           } else {
             alert.error('Error', 'Terjadi Kesalahan , silahkan hubungi admin');
-            return;
+            return false;
           }
 
           if (listCreateTicket.isEmpty) {
             alert.error('Error', 'Data Empty');
-            return;
+            return false;
           }
 
           String locationName = "";
@@ -371,6 +413,7 @@ class PrintTicketDetailPageController extends GetxController {
               ticketName: element.ticketName,
               isCompanion: element.isCompanion, // Pass flag pendamping
               paymentDate: paymentDate,
+              namaPembeli: model.value.orderName,
             );
             data.addAll(dataPrint);
             count++;
@@ -390,23 +433,28 @@ class PrintTicketDetailPageController extends GetxController {
                 reffNo: reffNo,
                 paymentDate: paymentDate,
                 lines: lapanganLines,
+                namaPembeli: model.value.orderName,
               ),
             );
           }
 
           if (data.isEmpty) {
             alert.error('Error', 'Data Empty');
-            return;
+            return false;
           }
           await printerUtil.print(printerUtil.currPrinter!, data);
+          return true;
         } else {
           alert.error('Error', 'please check connection printer');
           printerUtil.connectPrinter();
+          return false;
         }
       }
+      return false;
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      return false;
     }
   }
 

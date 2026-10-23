@@ -315,22 +315,13 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                             ),
                           ),
                         ),
-                        Flexible(
-                          child: Container(
-                            width: constraints.maxWidth,
-                            child: AutoSizeText(
-                              'No. HP: ${e.dpNoHp}',
-                              style: TextStyle(
-                                fontSize: fontSize.body,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 3,
-                              minFontSize: 8,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
+                        // Nomor HP pemilik deposit TIDAK lagi ditampilkan (22 Okt
+                        // 2026, atas permintaan). Layar kasir menghadap ke arah
+                        // pelanggan yang sedang dilayani, dan kartu deposit
+                        // pelanggan lain ikut terlihat di sana — nomor HP orang
+                        // lain tidak perlu terbaca siapa pun untuk memilih
+                        // deposit. Nama dan nominalnya sudah cukup, dan
+                        // penelusurannya tetap utuh lewat No. Reservasi.
                         Flexible(
                           child: Container(
                             width: constraints.maxWidth,

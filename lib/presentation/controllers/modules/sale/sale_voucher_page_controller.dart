@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/api_filter_util.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/otorisasi_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -13,6 +15,7 @@ import 'package:jaya_propertiy/data/models/common/filter_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
+import 'package:jaya_propertiy/domain/entities/otorisasi/otorisasi_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/potongan_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
@@ -103,7 +106,18 @@ class SaleVoucherPageController extends GetxController {
     update();
   }
 
-  addDepositToCart(DepositEntity entity) {
+  /// Memakai deposit pelanggan — perlu otorisasi leader/SPV lebih dulu.
+  ///
+  /// Deposit adalah uang yang sudah diterima lebih dulu dan menempel pada satu
+  /// nama; memakainya untuk transaksi orang lain tidak meninggalkan jejak apa
+  /// pun pada laporan harian. Karena itu alurnya dibuat sama seperti void:
+  /// ajukan, leader menyetujui di back office, baru depositnya masuk keranjang.
+  ///
+  /// Izinnya ditandai dipakai begitu deposit MASUK KERANJANG, bukan setelah
+  /// pembayaran selesai. Itu pilihan yang lebih ketat dan disengaja: kasir yang
+  /// mengeluarkan lalu memasukkan deposit itu lagi harus minta izin baru,
+  /// sehingga satu izin tidak bisa dipakai berpindah-pindah transaksi.
+  addDepositToCart(DepositEntity entity) async {
     final SaleCartPageController saleCartPageController =
         Get.find<SaleCartPageController>();
 
@@ -116,9 +130,20 @@ class SaleVoucherPageController extends GetxController {
         return;
       }
     }
+
+    final izin = await otorisasiUtil.minta(
+      authToken: _authToken,
+      jenis: OtorisasiEntity.jenisPakaiDeposit,
+      ref: '${entity.dpId}',
+      keterangan: '${entity.dpName ?? '-'} - Rp'
+          '${common.currencyFormat(entity.dpAmount ?? 0)}',
+    );
+    if (izin == null) return;
+
     saleCartPageController.adddeposit(entity);
     saleCartPageController.calculateTotalOrder();
     update();
+    await otorisasiUtil.tandaiDipakai(authToken: _authToken, id: izin);
   }
 
   onSelectedType(CustomIdNameEntity element) async {

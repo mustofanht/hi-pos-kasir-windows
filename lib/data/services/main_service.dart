@@ -35,6 +35,7 @@ import 'package:jaya_propertiy/domain/entities/sale/ticket_bundle_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/ticket_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/voucher_entity.dart';
 import 'package:jaya_propertiy/domain/entities/gate/gate_entity.dart';
+import 'package:jaya_propertiy/domain/entities/otorisasi/otorisasi_entity.dart';
 import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/survey/survey_reason_entity.dart';
@@ -61,6 +62,7 @@ part 'transaction_service.dart';
 part 'member_service.dart';
 part 'survey_service.dart';
 part 'gate_service.dart';
+part 'otorisasi_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -77,4 +79,5 @@ class MainService {
   final member = MemberService();
   final survey = SurveyService();
   final gate = GateService();
+  final otorisasi = OtorisasiService();
 }
