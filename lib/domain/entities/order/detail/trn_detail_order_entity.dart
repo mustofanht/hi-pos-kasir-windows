@@ -21,6 +21,9 @@ class TrnDetailOrderEntity {
   String? orderSource;
   String? orderStatus;
   String? orderVoidReason;
+
+  /// Leader/SPV yang menyetujui void; dicetak di struk pembatalan.
+  String? orderVoidbySpv;
   dynamic voucher;
   dynamic ppn;
   TrnDetailOrderCustomer? customerDetail;
@@ -46,6 +49,7 @@ class TrnDetailOrderEntity {
     this.orderSource,
     this.orderStatus,
     this.orderVoidReason,
+    this.orderVoidbySpv,
     this.voucher,
     this.ppn,
     this.customerDetail,
@@ -81,6 +85,7 @@ class TrnDetailOrderEntity {
       orderSource: json['orderSource'],
       orderStatus: json['orderStatus'],
       orderVoidReason: json['orderVoidReason'],
+      orderVoidbySpv: json['orderVoidbySpv'],
       voucher: json['voucher'],
       ppn: json['ppn'],
       customerDetail: json['customerDetail'] != null
@@ -139,6 +144,7 @@ class TrnDetailOrderEntity {
       'orderSource': orderSource,
       'orderStatus': orderStatus,
       'orderVoidReason': orderVoidReason,
+      'orderVoidbySpv': orderVoidbySpv,
       'voucher': voucher,
       'ppn': ppn,
       'customerDetail': customerDetail?.toJson(),

@@ -273,6 +273,7 @@ class OrderUtil {
             ticketName: element.ticketName,
             isCompanion: element.isCompanion, // Pass flag pendamping
             paymentDate: body.paymentDate ?? DateTime.now(),
+            namaPembeli: body.orderName,
           );
           data.addAll(dataPrint);
           count++;

@@ -65,6 +65,43 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                   width: layoutStyle.blockHorizontal * 12,
                   height: layoutStyle.blockVertical * 5,
                 ),
+              // Struk pembatalan hanya untuk order yang void-nya SUDAH
+              // disetujui leader (status V). Selama masih menunggu (status S)
+              // tombolnya tidak ada: pelanggan yang memegang kertas "VOID"
+              // padahal leader masih bisa menolaknya akan menuntut uangnya
+              // kembali atas transaksi yang masih sah.
+              if (controller.selectedData.value.orderStatus == 'V')
+                CustomButton(
+                  onPressed: () {
+                    controller.doCetakStrukVoid();
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      colorStyle.primary,
+                    ),
+                    foregroundColor: MaterialStateProperty.all<Color>(
+                      colorStyle.white,
+                    ),
+                    overlayColor: MaterialStateProperty.all<Color>(
+                      colorStyle.white.withOpacity(0.1),
+                    ),
+                    elevation: MaterialStateProperty.all<double>(0),
+                  ),
+                  label: Row(
+                    children: [
+                      const Icon(Icons.receipt_long_outlined),
+                      SizedBox(
+                        width: layoutStyle.defaultMargin / 5,
+                      ),
+                      Text(
+                        'Struk Void',
+                        style: textStyle.whiteText,
+                      ),
+                    ],
+                  ),
+                  width: layoutStyle.blockHorizontal * 12,
+                  height: layoutStyle.blockVertical * 5,
+                ),
               SizedBox(
                 width: layoutStyle.defaultMargin / 2,
               ),

@@ -12,6 +12,15 @@ import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 // import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 
+/// Nama pembeli untuk dicetak; yang kosong ditulis "-".
+///
+/// Ditulis "-", bukan dibiarkan kosong: baris berlabel yang isinya hampa
+/// terbaca sebagai cetakan yang terpotong, dan petugas mencetaknya lagi.
+String _namaPembeli(String? nama) {
+  final bersih = (nama ?? '').trim();
+  return bersih.isEmpty ? '-' : bersih;
+}
+
 class GeneratePrintUtil {
   List<int> buildListRentalPayment(
     Generator generator,
@@ -51,6 +60,12 @@ class GeneratePrintUtil {
     return bytes;
   }
 
+  /// Struk penjualan — dan, dengan [strukVoid] true, struk PEMBATALAN.
+  ///
+  /// Keduanya satu fungsi dengan sengaja: struk void harus memperlihatkan
+  /// barang dan nilai yang dibatalkan, persis seperti struk aslinya. Dua fungsi
+  /// terpisah akan berakhir dengan dua bentuk yang berbeda, dan pelanggan
+  /// memegang kertas yang tidak bisa dicocokkan dengan struk pembeliannya.
   Future<List<int>> dataPaymentTiketPrint({
     String? locationName,
     String? locationAddress,
@@ -58,6 +73,9 @@ class GeneratePrintUtil {
     String? kasirName,
     required PaperSize paperSize,
     required OrderModel body,
+    bool strukVoid = false,
+    String? alasanVoid,
+    String? disetujuiOleh,
   }) async {
     List<int> bytes = [];
     // Using default profile
@@ -86,6 +104,26 @@ class GeneratePrintUtil {
       telepon: locationPhone,
     );
 
+    // Penanda pembatalan ditaruh PALING ATAS, besar, sebelum nomor apa pun.
+    // Struk void yang bentuknya sama dengan struk pembelian dan hanya berbeda
+    // satu baris di bawah akan dibaca sebagai bukti pembayaran yang sah.
+    if (strukVoid) {
+      bytes += generator.text(
+        '*** VOID / PEMBATALAN ***',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+      );
+      bytes += generator.text(
+        'Transaksi ini DIBATALKAN',
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      );
+      bytes += generator.hr();
+    }
+
     // Print Store Information
     bytes += generator.text(
       'No Reff. ${body.orderReffno ?? ''}',
@@ -108,27 +146,30 @@ class GeneratePrintUtil {
         bold: true,
       ),
     );
-    bytes += generator.row(
-      [
-        PosColumn(
-          text: body.paymentDate != null
-              ? dateTimeUtil.getFormattedDate(
-                  date: body.paymentDate!,
-                  format: dateFormat.fullTimePrinted,
-                )
-              : dateTimeUtil.now(
-                  format: dateFormat.fullTimePrinted,
-                ),
-          width: 6,
-        ),
-        PosColumn(
-          text: body.orderName ?? '',
-          width: 6,
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
-        ),
-      ],
+    bytes += generator.text(
+      body.paymentDate != null
+          ? dateTimeUtil.getFormattedDate(
+              date: body.paymentDate!,
+              format: dateFormat.fullTimePrinted,
+            )
+          : dateTimeUtil.now(
+              format: dateFormat.fullTimePrinted,
+            ),
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    // Nama pembeli DIBERI LABEL dan satu baris sendiri (22 Okt 2026).
+    // Sebelumnya ia dicetak tanpa keterangan di ujung kanan baris tanggal,
+    // sehingga terbaca seperti potongan nama kasir atau nama tiket — dan pada
+    // nama panjang ia terpotong oleh kolom tanggal di sebelahnya.
+    bytes += generator.text(
+      'Nama Pembeli : ${_namaPembeli(body.orderName)}',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
     );
     bytes += generator.hr();
 
@@ -429,6 +470,24 @@ class GeneratePrintUtil {
         ),
       ],
     );
+    if (strukVoid) {
+      bytes += generator.hr();
+      bytes += generator.text(
+        'Alasan : ${(alasanVoid ?? '').trim().isEmpty ? '-' : alasanVoid!.trim()}',
+        styles: const PosStyles(align: PosAlign.left),
+      );
+      // Penyetuju ikut tercetak: inilah yang membedakan pembatalan yang sah
+      // dari kertas yang dibuat kasir sendiri.
+      bytes += generator.text(
+        'Disetujui : ${(disetujuiOleh ?? '').trim().isEmpty ? '-' : disetujuiOleh!.trim()}',
+        styles: const PosStyles(align: PosAlign.left),
+      );
+      bytes += generator.text(
+        'Uang dikembalikan sesuai ketentuan outlet.',
+        styles: const PosStyles(align: PosAlign.left),
+      );
+    }
+
     bytes += generator.hr();
     // Print Thank You Message
     bytes += generator.text(
@@ -476,6 +535,13 @@ class GeneratePrintUtil {
     required PaperSize paperSize,
     required String orderNo,
     required String reffNo,
+    /// Nama pembeli, dicetak di bawah Order ID (22 Okt 2026).
+    ///
+    /// Tiket QR tidak membawa nama siapa pun sebelum ini. Saat selembar tiket
+    /// tertinggal di meja atau tertukar antar-rombongan, tidak ada cara
+    /// mengembalikannya kepada pemiliknya — dan di gate, petugas tidak punya
+    /// pegangan untuk mencocokkan tiket dengan orang yang membawanya.
+    String? namaPembeli,
     required int pakOf,
     required int pakTotal,
     required String qrCode,
@@ -508,6 +574,13 @@ class GeneratePrintUtil {
     );
     bytes += generator.text(
       'Order ID : $orderNo',
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    bytes += generator.text(
+      'Nama Pembeli : ${_namaPembeli(namaPembeli)}',
       styles: const PosStyles(
         align: PosAlign.left,
         bold: true,
@@ -921,6 +994,7 @@ class GeneratePrintUtil {
     required String reffNo,
     DateTime? paymentDate,
     required List<LapanganPrintLine> lines,
+    String? namaPembeli,
   }) async {
     List<int> bytes = [];
     final profile = await CapabilityProfile.load();
@@ -941,6 +1015,10 @@ class GeneratePrintUtil {
     );
     bytes += generator.text(
       'Order ID : $orderNo',
+      styles: const PosStyles(align: PosAlign.left, bold: true),
+    );
+    bytes += generator.text(
+      'Nama Pembeli : ${_namaPembeli(namaPembeli)}',
       styles: const PosStyles(align: PosAlign.left, bold: true),
     );
     bytes += generator.text(

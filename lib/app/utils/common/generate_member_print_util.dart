@@ -55,27 +55,23 @@ class GenerateMemberPrintUtil {
     );
 
     // paymentDate
-    bytes += generator.row(
-      [
-        PosColumn(
-          text: paymentDate != null
-              ? dateTimeUtil.getFormattedDate(
-                  date: paymentDate,
-                  format: dateFormat.fullTimePrinted,
-                )
-              : dateTimeUtil.now(
-                  format: dateFormat.fullTimePrinted,
-                ),
-          width: 6,
-        ),
-        PosColumn(
-          text: body.orderName ?? '',
-          width: 6,
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
-        ),
-      ],
+    bytes += generator.text(
+      paymentDate != null
+          ? dateTimeUtil.getFormattedDate(
+              date: paymentDate,
+              format: dateFormat.fullTimePrinted,
+            )
+          : dateTimeUtil.now(
+              format: dateFormat.fullTimePrinted,
+            ),
+      styles: const PosStyles(align: PosAlign.left),
+    );
+    // Nama pembeli DIBERI LABEL dan satu baris sendiri (22 Okt 2026), sama
+    // seperti struk penjualan. Sebelumnya ia menumpang di ujung kanan baris
+    // tanggal tanpa keterangan apa pun, dan nama panjang terpotong di sana.
+    bytes += generator.text(
+      'Nama Pembeli : ${(body.orderName ?? '').trim().isEmpty ? '-' : body.orderName!.trim()}',
+      styles: const PosStyles(align: PosAlign.left, bold: true),
     );
 
     bytes += generator.hr();
@@ -267,27 +263,23 @@ class GenerateMemberPrintUtil {
     );
 
     // paymentDate
-    bytes += generator.row(
-      [
-        PosColumn(
-          text: paymentDate != null
-              ? dateTimeUtil.getFormattedDate(
-                  date: paymentDate,
-                  format: dateFormat.fullTimePrinted,
-                )
-              : dateTimeUtil.now(
-                  format: dateFormat.fullTimePrinted,
-                ),
-          width: 6,
-        ),
-        PosColumn(
-          text: body.orderName ?? '',
-          width: 6,
-          styles: const PosStyles(
-            align: PosAlign.right,
-          ),
-        ),
-      ],
+    bytes += generator.text(
+      paymentDate != null
+          ? dateTimeUtil.getFormattedDate(
+              date: paymentDate,
+              format: dateFormat.fullTimePrinted,
+            )
+          : dateTimeUtil.now(
+              format: dateFormat.fullTimePrinted,
+            ),
+      styles: const PosStyles(align: PosAlign.left),
+    );
+    // Nama pembeli DIBERI LABEL dan satu baris sendiri (22 Okt 2026), sama
+    // seperti struk penjualan. Sebelumnya ia menumpang di ujung kanan baris
+    // tanggal tanpa keterangan apa pun, dan nama panjang terpotong di sana.
+    bytes += generator.text(
+      'Nama Pembeli : ${(body.orderName ?? '').trim().isEmpty ? '-' : body.orderName!.trim()}',
+      styles: const PosStyles(align: PosAlign.left, bold: true),
     );
 
     bytes += generator.hr();

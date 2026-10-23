@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/common/generate_member_print_util.dart'
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/message_util.dart';
+import 'package:jaya_propertiy/app/utils/common/otorisasi_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
@@ -32,6 +33,7 @@ import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/trn_order_entity.dart';
+import 'package:jaya_propertiy/domain/entities/otorisasi/otorisasi_entity.dart';
 import 'package:jaya_propertiy/domain/entities/reasonvoid/reason_void_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/domain/entities/sale/deposit_entity.dart';
@@ -301,7 +303,78 @@ class BuktiPembayaranPageController extends GetxController
     );
   }
 
+  /// Cetak ulang struk — perlu otorisasi leader/SPV lebih dulu.
+  ///
+  /// Cetak ulang struk adalah jalan paling mudah menggandakan bukti
+  /// pembayaran, dan sebelum ini tidak ada satu baris pun yang mencatat siapa
+  /// melakukannya. Alurnya dibuat sama seperti void: ajukan, leader menyetujui
+  /// di back office, baru tercetak — dan satu izin hanya berlaku untuk satu
+  /// cetakan.
   doPrintTicket() async {
+    final orderNo = selectedData.value.orderNumber;
+    if (orderNo == null || orderNo.isEmpty) {
+      alert.error('Error', 'Order belum dipilih.');
+      return;
+    }
+
+    final izin = await otorisasiUtil.minta(
+      authToken: _authToken,
+      jenis: OtorisasiEntity.jenisCetakUlangStruk,
+      ref: orderNo,
+      // Keterangan dibaca leader di back office. Tanpa nama pembeli dan
+      // nominalnya, yang terlihat hanya nomor order — dan yang terjadi di
+      // lapangan adalah leader menyetujui tanpa membuka menu lain.
+      keterangan: _keteranganOtorisasi(),
+    );
+    if (izin == null) return;
+
+    final tercetak = await _cetakUlangStruk();
+    // Ditandai SESUDAH struknya keluar: kalau printer macet, kasir tidak
+    // kehilangan izinnya untuk pekerjaan yang belum terjadi.
+    if (tercetak) {
+      await otorisasiUtil.tandaiDipakai(authToken: _authToken, id: izin);
+    }
+  }
+
+  /// Rincian singkat untuk dibaca penyetuju: nama pembeli dan nominalnya.
+  String _keteranganOtorisasi() {
+    final nama = (selectedData.value.orderName ?? '').trim();
+    final nominal = selectedData.value.orderTotalAmt;
+    final bagian = <String>[];
+    if (nama.isNotEmpty) bagian.add(nama);
+    if (nominal != null) bagian.add('Rp${common.currencyFormat(nominal)}');
+    return bagian.isEmpty ? 'Cetak ulang struk' : bagian.join(' - ');
+  }
+
+  /// Struk PEMBATALAN, dicetak sesudah void disetujui leader.
+  ///
+  /// Tidak perlu otorisasi lagi: void-nya sendiri sudah melewati persetujuan
+  /// leader, dan struk ini adalah bukti pembatalan untuk pelanggan. Hanya bisa
+  /// dicetak untuk order yang statusnya memang sudah VOID — selama void masih
+  /// menunggu persetujuan (status S), tidak ada yang boleh dicetak: pelanggan
+  /// yang memegang kertas "VOID" padahal leader masih bisa menolaknya akan
+  /// menuntut uangnya kembali atas transaksi yang masih sah.
+  doCetakStrukVoid() async {
+    final status = selectedData.value.orderStatus;
+    if (status != 'V') {
+      alert.warning(
+        'Belum Bisa Dicetak',
+        status == 'S'
+            ? 'Void ini masih menunggu persetujuan leader. Struk pembatalan '
+                'baru bisa dicetak setelah disetujui.'
+            : 'Order ini tidak dalam keadaan void.',
+      );
+      return;
+    }
+    await _cetakUlangStruk(strukVoid: true);
+  }
+
+  /// Mencetak struknya. true bila kertasnya benar-benar keluar.
+  ///
+  /// [strukVoid] true menghasilkan struk PEMBATALAN dari data yang sama —
+  /// bukan bentuk kertas yang lain — supaya pelanggan bisa mencocokkannya
+  /// dengan struk pembeliannya baris demi baris.
+  Future<bool> _cetakUlangStruk({bool strukVoid = false}) async {
     try {
       if (printerUtil.currPrinter != null) {
         String locationName = "";
@@ -317,7 +390,7 @@ class BuktiPembayaranPageController extends GetxController
             detailModel.value.trnOrderMember!.memberNo != null) {
           await doPrintMember(locationName, user);
           Get.back();
-          return;
+          return true;
         } else {
           await _createTicket(
             _authToken,
@@ -453,19 +526,25 @@ class BuktiPembayaranPageController extends GetxController
             kasirName: detailModel.value.paymentDetail == null
                 ? ''
                 : detailModel.value.paymentDetail!.pymntCreatedBy ?? '',
+            strukVoid: strukVoid,
+            alasanVoid: detailModel.value.orderVoidReason,
+            disetujuiOleh: detailModel.value.orderVoidbySpv,
           );
 
           logger.safeLog('==============================> PRINT EXISTING ');
           await printerUtil.print(printerUtil.currPrinter!, data);
           Get.back();
+          return true;
         }
       } else {
         alert.error('Error', 'please check connection printer');
         printerUtil.connectPrinter();
+        return false;
       }
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      return false;
     }
   }
 
