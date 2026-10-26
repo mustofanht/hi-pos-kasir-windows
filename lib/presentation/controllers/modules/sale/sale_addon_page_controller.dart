@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/paginasi_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/filter_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -30,12 +33,58 @@ class SaleAddonPageController extends GetxController {
   final typeItemList = <CustomIdNameEntity>[].obs;
   final selectedTypeItemList = CustomIdNameEntity().obs;
 
+  /// Kotak pencarian nama item (26 Okt 2026). Berlaku untuk ketiga tab —
+  /// `mst_product` maupun `mst_product/hourly` sama-sama menerima `search`.
+  final cariController = TextEditingController();
+  final kataCari = ''.obs;
+  final adaKataCari = false.obs;
+  Timer? _tungguKetik;
+
+  /// Kata kunci milik permintaan yang sedang berjalan; lihat alasannya di
+  /// controller Tiket.
+  String _kataDimuat = '';
+
   @override
   void onInit() {
     super.onInit();
     scrollController.addListener(scrollHandler);
     doPrepareList(page: 0, typeProduct: 'H');
     doInitializeItemTypeList();
+  }
+
+  @override
+  void onClose() {
+    _tungguKetik?.cancel();
+    cariController.dispose();
+    super.onClose();
+  }
+
+  /// Mengetik di kotak pencarian; ditunda 400 ms supaya tiap huruf tidak
+  /// menjadi satu permintaan ke server.
+  void cari(String teks) {
+    adaKataCari.value = teks.trim().isNotEmpty;
+    _tungguKetik?.cancel();
+    _tungguKetik = Timer(const Duration(milliseconds: 400), () {
+      final kata = teks.trim();
+      if (kata == kataCari.value) return;
+      kataCari.value = kata;
+      doPrepareList(
+        page: 0,
+        typeProduct: selectedTypeItemList.value.id ?? 'H',
+      );
+    });
+  }
+
+  void bersihkanCari() {
+    _tungguKetik?.cancel();
+    cariController.clear();
+    adaKataCari.value = false;
+    if (kataCari.value.isEmpty) return;
+    kataCari.value = '';
+    doPrepareList(
+      page: 0,
+      typeProduct: selectedTypeItemList.value.id ?? 'H',
+    );
   }
 
   doInitializeItemTypeList() {
@@ -53,6 +102,7 @@ class SaleAddonPageController extends GetxController {
     if (isLoading.value) return;
     isLoading.value = true;
 
+    _kataDimuat = kataCari.value.trim();
     if (typeProduct == 'H') {
       await prepareItemHourly(page);
     } else {
@@ -60,6 +110,11 @@ class SaleAddonPageController extends GetxController {
     }
     logger.safeLog('IS LOADING >>> ${isLoading.value}');
     update();
+
+    // Kata kuncinya berubah selagi permintaan ini berjalan → muat sekali lagi.
+    if (_kataDimuat != kataCari.value.trim()) {
+      await doPrepareList(page: 0, typeProduct: typeProduct);
+    }
   }
 
   Future<void> prepareItem({
@@ -77,6 +132,11 @@ class SaleAddonPageController extends GetxController {
         'locationId': sessionUtil.getLocationIdsQueryParam(),
         'typeProduct': typeProduct,
       };
+      // Dicari di server, bukan disaring dari halaman yang sudah termuat.
+      final kata = kataCari.value.trim();
+      if (kata.isNotEmpty) {
+        param['search'] = kata;
+      }
 
       result = await _service.sale.addonService.getAll(
         authToken: _authToken,
@@ -106,10 +166,12 @@ class SaleAddonPageController extends GetxController {
   Future<void> prepareItemHourly(int page) async {
     try {
       var result;
+      final kata = kataCari.value.trim();
       result = await _service.sale.addonService.getHourly(
         authToken: _authToken,
         locationParam: sessionUtil.getLocationIdsQueryParam(),
         page: page,
+        search: kata.isEmpty ? null : kata,
       );
 
       result.fold((l) {
@@ -132,14 +194,25 @@ class SaleAddonPageController extends GetxController {
   }
 
   Future<void> scrollHandler() async {
-    if (scrollController.position.pixels ==
-        scrollController.position.maxScrollExtent) {
-      if (pagination.value.currentPage! < pagination.value.totalPage!) {
-        await doPrepareList(
-            page: pagination.value.currentPage! + 1,
-            typeProduct: selectedTypeItemList.value.id!);
-      }
+    if (!scrollController.hasClients) return;
+    if (!PaginasiKasir.sudahDiDasar(
+      scrollController.position.pixels,
+      scrollController.position.maxScrollExtent,
+    )) {
+      return;
     }
+    // `pageNo` berbasis 0 dan `ttlPages` adalah cacah halaman: pada halaman
+    // terakhir perbandingan lama masih berkata "ada lagi", lalu meminta
+    // halaman di luar jangkauan.
+    if (!PaginasiKasir.adaHalamanBerikutnya(
+      pagination.value.currentPage,
+      pagination.value.totalPage,
+    )) {
+      return;
+    }
+    await doPrepareList(
+        page: pagination.value.currentPage! + 1,
+        typeProduct: selectedTypeItemList.value.id!);
   }
 
   onNextRental(

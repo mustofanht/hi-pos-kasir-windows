@@ -21,6 +21,23 @@ String _namaPembeli(String? nama) {
   return bersih.isEmpty ? '-' : bersih;
 }
 
+/// Keterangan voucher yang layak dicetak, atau `null` bila tidak ada.
+///
+/// Berbeda dari nama pembeli, baris ini **dihilangkan** saat kosong — bukan
+/// ditulis "-". Nama pembeli selalu relevan; keterangan voucher hanya ada pada
+/// transaksi yang memakai voucher, dan baris "Ket. Voucher : -" pada setiap
+/// struk hanya memanjangkan kertas tanpa menjelaskan apa pun.
+///
+/// Layar penjualan mengirim spasi untuk isian kosong
+/// (`keteranganVoucher.text.isEmpty ? ' ' : ...`), jadi memeriksa `isEmpty`
+/// saja tidak cukup — tanpa `trim()` setiap struk mendapat baris kosong
+/// berlabel.
+String? _keteranganVoucher(String? teks) {
+  final bersih = (teks ?? '').trim();
+  if (bersih.isEmpty || bersih == '-') return null;
+  return bersih;
+}
+
 class GeneratePrintUtil {
   List<int> buildListRentalPayment(
     Generator generator,
@@ -202,6 +219,20 @@ class GeneratePrintUtil {
         bold: true,
       ),
     );
+    // Keterangan Voucher yang diketik kasir di menu Pembayaran (26 Okt 2026).
+    // Sebelumnya hanya tersimpan di `trn_order.order_voucher_desc` dan hanya
+    // terlihat di back office — pelanggan maupun kasir tidak punya bukti
+    // voucher mana yang dipakai pada transaksi itu.
+    final ketVoucher = _keteranganVoucher(body.orderVoucherDesc);
+    if (ketVoucher != null) {
+      bytes += generator.text(
+        'Ket. Voucher : $ketVoucher',
+        styles: const PosStyles(
+          align: PosAlign.left,
+          bold: true,
+        ),
+      );
+    }
     bytes += generator.hr();
 
     // double totalBayar = 0;

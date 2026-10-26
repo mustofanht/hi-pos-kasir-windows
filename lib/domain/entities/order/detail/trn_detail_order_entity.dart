@@ -25,6 +25,13 @@ class TrnDetailOrderEntity {
   /// Leader/SPV yang menyetujui void; dicetak di struk pembatalan.
   String? orderVoidbySpv;
   dynamic voucher;
+
+  /// Keterangan Voucher yang diketik kasir di menu Pembayaran.
+  ///
+  /// Dipakai saat struk dicetak ULANG — pada penjualan pertama nilainya masih
+  /// ada di layar. Kosong dikirim sebagai spasi oleh layar penjualan, jadi
+  /// pemakainya harus memangkas sebelum memutuskan mencetak.
+  String? orderVoucherDesc;
   dynamic ppn;
   TrnDetailOrderCustomer? customerDetail;
   List<TrnDetailOrder>? detailOrderModels;
@@ -51,6 +58,7 @@ class TrnDetailOrderEntity {
     this.orderVoidReason,
     this.orderVoidbySpv,
     this.voucher,
+    this.orderVoucherDesc,
     this.ppn,
     this.customerDetail,
     this.detailOrderModels,
@@ -87,6 +95,7 @@ class TrnDetailOrderEntity {
       orderVoidReason: json['orderVoidReason'],
       orderVoidbySpv: json['orderVoidbySpv'],
       voucher: json['voucher'],
+      orderVoucherDesc: json['orderVoucherDesc'],
       ppn: json['ppn'],
       customerDetail: json['customerDetail'] != null
           ? TrnDetailOrderCustomer.fromJson(json['customerDetail'])
@@ -146,6 +155,7 @@ class TrnDetailOrderEntity {
       'orderVoidReason': orderVoidReason,
       'orderVoidbySpv': orderVoidbySpv,
       'voucher': voucher,
+      'orderVoucherDesc': orderVoucherDesc,
       'ppn': ppn,
       'customerDetail': customerDetail?.toJson(),
       'detailOrderModels': detailOrderModels?.map((e) => e.toJson()).toList(),

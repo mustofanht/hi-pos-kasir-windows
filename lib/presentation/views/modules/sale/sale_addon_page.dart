@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/components/kotak_cari.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
@@ -332,6 +333,16 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                         .toList(),
                   ),
                 ),
+              ),
+              // Kotak cari DI BAWAH deretan tab: kata kunci berlaku pada tab
+              // yang sedang terbuka, jadi ia harus terbaca sebagai milik
+              // daftarnya, bukan milik seluruh layar.
+              KotakCari(
+                controller: controller.cariController,
+                petunjuk: 'Cari nama item',
+                onUbah: controller.cari,
+                onBersihkan: controller.bersihkanCari,
+                adaIsi: controller.adaKataCari,
               ),
               Expanded(
                 // width: layoutStyle.screenWidth,

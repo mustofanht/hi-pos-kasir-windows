@@ -497,6 +497,9 @@ class BuktiPembayaranPageController extends GetxController
             // baris "Nama Pembeli" pada struk cetak ulang selalu tercetak "-"
             // meski namanya ada di order.
             orderName: detailModel.value.orderName ?? selectedData.value.orderName,
+            // Keterangan voucher ikut dirakit ulang; tanpa baris ini struk
+            // cetak ulang kehilangan keterangan yang ada di struk aslinya.
+            orderVoucherDesc: detailModel.value.orderVoucherDesc,
             orderReffno: selectedData.value.paymentDetail?.pymntReffno ?? '',
             orderTotalItem: detailModel.value.orderTotalItem!,
             orderTotalAmt: detailModel.value.orderTotalAmt!,
