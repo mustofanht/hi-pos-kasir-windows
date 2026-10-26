@@ -315,6 +315,13 @@ class PrintTicketDetailPageController extends GetxController {
       // layar ini sendiri.
       return;
     }
+    if (!await _adaYangPerluDicetak()) {
+      // Diperiksa SEBELUM izin diminta. Sebelum ini kasir mengajukan, leader
+      // menyetujui, lalu layarnya baru berkata "Data Empty" — izinnya terbuang
+      // dan tidak ada satu pun pihak yang tahu sebabnya.
+      alert.warning('Tidak ada yang perlu dicetak', _pesanTanpaScan);
+      return;
+    }
 
     final izin = await otorisasiUtil.minta(
       authToken: _authToken,
@@ -330,6 +337,43 @@ class PrintTicketDetailPageController extends GetxController {
     }
   }
 
+  /// Penjelasan untuk order yang seluruh tiketnya disetup **Tanpa Scan**.
+  ///
+  /// Keadaan ini WAJAR, bukan kegagalan: tiket tanpa scan tidak pernah
+  /// dipindai di gate maupun papan TV, jadi QR-nya tidak ada gunanya. Yang
+  /// salah selama ini hanya pesannya — "Data Empty" terbaca seperti data
+  /// order-nya hilang, dan kasir menghubungi admin untuk sesuatu yang memang
+  /// sudah benar.
+  static const String _pesanTanpaScan =
+      'Seluruh tiket pada order ini disetup Tanpa Scan, jadi tidak ada QR '
+      'maupun gelang yang perlu dicetak. Tiketnya sudah aktif tanpa perlu '
+      'dipindai di gate.';
+
+  /// Masih ada yang perlu dicetak untuk order ini?
+  ///
+  /// Dibaca dari rincian order yang sudah ada di layar, ditambah dua setup dari
+  /// server (tiket Tanpa Scan & tiket lapangan). Gagal memeriksa **tidak**
+  /// menghalangi cetak — lihat [QrTiketUtil.adaYangPerluDicetak].
+  Future<bool> _adaYangPerluDicetak() async {
+    try {
+      final nama = (model.value.trnOrderTicket ?? [])
+          .map((t) => t.ticketName)
+          .toList();
+      if (nama.isEmpty) return true;
+      final tanpaScan = await _fetchNamaTanpaScan();
+      if (tanpaScan.isEmpty) return true;
+      final lapangan = await _fetchLapanganPriceTimes();
+      return QrTiketUtil.adaYangPerluDicetak(
+        namaTiketOrder: nama,
+        namaTanpaScan: tanpaScan,
+        namaLapangan: lapangan.keys,
+      );
+    } catch (e) {
+      logger.safeLog(e);
+      return true;
+    }
+  }
+
   /// Rincian singkat untuk dibaca penyetuju di back office.
   String _keteranganOtorisasi() {
     final nama = (model.value.orderName ?? '').trim();
@@ -341,7 +385,7 @@ class PrintTicketDetailPageController extends GetxController {
     try {
       if (doVerifiedPrintTicket()) {
         if (printerUtil.currPrinter != null) {
-          List<ResponseCreateTicketNoEntity> listCreateTicket = [];
+          List<ResponseCreateTicketNoEntity>? listCreateTicket;
           if (model.value.orderNumber != null) {
             listCreateTicket = await createTicketNo(
               orderNo: model.value.orderNumber!,
@@ -352,8 +396,19 @@ class PrintTicketDetailPageController extends GetxController {
             return false;
           }
 
+          if (listCreateTicket == null) {
+            // Gagal menghubungi server; pesannya sudah ditampilkan apa adanya
+            // oleh createTicketNo. Dulu di sini menyusul "Data Empty" yang
+            // menimpanya, sehingga sebab aslinya tidak pernah terbaca siapa
+            // pun — termasuk saat yang terjadi sebenarnya order tidak ditemukan
+            // atau sesi kasir kedaluwarsa.
+            return false;
+          }
+
           if (listCreateTicket.isEmpty) {
-            alert.error('Error', 'Data Empty');
+            alert.error('Tidak ada tiket',
+                'Order ini tidak punya tiket yang bisa diterbitkan. '
+                'Hubungi admin bila seharusnya ada.');
             return false;
           }
 
@@ -439,7 +494,9 @@ class PrintTicketDetailPageController extends GetxController {
           }
 
           if (data.isEmpty) {
-            alert.error('Error', 'Data Empty');
+            // Sampai di sini berarti tiketnya terbit tetapi tidak satu pun
+            // perlu kertas: seluruhnya Tanpa Scan dan bukan booking lapangan.
+            alert.warning('Tidak ada yang perlu dicetak', _pesanTanpaScan);
             return false;
           }
           await printerUtil.print(printerUtil.currPrinter!, data);
@@ -601,13 +658,20 @@ class PrintTicketDetailPageController extends GetxController {
     return null;
   }
 
-  Future<List<ResponseCreateTicketNoEntity>> createTicketNo({
+  /// Menerbitkan/mengambil nomor tiket order.
+  ///
+  /// `null` berarti **gagal** (pesannya sudah ditampilkan), daftar kosong
+  /// berarti servernya memang tidak mengembalikan tiket. Dua keadaan itu dulu
+  /// sama-sama menjadi daftar kosong, dan pemanggilnya melaporkan keduanya
+  /// sebagai "Data Empty" — galat jaringan, sesi kedaluwarsa, dan order tanpa
+  /// tiket tidak bisa dibedakan sama sekali.
+  Future<List<ResponseCreateTicketNoEntity>?> createTicketNo({
     required String orderNo,
     String? reason,
     required String status,
   }) async {
     try {
-      List<ResponseCreateTicketNoEntity> dataList = [];
+      List<ResponseCreateTicketNoEntity>? dataList;
       var result = await _service.order.orderService.createTicketNo(
         authToken: _authToken,
         reffNo: orderNo,
@@ -618,7 +682,10 @@ class PrintTicketDetailPageController extends GetxController {
         (l) {
           logger.safeLog(l);
           logger.safeLog('Create Ticket No Error 1');
-          alert.error('Error', 'Terjadi Kesalahan!');
+          // Pesan server ditampilkan apa adanya: "Terjadi Kesalahan!" membuat
+          // kasir menekan tombolnya berulang kali untuk sebab yang sudah
+          // dijelaskan server.
+          alert.error('Error', l.isEmpty ? 'Terjadi Kesalahan!' : l);
         },
         (r) {
           logger.safeLog('Create Ticket No Success');
@@ -630,7 +697,8 @@ class PrintTicketDetailPageController extends GetxController {
     } catch (e) {
       logger.safeLog('Create Ticket No Error 2');
       logger.safeLog(e.toString());
-      return [];
+      alert.error('Error', 'Terjadi Kesalahan , hubungi admin');
+      return null;
     }
   }
 }
