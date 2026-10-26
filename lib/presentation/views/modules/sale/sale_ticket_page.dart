@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
+import 'package:jaya_propertiy/presentation/components/kotak_cari.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -64,7 +65,17 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
         return SizedBox(
           width: layoutStyle.screenWidth,
           height: layoutStyle.screenHeight,
-          child: RefreshIndicator(
+          child: Column(
+            children: [
+              KotakCari(
+                controller: controller.cariController,
+                petunjuk: 'Cari nama tiket',
+                onUbah: controller.cari,
+                onBersihkan: controller.bersihkanCari,
+                adaIsi: controller.adaKataCari,
+              ),
+              Expanded(
+                child: RefreshIndicator(
             onRefresh: () async {
               await controller.doPrepareList(page: 0);
             },
@@ -186,6 +197,9 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
                             )
                             .toList(),
                       ),
+                ),
+              ),
+            ],
           ),
         );
       },
