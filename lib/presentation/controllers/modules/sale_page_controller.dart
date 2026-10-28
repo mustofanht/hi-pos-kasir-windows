@@ -969,6 +969,12 @@ class SalePageController extends GetxController
 
     logger.safeLog('ADD VOUCHER MEMBER NO 2 : $memberNo');
 
+    // Batas tiket per transaksi berlaku juga untuk voucher member.
+    final int maxTicket = entity.vpMaxTicket ?? 0;
+    if (maxTicket > 0 && qtyVoucher > maxTicket) {
+      qtyVoucher = maxTicket;
+    }
+
     final cartVoucher = CartVoucher(
       qtyOrder: qtyVoucher,
       totalPrice: qtyVoucher * entity.vpUnitValue!,
