@@ -20,6 +20,7 @@ import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
@@ -149,6 +150,58 @@ class SalePageController extends GetxController
 
   final isLoadingPayment = false.obs;
   final mstPayments = <MstPayment>[].obs;
+
+  // ── Split payment: 2 metode sekaligus, mis. setengah QRIS setengah cash ──
+  final isSplitPayment = false.obs;
+  final splitPayment1 = Rxn<MstPayment>(null);
+  final splitPayment2 = Rxn<MstPayment>(null);
+  final splitAmount1Controller = TextEditingController();
+  final splitReffno1Controller = TextEditingController();
+  final splitReffno2Controller = TextEditingController();
+
+  double get splitAmount1 => double.tryParse(splitAmount1Controller.text) ?? 0;
+  double get splitAmount2 =>
+      (totalOrderAmnt.value - splitAmount1) < 0 ? 0 : (totalOrderAmnt.value - splitAmount1);
+
+  /// Reffno hanya diminta untuk metode selain QRIS/VA/Tunai — tunai otomatis
+  /// diisi '-' sama seperti jalur pembayaran tunggal.
+  bool splitLegNeedsReffno(MstPayment? mp) {
+    if (mp == null) return false;
+    return mp.pymntCategory != PaymentMethod.QRIS &&
+        mp.pymntCategory != 'VA' &&
+        mp.pymntCategory != PaymentMethod.CASH;
+  }
+
+  doToggleSplitPayment(bool value) {
+    isSplitPayment.value = value;
+    splitPayment1.value = null;
+    splitPayment2.value = null;
+    splitAmount1Controller.clear();
+    splitReffno1Controller.clear();
+    splitReffno2Controller.clear();
+    // Tidak lewat doSelectPaymentType(id: null, ...) -- lookup mstPayments
+    // .firstWhere di sana melempar (tidak ada kode null) untuk placeholder ini,
+    // jadi reset admin fee (selectedMstPayment) tidak pernah tereksekusi kalau
+    // lewat situ. Reset langsung di sini supaya split payment selalu mulai
+    // dari admin fee 0 (split belum menghitung admin fee per leg di Tahap 1).
+    selectedPaymentType.value =
+        CustomIdNameEntity(id: null, name: ' --- Pilih Pembayaran --- ');
+    final SaleCartPageController saleCartPageController =
+        Get.find<SaleCartPageController>();
+    saleCartPageController.selectedMstPayment.value = MstPayment();
+    saleCartPageController.calculateTotalOrder();
+    update();
+  }
+
+  doSelectSplitPayment1(MstPayment mp) {
+    splitPayment1.value = mp;
+    update();
+  }
+
+  doSelectSplitPayment2(MstPayment mp) {
+    splitPayment2.value = mp;
+    update();
+  }
 
   doBackPayment() {
     openPayment.value = !openPayment.value;
@@ -302,9 +355,33 @@ class SalePageController extends GetxController
           'Periksa lagi nomornya — isi 8 sampai 15 angka, '
           'contoh 081234567890.');
     }
-    if (isValid && selectedPaymentType.value.id == null) {
+    if (isValid && !isSplitPayment.value && selectedPaymentType.value.id == null) {
       isValid = false;
       alert.error('Warning', 'Pilih Pembayaran terlebih dahulu!');
+    }
+    if (isValid && isSplitPayment.value) {
+      if (splitPayment1.value?.pymntCode == null) {
+        isValid = false;
+        alert.error('Warning', 'Pilih metode pembayaran pertama (split)!');
+      } else if (splitAmount1 <= 0 || splitAmount1 >= totalOrderAmnt.value) {
+        isValid = false;
+        alert.error('Warning',
+            'Nominal metode pertama harus lebih dari 0 dan kurang dari total pembayaran.');
+      } else if (splitPayment2.value?.pymntCode == null) {
+        isValid = false;
+        alert.error('Warning', 'Pilih metode pembayaran kedua (split)!');
+      } else if (splitPayment1.value!.pymntCode == splitPayment2.value!.pymntCode) {
+        isValid = false;
+        alert.error('Warning', 'Dua metode split payment harus berbeda.');
+      } else if (splitLegNeedsReffno(splitPayment1.value) &&
+          splitReffno1Controller.text.trim().isEmpty) {
+        isValid = false;
+        alert.error('Warning', 'Isi nomor reference untuk metode pertama.');
+      } else if (splitLegNeedsReffno(splitPayment2.value) &&
+          splitReffno2Controller.text.trim().isEmpty) {
+        isValid = false;
+        alert.error('Warning', 'Isi nomor reference untuk metode kedua.');
+      }
     }
     // Playground >1 tiket: nama anak wajib lengkap sebelum order dibuat.
     if (isValid) {
@@ -325,6 +402,13 @@ class SalePageController extends GetxController
       final OrderController orderController = Get.put(OrderController());
       final OrderPaymentController orderPayment =
           Get.put(OrderPaymentController());
+
+      if (isSplitPayment.value) {
+        OrderModel body = getBodyOrderSplit();
+        logger.safeLog('ORDER BODY SPLIT : ${body.toJson()}');
+        orderController.doSplitPayment(body: body, orderNo: orderNo);
+        return;
+      }
 
       MstPayment mstPayment = mstPayments.firstWhere(
         (e) => e.pymntCode == selectedPaymentType.value.id,
@@ -710,6 +794,33 @@ class SalePageController extends GetxController
       checkIn: memberCheckIn,
       checkOut: memberCheckOut,
     );
+  }
+
+  /// Sama seperti [getBodyOrder], tapi orderPaidBy diisi "MX" (dibaca backend
+  /// sebagai split payment) dan [OrderModel.splitPayments] diisi 2 leg. Tunai
+  /// otomatis diisi reffno '-' (sama konvensi jalur tunggal); metode lain pakai
+  /// yang diketik kasir.
+  OrderModel getBodyOrderSplit() {
+    OrderModel body = getBodyOrder('MX', 'Campuran (Split Payment)');
+    body.splitPayments = [
+      SplitPaymentLegModel(
+        paymentCode: splitPayment1.value!.pymntCode,
+        paymentName: splitPayment1.value!.pymntName,
+        amount: splitAmount1,
+        reffno: splitPayment1.value!.pymntCategory == PaymentMethod.CASH
+            ? '-'
+            : splitReffno1Controller.text.trim(),
+      ),
+      SplitPaymentLegModel(
+        paymentCode: splitPayment2.value!.pymntCode,
+        paymentName: splitPayment2.value!.pymntName,
+        amount: splitAmount2,
+        reffno: splitPayment2.value!.pymntCategory == PaymentMethod.CASH
+            ? '-'
+            : splitReffno2Controller.text.trim(),
+      ),
+    ];
+    return body;
   }
 
   Future<bool> validationPraCreateOrder() async {

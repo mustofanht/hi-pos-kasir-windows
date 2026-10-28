@@ -1,3 +1,4 @@
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 
 class ResponseOrderEntity {
@@ -18,6 +19,9 @@ class ResponseOrderEntity {
   String? orderVoucherDesc;
   TrnDetailOrderMember? trnDetailOrderMember;
 
+  /// Terisi hanya untuk order split payment — satu entri per metode bayar.
+  List<SplitPaymentLegModel>? splitPayments;
+
   ResponseOrderEntity({
     this.orderNumber,
     this.orderName,
@@ -35,6 +39,7 @@ class ResponseOrderEntity {
     this.orderActivationPath,
     this.orderVoucherDesc,
     this.trnDetailOrderMember,
+    this.splitPayments,
   });
 
   factory ResponseOrderEntity.fromJson(Map<String, dynamic> json) {
@@ -60,6 +65,11 @@ class ResponseOrderEntity {
       trnDetailOrderMember: json['trnOrderMember'] != null
           ? TrnDetailOrderMember.fromJson(json['trnOrderMember'])
           : null,
+      splitPayments: json['splitPayments'] == null
+          ? null
+          : (json['splitPayments'] as List)
+              .map((e) => SplitPaymentLegModel.fromJson(e))
+              .toList(),
     );
   }
 
@@ -80,6 +90,7 @@ class ResponseOrderEntity {
       'orderActivationPath': orderActivationPath,
       'orderVoucherDesc': orderVoucherDesc,
       'trnDetailOrderMember': trnDetailOrderMember?.toJson(),
+      'splitPayments': splitPayments?.map((e) => e.toJson()).toList(),
     };
   }
 }

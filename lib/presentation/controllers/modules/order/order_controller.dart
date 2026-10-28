@@ -9,6 +9,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_payment_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
@@ -141,6 +142,94 @@ class OrderController extends GetxController {
     } catch (e) {
       logger.safeLog(e);
       alert.error('Error', 'Payment Error');
+    }
+  }
+
+  /// Split payment: 1 panggilan createOrder berisi 2 leg sekaligus (lihat
+  /// [OrderModel.splitPayments]). Kalau salah satu leg QRIS, backend menahan
+  /// order 'belum lunas' sampai leg itu dikonfirmasi -- tampilkan dialog
+  /// tunggu+QR persis seperti [doPaymentQris], tapi kuncinya [paymentNo] leg
+  /// itu sendiri (bukan nomor order). Kalau tidak ada leg QRIS (mis.
+  /// cash+EDC), order sudah langsung lunas begitu createOrder sukses.
+  doSplitPayment({required OrderModel body, Rxn<String>? orderNo}) async {
+    try {
+      loading.popUpLoading();
+      var result = await _service.order.orderService.createOrder(
+        authToken: _authToken,
+        body: body,
+      );
+      Get.back();
+
+      String? msg;
+      SplitPaymentLegModel? legQris;
+      result.fold(
+        (l) {
+          logger.safeLog(l);
+          msg = l;
+        },
+        (r) {
+          orderNo?.value = r.data?.orderNumber;
+          final legs = r.data?.splitPayments ?? [];
+          for (final leg in legs) {
+            if (leg.qrisUrl != null && leg.qrisUrl!.isNotEmpty) {
+              legQris = leg;
+              break;
+            }
+          }
+        },
+      );
+      if (msg != null && msg!.isNotEmpty) {
+        alert.error('Error', msg!);
+        return;
+      }
+
+      if (legQris == null) {
+        // Tidak ada leg QRIS (mis. cash+EDC) -- order sudah langsung lunas.
+        final String? completedOrderNo = orderNo?.value;
+        orderNo?.value = null;
+        await orderUtil.showPaymentSuccessAlert(
+            _authToken, body, Rxn<String>(completedOrderNo));
+        return;
+      }
+
+      // Ada leg QRIS -- tunggu konfirmasi sama seperti pembayaran QRIS tunggal.
+      orderPaymentNo.value = legQris!.paymentNo;
+      body.orderReffno = legQris!.paymentNo;
+      body.qrCode = legQris!.qrisUrl;
+
+      await displayUtil.getDisplay();
+      if (displayUtil.displays.length == 1) {
+        await displayUtil.updateSecondDisplay(
+          CustomerDisplay(
+            key: CustomerDisplayAction.PAYMENT,
+            value: CustomerPayment(
+              orderNo: orderNo?.value,
+              qrCode: body.qrCode,
+              type: PaymentMethod.QRIS,
+              isSuccess: false,
+            ).toJson(),
+          ).toJson(),
+        );
+        dialog.waitingPaymentWithQr(
+          title: 'Menunggu Pembayaran',
+          qrCode: body.qrCode,
+          msg: 'Sebagian pembayaran split ini lewat QRIS. Tagihan sudah '
+              'dibuat dan menunggu pembayaran leg ini.',
+          onCheck: () => _handlePaymentCheck(body, orderNo),
+          onCancle: () => Get.back(),
+        );
+      } else {
+        dialog.waitingPayment(
+          title: 'Menunggu Pembayaran',
+          msg: 'Sebagian pembayaran split ini lewat QRIS. Tagihan sudah '
+              'dibuat dan menunggu pembayaran leg ini.',
+          onCheck: () => _handlePaymentCheck(body, orderNo),
+          onCancle: () => Get.back(),
+        );
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      alert.error('Error', 'Unexpected Error');
     }
   }
 

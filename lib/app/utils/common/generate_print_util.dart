@@ -494,22 +494,44 @@ class GeneratePrintUtil {
     //     ],
     //   );
     // }
-    bytes += generator.row(
-      [
-        PosColumn(
-          // text: MapPaymentMethod[body.orderPaidBy] ?? '',
-          text: body.orderPaidByName,
-          width: 6,
-        ),
-        PosColumn(
-          text: common.currencyFormat(body.orderTotalAmt),
-          width: 6,
-          styles: const PosStyles(
-            align: PosAlign.right,
+    // Split payment: 1 baris per metode (nama + nominal leg masing-masing).
+    // Order normal tetap 1 baris seperti semula.
+    if (body.splitPayments != null && body.splitPayments!.isNotEmpty) {
+      for (final leg in body.splitPayments!) {
+        bytes += generator.row(
+          [
+            PosColumn(
+              text: leg.paymentName ?? leg.paymentCode ?? '-',
+              width: 6,
+            ),
+            PosColumn(
+              text: common.currencyFormat(leg.amount ?? 0),
+              width: 6,
+              styles: const PosStyles(
+                align: PosAlign.right,
+              ),
+            ),
+          ],
+        );
+      }
+    } else {
+      bytes += generator.row(
+        [
+          PosColumn(
+            // text: MapPaymentMethod[body.orderPaidBy] ?? '',
+            text: body.orderPaidByName,
+            width: 6,
           ),
-        ),
-      ],
-    );
+          PosColumn(
+            text: common.currencyFormat(body.orderTotalAmt),
+            width: 6,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          ),
+        ],
+      );
+    }
     // Print Total
     int totalPak =
         body.listCreateTicket == null ? 0 : body.listCreateTicket!.length;
