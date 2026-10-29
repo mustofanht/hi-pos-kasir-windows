@@ -288,7 +288,6 @@ class SaleLapanganPage extends GetView<SaleLapanganPageController> {
 
     return GetBuilder(
       init: controller,
-      tag: 'SaleLapanganPage',
       builder: (controller) {
         return Obx(
           () => Container(

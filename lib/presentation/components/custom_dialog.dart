@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/ribuan_input_formatter.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_rent_model.dart';
@@ -1237,18 +1238,41 @@ class CustomDialog {
   waitingPaymentEdc({
     required String title,
     required String msg,
-    required Function(String reffNo) onNext,
+    required Function(String reffNo, double? uangDiterima) onNext,
 
     /// Sembunyikan kolom Reference ID, dipakai untuk pembayaran TUNAI
     bool showReffInput = true,
+
+    /// Tampilkan kolom "Uang Diterima" + kembalian yang ikut dihitung live --
+    /// dipakai untuk TUNAI, bersamaan dengan showReffInput=false (reffno
+    /// tunai tidak pernah ditanya, selalu diisi '-' oleh pemanggil).
+    bool showUangDiterima = false,
+
+    /// Total tagihan order, dipakai menghitung kembalian yang ditampilkan di
+    /// sini. Validasi "uang diterima tidak boleh kurang dari ini" dilakukan
+    /// oleh pemanggil (lihat OrderPaymentController.doOrderPayment) lewat
+    /// nilai [uangDiterima] yang dikirim balik ke [onNext] -- dialog ini
+    /// sendiri tidak menolak apa pun.
+    double totalTagihan = 0,
   }) async {
     final reffNoController = TextEditingController();
+    final uangDiterimaController = TextEditingController();
+    final kembalian = 0.0.obs;
+    void hitungKembalian() {
+      kembalian.value =
+          RibuanInputFormatter.bersihkan(uangDiterimaController.text) -
+              totalTagihan;
+    }
+
     await Get.dialog(
       AlertDialog(
         contentPadding: EdgeInsets.zero,
         content: Container(
           width: layoutStyle.screenWidth / 2,
-          height: layoutStyle.blockVertical * 40,
+          // Lebih tinggi saat kolom Uang Diterima + Kembalian ikut tampil --
+          // kontennya lebih panjang daripada reffno 1 baris. SingleChildScrollView
+          // di atas tetap jadi jaring pengaman untuk layar yang lebih pendek.
+          height: layoutStyle.blockVertical * (showUangDiterima ? 48 : 40),
           decoration: BoxDecoration(
             color: colorStyle.white,
             borderRadius: const BorderRadius.all(
@@ -1264,7 +1288,13 @@ class CustomDialog {
                     vertical: layoutStyle.defaultMargin / 5,
                     horizontal: layoutStyle.defaultMargin,
                   ),
-                  child: Column(
+                  // Kolom Uang Diterima (dengan label-nya) + baris Kembalian
+                  // menambah tinggi konten dibanding dulu yang cuma 1 baris
+                  // reffno opsional -- dialognya sendiri bertinggi TETAP
+                  // (lihat height Container di atas), jadi tanpa scroll
+                  // kontennya overflow di bawah begitu showUangDiterima aktif.
+                  child: SingleChildScrollView(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1283,13 +1313,11 @@ class CustomDialog {
                       SizedBox(
                         height: layoutStyle.defaultMargin / 5,
                       ),
-                      Flexible(
-                        child: Text(
-                          msg,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: fontSize.body,
-                          ),
+                      Text(
+                        msg,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: fontSize.body,
                         ),
                       ),
                       SizedBox(
@@ -1319,7 +1347,54 @@ class CustomDialog {
                           ),
                           maxLength: 30,
                         ),
+                      if (showUangDiterima) ...[
+                        CustomTextBox(
+                          height: layoutStyle.blockVertical * 6.5,
+                          margin: EdgeInsets.symmetric(
+                            vertical: layoutStyle.defaultMargin / 2,
+                            horizontal: layoutStyle.defaultMargin,
+                          ),
+                          obscureText: false,
+                          border: Border.all(
+                            color: colorStyle.grey,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            layoutStyle.defaultMargin / 2,
+                          ),
+                          label: Text(
+                            'Uang Diterima',
+                            style: textStyle.greyText
+                                .copyWith(fontSize: fontSize.small),
+                          ),
+                          controller: uangDiterimaController,
+                          decoration: InputDecoration(
+                            hintText: 'mis. 100.000',
+                            hintStyle: textStyle.greyText,
+                            border: InputBorder.none,
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [RibuanInputFormatter()],
+                          onChanged: (_) => hitungKembalian(),
+                        ),
+                        SizedBox(
+                          height: layoutStyle.defaultMargin / 5,
+                        ),
+                        Obx(
+                          () => Text(
+                            'Kembalian: ${common.currencyFormat(kembalian.value < 0 ? 0 : kembalian.value)}',
+                            style: TextStyle(
+                              fontSize: fontSize.body,
+                              fontWeight: fontWeight.bold,
+                              color: kembalian.value < 0
+                                  ? colorStyle.red
+                                  : colorStyle.black,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
+                  ),
                   ),
                 ),
               ),
@@ -1371,7 +1446,13 @@ class CustomDialog {
                           horizontal: layoutStyle.defaultMargin,
                         ),
                         onPressed: () {
-                          onNext(reffNoController.text);
+                          onNext(
+                            reffNoController.text,
+                            showUangDiterima
+                                ? RibuanInputFormatter.bersihkan(
+                                    uangDiterimaController.text)
+                                : null,
+                          );
                         },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.resolveWith(

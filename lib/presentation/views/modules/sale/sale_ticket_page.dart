@@ -56,7 +56,6 @@ class SaleTicketPage extends GetView<SaleTicketPageController> {
 
     return GetBuilder(
       init: controller,
-      tag: 'SaleTicketPage',
       initState: (state) {
         controller.scrollController.addListener(controller.scrollHandler);
         controller.doPrepareList(page: 0);

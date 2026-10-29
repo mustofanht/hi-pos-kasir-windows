@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/ribuan_input_formatter.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/cart/cart_addon_model.dart';
@@ -159,7 +160,8 @@ class SalePageController extends GetxController
   final splitReffno1Controller = TextEditingController();
   final splitReffno2Controller = TextEditingController();
 
-  double get splitAmount1 => double.tryParse(splitAmount1Controller.text) ?? 0;
+  double get splitAmount1 =>
+      RibuanInputFormatter.bersihkan(splitAmount1Controller.text);
   double get splitAmount2 =>
       (totalOrderAmnt.value - splitAmount1) < 0 ? 0 : (totalOrderAmnt.value - splitAmount1);
 

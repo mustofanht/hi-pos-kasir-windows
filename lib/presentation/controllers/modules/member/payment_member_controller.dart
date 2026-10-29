@@ -211,7 +211,10 @@ class PaymentMemberController extends GetxController {
             ? 'Pastikan uang tunai sudah diterima, lalu lanjutkan.'
             : 'Silahkan mengisi reference',
         showReffInput: !isCash,
-        onNext: (val) async {
+        // Uang Diterima/Kembalian belum dipakai di jalur pendaftaran member
+        // (beda dari penjualan tiket/produk) -- showUangDiterima sengaja
+        // dibiarkan default false, parameter kedua di sini diabaikan.
+        onNext: (val, uangDiterima) async {
           logger.safeLog('isProcessing : $isProcessing');
           if (isProcessing.value) return;
           isProcessing.value = true;

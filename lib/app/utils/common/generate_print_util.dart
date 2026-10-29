@@ -554,6 +554,41 @@ class GeneratePrintUtil {
         ),
       ],
     );
+    // Uang Diterima & Kembalian -- hanya terisi untuk pembayaran TUNAI
+    // tunggal (lihat OrderController.doOrderPayment); order split atau non-
+    // tunai tidak pernah mengisi field ini, jadi baris ini otomatis terlewat.
+    if (body.uangDiterima != null) {
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Uang Diterima',
+            width: 6,
+          ),
+          PosColumn(
+            text: common.currencyFormat(body.uangDiterima!),
+            width: 6,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          ),
+        ],
+      );
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Kembalian',
+            width: 6,
+          ),
+          PosColumn(
+            text: common.currencyFormat(body.kembalian ?? 0),
+            width: 6,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          ),
+        ],
+      );
+    }
     if (cetakUlang) {
       // Diulang di bawah dengan sengaja: struk yang panjang sering dipotong
       // atau difoto sebagian, dan bagian atasnya hilang.

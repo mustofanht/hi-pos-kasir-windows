@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/order_util.dart';
@@ -311,12 +312,26 @@ class OrderPaymentController extends GetxController {
       dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
         msg: isCash
-            ? 'Pastikan uang tunai sudah diterima, lalu lanjutkan.'
+            ? 'Masukkan uang yang diterima, lalu lanjutkan.'
             : 'Silahkan mengisi reference',
         showReffInput: !isCash,
-        onNext: (val) async {
+        showUangDiterima: isCash,
+        totalTagihan: body.orderTotalAmt,
+        onNext: (val, uangDiterima) async {
           logger.safeLog('isProcessing : $isProcessing');
           if (isProcessing.value) return;
+          // Uang tunai yang diterima tidak boleh kurang dari tagihan --
+          // ditolak di sini, SEBELUM order dibuat, supaya kasir tidak
+          // terlanjur membuat order yang kembaliannya negatif.
+          if (isCash &&
+              (uangDiterima == null || uangDiterima < body.orderTotalAmt)) {
+            alert.error(
+              'Uang Diterima Kurang',
+              'Uang yang diterima harus minimal sebesar total tagihan '
+                  '(${common.currencyFormat(body.orderTotalAmt)}).',
+            );
+            return;
+          }
           isProcessing.value = true;
           // Tunai tidak punya nomor reference. Backend masih mewajibkan
           // orderReffno terisi untuk metode selain QRIS/VA
@@ -325,6 +340,12 @@ class OrderPaymentController extends GetxController {
           final String reffNo = isCash ? '-' : val;
           if (reffNo != '') {
             body.orderReffno = reffNo;
+            // Dicetak di struk (lihat GeneratePrintUtil.dataPaymentTiketPrint)
+            // -- murni lokal, TIDAK dikirim ke backend (lihat OrderModel.toJson).
+            if (isCash) {
+              body.uangDiterima = uangDiterima;
+              body.kembalian = uangDiterima! - body.orderTotalAmt;
+            }
             bool isSuccess = await _doCreateOrderPayment(
               body: body,
               orderNo: orderNo,

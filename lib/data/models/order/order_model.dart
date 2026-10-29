@@ -62,6 +62,13 @@ class OrderModel {
   /// punya kode & reffno sendiri). Null/kosong = jalur normal 1 metode.
   List<SplitPaymentLegModel>? splitPayments;
 
+  /// Uang tunai yang diterima kasir & kembaliannya -- HANYA untuk metode
+  /// TUNAI tunggal (non-split), dicetak di struk (lihat
+  /// GeneratePrintUtil.dataPaymentTiketPrint). Murni lokal: TIDAK dikirim ke
+  /// backend (tidak masuk toJson) -- penyimpanan/pelaporannya masih didiskusikan.
+  double? uangDiterima;
+  double? kembalian;
+
   OrderModel({
     this.orderName,
     this.orderPhoneNumber,

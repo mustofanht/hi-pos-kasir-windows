@@ -487,7 +487,6 @@ class SalePage extends GetView<SalePageController> {
 
     return GetBuilder(
       init: controller,
-      tag: 'SaleCartPage',
       initState: (state) {},
       builder: (controller) {
         return Obx(

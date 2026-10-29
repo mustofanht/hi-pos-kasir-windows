@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/ribuan_input_formatter.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
@@ -185,11 +186,12 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
               ),
               controller: controller.splitAmount1Controller,
               decoration: InputDecoration(
-                hintText: 'mis. 50000',
+                hintText: 'mis. 50.000',
                 hintStyle: textStyle.greyText,
                 border: InputBorder.none,
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [RibuanInputFormatter()],
               onChanged: (_) => controller.update(),
             )
           else
@@ -915,62 +917,57 @@ class _SalePaymentPageState extends State<SalePaymentPage> {
                       SizedBox(
                         height: layoutStyle.defaultMargin / 2,
                       ),
+                      // Toggle Split Pembayaran AKTIF: tampilkan HANYA dropdown
+                      // Metode 1/Metode 2 (splitPaymentSection) -- grid metode
+                      // tunggal di bawah TIDAK dirender sama sekali, supaya
+                      // kasir tidak dihadapkan 2 cara memilih metode bayar
+                      // sekaligus. Sebelumnya grid-nya tetap muncul di bawah
+                      // dropdown split karena kondisi if/else-nya hanya
+                      // mengecek "!isSplitPayment && isLoading" -- begitu
+                      // isSplitPayment true, baris itu otomatis false dan
+                      // jatuh ke else (grid), bukan ikut tersembunyi.
                       Obx(
                         () => controller.isSplitPayment.value
                             ? splitPaymentSection()
-                            : Container(),
+                            : controller.isLoadingPayment.value
+                                ? Container(
+                                    margin: EdgeInsets.symmetric(
+                                      vertical: layoutStyle.defaultMargin / 2,
+                                    ),
+                                    alignment: Alignment.centerLeft,
+                                    width: layoutStyle.blockHorizontal * 3,
+                                    height: layoutStyle.blockVertical * 5,
+                                    child: loading.simpleLoading(),
+                                  )
+                                : Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: layoutStyle.defaultMargin,
+                                    ),
+                                    child: GridView.builder(
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisSpacing:
+                                            layoutStyle.defaultMargin / 2,
+                                        mainAxisSpacing:
+                                            layoutStyle.defaultMargin / 2,
+                                        crossAxisCount: 3,
+                                        childAspectRatio: 2,
+                                      ),
+                                      itemCount: controller.paymentType.length,
+                                      itemBuilder: (context, index) {
+                                        return SizedBox(
+                                          height: layoutStyle.blockVertical * 2,
+                                          child: cardPayment(
+                                            controller.paymentType[index],
+                                          ),
+                                        );
+                                      },
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                    ),
+                                  ),
                       ),
-                      if (!controller.isSplitPayment.value &&
-                          controller.isLoadingPayment.value) ...[
-                        Container(
-                          margin: EdgeInsets.symmetric(
-                            vertical: layoutStyle.defaultMargin / 2,
-                          ),
-                          alignment: Alignment.centerLeft,
-                          width: layoutStyle.blockHorizontal * 3,
-                          height: layoutStyle.blockVertical * 5,
-                          child: loading.simpleLoading(),
-                        )
-                      ] else ...[
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.defaultMargin,
-                          ),
-                          // child: Wrap(
-                          //   spacing: layoutStyle.defaultMargin / 2,
-                          //   runSpacing: layoutStyle.defaultMargin / 2,
-                          //   children: controller.paymentType
-                          //       .map(
-                          //         (element) => cardPayment(element),
-                          //       )
-                          //       .toList(),
-                          // ),
-                          child: GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisSpacing: layoutStyle.defaultMargin / 2,
-                              mainAxisSpacing: layoutStyle.defaultMargin / 2,
-                              crossAxisCount: 3,
-                              childAspectRatio: 2,
-                              // childAspectRatio: layoutStyle.screenWidth > 800
-                              //     ? (400 / 200)
-                              //     : (layoutStyle.blockHorizontal * 2) /
-                              //         (layoutStyle.blockVertical * 7),
-                            ),
-                            itemCount: controller.paymentType.length,
-                            itemBuilder: (context, index) {
-                              return SizedBox(
-                                height: layoutStyle.blockVertical * 2,
-                                child: cardPayment(
-                                  controller.paymentType[index],
-                                ),
-                              );
-                            },
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                          ),
-                        ),
-                      ]
                     ],
                   ),
                 ),
