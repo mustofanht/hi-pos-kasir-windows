@@ -320,6 +320,40 @@ class GeneratePrintUtil {
     for (var element in body.lapanganPrintLines ?? <OrderAddonModel>[]) {
       bytes += buildListRentalPayment(generator, element);
     }
+    // Kelas: nama kelas + sesi + tanggal, lalu harga x jumlah anak.
+    for (var element in body.kelasPrintLines ?? <OrderAddonModel>[]) {
+      bytes += generator.text(
+        element.addOn?.productName ?? '',
+        styles: const PosStyles(
+          align: PosAlign.left,
+        ),
+      );
+      bytes += generator.row(
+        [
+          PosColumn(
+            text: 'Rp',
+            width: 2,
+          ),
+          PosColumn(
+            text: element.addOn?.productPrice != null
+                ? common.currencyFormat(element.addOn!.productPrice!)
+                : '',
+            width: 3,
+          ),
+          PosColumn(
+            text: 'x ${element.ordadTotalAddon}',
+            width: 2,
+          ),
+          PosColumn(
+            text: common.currencyFormat(element.ordadTotalAmount),
+            width: 5,
+            styles: const PosStyles(
+              align: PosAlign.right,
+            ),
+          )
+        ],
+      );
+    }
     // List voucher Order
     // double totalPotongan = 0;
     for (var element in body.listVoucher) {

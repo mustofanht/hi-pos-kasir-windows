@@ -36,6 +36,7 @@ import 'package:jaya_propertiy/presentation/controllers/modules/order/order_cont
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 
@@ -50,12 +51,64 @@ class SalePageController extends GetxController
 
   TabController? tabController;
 
+  /// Tab yang tampil, mengikuti kategori lokasi kasir (mst_location_category):
+  /// Ticket untuk kolam/playground/toilet, Lapangan untuk LPNGN, Kelas untuk
+  /// KELAS. Potongan & Item selalu ada. Kasir multi-lokasi mendapat gabungan
+  /// kategori semua lokasinya. Bila kategori gagal dimuat, semua tab tampil
+  /// supaya kasir tidak terkunci dari penjualan.
+  final tabs = <SaleTab>[].obs;
+  final tabsSiap = false.obs;
+
   @override
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    tabController = TabController(length: 4, vsync: this);
+    _siapkanTab();
+  }
+
+  Future<void> _siapkanTab() async {
+    final Set<String> kategori = {};
+    bool gagal = false;
+    try {
+      for (final locId in sessionUtil.getLocationIdListForQuery()) {
+        final hasil = await _service.auth.getKategoriLokasi(
+          authToken: _authToken,
+          locId: locId,
+        );
+        hasil.fold((l) {
+          logger.safeLog('Kategori lokasi $locId gagal dimuat : $l');
+          gagal = true;
+        }, (r) => kategori.addAll(r));
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      gagal = true;
+    }
+    tabs.value = tabUntukKategori(gagal ? <String>{} : kategori);
+    tabController = TabController(length: tabs.length, vsync: this);
     tabController!.addListener(_handleTabSelection);
+    tabsSiap.value = true;
+  }
+
+  /// Kategori yang dijual lewat tab Ticket (tiket masuk biasa).
+  static const _kategoriTiket = {'KLMRG', 'PLGRD', 'WC'};
+
+  static List<SaleTab> tabUntukKategori(Set<String> kategori) {
+    if (kategori.isEmpty) {
+      return SaleTab.values.toList();
+    }
+    // Kategori yang belum dikenal aplikasi ini diperlakukan sebagai tiket
+    // biasa, supaya kategori baru tidak membuat tiketnya tak bisa dijual.
+    final bool adaTiket = kategori.any(
+      (k) => _kategoriTiket.contains(k) || !{'LPNGN', 'KELAS'}.contains(k),
+    );
+    return [
+      if (adaTiket) SaleTab.ticket,
+      if (kategori.contains('LPNGN')) SaleTab.lapangan,
+      if (kategori.contains('KELAS')) SaleTab.kelas,
+      SaleTab.potongan,
+      SaleTab.item,
+    ];
   }
 
   @override
@@ -81,28 +134,34 @@ class SalePageController extends GetxController
     _refreshTab(index);
   }
 
-  /// Muat ulang daftar untuk tab tertentu berdasarkan indeks:
-  /// 0=Ticket, 1=Lapangan, 2=Potongan, 3=Item. Aman dipanggil walau controller
-  /// tab belum terdaftar (di-skip; controller memuat sendiri saat pertama dibuka).
+  /// Muat ulang daftar untuk tab pada indeks tertentu (lihat [tabs]). Aman
+  /// dipanggil walau controller tab belum terdaftar (di-skip; controller
+  /// memuat sendiri saat pertama dibuka).
   void _refreshTab(int index) {
+    if (index < 0 || index >= tabs.length) return;
     try {
-      switch (index) {
-        case 0:
+      switch (tabs[index]) {
+        case SaleTab.ticket:
           if (Get.isRegistered<SaleTicketPageController>()) {
             Get.find<SaleTicketPageController>().doPrepareList(page: 0);
           }
           break;
-        case 1:
+        case SaleTab.lapangan:
           if (Get.isRegistered<SaleLapanganPageController>()) {
             Get.find<SaleLapanganPageController>().doPrepareCourtList();
           }
           break;
-        case 2:
+        case SaleTab.kelas:
+          if (Get.isRegistered<SaleKelasPageController>()) {
+            Get.find<SaleKelasPageController>().muat();
+          }
+          break;
+        case SaleTab.potongan:
           if (Get.isRegistered<SaleVoucherPageController>()) {
             Get.find<SaleVoucherPageController>().doPrepareList(page: 0);
           }
           break;
-        case 3:
+        case SaleTab.item:
           if (Get.isRegistered<SaleAddonPageController>()) {
             final addonController = Get.find<SaleAddonPageController>();
             addonController.doPrepareList(
@@ -332,7 +391,8 @@ class SalePageController extends GetxController
     // Tiket (ticketList — tiket masuk/playground/kelas/lapangan, beda dari
     // addonList) mewajibkan no WA saja (untuk follow-up/notifikasi), nama
     // TETAP opsional — beda dengan item sewa yang mewajibkan keduanya.
-    final adaTiket = saleCart.ticketList.isNotEmpty;
+    final adaTiket = saleCart.ticketList.isNotEmpty ||
+        saleCart.addonList.any((e) => e.isKelas);
 
     if (isValid && adaItemSewa && orderNameController.text.trim().isEmpty) {
       isValid = false;
@@ -475,6 +535,8 @@ class SalePageController extends GetxController
     // Baris lapangan HANYA untuk cetak struk (tidak dikirim ke backend),
     // diformat sama seperti sewa item.
     List<OrderAddonModel> listBookedPrint = [];
+    // Baris kelas HANYA untuk cetak struk; bookingnya lewat listBooked.
+    List<OrderAddonModel> listKelasPrint = [];
 
     double totalPrice = 0;
     int countTotal = 0;
@@ -506,6 +568,31 @@ class SalePageController extends GetxController
         // dan menerbitkan e-tiket (QR). Lihat BOOKING_LAPANGAN_CEK_BACKEND.md §2.2.
         final bool isLapanganBooking =
             element.rentModel != null && element.addon?.productType == 'L';
+
+        // Kelas: 1 baris = 1 sesi pada 1 tanggal untuk qtyOrder anak.
+        // Backend memeriksa kuota, mengambil harga dari master sesi, dan
+        // menerbitkan 1 QR per anak.
+        if (element.isKelas) {
+          final DateTime? tgl = element.kelasDate;
+          listBooked.add(
+            OrderBookedModel(
+              bookTicketid: element.kelasTicketId,
+              bookSessionid: element.kelasSessionId,
+              bookQty: element.qtyOrder ?? 0,
+              bookDate:
+                  tgl != null ? DateTime(tgl.year, tgl.month, tgl.day) : null,
+            ),
+          );
+          listKelasPrint.add(
+            OrderAddonModel(
+              addOn: element.addon,
+              ordadAddonId: element.addon?.productId,
+              ordadTotalAddon: element.qtyOrder ?? 0,
+              ordadTotalAmount: element.totalPrice ?? 0,
+            ),
+          );
+          continue;
+        }
 
         if (isLapanganBooking) {
           final int? ticketId = element.addon?.productId;
@@ -793,6 +880,7 @@ class SalePageController extends GetxController
           : null,
       trnOrderBookeds: listBooked,
       lapanganPrintLines: listBookedPrint,
+      kelasPrintLines: listKelasPrint,
       checkIn: memberCheckIn,
       checkOut: memberCheckOut,
     );
@@ -987,6 +1075,7 @@ class SalePageController extends GetxController
       final bool isLapangan =
           a.rentModel != null && a.addon?.productType == 'L';
       if (isLapangan) cats.add('LPNGN');
+      if (a.isKelas) cats.add('KELAS');
     }
     return cats;
   }
@@ -1000,6 +1089,10 @@ class SalePageController extends GetxController
         return 'Lapangan';
       case 'WC':
         return 'WC';
+      case 'KELAS':
+        return 'Kelas';
+      case 'PLGRD':
+        return 'Playground';
       default:
         return code ?? '-';
     }
@@ -1128,4 +1221,16 @@ class SalePageController extends GetxController
     saleCartPageController.update();
     update();
   }
+}
+
+/// Tab halaman jual. Urutan di sini = urutan tampil.
+enum SaleTab {
+  ticket('Ticket'),
+  lapangan('Lapangan'),
+  kelas('Kelas'),
+  potongan('Potongan'),
+  item('Item');
+
+  final String label;
+  const SaleTab(this.label);
 }

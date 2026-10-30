@@ -31,7 +31,7 @@ class KotakCari extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(
         layoutStyle.defaultMargin,
-        layoutStyle.defaultMargin,
+        layoutStyle.defaultMargin / 2,
         layoutStyle.defaultMargin,
         0,
       ),
@@ -40,33 +40,41 @@ class KotakCari extends StatelessWidget {
           controller: controller,
           onChanged: onUbah,
           textInputAction: TextInputAction.search,
+          style: TextStyle(fontSize: fontSize.small, color: colorStyle.black),
           decoration: InputDecoration(
             isDense: true,
             hintText: petunjuk,
-            hintStyle: textStyle.greyText,
-            prefixIcon: Icon(Icons.search, color: colorStyle.grey),
+            hintStyle: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            prefixIcon: Icon(Icons.search, size: 18, color: colorStyle.grey),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 36, minHeight: 32),
+            suffixIconConstraints:
+                const BoxConstraints(minWidth: 36, minHeight: 32),
             suffixIcon: adaIsi.value
                 ? IconButton(
-                    icon: Icon(Icons.close, color: colorStyle.grey),
+                    icon: Icon(Icons.close, size: 18, color: colorStyle.grey),
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
                     // Tombol silang bukan hiasan: tanpa itu kasir harus
                     // menghapus hurufnya satu per satu di tengah antrean.
                     onPressed: onBersihkan,
                   )
                 : null,
+            // Dibuat ringkas supaya daftar tiket/item mendapat ruang lebih.
             contentPadding: EdgeInsets.symmetric(
-              horizontal: layoutStyle.defaultMargin,
-              vertical: layoutStyle.defaultMargin,
+              horizontal: layoutStyle.defaultMargin / 2,
+              vertical: layoutStyle.defaultMargin / 3,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(layoutStyle.defaultMargin),
+              borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
               borderSide: BorderSide(color: colorStyle.grey),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(layoutStyle.defaultMargin),
+              borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
               borderSide: BorderSide(color: colorStyle.grey),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(layoutStyle.defaultMargin),
+              borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
               borderSide: BorderSide(color: colorStyle.primary),
             ),
           ),

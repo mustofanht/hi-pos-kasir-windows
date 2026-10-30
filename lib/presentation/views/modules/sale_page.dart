@@ -11,6 +11,7 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_contro
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_addon_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_cart_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_lapangan_page.dart';
+import 'package:jaya_propertiy/presentation/views/modules/sale/sale_kelas_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_payment_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_ticket_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/sale/sale_voucher_page.dart';
@@ -24,50 +25,73 @@ class SalePage extends GetView<SalePageController> {
   Widget build(BuildContext context) {
     layoutStyle.init(context);
 
+    Widget halamanTab(SaleTab tab) {
+      switch (tab) {
+        case SaleTab.ticket:
+          return const SaleTicketPage();
+        case SaleTab.lapangan:
+          return const SaleLapanganPage();
+        case SaleTab.kelas:
+          return const SaleKelasPage();
+        case SaleTab.potongan:
+          return const SaleVoucherPage();
+        case SaleTab.item:
+          return const SaleAddonPage();
+      }
+    }
+
+    // Tab mengikuti kategori lokasi kasir (lihat SalePageController.tabs),
+    // jadi baru digambar setelah kategorinya selesai dimuat.
     Widget saleSection() {
       return Expanded(
         flex: 1,
-        child: Column(
-          children: <Widget>[
-            Container(
-              width: layoutStyle.screenWidth,
-              color: colorStyle.lightGrey,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: layoutStyle.screenWidth / 12),
-                child: TabBar(
-                  controller: controller.tabController,
-                  indicator: BoxDecoration(
-                      color: colorStyle.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: colorStyle.primary,
-                          width: 1.0,
-                        ),
-                      )),
-                  labelColor: colorStyle.primary,
-                  unselectedLabelColor: colorStyle.black,
-                  tabs: const [
-                    Tab(text: 'Ticket'),
-                    Tab(text: 'Lapangan'),
-                    Tab(text: 'Potongan'),
-                    Tab(text: 'Item'),
+        child: Obx(
+          () => !controller.tabsSiap.value
+              ? loading.simpleLoading()
+              : Column(
+                  children: <Widget>[
+                    Container(
+                      width: layoutStyle.screenWidth,
+                      color: colorStyle.lightGrey,
+                      // Tab dibentang penuh kiri-kanan (tanpa jarak samping)
+                      // dan teksnya diperkecil bila perlu, supaya label
+                      // tidak terpotong saat tab banyak.
+                      child: TabBar(
+                        controller: controller.tabController,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        indicator: BoxDecoration(
+                            color: colorStyle.white,
+                            border: Border(
+                              bottom: BorderSide(
+                                color: colorStyle.primary,
+                                width: 1.0,
+                              ),
+                            )),
+                        labelColor: colorStyle.primary,
+                        unselectedLabelColor: colorStyle.black,
+                        tabs: controller.tabs
+                            .map((t) => Tab(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      t.label,
+                                      maxLines: 1,
+                                      softWrap: false,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        controller: controller.tabController,
+                        children: controller.tabs.map(halamanTab).toList(),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: controller.tabController,
-                children: const [
-                  SaleTicketPage(),
-                  SaleLapanganPage(),
-                  SaleVoucherPage(),
-                  SaleAddonPage(),
-                ],
-              ),
-            ),
-          ],
         ),
       );
     }

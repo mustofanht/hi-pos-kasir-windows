@@ -21,6 +21,7 @@ import 'package:jaya_propertiy/presentation/controllers/modules/proofofpayment/b
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
@@ -107,6 +108,7 @@ class HomePageController extends GetxController {
     timeString.value = _formatDateTime(DateTime.now());
     Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
     getUser();
+    _sesuaikanMenuKategori();
     update();
   }
 
@@ -146,7 +148,7 @@ class HomePageController extends GetxController {
     update();
   }
 
-  List<MenuItem> menuItems = [
+  static final List<MenuItem> _semuaMenu = [
     MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined),
     MenuItem(
         id: 2, name: 'Bukti\nPembayaran', icon: Icons.receipt_long_outlined),
@@ -160,6 +162,42 @@ class HomePageController extends GetxController {
     MenuItem(id: 9, name: 'Keluar\nManual', icon: Icons.door_front_door_outlined),
     MenuItem(id: 7, name: 'Logout', icon: Icons.logout),
   ];
+
+  /// Menu gate (TakeOut & Keluar Manual) hanya dipakai di playground.
+  static const _menuKhususPlayground = {8, 9};
+
+  /// Disembunyikan dulu sampai kategori lokasi terbaca, supaya menu gate tidak
+  /// sempat muncul lalu hilang di lokasi non-playground.
+  final RxList<MenuItem> menuItems = _semuaMenu
+      .where((m) => !_menuKhususPlayground.contains(m.id))
+      .toList()
+      .obs;
+
+  /// Menampilkan TakeOut & Keluar Manual hanya bila salah satu lokasi kasir
+  /// berkategori Playground (PLGRD). Kalau kategori gagal dimuat, semua menu
+  /// ditampilkan supaya kasir playground tidak kehilangan menu gate.
+  Future<void> _sesuaikanMenuKategori() async {
+    final Set<String> kategori = {};
+    bool gagal = false;
+    try {
+      for (final locId in sessionUtil.getLocationIdListForQuery()) {
+        final hasil = await _service.auth.getKategoriLokasi(
+          authToken: _authToken,
+          locId: locId,
+        );
+        hasil.fold((l) {
+          logger.safeLog('Kategori lokasi $locId gagal dimuat : $l');
+          gagal = true;
+        }, (r) => kategori.addAll(r));
+      }
+    } catch (e) {
+      logger.safeLog(e);
+      gagal = true;
+    }
+    final adaPlayground = gagal || kategori.isEmpty || kategori.contains('PLGRD');
+    menuItems.assignAll(_semuaMenu
+        .where((m) => adaPlayground || !_menuKhususPlayground.contains(m.id)));
+  }
 
   Future<void> onSelectedMenu(MenuItem menu) async {
     logger.safeLog('CURR MENU : ${selectedMenu.value}');
@@ -324,6 +362,7 @@ class HomePageController extends GetxController {
         Get.lazyPut(() => SalePageController());
         Get.lazyPut(() => SaleTicketPageController());
         Get.lazyPut(() => SaleLapanganPageController());
+        Get.lazyPut(() => SaleKelasPageController());
         Get.lazyPut(() => SaleVoucherPageController());
         Get.lazyPut(() => SaleAddonPageController());
         Get.lazyPut(() => SaleCartPageController());

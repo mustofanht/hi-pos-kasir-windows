@@ -28,6 +28,7 @@ import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
@@ -132,6 +133,12 @@ class SaleCartPageController extends GetxController {
   /// yang stoknya habis tetap boleh dijual dan stoknya dibiarkan minus.
   onChangeQtyAddonCart(CartAddon val, int qty) {
     if (qty < 1) return;
+    if (val.isKelas && val.kelasSisa != null && qty > val.kelasSisa!) {
+      alert.error('Kursi Tidak Cukup',
+          'Sesi ini tinggal ${val.kelasSisa} kursi.');
+      qty = val.kelasSisa!;
+      if (qty < 1) return;
+    }
     val.qtyOrder = qty;
     val.totalPrice = (val.addon?.productPrice ?? 0) * qty;
     _sinkronKotakAddon(val);
@@ -485,6 +492,13 @@ class SaleCartPageController extends GetxController {
   }
 
   addAddonCart(CartAddon val) {
+    if (val.isKelas &&
+        val.kelasSisa != null &&
+        (val.qtyOrder ?? 0) >= val.kelasSisa!) {
+      alert.error('Kursi Tidak Cukup',
+          'Sesi ini tinggal ${val.kelasSisa} kursi.');
+      return;
+    }
     if (val.rentModel != null) {
     } else {
       val.qtyOrder = (val.qtyOrder ?? 0) + 1;
@@ -532,6 +546,9 @@ class SaleCartPageController extends GetxController {
       }
       if (_sudahDibuat<SaleLapanganPageController>()) {
         Get.find<SaleLapanganPageController>().doPrepareCourtList();
+      }
+      if (_sudahDibuat<SaleKelasPageController>()) {
+        Get.find<SaleKelasPageController>().muat();
       }
       if (_sudahDibuat<SaleVoucherPageController>()) {
         Get.find<SaleVoucherPageController>().doPrepareList(page: 0);

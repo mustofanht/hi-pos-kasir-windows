@@ -72,6 +72,42 @@ class TicketService {
     }
   }
 
+  /// Program kelas + sesi + sisa kursi pada [date] (`yyyy-MM-dd`) untuk tab
+  /// Kelas. [locationIds] berformat koma (`"1,2"`), sama seperti tab lain.
+  Future<Either<String, List<KelasEntity>>> getKelas({
+    required AuthToken authToken,
+    required String locationIds,
+    required String date,
+  }) async {
+    final uri = source.baseUri(path: "mst_ticket/kelas").replace(
+      queryParameters: {'locationId': locationIds, 'date': date},
+    );
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      // Server tidak selalu menyertakan charset; paksa UTF-8 agar tanda pisah (–)
+      // pada nama kelas tidak rusak.
+      final data = json.decode(utf8.decode(response.bodyBytes))['data'];
+      final List<KelasEntity> list = data is List
+          ? data
+              .whereType<Map>()
+              .map((e) => KelasEntity.fromJson(Map<String, dynamic>.from(e)))
+              .toList()
+          : <KelasEntity>[];
+      return Right(list);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
   /// Ambil jam-jam yang sudah terisi (booked) untuk satu court/tiket lapangan
   /// pada tanggal tertentu. Sumber kebenaran: tabel `trn_order_booked`.
   ///
