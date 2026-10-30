@@ -93,7 +93,9 @@ class TicketService {
     logger.responseLog(uri, response);
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body)['data'];
+      // Server tidak selalu menyertakan charset; paksa UTF-8 agar tanda pisah (–)
+      // pada nama kelas tidak rusak.
+      final data = json.decode(utf8.decode(response.bodyBytes))['data'];
       final List<KelasEntity> list = data is List
           ? data
               .whereType<Map>()

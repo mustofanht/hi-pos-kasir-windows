@@ -14,14 +14,14 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_
 class SaleKelasPage extends GetView<SaleKelasPageController> {
   const SaleKelasPage({super.key});
 
-  // Warna disamakan dengan website eticketing.
-  static const _olive = Color(0xFFA19E12);
-  static const _headerBg = Color(0xFFE4E1CE);
-  static const _cardBg = Color(0xFFFBF8F1);
-  static const _border = Color(0xFFD8D3B6);
-  static const _sky = Color(0xFF0EA5E9);
-  static const _merah = Color(0xFFEF4444);
-  static const _abu = Color(0xFF6B7280);
+  // Warna mengikuti tema kasir; susunan mengikuti website.
+  Color get _utama => colorStyle.primary;
+  Color get _headerBg => colorStyle.primary.withOpacity(0.08);
+  Color get _cardBg => colorStyle.white;
+  Color get _border => colorStyle.primary;
+  Color get _hampir => colorStyle.yellow;
+  Color get _merah => colorStyle.red;
+  Color get _abu => colorStyle.grey;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
         case 'B':
           return label('Tidak tersedia', _abu);
         case 'C':
-          return label('Selesai', Colors.grey.shade400);
+          return label('Selesai', _abu);
         case 'Y':
           return penuh();
         default:
@@ -84,7 +84,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               label(hampir ? 'Hampir penuh' : 'Tersedia',
-                  hampir ? _sky : _olive),
+                  hampir ? _hampir : colorStyle.green),
               kuota('$terisi/$cap'),
             ],
           );
@@ -98,8 +98,8 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
             onPressed: onTap,
             style: OutlinedButton.styleFrom(
               padding: EdgeInsets.zero,
-              foregroundColor: _olive,
-              side: BorderSide(color: onTap == null ? _border : _olive),
+              foregroundColor: _utama,
+              side: BorderSide(color: onTap == null ? _border : _utama),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6)),
             ),
@@ -116,7 +116,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               border: i > 0
-                  ? const Border(top: BorderSide(color: Color(0xFFEDEBDA)))
+                  ? Border(top: BorderSide(color: colorStyle.lightGrey))
                   : null,
             ),
             child: Row(
@@ -130,7 +130,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
                         style: TextStyle(
                           fontSize: fontSize.body,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1F2937),
+                          color: colorStyle.black,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -168,8 +168,8 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
                       child: OutlinedButton(
                         onPressed: () => controller.tambah(kelas, sesi),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: _olive,
-                          side: const BorderSide(color: _olive),
+                          foregroundColor: _utama,
+                          side: BorderSide(color: _utama),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
@@ -206,7 +206,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
         decoration: BoxDecoration(
           color: _cardBg,
           border: Border.all(color: _border),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: const [
             BoxShadow(
                 color: Color(0x0D000000), blurRadius: 2, offset: Offset(0, 1)),
@@ -215,10 +215,24 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Gambar kelas (bila diunggah di master tiket)
+            if ((kelas.pathImg ?? '').trim().isNotEmpty)
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  kelas.pathImg!.trim(),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: colorStyle.lightGrey,
+                    alignment: Alignment.center,
+                    child: Icon(Icons.image_not_supported, color: _abu),
+                  ),
+                ),
+              ),
             // Header kelas
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: _headerBg,
                 border: Border(bottom: BorderSide(color: _border)),
               ),
@@ -226,7 +240,11 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(kelas.ticketName ?? '',
-                      style: TextStyle(fontSize: fontSize.subtitle)),
+                      style: TextStyle(
+                        fontSize: fontSize.subtitle,
+                        fontWeight: FontWeight.bold,
+                        color: _utama,
+                      )),
                   if (deskripsi.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
@@ -282,13 +300,17 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
               runSpacing: 4,
               children: [
                 Text(ruangan,
-                    style: TextStyle(fontSize: fontSize.header, color: _olive)),
+                    style: TextStyle(
+                      fontSize: fontSize.header,
+                      fontWeight: FontWeight.bold,
+                      color: _utama,
+                    )),
                 Wrap(
                   spacing: 12,
                   children: [
-                    legenda('Tersedia', _olive, _olive),
-                    legenda('Hampir penuh', _sky, Colors.grey.shade600),
-                    legenda('Tidak tersedia', _merah, Colors.grey.shade600),
+                    legenda('Tersedia', colorStyle.green, _abu),
+                    legenda('Hampir penuh', _hampir, _abu),
+                    legenda('Tidak tersedia', _merah, _abu),
                   ],
                 ),
               ],
