@@ -566,10 +566,14 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
           children: [
             Expanded(
               child: CustomTextBox(
-                height: layoutStyle.blockVertical * 6.5,
+                height: layoutStyle.blockVertical * 4.5,
                 margin: EdgeInsets.symmetric(
                   vertical: layoutStyle.defaultMargin / 4,
                 ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: layoutStyle.defaultMargin / 2,
+                ),
+                style: textStyle.blackText.copyWith(fontSize: fontSize.small),
                 obscureText: false,
                 border: Border.all(
                   color: colorStyle.grey,
@@ -582,8 +586,10 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
                 onChanged: (val) {},
                 decoration: InputDecoration(
                   hintText: 'Search',
-                  hintStyle: textStyle.greyText,
+                  hintStyle:
+                      textStyle.greyText.copyWith(fontSize: fontSize.small),
                   border: InputBorder.none,
+                  isDense: true,
                 ),
                 keyboardType: TextInputType.text,
               ),
@@ -592,10 +598,10 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
               width: layoutStyle.defaultMargin,
             ),
             CustomButton(
-              width: layoutStyle.safeBlockHorizontal * 5,
-              height: layoutStyle.blockVertical * 6.5,
+              width: layoutStyle.safeBlockHorizontal * 3.5,
+              height: layoutStyle.blockVertical * 4.5,
               margin: EdgeInsets.symmetric(
-                vertical: layoutStyle.defaultMargin / 2,
+                vertical: layoutStyle.defaultMargin / 4,
               ),
               onPressed: () async {
                 await controller.doSearch();
@@ -617,6 +623,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
               ),
               label: Icon(
                 Icons.search,
+                size: 18,
                 color: colorStyle.white,
               ),
             ),
