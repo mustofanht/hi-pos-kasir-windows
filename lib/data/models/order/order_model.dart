@@ -50,6 +50,11 @@ class OrderModel {
   /// dan tidak masuk toJson.
   List<OrderAddonModel>? lapanganPrintLines;
 
+  /// HANYA untuk cetak struk: baris kelas (nama kelas + sesi, harga x jumlah
+  /// anak). Booking sebenarnya dikirim lewat [trnOrderBookeds]; tidak masuk
+  /// toJson.
+  List<OrderAddonModel>? kelasPrintLines;
+
   /// Jadwal les renang (opsional): jam check-in/out mingguan, format "HH:mm".
   /// Diisi saat kasir "cek member" bila jadwal diaktifkan; backend menyimpannya
   /// ke enrollment aktif member (reg_check_in/reg_check_out). Null untuk order
@@ -98,6 +103,7 @@ class OrderModel {
     this.childDobs,
     this.trnOrderBookeds,
     this.lapanganPrintLines,
+    this.kelasPrintLines,
     this.checkIn,
     this.checkOut,
     this.splitPayments,

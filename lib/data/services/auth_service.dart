@@ -86,6 +86,43 @@ class AuthService {
     }
   }
 
+  /// Kategori yang dilayani sebuah lokasi (mst_location_category), mis.
+  /// `[PLGRD, KELAS]`. Dipakai menentukan tab yang tampil di halaman jual.
+  Future<Either<String, List<String>>> getKategoriLokasi({
+    required AuthToken authToken,
+    required int locId,
+  }) async {
+    final uri = source.baseUri(path: "mst_location/$locId");
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(sessionToken: authToken),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'];
+      if (data is! Map) return const Left('Data lokasi kosong');
+      final List<String> kategori = [];
+      final daftar = data['locCategories'];
+      if (daftar is List) {
+        for (final k in daftar) {
+          final teks = '$k'.trim().toUpperCase();
+          if (teks.isNotEmpty) kategori.add(teks);
+        }
+      }
+      // Lokasi lama yang belum punya baris mst_location_category.
+      final utama = data['locCategory']?.toString().trim().toUpperCase();
+      if (kategori.isEmpty && utama != null && utama.isNotEmpty) {
+        kategori.add(utama);
+      }
+      return Right(kategori);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
   Future<Either<String, BaseResponse<UserEntity>>> getUserInformation({
     required AuthToken authToken,
     required String userId,

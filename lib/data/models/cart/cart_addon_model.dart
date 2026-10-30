@@ -16,12 +16,31 @@ class CartAddon {
 
   bool get isBundle => bundleId != null;
 
+  /// Booking sesi kelas (tab Kelas). Barisnya memakai addon ber-productType
+  /// 'K' supaya tampil & dihitung seperti item di keranjang, tetapi dikirim ke
+  /// backend sebagai `trnOrderBookeds` (sesi + tanggal + jumlah anak), bukan
+  /// sebagai produk. productId-nya negatif (-sessionId) agar tidak bertabrakan
+  /// dengan id produk sungguhan.
+  int? kelasTicketId;
+  int? kelasSessionId;
+  DateTime? kelasDate;
+
+  /// Sisa kursi saat sesi dimasukkan ke keranjang; batas tombol + di keranjang.
+  /// Backend tetap memeriksa ulang kuota saat order dibuat.
+  int? kelasSisa;
+
+  bool get isKelas => addon?.productType == 'K' && kelasSessionId != null;
+
   CartAddon({
     this.qtyOrder,
     this.totalPrice,
     this.rentModel,
     this.addon,
     this.bundleId,
+    this.kelasTicketId,
+    this.kelasSessionId,
+    this.kelasDate,
+    this.kelasSisa,
   });
 
   Map<String, dynamic> toJson() {
@@ -31,6 +50,10 @@ class CartAddon {
       "rentModel": rentModel != null ? rentModel!.toJson() : {},
       "addon": addon != null ? addon!.toJson() : [],
       "bundleId": bundleId,
+      "kelasTicketId": kelasTicketId,
+      "kelasSessionId": kelasSessionId,
+      "kelasDate": kelasDate?.toIso8601String(),
+      "kelasSisa": kelasSisa,
     };
   }
 
@@ -41,6 +64,12 @@ class CartAddon {
       // kedua; menugaskannya langsung ke double? melempar dan seluruh baris hilang.
       totalPrice = (json['totalPrice'] as num?)?.toDouble();
       bundleId = json['bundleId'];
+      kelasTicketId = json['kelasTicketId'];
+      kelasSessionId = json['kelasSessionId'];
+      kelasDate = json['kelasDate'] != null
+          ? DateTime.tryParse('${json['kelasDate']}')
+          : null;
+      kelasSisa = json['kelasSisa'];
       // rentModel = json['rentModel'];
 
       if (json['rentModel'] is Map<Object?, Object?>) {

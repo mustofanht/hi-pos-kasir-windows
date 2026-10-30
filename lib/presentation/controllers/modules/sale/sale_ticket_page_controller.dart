@@ -107,6 +107,9 @@ class SaleTicketPageController extends GetxController {
         'flMobile': 'Y',
         // Kirim seluruh lokasi user agar tiket semua lokasi tampil sekaligus.
         'locationId': sessionUtil.getLocationIdsQueryParam(),
+        // Tiket kelas dijual lewat tab Kelas (pilih tanggal & sesi, kuota
+        // bersama website), bukan dari sini.
+        'excludeKelas': 'Y',
       };
       // Pencarian dikerjakan server (`search` pada mst_ticket), bukan disaring
       // dari daftar yang kebetulan sudah termuat — daftarnya per halaman.

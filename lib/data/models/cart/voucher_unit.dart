@@ -46,6 +46,16 @@ List<VoucherUnit> buildVoucherUnits({
     );
   }
 
+  // Kelas: 1 anak = 1 unit, seperti tiket.
+  for (final addon in addonList) {
+    if (!addon.isKelas) continue;
+    final int qty = addon.qtyOrder ?? 0;
+    if (qty <= 0) continue;
+    units.add(
+      VoucherUnit(unitPrice: (addon.totalPrice ?? 0) / qty, remaining: qty),
+    );
+  }
+
   return units;
 }
 
@@ -60,6 +70,10 @@ int countVoucherUnits({
     total += ticket.qtyOrder ?? 0;
   }
   for (final addon in addonList) {
+    if (addon.isKelas) {
+      total += addon.qtyOrder ?? 0;
+      continue;
+    }
     if (!_isLapanganBooking(addon)) continue;
     total += addon.rentModel?.totalHours ?? 0;
   }

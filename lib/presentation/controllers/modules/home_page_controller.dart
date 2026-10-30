@@ -21,6 +21,7 @@ import 'package:jaya_propertiy/presentation/controllers/modules/proofofpayment/b
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_lapangan_page_controller.dart';
+import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_ticket_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_voucher_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale_page_controller.dart';
@@ -324,6 +325,7 @@ class HomePageController extends GetxController {
         Get.lazyPut(() => SalePageController());
         Get.lazyPut(() => SaleTicketPageController());
         Get.lazyPut(() => SaleLapanganPageController());
+        Get.lazyPut(() => SaleKelasPageController());
         Get.lazyPut(() => SaleVoucherPageController());
         Get.lazyPut(() => SaleAddonPageController());
         Get.lazyPut(() => SaleCartPageController());
