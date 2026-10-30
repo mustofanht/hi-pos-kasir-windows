@@ -53,25 +53,35 @@ class SalePage extends GetView<SalePageController> {
                     Container(
                       width: layoutStyle.screenWidth,
                       color: colorStyle.lightGrey,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: layoutStyle.screenWidth / 12),
-                        child: TabBar(
-                          controller: controller.tabController,
-                          indicator: BoxDecoration(
-                              color: colorStyle.white,
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: colorStyle.primary,
-                                  width: 1.0,
-                                ),
-                              )),
-                          labelColor: colorStyle.primary,
-                          unselectedLabelColor: colorStyle.black,
-                          tabs: controller.tabs
-                              .map((t) => Tab(text: t.label))
-                              .toList(),
-                        ),
+                      // Tab dibentang penuh kiri-kanan (tanpa jarak samping)
+                      // dan teksnya diperkecil bila perlu, supaya label
+                      // tidak terpotong saat tab banyak.
+                      child: TabBar(
+                        controller: controller.tabController,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                        indicator: BoxDecoration(
+                            color: colorStyle.white,
+                            border: Border(
+                              bottom: BorderSide(
+                                color: colorStyle.primary,
+                                width: 1.0,
+                              ),
+                            )),
+                        labelColor: colorStyle.primary,
+                        unselectedLabelColor: colorStyle.black,
+                        tabs: controller.tabs
+                            .map((t) => Tab(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      t.label,
+                                      maxLines: 1,
+                                      softWrap: false,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
                       ),
                     ),
                     Expanded(
