@@ -9,8 +9,8 @@ import 'package:jaya_propertiy/domain/entities/sale/kelas_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 
-/// Tab Kelas: kasir memilih tanggal, lalu menambah/mengurangi jumlah anak per
-/// sesi. Setiap klik langsung tercatat di keranjang sebagai baris kelas
+/// Tab Kelas: penjualan on-site untuk hari ini saja (seperti playground), kasir
+/// menambah/mengurangi jumlah anak per sesi. Setiap klik langsung tercatat di keranjang sebagai baris kelas
 /// ([CartAddon.isKelas]); kuota dipakai bersama dengan website sehingga sisa
 /// kursi selalu dimuat ulang dari server.
 class SaleKelasPageController extends GetxController {
@@ -21,7 +21,7 @@ class SaleKelasPageController extends GetxController {
   final isLoading = false.obs;
   final kelasList = <KelasEntity>[].obs;
 
-  /// Tanggal kelas yang sedang dilihat (tanpa jam).
+  /// Tanggal kelas = hari ini (tanpa jam); disegarkan setiap kali memuat.
   final tanggal = _hariIni().obs;
 
   static DateTime _hariIni() {
@@ -52,6 +52,7 @@ class SaleKelasPageController extends GetxController {
   Future<void> muat() async {
     if (isLoading.value) return;
     isLoading.value = true;
+    tanggal.value = _hariIni();
     try {
       final result = await _service.sale.ticketService.getKelas(
         authToken: _authToken,
@@ -70,15 +71,6 @@ class SaleKelasPageController extends GetxController {
     }
     isLoading.value = false;
   }
-
-  void gantiTanggal(DateTime d) {
-    final baru = DateTime(d.year, d.month, d.day);
-    if (baru.isBefore(_hariIni())) return;
-    tanggal.value = baru;
-    muat();
-  }
-
-  bool get bisaMundur => tanggal.value.isAfter(_hariIni());
 
   CartAddon? _barisKeranjang(KelasSesiEntity sesi) =>
       _cart.addonList.firstWhereOrNull(
@@ -116,7 +108,7 @@ class SaleKelasPageController extends GetxController {
           addon: AddonEntity(
             productId: -(sesi.sessionId ?? 0),
             productName:
-                '${kelas.ticketName} - ${sesi.sessionName ?? 'Sesi'} (${sesi.jam}) ${labelTanggal(tanggal.value)}',
+                '${kelas.ticketName} - ${sesi.sessionName ?? 'Sesi'} (${sesi.jam})',
             productType: 'K',
             productPrice: harga,
             productLoc: kelas.ticketLocation,

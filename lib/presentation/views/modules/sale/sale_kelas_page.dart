@@ -7,7 +7,7 @@ import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_page_controller.dart';
 
-/// Tab Kelas: pilih tanggal, lalu atur jumlah anak per sesi. Setiap klik +/-
+/// Tab Kelas (on-site, hari ini saja seperti playground): atur jumlah anak per sesi. Setiap klik +/-
 /// langsung masuk keranjang. Sesi penuh, sudah selesai, atau ditutup admin
 /// tampil tetapi tidak bisa dipilih.
 class SaleKelasPage extends GetView<SaleKelasPageController> {
@@ -15,65 +15,22 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
 
   @override
   Widget build(BuildContext context) {
-    Widget pemilihTanggal() {
-      return Container(
+    Widget judulTanggal() {
+      return Padding(
         padding: EdgeInsets.all(layoutStyle.defaultMargin),
         child: Obx(
           () => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                tooltip: 'Hari sebelumnya',
-                onPressed: controller.bisaMundur
-                    ? () => controller.gantiTanggal(controller.tanggal.value
-                        .subtract(const Duration(days: 1)))
-                    : null,
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    final now = DateTime.now();
-                    final dipilih = await showDatePicker(
-                      context: context,
-                      initialDate: controller.tanggal.value,
-                      firstDate: DateTime(now.year, now.month, now.day),
-                      lastDate: DateTime(now.year + 1, now.month, now.day),
-                    );
-                    if (dipilih != null) controller.gantiTanggal(dipilih);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        vertical: layoutStyle.defaultMargin / 2),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: colorStyle.primary),
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      color: colorStyle.white,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.calendar_month,
-                            size: 18, color: colorStyle.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          SaleKelasPageController.labelTanggal(
-                              controller.tanggal.value),
-                          style: TextStyle(
-                            fontSize: fontSize.subtitle,
-                            fontWeight: FontWeight.bold,
-                            color: colorStyle.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              Icon(Icons.calendar_month, size: 18, color: colorStyle.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Kelas hari ini, ${SaleKelasPageController.labelTanggal(controller.tanggal.value)}',
+                style: TextStyle(
+                  fontSize: fontSize.subtitle,
+                  fontWeight: FontWeight.bold,
+                  color: colorStyle.primary,
                 ),
-              ),
-              IconButton(
-                tooltip: 'Hari berikutnya',
-                onPressed: () => controller.gantiTanggal(
-                    controller.tanggal.value.add(const Duration(days: 1))),
-                icon: const Icon(Icons.chevron_right),
               ),
             ],
           ),
@@ -209,7 +166,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
       height: layoutStyle.screenHeight,
       child: Column(
         children: [
-          pemilihTanggal(),
+          judulTanggal(),
           Expanded(
             child: RefreshIndicator(
               onRefresh: controller.muat,
@@ -224,7 +181,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
                                 padding: EdgeInsets.only(
                                     top: layoutStyle.defaultMargin * 4),
                                 child: Text(
-                                  'Tidak ada kelas pada tanggal ini.',
+                                  'Tidak ada kelas hari ini.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: fontSize.subtitle,
