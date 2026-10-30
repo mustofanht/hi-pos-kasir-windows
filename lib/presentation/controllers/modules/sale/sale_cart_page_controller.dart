@@ -583,6 +583,17 @@ class SaleCartPageController extends GetxController {
       isValid = false;
     }
 
+    // Batas tiket per transaksi (opsional): mis. 5 -> transaksi 10 tiket hanya
+    // 5 tiket yang dapat potongan, sisanya harga normal.
+    final int maxTicket = voucher.vpMaxTicket ?? 0;
+    if (isValid && maxTicket > 0 && (qtyOrder + 1) > maxTicket) {
+      alert.warning(
+        'Warning',
+        'Voucher ${voucher.vpName ?? ''} maksimal $maxTicket tiket per transaksi',
+      );
+      isValid = false;
+    }
+
     if (voucherList.isNotEmpty) {
       // Unit eligible voucher = tiket + jam booking lapangan (1 voucher = 1 jam).
       int qtyAllTiket = countVoucherUnits(

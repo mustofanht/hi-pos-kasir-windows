@@ -1371,7 +1371,6 @@ class SaleCartPage extends GetView<SaleCartPageController> {
 
     return GetBuilder(
       init: controller,
-      tag: 'SaleCartPage',
       initState: (state) {
         controller;
       },

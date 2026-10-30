@@ -8,6 +8,10 @@ class VoucherEntity {
   String? vpUnitType;
   double? vpUnitValue;
   int? vpLimit;
+
+  /// Maksimal tiket yang boleh dipotong voucher ini dalam satu transaksi.
+  /// null / 0 = tanpa batas.
+  int? vpMaxTicket;
   int? vpLocId;
   DateTime? vpStartDate;
   DateTime? vpEndDate;
@@ -24,6 +28,7 @@ class VoucherEntity {
     this.vpUnitType,
     this.vpUnitValue,
     this.vpLimit,
+    this.vpMaxTicket,
     this.vpLocId,
     this.vpStartDate,
     this.vpEndDate,
@@ -43,6 +48,7 @@ class VoucherEntity {
         ? (json['vpUnitValue'] as num).toDouble()
         : null;
     vpLimit = json['vpLimit'];
+    vpMaxTicket = json['vpMaxTicket'];
     vpLocId = json['vpLocId'];
     vpStartDate = json['vpStartDate'] != null
         ? DateTime.parse(json['vpStartDate']).toLocal()
@@ -65,6 +71,7 @@ class VoucherEntity {
       'vpUnitType': vpUnitType,
       'vpUnitValue': vpUnitValue,
       'vpLimit': vpLimit,
+      'vpMaxTicket': vpMaxTicket,
       'vpLocId': vpLocId,
       'vpStartDate': vpStartDate?.toIso8601String(),
       'vpEndDate': vpEndDate?.toIso8601String(),
@@ -83,6 +90,7 @@ class VoucherEntity {
       'vpUnitType': vpUnitType,
       'vpUnitValue': vpUnitValue,
       'vpLimit': vpLimit,
+      'vpMaxTicket': vpMaxTicket,
       'vpLocId': vpLocId,
       "vpStartDate": vpStartDate != null
           ? dateTimeUtil.dateFormat(vpStartDate!, 'yyyy-MM-dd')

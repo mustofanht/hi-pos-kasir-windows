@@ -41,6 +41,11 @@ class TrnDetailOrderEntity {
   List<TrnDetailOrderDeposit>? trnOrderDeposit;
   List<TrnDetailOrderItem>? trnOrderItem;
   TrnDetailOrderPayment? paymentDetail;
+
+  /// Semua baris trn_payment order ini -- lebih dari satu untuk order split
+  /// payment (lihat TrnOrderInquiryResponse.paymentDetails di backend).
+  /// [paymentDetail] di atas tetap cuma baris pertama, demi kompatibilitas.
+  List<TrnDetailOrderPayment>? paymentDetails;
   TrnDetailOrderMember? trnOrderMember;
 
   TrnDetailOrderEntity({
@@ -68,6 +73,7 @@ class TrnDetailOrderEntity {
     this.trnOrderDeposit,
     this.trnOrderItem,
     this.paymentDetail,
+    this.paymentDetails,
     this.trnOrderMember,
   });
 
@@ -133,6 +139,11 @@ class TrnDetailOrderEntity {
       paymentDetail: json['paymentDetail'] != null
           ? TrnDetailOrderPayment.fromJson(json['paymentDetail'])
           : null,
+      paymentDetails: json['paymentDetails'] != null
+          ? (json['paymentDetails'] as List)
+              .map((i) => TrnDetailOrderPayment.fromJson(i))
+              .toList()
+          : null,
       trnOrderMember: json['trnOrderMember'] != null
           ? TrnDetailOrderMember.fromJson(json['trnOrderMember'])
           : null,
@@ -165,6 +176,7 @@ class TrnDetailOrderEntity {
       'trnOrderDeposit': trnOrderDeposit?.map((e) => e.toJson()).toList(),
       'trnOrderItem': trnOrderItem?.map((e) => e.toJson()).toList(),
       'paymentDetail': paymentDetail?.toJson(),
+      'paymentDetails': paymentDetails?.map((e) => e.toJson()).toList(),
       'trnOrderMember': trnOrderMember?.toJson(),
     };
   }

@@ -4,6 +4,7 @@ import 'package:jaya_propertiy/data/models/order/order_deposit_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
 
 class OrderModel {
@@ -56,6 +57,18 @@ class OrderModel {
   String? checkIn;
   String? checkOut;
 
+  /// Split payment (kasir): tepat 2 metode berbeda, jumlah nominalnya = orderTotalAmt.
+  /// Kalau diisi, orderPaidBy/orderReffno di atas DIABAIKAN backend (tiap leg
+  /// punya kode & reffno sendiri). Null/kosong = jalur normal 1 metode.
+  List<SplitPaymentLegModel>? splitPayments;
+
+  /// Uang tunai yang diterima kasir & kembaliannya -- HANYA untuk metode
+  /// TUNAI tunggal (non-split), dicetak di struk (lihat
+  /// GeneratePrintUtil.dataPaymentTiketPrint). Murni lokal: TIDAK dikirim ke
+  /// backend (tidak masuk toJson) -- penyimpanan/pelaporannya masih didiskusikan.
+  double? uangDiterima;
+  double? kembalian;
+
   OrderModel({
     this.orderName,
     this.orderPhoneNumber,
@@ -87,6 +100,7 @@ class OrderModel {
     this.lapanganPrintLines,
     this.checkIn,
     this.checkOut,
+    this.splitPayments,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -129,6 +143,11 @@ class OrderModel {
               .toList(),
       checkIn: json['checkIn'],
       checkOut: json['checkOut'],
+      splitPayments: json['splitPayments'] == null
+          ? null
+          : (json['splitPayments'] as List)
+              .map((e) => SplitPaymentLegModel.fromJson(e))
+              .toList(),
     );
   }
 
@@ -166,6 +185,7 @@ class OrderModel {
           : trnOrderBookeds!.map((e) => e.toJson()).toList(),
       "checkIn": checkIn,
       "checkOut": checkOut,
+      "splitPayments": splitPayments?.map((e) => e.toJson()).toList(),
     };
   }
 }

@@ -8,8 +8,17 @@ import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_ent
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_member.dart';
 
 class BuktiPembayaranDetailPage extends StatelessWidget {
-  const BuktiPembayaranDetailPage({super.key, required this.model});
+  const BuktiPembayaranDetailPage({
+    super.key,
+    required this.model,
+    required this.paymentMethodLabel,
+  });
   final TrnDetailOrderEntity model;
+
+  /// Sudah disusun pemanggil (lihat BuktiPembayaranPageController
+  /// .paymentMethodLabel) -- untuk order split payment berupa "CASH + EDC
+  /// BCA", bukan model.orderPaidByName yang cuma mencerminkan leg pertama.
+  final String paymentMethodLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +305,7 @@ class BuktiPembayaranDetailPage extends StatelessWidget {
                       ),
                       Text(
                         // 'Metode Pembayaran: ${MapPaymentMethod[model.orderPaidBy]}',
-                        'Metode Pembayaran: ${model.orderPaidByName}',
+                        'Metode Pembayaran: $paymentMethodLabel',
                         style: TextStyle(
                           fontSize: fontSize.subtitle,
                         ),

@@ -627,7 +627,6 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
 
     return GetBuilder(
       init: controller,
-      tag: 'SaleVoucherPage',
       initState: (state) {
         controller.scrollController.addListener(controller.scrollHandler);
         controller.selectedTypeItemList.value = 'V';

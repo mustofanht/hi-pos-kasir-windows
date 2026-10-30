@@ -41,13 +41,21 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_p
 ///
 /// HomePage adalah route DASAR dan modul penjualan hidup di dalamnya
 /// (`HomePageController.selectedContent`), bukan sebagai route tersendiri.
-/// Membuang route-nya ikut membuang SalePageController & SaleCartPageController,
-/// padahal `sale_page.dart` mendaftarkan controller lewat
-/// `GetBuilder(init: controller, tag: 'SaleCartPage')` sementara `SaleCartPage`
-/// di panel kanan membacanya TANPA tag. Setelah route dibuat ulang, keduanya
-/// bisa menunjuk instance berbeda: tiket yang diklik masuk ke instance satu,
-/// panel kanan membaca instance lain — panel order tampak kosong sampai menu
-/// sidebar di-switch bolak-balik.
+/// Membuang route-nya ikut membuang SalePageController & SaleCartPageController
+/// (dan seluruh state tab Sale beserta TabController-nya), lalu dibuat ulang
+/// dari nol — mahal dan tidak perlu dibanding sekadar membersihkan tumpukan
+/// dialog/halaman di atasnya.
+///
+/// (Sampai 29 Okt 2026 ada bug tambahan di titik ini: GetBuilder pembungkus
+/// `sale_page.dart`/`sale_cart_page.dart` mendaftarkan controller dengan tag
+/// yang salah pasang (beda dari registrasi tanpa-tag di `home_page_controller`),
+/// sehingga `Get.delete` milik GetBuilder itu bisa membuang instance yang masih
+/// dipakai bagian lain — pernah membuat panel order tampak kosong, lalu
+/// menyebabkan crash "TextEditingController used after being disposed" begitu
+/// kotak pencarian Tiket/Item ditambahkan. Tag-nya sudah dihapus di seluruh
+/// `GetBuilder(init: controller, ...)` modul Sale, jadi akar masalahnya
+/// sudah tidak ada — tapi `Get.until` di bawah ini tetap pilihan yang benar
+/// terlepas dari itu.)
 ///
 /// `Get.until(route.isFirst)` cukup: seluruh dialog dan halaman yang menumpuk
 /// ditutup sampai kembali ke HomePage, tanpa menghidupkan ulang controller.
