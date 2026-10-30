@@ -265,7 +265,8 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
 
     Widget grupRuangan(
         String ruangan, List<KelasEntity> daftar, bool pertama, double lebar) {
-      final kolom = lebar >= 1000 ? 3 : (lebar >= 600 ? 2 : 1);
+      // Kartu tersusun menyamping (grid) seperti website; minimal lebar ~300 per kartu.
+      final kolom = (lebar / 300).floor().clamp(1, 3);
       const jarak = 16.0;
       final lebarKartu = (lebar - jarak * (kolom - 1)) / kolom;
       return Padding(
