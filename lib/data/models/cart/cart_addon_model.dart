@@ -29,6 +29,11 @@ class CartAddon {
   /// Backend tetap memeriksa ulang kuota saat order dibuat.
   int? kelasSisa;
 
+  /// Tampilan ringkas di keranjang: nama kelas + baris kecil sesi/jam.
+  /// productName tetap lengkap untuk struk & layar kedua.
+  String? kelasNama;
+  String? kelasSesi;
+
   bool get isKelas => addon?.productType == 'K' && kelasSessionId != null;
 
   CartAddon({
@@ -41,6 +46,8 @@ class CartAddon {
     this.kelasSessionId,
     this.kelasDate,
     this.kelasSisa,
+    this.kelasNama,
+    this.kelasSesi,
   });
 
   Map<String, dynamic> toJson() {
@@ -54,6 +61,8 @@ class CartAddon {
       "kelasSessionId": kelasSessionId,
       "kelasDate": kelasDate?.toIso8601String(),
       "kelasSisa": kelasSisa,
+      "kelasNama": kelasNama,
+      "kelasSesi": kelasSesi,
     };
   }
 
@@ -70,6 +79,8 @@ class CartAddon {
           ? DateTime.tryParse('${json['kelasDate']}')
           : null;
       kelasSisa = json['kelasSisa'];
+      kelasNama = json['kelasNama'];
+      kelasSesi = json['kelasSesi'];
       // rentModel = json['rentModel'];
 
       if (json['rentModel'] is Map<Object?, Object?>) {

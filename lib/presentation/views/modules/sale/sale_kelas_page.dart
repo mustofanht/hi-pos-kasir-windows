@@ -195,11 +195,10 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
           .map((d) => d.trim())
           .where((d) => d.isNotEmpty)
           .toList();
-      final harga = kelas.sessions
-          .map((s) => s.price ?? 0)
-          .where((p) => p > 0)
-          .toList();
-      final double mulai = harga.isEmpty ? 0.0 : harga.reduce((a, b) => a < b ? a : b);
+      final harga =
+          kelas.sessions.map((s) => s.price ?? 0).where((p) => p > 0).toList();
+      final double mulai =
+          harga.isEmpty ? 0.0 : harga.reduce((a, b) => a < b ? a : b);
 
       return Container(
         clipBehavior: Clip.antiAlias,
@@ -292,26 +291,30 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header ruangan: judul besar olive + legenda status kuota
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: 8,
-              runSpacing: 4,
+            // Judul ruangan di kiri, legenda status rata kanan sejajar tepi kartu.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(ruangan,
-                    style: TextStyle(
-                      fontSize: fontSize.header,
-                      fontWeight: FontWeight.bold,
-                      color: _utama,
-                    )),
-                Wrap(
-                  spacing: 12,
-                  children: [
-                    legenda('Tersedia', colorStyle.green, _abu),
-                    legenda('Hampir penuh', _hampir, _abu),
-                    legenda('Tidak tersedia', _merah, _abu),
-                  ],
+                Expanded(
+                  child: Text(ruangan,
+                      style: TextStyle(
+                        fontSize: fontSize.header,
+                        fontWeight: FontWeight.bold,
+                        color: _utama,
+                      )),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 12,
+                    runSpacing: 4,
+                    children: [
+                      legenda('Tersedia', colorStyle.green, _abu),
+                      legenda('Hampir penuh', _hampir, _abu),
+                      legenda('Tidak tersedia', _merah, _abu),
+                    ],
+                  ),
                 ),
               ],
             ),

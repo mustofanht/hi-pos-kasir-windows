@@ -119,6 +119,8 @@ class SaleKelasPageController extends GetxController {
           kelasSessionId: sesi.sessionId,
           kelasDate: tanggal.value,
           kelasSisa: sisa,
+          kelasNama: kelas.ticketName,
+          kelasSesi: '${sesi.sessionName ?? 'Sesi'} · ${sesi.jam}',
         ),
       );
       _cart.calculateTotalOrder();

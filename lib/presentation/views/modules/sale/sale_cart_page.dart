@@ -734,9 +734,22 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        e.addon!.productName ?? '',
+                                        e.isKelas && e.kelasNama != null
+                                            ? e.kelasNama!
+                                            : e.addon!.productName ?? '',
                                         softWrap: true,
+                                        maxLines: e.isKelas ? 2 : null,
+                                        overflow: e.isKelas
+                                            ? TextOverflow.ellipsis
+                                            : null,
                                       ),
+                                      if (e.isKelas && e.kelasSesi != null)
+                                        Text(
+                                          e.kelasSesi!,
+                                          style: textStyle.greyText.copyWith(
+                                            fontSize: fontSize.superSmall,
+                                          ),
+                                        ),
                                       // Batasnya ditulis di samping barangnya,
                                       // supaya kasir tahu sebelum mengetik —
                                       // bukan baru diberi tahu setelah ditolak.
