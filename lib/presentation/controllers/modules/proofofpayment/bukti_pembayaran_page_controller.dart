@@ -24,11 +24,13 @@ import 'package:jaya_propertiy/data/models/order/order_rental_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_potongan_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_voucher_model.dart';
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
 import 'package:jaya_propertiy/domain/entities/auth/auth_token.dart';
 import 'package:jaya_propertiy/domain/entities/auth/user_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
 import 'package:jaya_propertiy/domain/entities/common/pagination.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/domain/entities/order/detail/trn_detail_order_entity.dart';
 import 'package:jaya_propertiy/domain/entities/order/response_create_ticket_no_entity.dart';
@@ -65,6 +67,11 @@ class BuktiPembayaranPageController extends GetxController
 
   final pagination = Pagination().obs;
 
+  /// Nama metode bayar per kode (mst_payment), dipakai untuk menampilkan
+  /// "CASH + EDC BCA" pada order split payment -- trn_payment per leg cuma
+  /// menyimpan kodenya (lihat [paymentMethodLabel]).
+  final paymentNameByKode = <String, String>{}.obs;
+
   @override
   Future<void> onInit() async {
     scrollController.addListener(_onScroll);
@@ -74,8 +81,62 @@ class BuktiPembayaranPageController extends GetxController
     );
 
     await doRefresh();
+    _loadPaymentNames();
 
     super.onInit();
+  }
+
+  /// Dipanggil sekali di awal; nama metode bayar jarang berubah dalam satu
+  /// sesi kasir. update() di akhir me-refresh label yang sudah tampil dari
+  /// kode mentah jadi nama ramah begitu datanya sampai.
+  Future<void> _loadPaymentNames() async {
+    try {
+      final result = await _service.masterData.getAll(authToken: _authToken);
+      result.fold(
+        (l) => logger.safeLog(l),
+        (r) {
+          for (final mp in (r.data ?? <MstPayment>[])) {
+            if (mp.pymntCode != null && mp.pymntName != null) {
+              paymentNameByKode.putIfAbsent(mp.pymntCode!, () => mp.pymntName!);
+            }
+          }
+        },
+      );
+    } catch (e) {
+      logger.safeLog(e);
+    }
+    update();
+  }
+
+  /// Label metode bayar untuk ditampilkan di layar Bukti Pembayaran.
+  ///
+  /// Order split payment punya >1 baris trn_payment (lihat
+  /// [TrnDetailOrderEntity.paymentDetails]) -- [TrnDetailOrderEntity
+  /// .orderPaidByName] dari backend cuma mencerminkan baris PERTAMA (mis.
+  /// "CASH" saja meski order sebenarnya CASH + EDC BCA), jadi untuk order
+  /// split label disusun sendiri di sini dari semua leg-nya.
+  String paymentMethodLabel(TrnDetailOrderEntity model) {
+    final legs = model.paymentDetails;
+    if (legs == null || legs.length < 2) {
+      return model.orderPaidByName ?? '-';
+    }
+    return legs
+        .map((leg) => paymentNameByKode[leg.pymntCode] ?? leg.pymntCode ?? '-')
+        .join(' + ');
+  }
+
+  /// Sama seperti [paymentMethodLabel], untuk kartu daftar order (sidebar)
+  /// yang masih pakai [TrnOrderEntity] -- entity berbeda dengan panel detail
+  /// di kanan, tapi bug & datanya sama (lihat TrnOrderInquiryResponse
+  /// .paymentDetails di backend).
+  String paymentMethodLabelForList(TrnOrderEntity model) {
+    final legs = model.paymentDetails;
+    if (legs == null || legs.length < 2) {
+      return model.orderPaidByName ?? '-';
+    }
+    return legs
+        .map((leg) => paymentNameByKode[leg.pymntCode] ?? leg.pymntCode ?? '-')
+        .join(' + ');
   }
 
   @override
@@ -369,6 +430,34 @@ class BuktiPembayaranPageController extends GetxController
     await _cetakUlangStruk(strukVoid: true);
   }
 
+  /// Susun ulang leg-leg split payment untuk dicetak, dari
+  /// [detailModel.value.paymentDetails] (semua baris trn_payment order ini).
+  ///
+  /// Null kalau order ini bukan split payment (0-1 baris) -- struk tetap
+  /// pakai jalur 1 baris seperti semula. Nama metode per leg di-lookup dari
+  /// master payment karena trn_payment sendiri cuma menyimpan kode-nya.
+  Future<List<SplitPaymentLegModel>?> _buildSplitPaymentsForPrint() async {
+    final legs = detailModel.value.paymentDetails;
+    if (legs == null || legs.length < 2) return null;
+
+    // Jaring pengaman: biasanya sudah terisi dari onInit, tapi kalau layar
+    // ini dibuka & langsung cetak ulang sebelum _loadPaymentNames selesai.
+    if (paymentNameByKode.isEmpty) {
+      await _loadPaymentNames();
+    }
+
+    return legs
+        .map(
+          (leg) => SplitPaymentLegModel(
+            paymentCode: leg.pymntCode,
+            paymentName: paymentNameByKode[leg.pymntCode],
+            amount: leg.pymntAmount,
+            reffno: leg.pymntReffno,
+          ),
+        )
+        .toList();
+  }
+
   /// Mencetak struknya. true bila kertasnya benar-benar keluar.
   ///
   /// [strukVoid] true menghasilkan struk PEMBATALAN dari data yang sama —
@@ -490,6 +579,12 @@ class BuktiPembayaranPageController extends GetxController
                       )
                       .toList();
 
+          // Order split payment punya >1 baris trn_payment (lihat
+          // TrnOrderInquiryResponse.paymentDetails di backend) -- tanpa ini
+          // struk cetak ulang hanya menampilkan 1 metode (baris pertama).
+          final List<SplitPaymentLegModel>? splitPayments =
+              await _buildSplitPaymentsForPrint();
+
           OrderModel orderModel = OrderModel(
             orderNumber: selectedData.value.orderNumber ?? '',
             // Nama pembeli HARUS diisi di sini. Model struk ini dirakit ulang
@@ -521,6 +616,7 @@ class BuktiPembayaranPageController extends GetxController
             listVoucher: potonganList,
             listVoucherPrice: voucherList,
             listDepositUse: depositList,
+            splitPayments: splitPayments,
           );
 
           // logger.safeLog('DATA PRINT : ${orderModel.toJson()}');

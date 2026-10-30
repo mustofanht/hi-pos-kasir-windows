@@ -20,6 +20,11 @@ class TrnOrderEntity {
   dynamic detailOrderModels;
   TrnOrderPaymentDetail? paymentDetail;
 
+  /// Semua baris trn_payment order ini -- lebih dari satu untuk order split
+  /// payment (lihat TrnOrderInquiryResponse.paymentDetails di backend).
+  /// [paymentDetail] di atas tetap cuma baris pertama, demi kompatibilitas.
+  List<TrnOrderPaymentDetail>? paymentDetails;
+
   TrnOrderEntity({
     this.orderNumber,
     this.orderName,
@@ -38,6 +43,7 @@ class TrnOrderEntity {
     this.customerDetail,
     this.detailOrderModels,
     this.paymentDetail,
+    this.paymentDetails,
   });
 
   factory TrnOrderEntity.fromJson(Map<String, dynamic> json) {
@@ -64,6 +70,11 @@ class TrnOrderEntity {
       paymentDetail: json['paymentDetail'] != null
           ? TrnOrderPaymentDetail.fromJson(json['paymentDetail'])
           : null,
+      paymentDetails: json['paymentDetails'] != null
+          ? (json['paymentDetails'] as List)
+              .map((i) => TrnOrderPaymentDetail.fromJson(i))
+              .toList()
+          : null,
     );
   }
 
@@ -86,6 +97,7 @@ class TrnOrderEntity {
       'customerDetail': customerDetail?.toJson(),
       'detailOrderModels': detailOrderModels,
       'paymentDetail': paymentDetail?.toJson(),
+      'paymentDetails': paymentDetails?.map((e) => e.toJson()).toList(),
     };
   }
 }

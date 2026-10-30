@@ -278,7 +278,11 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                             ),
                           ),
                           Expanded(
-                            child: BuktiPembayaranDetailPage(model: model),
+                            child: BuktiPembayaranDetailPage(
+                              model: model,
+                              paymentMethodLabel:
+                                  controller.paymentMethodLabel(model),
+                            ),
                           ),
                         ],
                       ),
@@ -397,7 +401,7 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                             Expanded(
                               child: Text(
                                 // MapPaymentMethod[model.orderPaidBy] ?? '',
-                                model.orderPaidByName ?? '',
+                                controller.paymentMethodLabelForList(model),
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                                 softWrap: true,
