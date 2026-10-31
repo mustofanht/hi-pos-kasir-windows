@@ -139,6 +139,10 @@ class SaleCartPageController extends GetxController {
       qty = val.kelasSisa!;
       if (qty < 1) return;
     }
+    if (val.isKelas && !bolehTambahTiket(qty - (val.qtyOrder ?? 0))) {
+      _sinkronKotakAddon(val);
+      return;
+    }
     val.qtyOrder = qty;
     val.totalPrice = (val.addon?.productPrice ?? 0) * qty;
     _sinkronKotakAddon(val);
@@ -362,7 +366,31 @@ class SaleCartPageController extends GetxController {
     calculateTotalOrder();
   }
 
+  /// Voucher yang punya batas tiket per transaksi (vpMaxTicket) membatasi
+  /// jumlah tiket di keranjang. Validasinya di TIKET: dengan voucher batas 5,
+  /// menambah tiket ke-6 ditolak dengan alert. [tambahan] = jumlah unit
+  /// (tiket / anak kelas) yang akan ditambahkan.
+  bool bolehTambahTiket(int tambahan) {
+    if (tambahan <= 0) return true;
+    final total =
+        countVoucherUnits(ticketList: ticketList, addonList: addonList) +
+            tambahan;
+    for (final v in voucherList) {
+      final int maxTicket = v.entity?.vpMaxTicket ?? 0;
+      if (maxTicket > 0 && total > maxTicket) {
+        alert.warning(
+          'Warning',
+          'Voucher ${v.entity?.vpName ?? ''} maksimal $maxTicket tiket per '
+              'transaksi. Hapus voucher dulu bila ingin menambah tiket.',
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
   addTicket(TicketEntity ticket) async {
+    if (!bolehTambahTiket(ticket.ticketMinimum ?? 1)) return;
     // Tiket baru masuk keranjang: selalu pakai aturan bundling terbaru.
     if (ticket.ticketId != null) {
       await _muatAturanBundle(ticket.ticketId!, segarkan: true);
@@ -397,6 +425,11 @@ class SaleCartPageController extends GetxController {
     if (qty < (ticket.ticket?.ticketMinimum ?? 0)) {
       return;
     }
+    if (!bolehTambahTiket(qty - (ticket.qtyOrder ?? 0))) {
+      ticketControllers[ticket.ticket?.ticketId]?.text =
+          (ticket.qtyOrder ?? 0).toString();
+      return;
+    }
     ticket.qtyOrder = qty;
     ticket.totalPrice = ((ticket.ticket!.ticketPrice ?? 0) * qty);
     calculateTotalOrder();
@@ -404,6 +437,7 @@ class SaleCartPageController extends GetxController {
   }
 
   addTicketCart(CartTicket ticket) async {
+    if (!bolehTambahTiket(1)) return;
     ticket.qtyOrder = (ticket.qtyOrder ?? 0) + 1;
     ticket.totalPrice =
         ((ticket.totalPrice ?? 0) + (ticket.ticket!.ticketPrice ?? 0));
@@ -499,6 +533,7 @@ class SaleCartPageController extends GetxController {
           'Sesi ini tinggal ${val.kelasSisa} kursi.');
       return;
     }
+    if (val.isKelas && !bolehTambahTiket(1)) return;
     if (val.rentModel != null) {
     } else {
       val.qtyOrder = (val.qtyOrder ?? 0) + 1;
@@ -609,6 +644,23 @@ class SaleCartPageController extends GetxController {
         'Voucher ${voucher.vpName ?? ''} maksimal $maxTicket tiket per transaksi',
       );
       isValid = false;
+    }
+
+    // Keranjang yang sudah berisi tiket melebihi batas tidak bisa memakai
+    // voucher ini (pasangan validasi di sisi tiket, lihat [bolehTambahTiket]).
+    if (isValid && maxTicket > 0) {
+      final int qtyTiket = countVoucherUnits(
+        ticketList: ticketList,
+        addonList: addonList,
+      );
+      if (qtyTiket > maxTicket) {
+        alert.warning(
+          'Warning',
+          'Voucher ${voucher.vpName ?? ''} maksimal $maxTicket tiket per '
+              'transaksi, keranjang berisi $qtyTiket tiket',
+        );
+        isValid = false;
+      }
     }
 
     if (voucherList.isNotEmpty) {

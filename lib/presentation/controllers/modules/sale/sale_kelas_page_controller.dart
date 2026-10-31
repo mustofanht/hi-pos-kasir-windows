@@ -98,6 +98,8 @@ class SaleKelasPageController extends GetxController {
       );
       return;
     }
+    // 1 anak kelas = 1 unit voucher; ikut batas tiket per transaksi voucher.
+    if (!_cart.bolehTambahTiket(1)) return;
     final sisa = sesi.remaining ?? 0;
     if (baris == null) {
       final harga = sesi.price ?? 0;
