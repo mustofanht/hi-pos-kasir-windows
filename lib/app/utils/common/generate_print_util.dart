@@ -936,59 +936,50 @@ class GeneratePrintUtil {
     ]);
     bytes += generator.hr();
 
-    // Rincian penjualan: total netto (= total pembayaran di atas, karena
+    // Rincian penjualan ditulis berurutan: bruto, dikurangi voucher, potongan
+    // & deposit, menjadi netto. Netto = total pembayaran di atas, karena
     // voucher/potongan/deposit sudah dipotong sebelum tersimpan sebagai
-    // pembayaran), lalu voucher, potongan, & deposit sebagai informasi jumlah
-    // yang terpakai.
+    // pembayaran; bruto disusun balik dengan menambahkannya kembali.
     bytes += generator.text(
       'RINCIAN TRANSAKSI',
       styles: const PosStyles(align: PosAlign.left, bold: true),
     );
     final jmlTransaksi = (detail.tiketCount ?? 0) + (detail.itemCount ?? 0);
-    bytes += generator.row([
-      PosColumn(text: 'Total Penjualan (${jmlTransaksi}x)', width: 8),
-      PosColumn(
-        text: common.currencyFormat(totalPembayaran),
-        width: 4,
-        styles: const PosStyles(align: PosAlign.right),
-      ),
-    ]);
-    if (detail.listSumVoucher != null && detail.listSumVoucher!.isNotEmpty) {
-      final totalVoucher = detail.listSumVoucher!
-          .fold<double>(0, (jumlah, v) => jumlah + (v.amount ?? 0));
-      bytes += generator.row([
-        PosColumn(text: 'Voucher (${detail.voucherCount ?? 0}x)', width: 8),
-        PosColumn(
-          text: common.currencyFormat(totalVoucher),
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right),
-        ),
-      ]);
+    final totalVoucher = (detail.listSumVoucher ?? [])
+        .fold<double>(0, (jumlah, v) => jumlah + (v.amount ?? 0));
+    final totalPotongan = (detail.listSumPotongan ?? [])
+        .fold<double>(0, (jumlah, p) => jumlah + (p.amount ?? 0));
+    final totalDeposit = (detail.listSumDeposit ?? [])
+        .fold<double>(0, (jumlah, d) => jumlah + (d.amount ?? 0));
+    final penjualanBruto =
+        totalPembayaran + totalVoucher + totalPotongan + totalDeposit;
+
+    List<int> barisRincian(String label, double nilai, {bool tebal = false}) =>
+        generator.row([
+          PosColumn(text: label, width: 8, styles: PosStyles(bold: tebal)),
+          PosColumn(
+            text: common.currencyFormat(nilai),
+            width: 4,
+            styles: PosStyles(align: PosAlign.right, bold: tebal),
+          ),
+        ]);
+
+    bytes += barisRincian(
+        'Total Penjualan (${jmlTransaksi}x)', penjualanBruto);
+    if (totalVoucher > 0) {
+      bytes += barisRincian(
+          '(-) Voucher (${detail.voucherCount ?? 0}x)', totalVoucher);
     }
-    if (detail.listSumPotongan != null && detail.listSumPotongan!.isNotEmpty) {
-      final totalPotongan = detail.listSumPotongan!
-          .fold<double>(0, (jumlah, p) => jumlah + (p.amount ?? 0));
-      bytes += generator.row([
-        PosColumn(text: 'Potongan (${detail.potonganCount ?? 0}x)', width: 8),
-        PosColumn(
-          text: common.currencyFormat(totalPotongan),
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right),
-        ),
-      ]);
+    if (totalPotongan > 0) {
+      bytes += barisRincian(
+          '(-) Potongan (${detail.potonganCount ?? 0}x)', totalPotongan);
     }
-    if (detail.listSumDeposit != null && detail.listSumDeposit!.isNotEmpty) {
-      final totalDeposit = detail.listSumDeposit!
-          .fold<double>(0, (jumlah, d) => jumlah + (d.amount ?? 0));
-      bytes += generator.row([
-        PosColumn(text: 'Deposit (${detail.depositCount ?? 0}x)', width: 8),
-        PosColumn(
-          text: common.currencyFormat(totalDeposit),
-          width: 4,
-          styles: const PosStyles(align: PosAlign.right),
-        ),
-      ]);
+    if (totalDeposit > 0) {
+      bytes += barisRincian(
+          '(-) Deposit (${detail.depositCount ?? 0}x)', totalDeposit);
     }
+    bytes += generator.hr();
+    bytes += barisRincian('Penjualan Netto', totalPembayaran, tebal: true);
     bytes += generator.hr();
 
     // Rincian laci tunai: penjualan netto dikurangi tiap metode nontunai,
