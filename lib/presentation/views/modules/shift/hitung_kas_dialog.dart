@@ -101,10 +101,15 @@ class _HitungKasIsiState extends State<HitungKasIsi> {
   /// Tombol yang tersentuh dua kali pada tablet yang sedang berat akan menutup
   /// dua rute: layar ini dan halaman di belakangnya — kasir melihat layar
   /// kosong dan mengira aplikasinya mati.
+  ///
+  /// Sengaja memakai Navigator, bukan Get.back: selama ada alert (snackbar
+  /// GetX) yang masih tampil, Get.back hanya menutup alert itu dan dialognya
+  /// tetap terbuka - sementara [_menutup] sudah terkunci, sehingga Simpan dan
+  /// Batal tampak tidak bereaksi sama sekali.
   void _tutup(Map<int, int>? hasil) {
     if (_menutup) return;
     _menutup = true;
-    Get.back<Map<int, int>>(result: hasil);
+    Navigator.of(context).pop<Map<int, int>>(hasil);
   }
 
   @override
