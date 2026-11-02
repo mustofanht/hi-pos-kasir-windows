@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 // import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/ribuan_input_formatter.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/domain/entities/common/custom_id_name_entity.dart';
+import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_card_payment.dart';
@@ -73,33 +76,205 @@ class CreateMemberPage extends GetView<CreateMemberPageController> {
       );
     }
 
-    Widget _leftFormPaymentMethod() {
+    Widget _splitAmountDanReffno({
+      required MstPayment? mstPayment,
+      required bool isLegKedua,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isLegKedua)
+            CustomTextBox(
+              height: layoutStyle.blockVertical * 6.5,
+              margin: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin,
+                vertical: layoutStyle.defaultMargin / 4,
+              ),
+              obscureText: false,
+              border: Border.all(color: colorStyle.grey, width: 1),
+              borderRadius:
+                  BorderRadius.circular(layoutStyle.defaultMargin / 2),
+              label: Text(
+                'Nominal Metode 1',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
+              controller: controller.splitAmount1Controller,
+              decoration: InputDecoration(
+                hintText: 'mis. 50.000',
+                hintStyle: textStyle.greyText,
+                border: InputBorder.none,
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [RibuanInputFormatter()],
+              onChanged: (_) => controller.update(),
+            )
+          else
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin,
+                vertical: layoutStyle.defaultMargin / 2,
+              ),
+              child: Text(
+                'Sisa Metode 2 : ${common.currencyFormat(controller.splitAmount2)}',
+                style: textStyle.blackText.copyWith(
+                  fontSize: fontSize.small,
+                  fontWeight: fontWeight.bold,
+                ),
+              ),
+            ),
+          if (controller.splitLegNeedsReffno(mstPayment))
+            CustomTextBox(
+              height: layoutStyle.blockVertical * 6.5,
+              margin: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin,
+                vertical: layoutStyle.defaultMargin / 4,
+              ),
+              obscureText: false,
+              border: Border.all(color: colorStyle.grey, width: 1),
+              borderRadius:
+                  BorderRadius.circular(layoutStyle.defaultMargin / 2),
+              label: Text(
+                isLegKedua ? 'No. Reference Metode 2' : 'No. Reference Metode 1',
+                style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+              ),
+              controller: isLegKedua
+                  ? controller.splitReffno2Controller
+                  : controller.splitReffno1Controller,
+              decoration: InputDecoration(
+                hintText: 'Tulis No Reference',
+                hintStyle: textStyle.greyText,
+                border: InputBorder.none,
+              ),
+              keyboardType: TextInputType.text,
+            ),
+        ],
+      );
+    }
+
+    Widget _splitPaymentSection() {
       return Obx(
         () => Padding(
           padding: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisSpacing: layoutStyle.defaultMargin / 2,
-              mainAxisSpacing: layoutStyle.defaultMargin / 2,
-              crossAxisCount: 3,
-              childAspectRatio: 2,
-            ),
-            itemCount: controller.paymentType.length,
-            itemBuilder: (context, index) {
-              return SizedBox(
-                height: layoutStyle.blockVertical * 2,
-                child: CustomCardPayment(
-                  element: controller.paymentType[index],
-                  doSelectPaymentType: controller.doSelectPaymentType,
-                  mstPayments: controller.mstPayments,
-                  selectedPaymentType: controller.selectedPaymentType,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomDropdownButton<MstPayment>(
+                height: layoutStyle.blockVertical * 6.5,
+                label: Text(
+                  'Metode 1',
+                  style: textStyle.greyText.copyWith(fontSize: fontSize.small),
                 ),
-              );
-            },
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+                value: controller.mstPayments.any((e) =>
+                        e.pymntCode == controller.splitPayment1.value?.pymntCode)
+                    ? controller.splitPayment1.value
+                    : null,
+                items: controller.mstPayments
+                    .where((e) =>
+                        e.pymntCode != controller.splitPayment2.value?.pymntCode)
+                    .map((e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(e.pymntName ?? '-'),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) controller.doSelectSplitPayment1(val);
+                },
+              ),
+              _splitAmountDanReffno(
+                mstPayment: controller.splitPayment1.value,
+                isLegKedua: false,
+              ),
+              SizedBox(height: layoutStyle.defaultMargin / 2),
+              CustomDropdownButton<MstPayment>(
+                height: layoutStyle.blockVertical * 6.5,
+                label: Text(
+                  'Metode 2',
+                  style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+                ),
+                value: controller.mstPayments.any((e) =>
+                        e.pymntCode == controller.splitPayment2.value?.pymntCode)
+                    ? controller.splitPayment2.value
+                    : null,
+                items: controller.mstPayments
+                    .where((e) =>
+                        e.pymntCode != controller.splitPayment1.value?.pymntCode)
+                    .map((e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(e.pymntName ?? '-'),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) controller.doSelectSplitPayment2(val);
+                },
+              ),
+              _splitAmountDanReffno(
+                mstPayment: controller.splitPayment2.value,
+                isLegKedua: true,
+              ),
+              SizedBox(height: layoutStyle.defaultMargin / 2),
+            ],
           ),
         ),
+      );
+    }
+
+    Widget _leftFormPaymentMethod() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: layoutStyle.defaultMargin,
+              vertical: layoutStyle.defaultMargin / 4,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Split Pembayaran',
+                  style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+                ),
+                Obx(
+                  () => Switch(
+                    value: controller.isSplitPayment.value,
+                    activeColor: colorStyle.primary,
+                    onChanged: (val) => controller.doToggleSplitPayment(val),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Obx(
+            () => controller.isSplitPayment.value
+                ? _splitPaymentSection()
+                : Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: layoutStyle.defaultMargin),
+                    child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisSpacing: layoutStyle.defaultMargin / 2,
+                        mainAxisSpacing: layoutStyle.defaultMargin / 2,
+                        crossAxisCount: 3,
+                        childAspectRatio: 2,
+                      ),
+                      itemCount: controller.paymentType.length,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          height: layoutStyle.blockVertical * 2,
+                          child: CustomCardPayment(
+                            element: controller.paymentType[index],
+                            doSelectPaymentType: controller.doSelectPaymentType,
+                            mstPayments: controller.mstPayments,
+                            selectedPaymentType: controller.selectedPaymentType,
+                          ),
+                        );
+                      },
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                    ),
+                  ),
+          ),
+        ],
       );
     }
 

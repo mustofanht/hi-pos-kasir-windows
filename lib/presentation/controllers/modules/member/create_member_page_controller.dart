@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
+import 'package:jaya_propertiy/app/utils/common/ribuan_input_formatter.dart';
 import 'package:jaya_propertiy/app/utils/common/tanggal_lahir_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/common/filter_model.dart';
@@ -42,6 +43,62 @@ class CreateMemberPageController extends GetxController {
   final selectedPaymentType = CustomIdNameEntity().obs;
   final isLoadingPayment = false.obs;
   final mstPayments = <MstPayment>[].obs;
+
+  // ── Split payment: 2 metode sekaligus, mis. setengah QRIS setengah cash --
+  // sama seperti penjualan tiket/produk biasa (lihat SalePageController).
+  final isSplitPayment = false.obs;
+  final splitPayment1 = Rxn<MstPayment>(null);
+  final splitPayment2 = Rxn<MstPayment>(null);
+  final splitAmount1Controller = TextEditingController();
+  final splitReffno1Controller = TextEditingController();
+  final splitReffno2Controller = TextEditingController();
+
+  double get splitAmount1 =>
+      RibuanInputFormatter.bersihkan(splitAmount1Controller.text);
+  double get splitAmount2 {
+    final total = Get.isRegistered<CartMemberController>()
+        ? Get.find<CartMemberController>().finalTotalOrderAmt.value
+        : 0.0;
+    return (total - splitAmount1) < 0 ? 0 : (total - splitAmount1);
+  }
+
+  /// Reffno hanya diminta untuk metode selain QRIS/VA/Tunai -- tunai otomatis
+  /// diisi '-' sama seperti jalur pembayaran tunggal.
+  bool splitLegNeedsReffno(MstPayment? mp) {
+    if (mp == null) return false;
+    return mp.pymntCategory != PaymentMethod.QRIS &&
+        mp.pymntCategory != 'VA' &&
+        mp.pymntCategory != PaymentMethod.CASH;
+  }
+
+  doToggleSplitPayment(bool value) {
+    isSplitPayment.value = value;
+    splitPayment1.value = null;
+    splitPayment2.value = null;
+    splitAmount1Controller.clear();
+    splitReffno1Controller.clear();
+    splitReffno2Controller.clear();
+    // Tidak lewat doSelectPaymentType(id: null, ...) -- lookup mstPayments
+    // .firstWhere di sana melempar (tidak ada kode null) untuk placeholder ini.
+    selectedPaymentType.value =
+        CustomIdNameEntity(id: null, name: ' --- Pilih Pembayaran --- ');
+    if (Get.isRegistered<CartMemberController>()) {
+      final cartController = Get.find<CartMemberController>();
+      cartController.selectedMstPayment.value = MstPayment();
+      cartController.calculateMemberAmount();
+    }
+    update();
+  }
+
+  doSelectSplitPayment1(MstPayment mp) {
+    splitPayment1.value = mp;
+    update();
+  }
+
+  doSelectSplitPayment2(MstPayment mp) {
+    splitPayment2.value = mp;
+    update();
+  }
 
   var anggotaList = <int>[].obs;
   var anggotaNamaControllers = <TextEditingController>[].obs;
