@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/order_util.dart';
@@ -208,15 +209,29 @@ class PaymentMemberController extends GetxController {
       await dialog.waitingPaymentEdc(
         title: 'Menunggu Proses Transaksi',
         msg: isCash
-            ? 'Pastikan uang tunai sudah diterima, lalu lanjutkan.'
+            ? 'Masukkan uang yang diterima, lalu lanjutkan.'
             : 'Silahkan mengisi reference',
         showReffInput: !isCash,
-        // Uang Diterima/Kembalian belum dipakai di jalur pendaftaran member
-        // (beda dari penjualan tiket/produk) -- showUangDiterima sengaja
-        // dibiarkan default false, parameter kedua di sini diabaikan.
+        // Samakan dengan transaksi tiket/produk: TUNAI menampilkan kolom
+        // "Uang Diterima" + Kembalian yang dihitung live, bukan cuma field
+        // reference yang disembunyikan.
+        showUangDiterima: isCash,
+        totalTagihan: body.totalPrice ?? 0,
         onNext: (val, uangDiterima) async {
           logger.safeLog('isProcessing : $isProcessing');
           if (isProcessing.value) return;
+          // Uang tunai yang diterima tidak boleh kurang dari tagihan --
+          // ditolak di sini, SEBELUM order dibuat, sama seperti transaksi
+          // tiket/produk (lihat OrderPaymentController.doOrderPayment).
+          if (isCash &&
+              (uangDiterima == null || uangDiterima < (body.totalPrice ?? 0))) {
+            alert.error(
+              'Uang Diterima Kurang',
+              'Uang yang diterima harus minimal sebesar total tagihan '
+                  '(${common.currencyFormat(body.totalPrice ?? 0)}).',
+            );
+            return;
+          }
           isProcessing.value = true;
           // Tunai tidak punya nomor reference, tetapi backend pendaftaran member
           // menolak orderReffno null ("Reffno tidak boleh null"), jadi diisi '-'.
