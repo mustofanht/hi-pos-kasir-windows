@@ -146,6 +146,14 @@ class TakeOutCustomerEntity {
   final String? ticketName;
   final String? locationName;
   final DateTime? checkinDate;
+
+  /// checkinDate sudah diformat backend ke zona waktu lokasi order ini
+  /// (mst_location.loc_timezone), "dd-MM-yyyy HH:mm:ss". Dipakai alih-alih
+  /// checkinDate mentah: device kasir bisa saja disetel ke WIB meski
+  /// lokasinya WITA/WIT, termasuk untuk tiket "tanpa scan" yang checkin-nya
+  /// diambil dari jam beli.
+  final String? checkinDateLocal;
+
   final DateTime? expiredDate;
   final int? durationBooked;
   final int? durationUsed;
@@ -160,6 +168,7 @@ class TakeOutCustomerEntity {
     this.ticketName,
     this.locationName,
     this.checkinDate,
+    this.checkinDateLocal,
     this.expiredDate,
     this.durationBooked,
     this.durationUsed,
@@ -178,6 +187,7 @@ class TakeOutCustomerEntity {
       ticketName: json['ticketName']?.toString(),
       locationName: json['locationName']?.toString(),
       checkinDate: tgl('checkinDate'),
+      checkinDateLocal: json['checkinDateLocal']?.toString(),
       expiredDate: tgl('expiredDate'),
       durationBooked: json['durationBooked'] as int?,
       durationUsed: json['durationUsed'] as int?,

@@ -266,7 +266,14 @@ class BuktiPembayaranDetailPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Created: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
+                        // orderDateLocal sudah diformat server pada zona
+                        // lokasi order ini (WIB/WITA/WIT) -- jangan pakai
+                        // orderDate.toLocal() di sini, itu memakai zona
+                        // device kasir yang bisa saja disetel WIB meski
+                        // lokasinya bukan.
+                        model.orderDateLocal != null
+                            ? 'Created: ${dateFormat.onlyDate.format(dateTimeUtil.parseLocalFormatted(model.orderDateLocal!))} | ${dateFormat.onlyTime.format(dateTimeUtil.parseLocalFormatted(model.orderDateLocal!))}'
+                            : 'Created: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
                         style: TextStyle(
                           fontSize: fontSize.subtitle,
                         ),
@@ -298,7 +305,9 @@ class BuktiPembayaranDetailPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Tanggal Pembayaran: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
+                        model.orderDateLocal != null
+                            ? 'Tanggal Pembayaran: ${dateFormat.onlyDate.format(dateTimeUtil.parseLocalFormatted(model.orderDateLocal!))} | ${dateFormat.onlyTime.format(dateTimeUtil.parseLocalFormatted(model.orderDateLocal!))}'
+                            : 'Tanggal Pembayaran: ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyDate)} | ${dateTimeUtil.getFormattedDate(date: model.orderDate!, format: dateFormat.onlyTime)}',
                         style: TextStyle(
                           fontSize: fontSize.subtitle,
                         ),

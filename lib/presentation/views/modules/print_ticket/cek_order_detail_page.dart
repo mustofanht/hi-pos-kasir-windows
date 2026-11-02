@@ -90,12 +90,21 @@ class CekOrderDetailPage extends StatelessWidget {
                       leftColum(
                         column: 'Order Date',
                         value: Text(
-                          model.orderDate == null
-                              ? ''
-                              : dateTimeUtil.getFormattedDate(
-                                  date: model.orderDate!,
-                                  format: dateFormat.withoutSecond,
-                                ),
+                          // orderDateLocal sudah diformat server pada zona
+                          // lokasi order ini (WIB/WITA/WIT) -- jangan pakai
+                          // orderDate.toLocal() di sini, itu memakai zona
+                          // device kasir yang bisa saja disetel WIB meski
+                          // lokasinya bukan.
+                          model.orderDateLocal != null
+                              ? dateFormat.withoutSecond.format(
+                                  dateTimeUtil.parseLocalFormatted(
+                                      model.orderDateLocal!))
+                              : model.orderDate == null
+                                  ? ''
+                                  : dateTimeUtil.getFormattedDate(
+                                      date: model.orderDate!,
+                                      format: dateFormat.withoutSecond,
+                                    ),
                           style: TextStyle(
                             fontWeight: fontWeight.bold,
                           ),

@@ -5,6 +5,12 @@ class TrnOrderEntity {
   String? orderNumber;
   String? orderName;
   DateTime? orderDate;
+
+  /// orderDate sudah diformat backend ke zona waktu lokasi order ini
+  /// (mst_location.loc_timezone), "dd-MM-yyyy HH:mm:ss". Dipakai alih-alih
+  /// orderDate mentah: device kasir bisa saja diset ke WIB meski lokasinya
+  /// WITA/WIT, sehingga orderDate.toLocal() menampilkan jam yang salah.
+  String? orderDateLocal;
   int? orderTotalItem;
   double? orderDiskon;
   double? orderTotalAmt;
@@ -29,6 +35,7 @@ class TrnOrderEntity {
     this.orderNumber,
     this.orderName,
     this.orderDate,
+    this.orderDateLocal,
     this.orderTotalItem,
     this.orderDiskon,
     this.orderTotalAmt,
@@ -52,6 +59,7 @@ class TrnOrderEntity {
       orderName: json['orderName'],
       orderDate:
           json['orderDate'] != null ? DateTime.parse(json['orderDate']).toLocal() : null,
+      orderDateLocal: json['orderDateLocal'],
       orderTotalItem: json['orderTotalItem'],
       orderDiskon: json['orderDiskon'] != null ?  (json['orderDiskon'] as num).toDouble() : null,
       orderTotalAmt: json['orderTotalAmt'] != null ?  (json['orderTotalAmt'] as num).toDouble() : null,
@@ -83,6 +91,7 @@ class TrnOrderEntity {
       'orderNumber': orderNumber,
       'orderName': orderName,
       'orderDate': orderDate?.toIso8601String(),
+      'orderDateLocal': orderDateLocal,
       'orderTotalItem': orderTotalItem,
       'orderDiskon': orderDiskon,
       'orderTotalAmt': orderTotalAmt,
