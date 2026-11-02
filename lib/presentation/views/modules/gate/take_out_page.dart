@@ -127,7 +127,11 @@ class _TakeOutPageState extends State<TakeOutPage> {
                 style: textStyle.greyText.copyWith(fontSize: fontSize.small)),
             if (c.checkinDate != null)
               Text(
-                'Masuk ${dateTimeUtil.getFormattedDate(date: c.checkinDate!, format: dateFormat.onlyTime)}'
+                // checkinDateLocal sudah diformat server pada zona lokasi
+                // order ini (WIB/WITA/WIT) -- jangan pakai checkinDate.toLocal()
+                // di sini, itu memakai zona device kasir yang bisa saja
+                // disetel WIB meski lokasinya bukan.
+                'Masuk ${c.checkinDateLocal != null ? dateFormat.onlyTime.format(dateTimeUtil.parseLocalFormatted(c.checkinDateLocal!)) : dateTimeUtil.getFormattedDate(date: c.checkinDate!, format: dateFormat.onlyTime)}'
                 '  ·  terpakai ${formatMenit(c.durationUsed)}'
                 '  ·  sisa ${formatMenit(c.durationRemaining)}',
                 style: textStyle.greyText.copyWith(fontSize: fontSize.superSmall),

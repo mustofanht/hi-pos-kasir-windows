@@ -178,6 +178,16 @@ class DateTimeUtil {
     return res;
   }
 
+  /// Parse string "dd-MM-yyyy HH:mm:ss" dari backend (mis. orderDateLocal,
+  /// sudah diformat ke zona waktu lokasi) menjadi DateTime yang field
+  /// jam/menit/detiknya SAMA PERSIS dengan stringnya -- bukan hasil konversi
+  /// zona waktu apa pun. Dipakai supaya nilai yang sudah benar dari backend
+  /// bisa diformat ulang (mis. cuma HH:mm) tanpa ikut ter-toLocal() oleh
+  /// timezone device, yang justru menimbulkan bug ini di awal.
+  DateTime parseLocalFormatted(String date) {
+    return DateFormat('dd-MM-yyyy HH:mm:ss').parse(date);
+  }
+
   DateTime convertToDateTime(String date) {
     if (date.length != 8) {
       throw FormatException("Format tanggal tidak valid");

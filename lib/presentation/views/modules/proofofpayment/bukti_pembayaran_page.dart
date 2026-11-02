@@ -465,9 +465,18 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  dateTimeUtil.getFormattedDate(
-                                      date: model.orderDate!,
-                                      format: dateFormat.hourMinutes),
+                                  // orderDateLocal sudah diformat server pada
+                                  // zona lokasi order ini (WIB/WITA/WIT) --
+                                  // jangan pakai orderDate.toLocal() di sini,
+                                  // itu memakai zona device kasir yang bisa
+                                  // saja disetel WIB meski lokasinya bukan.
+                                  model.orderDateLocal != null
+                                      ? dateFormat.hourMinutes.format(
+                                          dateTimeUtil.parseLocalFormatted(
+                                              model.orderDateLocal!))
+                                      : dateTimeUtil.getFormattedDate(
+                                          date: model.orderDate!,
+                                          format: dateFormat.hourMinutes),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
