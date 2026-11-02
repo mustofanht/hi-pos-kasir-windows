@@ -936,6 +936,40 @@ class GeneratePrintUtil {
     ]);
     bytes += generator.hr();
 
+    // Runtutan split payment (Campuran): nilainya sudah termasuk di baris
+    // metode bayar di atas (mis. bagian tunainya masuk TUNAI). Ditulis
+    // terpisah supaya kasir bisa mencocokkan transaksi campuran.
+    final rincianSplit = detail.listSumSplitPayment ?? [];
+    if ((detail.splitCount ?? 0) > 0 && rincianSplit.isNotEmpty) {
+      bytes += generator.row([
+        PosColumn(
+          text: 'SPLIT PAYMENT (${detail.splitCount}x)',
+          width: 8,
+          styles: const PosStyles(bold: true),
+        ),
+        PosColumn(
+          text: common.currencyFormat(detail.splitTotal ?? 0),
+          width: 4,
+          styles: const PosStyles(align: PosAlign.right, bold: true),
+        ),
+      ]);
+      for (final p in rincianSplit) {
+        bytes += generator.row([
+          PosColumn(text: '  - ${p.name ?? '-'}', width: 8),
+          PosColumn(
+            text: common.currencyFormat(p.amount ?? 0),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+        ]);
+      }
+      bytes += generator.text(
+        '(sudah termasuk di atas)',
+        styles: const PosStyles(align: PosAlign.left),
+      );
+      bytes += generator.hr();
+    }
+
     // Rincian penjualan ditulis berurutan: bruto, dikurangi voucher, potongan
     // & deposit, menjadi netto. Netto = total pembayaran di atas, karena
     // voucher/potongan/deposit sudah dipotong sebelum tersimpan sebagai
