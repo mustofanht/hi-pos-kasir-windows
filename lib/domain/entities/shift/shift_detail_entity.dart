@@ -27,6 +27,14 @@ class ShiftDetailEntity {
   /// per metode deposit — sama bentuknya dengan listSumVoucher/listSumPotongan.
   final List<ShiftDetailSumVoucherEntity>? listSumDeposit;
 
+  /// Runtutan order split payment (Campuran) per metode. Nilainya SUDAH
+  /// termasuk di [listSumPayment]; hanya untuk pencocokan oleh kasir.
+  final List<ShiftDetailPaymentEntity>? listSumSplitPayment;
+
+  /// Jumlah & total order split payment selama shift.
+  final int? splitCount;
+  final double? splitTotal;
+
   // --- Kas shift ------------------------------------------------------------
   // Hanya terisi untuk lokasi yang memakai modal kas. Lokasi lain menerima
   // rekap yang sama persis seperti sebelumnya, dengan pakaiModalKas 'N'.
@@ -77,6 +85,9 @@ class ShiftDetailEntity {
     this.listSumVoucher,
     this.listSumPotongan,
     this.listSumDeposit,
+    this.listSumSplitPayment,
+    this.splitCount,
+    this.splitTotal,
     this.pakaiModalKas,
     this.modalAwal,
     this.tunaiSum,
@@ -142,6 +153,14 @@ class ShiftDetailEntity {
               .map((i) => ShiftDetailSumVoucherEntity.fromJson(i))
               .toList()
           : null,
+      listSumSplitPayment: json['listSumSplitPayment'] is List
+          ? (json['listSumSplitPayment'] as List)
+              .map((i) => ShiftDetailPaymentEntity.fromJson(
+                  Map<String, dynamic>.from(i as Map)))
+              .toList()
+          : null,
+      splitCount: json['splitCount'],
+      splitTotal: _angka(json['splitTotal']),
       pakaiModalKas: json['pakaiModalKas'],
       modalAwal: _angka(json['modalAwal']),
       tunaiSum: _angka(json['tunaiSum']),
@@ -174,6 +193,10 @@ class ShiftDetailEntity {
       'listSumVoucher': listSumVoucher?.map((e) => e.toJson()).toList(),
       'listSumPotongan': listSumPotongan?.map((e) => e.toJson()).toList(),
       'listSumDeposit': listSumDeposit?.map((e) => e.toJson()).toList(),
+      'listSumSplitPayment':
+          listSumSplitPayment?.map((e) => e.toJson()).toList(),
+      'splitCount': splitCount,
+      'splitTotal': splitTotal,
       'pakaiModalKas': pakaiModalKas,
       'modalAwal': modalAwal,
       'tunaiSum': tunaiSum,
