@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_display_model.dart';
 import 'package:jaya_propertiy/data/models/customer/customer_sale_cart_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_member_model.dart';
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/domain/entities/masterdata/mst_payment.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
@@ -126,13 +127,41 @@ class CartMemberController extends GetxController {
 
   bool doVerifyRequest() {
     bool isValid = true;
-    if (isValid && Get.isRegistered<CreateMemberPageController>()) {
-      final createMemberController = Get.find<CreateMemberPageController>();
+    final createMemberController = Get.isRegistered<CreateMemberPageController>()
+        ? Get.find<CreateMemberPageController>()
+        : null;
+    if (isValid && createMemberController != null) {
       isValid = createMemberController.validateForm();
     }
-    if (isValid && selectedMstPayment.value.pymntCode == null) {
+    final isSplit = createMemberController?.isSplitPayment.value ?? false;
+    if (isValid && !isSplit && selectedMstPayment.value.pymntCode == null) {
       isValid = false;
       alert.error('Warning', 'Pilih Pembayaran terlebih dahulu!');
+    }
+    if (isValid && isSplit && createMemberController != null) {
+      final c = createMemberController;
+      if (c.splitPayment1.value?.pymntCode == null) {
+        isValid = false;
+        alert.error('Warning', 'Pilih metode pembayaran pertama (split)!');
+      } else if (c.splitAmount1 <= 0 || c.splitAmount1 >= finalTotalOrderAmt.value) {
+        isValid = false;
+        alert.error('Warning',
+            'Nominal metode pertama harus lebih dari 0 dan kurang dari total pembayaran.');
+      } else if (c.splitPayment2.value?.pymntCode == null) {
+        isValid = false;
+        alert.error('Warning', 'Pilih metode pembayaran kedua (split)!');
+      } else if (c.splitPayment1.value!.pymntCode == c.splitPayment2.value!.pymntCode) {
+        isValid = false;
+        alert.error('Warning', 'Dua metode split payment harus berbeda.');
+      } else if (c.splitLegNeedsReffno(c.splitPayment1.value) &&
+          c.splitReffno1Controller.text.trim().isEmpty) {
+        isValid = false;
+        alert.error('Warning', 'Isi nomor reference untuk metode pertama.');
+      } else if (c.splitLegNeedsReffno(c.splitPayment2.value) &&
+          c.splitReffno2Controller.text.trim().isEmpty) {
+        isValid = false;
+        alert.error('Warning', 'Isi nomor reference untuk metode kedua.');
+      }
     }
     return isValid;
   }
@@ -154,10 +183,49 @@ class CartMemberController extends GetxController {
     return orderMemberModel;
   }
 
+  /// Body order untuk split payment -- orderPaidBy diisi "MX" (Campuran) dan
+  /// [OrderMemberModel.splitPayments] diisi 2 leg. Tunai otomatis '-', sama
+  /// seperti pembayaran tunggal. Tanpa biaya admin (split belum menghitung
+  /// admin fee per leg, sama seperti penjualan tiket/produk biasa).
+  OrderMemberModel getBodyOrderSplit() {
+    final createMemberController = Get.find<CreateMemberPageController>();
+    OrderMemberModel body = getBodyOrder('MX', 'Campuran (Split Payment)');
+    body.adminFeeAmt = 0;
+    body.splitPayments = [
+      SplitPaymentLegModel(
+        paymentCode: createMemberController.splitPayment1.value!.pymntCode,
+        amount: createMemberController.splitAmount1,
+        reffno: createMemberController.splitPayment1.value!.pymntCategory ==
+                PaymentMethod.CASH
+            ? '-'
+            : createMemberController.splitReffno1Controller.text.trim(),
+      ),
+      SplitPaymentLegModel(
+        paymentCode: createMemberController.splitPayment2.value!.pymntCode,
+        amount: createMemberController.splitAmount2,
+        reffno: createMemberController.splitPayment2.value!.pymntCategory ==
+                PaymentMethod.CASH
+            ? '-'
+            : createMemberController.splitReffno2Controller.text.trim(),
+      ),
+    ];
+    return body;
+  }
+
   onPayment() async {
     if (doVerifyRequest()) {
       final PaymentMemberController paymentController =
           Get.put(PaymentMemberController());
+
+      final createMemberController =
+          Get.isRegistered<CreateMemberPageController>()
+              ? Get.find<CreateMemberPageController>()
+              : null;
+      if (createMemberController?.isSplitPayment.value == true) {
+        OrderMemberModel body = getBodyOrderSplit();
+        await paymentController.doSplitPayment(body: body, orderNo: orderNo);
+        return;
+      }
 
       if (selectedMstPayment.value.pymntCategory == PaymentMethod.QRIS) {
         OrderMemberModel body = getBodyOrder(

@@ -1,3 +1,4 @@
+import 'package:jaya_propertiy/data/models/order/split_payment_leg_model.dart';
 import 'package:jaya_propertiy/domain/entities/member/member_list.dart';
 import 'package:jaya_propertiy/domain/entities/member/membership.dart';
 
@@ -28,6 +29,11 @@ class OrderMemberModel {
   String? checkIn;
   String? checkOut;
 
+  /// Split payment (2 metode sekaligus, mis. setengah QRIS setengah cash) --
+  /// sama seperti penjualan tiket/produk biasa (lihat OrderModel.splitPayments).
+  /// Null/kosong = pembayaran tunggal seperti sebelumnya (pakai orderPaidBy).
+  List<SplitPaymentLegModel>? splitPayments;
+
   OrderMemberModel({
     this.qrCode,
     this.orderName,
@@ -47,6 +53,7 @@ class OrderMemberModel {
     this.listMember,
     this.checkIn,
     this.checkOut,
+    this.splitPayments,
   });
 
   factory OrderMemberModel.fromJson(Map<String, dynamic> json) {
@@ -75,6 +82,9 @@ class OrderMemberModel {
           .toList(),
       checkIn: json['checkIn'],
       checkOut: json['checkOut'],
+      splitPayments: (json['splitPayments'] as List<dynamic>?)
+          ?.map((e) => SplitPaymentLegModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -98,6 +108,7 @@ class OrderMemberModel {
       'listMember': listMember?.map((e) => e.toJson()).toList(),
       'checkIn': checkIn,
       'checkOut': checkOut,
+      'splitPayments': splitPayments?.map((e) => e.toJson()).toList(),
     };
   }
 }
