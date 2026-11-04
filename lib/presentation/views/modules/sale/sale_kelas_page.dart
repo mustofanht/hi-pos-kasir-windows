@@ -8,8 +8,8 @@ import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_p
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_kelas_page_controller.dart';
 
 /// Tab Kelas (on-site, hari ini saja seperti playground). Susunan mengikuti
-/// halaman order kelas di website eticketing: dikelompokkan per ruangan, satu
-/// kartu per kelas dengan daftar sesi, status kuota, dan tombol Tambah / − +.
+/// halaman order kelas di website eticketing: kartu berjajar dalam grid sesuai
+/// urutan, satu kartu per kelas dengan daftar sesi, status kuota, dan tombol Tambah / − +.
 /// Setiap klik langsung masuk keranjang.
 class SaleKelasPage extends GetView<SaleKelasPageController> {
   const SaleKelasPage({super.key});
@@ -113,75 +113,86 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
           final qty = controller.qtyDiKeranjang(sesi);
           final sisa = sesi.remaining ?? 0;
           return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               border: i > 0
                   ? Border(top: BorderSide(color: colorStyle.lightGrey))
                   : null,
             ),
-            child: Row(
+            // Dua tingkat supaya muat di kartu sempit (grid 2-4 kolom):
+            // atas = nama sesi + status, bawah = jam & harga + tombol.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
                         sesi.sessionName ?? 'Sesi ${i + 1}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: fontSize.body,
                           fontWeight: FontWeight.w600,
                           color: colorStyle.black,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
+                    ),
+                    const SizedBox(width: 6),
+                    statusSesi(sesi),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
                         '${sesi.startTime ?? ''}${sesi.endTime != null ? ' – ${sesi.endTime}' : ''}'
-                        '  ·  Rp ${common.currencyFormat(sesi.price ?? 0)}',
+                        '\nRp ${common.currencyFormat(sesi.price ?? 0)}',
                         style: TextStyle(fontSize: fontSize.small, color: _abu),
                       ),
-                    ],
-                  ),
-                ),
-                statusSesi(sesi),
-                if (sesi.bisaDijual) ...[
-                  const SizedBox(width: 12),
-                  if (qty > 0) ...[
-                    tombolKecil(Icons.remove, () => controller.kurang(sesi)),
-                    SizedBox(
-                      width: 28,
-                      child: Text(
-                        '$qty',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: fontSize.body,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
-                    tombolKecil(
-                      Icons.add,
-                      qty < sisa ? () => controller.tambah(kelas, sesi) : null,
-                    ),
-                  ] else
-                    SizedBox(
-                      height: 36,
-                      child: OutlinedButton(
-                        onPressed: () => controller.tambah(kelas, sesi),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _utama,
-                          side: BorderSide(color: _utama),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Text('Tambah',
+                    if (sesi.bisaDijual) ...[
+                      if (qty > 0) ...[
+                        tombolKecil(Icons.remove, () => controller.kurang(sesi)),
+                        SizedBox(
+                          width: 26,
+                          child: Text(
+                            '$qty',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: fontSize.body,
-                              fontWeight: FontWeight.w500,
-                            )),
-                      ),
-                    ),
-                ],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        tombolKecil(
+                          Icons.add,
+                          qty < sisa ? () => controller.tambah(kelas, sesi) : null,
+                        ),
+                      ] else
+                        SizedBox(
+                          height: 32,
+                          child: OutlinedButton(
+                            onPressed: () => controller.tambah(kelas, sesi),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _utama,
+                              side: BorderSide(color: _utama),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: Text('Tambah',
+                                style: TextStyle(
+                                  fontSize: fontSize.small,
+                                  fontWeight: FontWeight.w500,
+                                )),
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
               ],
             ),
           );
@@ -214,51 +225,69 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Gambar kelas (bila diunggah di master tiket)
-            if ((kelas.pathImg ?? '').trim().isNotEmpty)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  kelas.pathImg!.trim(),
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: colorStyle.lightGrey,
-                    alignment: Alignment.center,
-                    child: Icon(Icons.image_not_supported, color: _abu),
-                  ),
-                ),
-              ),
-            // Header kelas
+            // Header kelas: gambar kecil (thumbnail) di samping nama, bukan
+            // gambar 16:9 selebar kartu yang membuat kartu terlalu tinggi.
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: _headerBg,
                 border: Border(bottom: BorderSide(color: _border)),
               ),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(kelas.ticketName ?? '',
-                      style: TextStyle(
-                        fontSize: fontSize.subtitle,
-                        fontWeight: FontWeight.bold,
-                        color: _utama,
-                      )),
-                  if (deskripsi.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        deskripsi.join(' · ').toUpperCase(),
-                        style: TextStyle(fontSize: fontSize.superSmall),
+                  if ((kelas.pathImg ?? '').trim().isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Image.network(
+                          kelas.pathImg!.trim(),
+                          fit: BoxFit.cover,
+                          cacheWidth: 144,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            color: colorStyle.lightGrey,
+                            alignment: Alignment.center,
+                            child: Icon(Icons.image_not_supported,
+                                size: 18, color: _abu),
+                          ),
+                        ),
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '${kelas.sessions.length} SESI'
-                      '${mulai > 0 ? ' · MULAI DARI Rp ${common.currencyFormat(mulai)}' : ''}',
-                      style: TextStyle(fontSize: fontSize.superSmall),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(kelas.ticketName ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: fontSize.body,
+                              fontWeight: FontWeight.bold,
+                              color: _utama,
+                            )),
+                        if (deskripsi.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              // Ditampilkan utuh (boleh beberapa baris).
+                              deskripsi.join(' · ').toUpperCase(),
+                              style: TextStyle(fontSize: fontSize.superSmall),
+                            ),
+                          ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${(kelas.roomName ?? '').trim().isNotEmpty ? '${kelas.roomName!.trim().toUpperCase()} · ' : ''}'
+                          '${kelas.sessions.length} SESI'
+                          '${mulai > 0 ? ' · MULAI DARI Rp ${common.currencyFormat(mulai)}' : ''}',
+                          style: TextStyle(
+                              fontSize: fontSize.superSmall, color: _abu),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -266,7 +295,7 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
             ),
             if (kelas.sessions.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
                   'Belum ada sesi.',
                   textAlign: TextAlign.center,
@@ -280,54 +309,41 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
       );
     }
 
-    Widget grupRuangan(
-        String ruangan, List<KelasEntity> daftar, bool pertama, double lebar) {
-      // Kartu tersusun menyamping (grid) seperti website; minimal lebar ~300 per kartu.
-      final kolom = (lebar / 300).floor().clamp(1, 3);
-      const jarak = 16.0;
+    /// Semua kartu kelas dalam satu grid, berjajar kiri ke kanan sesuai
+    /// urutan dari server (Urutan di Setup Tiket, lalu jam sesi pertama).
+    /// Dulu dikelompokkan per ruangan dan tiap ruangan mulai baris baru,
+    /// sehingga satu kelas per ruangan tampil satu kartu selebar halaman.
+    Widget gridKelas(List<KelasEntity> daftar, double lebar) {
+      // Area produk kasir sempit (ada keranjang di kanan): minimal 2 kolom,
+      // kartu ~240 px, maksimal 4 kolom.
+      final kolom = (lebar / 240).floor().clamp(2, 4);
+      const jarak = 10.0;
       final lebarKartu = (lebar - jarak * (kolom - 1)) / kolom;
-      return Padding(
-        padding: EdgeInsets.only(top: pertama ? 0 : 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Judul ruangan di kiri, legenda status rata kanan sejajar tepi kartu.
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 12,
+              runSpacing: 4,
               children: [
-                Expanded(
-                  child: Text(ruangan,
-                      style: TextStyle(
-                        fontSize: fontSize.header,
-                        fontWeight: FontWeight.bold,
-                        color: _utama,
-                      )),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 12,
-                    runSpacing: 4,
-                    children: [
-                      legenda('Tersedia', colorStyle.green, _abu),
-                      legenda('Hampir penuh', _hampir, _abu),
-                      legenda('Tidak tersedia', _merah, _abu),
-                    ],
-                  ),
-                ),
+                legenda('Tersedia', colorStyle.green, _abu),
+                legenda('Hampir penuh', _hampir, _abu),
+                legenda('Tidak tersedia', _merah, _abu),
               ],
             ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: jarak,
-              runSpacing: jarak,
-              children: daftar
-                  .map((k) => SizedBox(width: lebarKartu, child: kartuKelas(k)))
-                  .toList(),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: jarak,
+            runSpacing: jarak,
+            children: daftar
+                .map((k) => SizedBox(width: lebarKartu, child: kartuKelas(k)))
+                .toList(),
+          ),
+        ],
       );
     }
 
@@ -356,24 +372,14 @@ class SaleKelasPage extends GetView<SaleKelasPageController> {
               ],
             );
           }
-          // Kelompokkan per ruangan, urutan sesuai data dari server.
-          final grup = <String, List<KelasEntity>>{};
-          for (final k in controller.kelasList) {
-            final r = (k.roomName ?? '').trim();
-            grup.putIfAbsent(r.isEmpty ? 'Kelas' : r, () => []).add(k);
-          }
-          final entri = grup.entries.toList();
           return LayoutBuilder(
             builder: (context, c) {
-              const pad = 16.0;
+              const pad = 12.0;
               final lebar = c.maxWidth - pad * 2;
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(pad),
-                children: [
-                  for (var i = 0; i < entri.length; i++)
-                    grupRuangan(entri[i].key, entri[i].value, i == 0, lebar),
-                ],
+                children: [gridKelas(controller.kelasList, lebar)],
               );
             },
           );
