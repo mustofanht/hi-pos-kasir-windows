@@ -56,7 +56,10 @@ class SalePage extends GetView<SalePageController> {
                       // Tab dibentang penuh kiri-kanan (tanpa jarak samping)
                       // dan teksnya diperkecil bila perlu, supaya label
                       // tidak terpotong saat tab banyak.
-                      child: TabBar(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TabBar(
                         controller: controller.tabController,
                         indicatorSize: TabBarIndicatorSize.tab,
                         labelPadding: const EdgeInsets.symmetric(horizontal: 4),
@@ -82,6 +85,27 @@ class SalePage extends GetView<SalePageController> {
                                   ),
                                 ))
                             .toList(),
+                            ),
+                          ),
+                          // Muat ulang daftar tab yang sedang dibuka.
+                          Obx(
+                            () => IconButton(
+                              tooltip: 'Muat ulang',
+                              onPressed: controller.isMuatUlang.value
+                                  ? null
+                                  : () => controller.muatUlangTabAktif(),
+                              icon: controller.isMuatUlang.value
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : Icon(Icons.refresh,
+                                      color: colorStyle.primary),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
