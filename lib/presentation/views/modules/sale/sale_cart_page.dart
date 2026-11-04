@@ -919,10 +919,21 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                       style: textStyle.blackText,
                     ),
                     Expanded(
-                      child: AutoSizeText(
-                        e.entity!.vpName ?? '',
-                        // softWrap: true,
-                        // overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AutoSizeText(
+                            e.entity!.vpName ?? '',
+                            // softWrap: true,
+                            // overflow: TextOverflow.ellipsis,
+                          ),
+                          // Kode kartu voucher cetak (V147).
+                          if (e.kodeList.isNotEmpty)
+                            Text(
+                              e.kodeList.join(', '),
+                              style: textStyle.greyText,
+                            ),
+                        ],
                       ),
                     ),
                     Align(
@@ -979,7 +990,8 @@ class SaleCartPage extends GetView<SaleCartPageController> {
                                     height: layoutStyle.blockVertical * 5,
                                   )
                                 : Container(),
-                          if (controller.memberVoucher.isFalse)
+                          if (controller.memberVoucher.isFalse &&
+                              e.entity?.isKodeUnik != true)
                             CustomButton(
                               onPressed: () {
                                 controller.addVoucherCart(e);

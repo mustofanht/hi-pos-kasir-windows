@@ -619,7 +619,10 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                 ),
               ),
               SizedBox(height: layoutStyle.defaultMargin),
-              CustomTextBox(
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextBox(
                 height: layoutStyle.blockVertical * 6.5,
                 margin: EdgeInsets.symmetric(
                   horizontal: layoutStyle.defaultMargin,
@@ -654,6 +657,26 @@ class BuktiPembayaranPage extends GetView<BuktiPembayaranPageController> {
                 onSubmit: (val) {
                   controller.doSearch(val);
                 },
+                    ),
+                  ),
+                  // Muat ulang daftar (pencarian yang sedang diketik tetap
+                  // dipakai). Di Windows tarik-untuk-refresh tidak bisa
+                  // dipakai dengan mouse, jadi perlu tombol.
+                  Obx(
+                    () => Padding(
+                      padding: EdgeInsets.only(
+                          right: layoutStyle.defaultMargin),
+                      child: IconButton(
+                        tooltip: 'Muat ulang',
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : () => controller
+                                .doSearch(controller.searchController.text),
+                        icon: Icon(Icons.refresh, color: colorStyle.primary),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: layoutStyle.defaultMargin),
               contentSection(controller),

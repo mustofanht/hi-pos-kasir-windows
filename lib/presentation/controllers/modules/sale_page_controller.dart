@@ -134,6 +134,20 @@ class SalePageController extends GetxController
     _refreshTab(index);
   }
 
+  final isMuatUlang = false.obs;
+
+  /// Tombol refresh di menu Penjualan: muat ulang daftar tab yang sedang
+  /// dibuka (sisa kuota kelas, okupansi lapangan, stok item, voucher). Di
+  /// Windows tarik-untuk-refresh tidak bisa dipakai dengan mouse.
+  Future<void> muatUlangTabAktif() async {
+    if (isMuatUlang.value) return;
+    isMuatUlang.value = true;
+    _refreshTab(tabController?.index ?? tabIndex.value);
+    // Jeda singkat supaya tombol tidak bisa ditekan beruntun.
+    await Future.delayed(const Duration(milliseconds: 800));
+    isMuatUlang.value = false;
+  }
+
   /// Muat ulang daftar untuk tab pada indeks tertentu (lihat [tabs]). Aman
   /// dipanggil walau controller tab belum terdaftar (di-skip; controller
   /// memuat sendiri saat pertama dibuka).
@@ -800,6 +814,7 @@ class SalePageController extends GetxController
           ovpVoucherId: element.entity?.vpId,
           ovpTotalAmount: voucherDiscountAmount,
           ovpTotalVoucher: element.qtyOrder ?? 0,
+          ovpCodes: element.kodeList.isEmpty ? null : element.kodeList,
         ));
       }
       logger.safeLog('VOUCHER AMOUNT : $totalDiscountAmount ');

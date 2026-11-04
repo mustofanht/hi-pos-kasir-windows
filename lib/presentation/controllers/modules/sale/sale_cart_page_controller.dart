@@ -703,7 +703,47 @@ class SaleCartPageController extends GetxController {
     calculateTotalOrder();
   }
 
+  /// Voucher kartu cetak (V147): kode sudah dicek backend, tambahkan ke
+  /// keranjang. Satu kode = satu qty; kode yang sama tidak bisa masuk dua kali.
+  bool addKodeVoucher(VoucherEntity voucher, String kode) {
+    final sudahAda = voucherList.any((v) => v.kodeList.contains(kode));
+    if (sudahAda) {
+      alert.warning('Warning', 'Kode voucher $kode sudah ada di keranjang');
+      return false;
+    }
+    final existing =
+        voucherList.firstWhereOrNull((v) => v.entity?.vpId == voucher.vpId);
+    if (existing == null) {
+      if (!validateVoucher(0, voucher)) return false;
+      voucherList.add(
+        CartVoucher(
+          qtyOrder: 1,
+          totalPrice: voucher.vpUnitValue ?? 0,
+          entity: voucher,
+          kodeList: [kode],
+        ),
+      );
+    } else {
+      if (!validateVoucher(existing.qtyOrder ?? 0, existing.entity!)) {
+        return false;
+      }
+      existing.kodeList.add(kode);
+      existing.qtyOrder = (existing.qtyOrder ?? 0) + 1;
+      existing.totalPrice =
+          (existing.totalPrice ?? 0) + (existing.entity!.vpUnitValue ?? 0);
+    }
+    calculateTotalOrder();
+    voucherList.refresh();
+    return true;
+  }
+
   addVoucherCart(CartVoucher voucher) {
+    // Voucher kartu cetak hanya bertambah lewat kode kartu berikutnya.
+    if (voucher.entity?.isKodeUnik == true) {
+      alert.warning('Warning',
+          'Masukkan kode dari kartu voucher berikutnya di menu Voucher');
+      return;
+    }
     // if (memberVoucher.isTrue) {
     //   alert.warning('Warning', 'Voucher tidak bisa di gunakan!');
     //   return;
@@ -748,6 +788,9 @@ class SaleCartPageController extends GetxController {
   }
 
   removeVoucher(CartVoucher voucher) {
+    if (voucher.kodeList.isNotEmpty) {
+      voucher.kodeList.removeLast();
+    }
     voucher.qtyOrder = (voucher.qtyOrder ?? 0) - 1;
     voucher.totalPrice =
         (voucher.totalPrice ?? 0) - (voucher.entity!.vpUnitValue ?? 0);

@@ -38,6 +38,41 @@ class VoucherService {
     }
   }
 
+  /// Cek kode dari kartu voucher cetak (V147). Berhasil -> voucher induk
+  /// dengan vpLimit = sisa kuota. Gagal -> pesan dari backend (kode tidak
+  /// ada, sudah dipakai, kedaluwarsa, lokasi lain, ...).
+  Future<Either<String, BaseResponse<VoucherEntity>>> cekKodeVoucher({
+    required AuthToken authToken,
+    required String code,
+    String? locationIds,
+  }) async {
+    var path = "mst_voucher_price/kode/cek";
+    final Map<String, dynamic> params = {'code': code};
+    if (locationIds != null && locationIds.isNotEmpty) {
+      params['locationId'] = locationIds;
+    }
+    final uri = source.baseUri(path: path).replace(queryParameters: params);
+
+    final response = await http.get(
+      uri,
+      headers: common.generateHeader(
+        sessionToken: authToken,
+      ),
+    );
+
+    logger.responseLog(uri, response);
+
+    if (response.statusCode == 200) {
+      BaseResponse<VoucherEntity> result = BaseResponse<VoucherEntity>.fromJson(
+        json.decode(response.body),
+        (data) => VoucherEntity.fromJson(data['voucher']),
+      );
+      return Right(result);
+    } else {
+      return Left(common.getMetadataMessages(response.body));
+    }
+  }
+
   Future<Either<String, BaseResponse<VoucherEntity>>> getVoucherById({
     required AuthToken authToken,
     required int vpId,
