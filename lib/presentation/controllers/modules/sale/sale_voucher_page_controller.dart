@@ -41,6 +41,10 @@ class SaleVoucherPageController extends GetxController {
 
   final searchController = TextEditingController();
 
+  /// Kode dari kartu voucher cetak (V147).
+  final kodeController = TextEditingController();
+  final isCekKode = false.obs;
+
   @override
   Future<void> onInit() async {
     super.onInit();
@@ -84,6 +88,44 @@ class SaleVoucherPageController extends GetxController {
     saleCartPageController.addpotongan(voucher);
     saleCartPageController.calculateTotalOrder();
     update();
+  }
+
+  /// Kartu voucher cetak: cek kodenya ke backend, lalu masukkan voucher
+  /// induknya ke keranjang dengan kode itu terikat (1 kode = 1 tiket).
+  pakaiKodeVoucher() async {
+    final kode = kodeController.text.trim().toUpperCase();
+    if (kode.isEmpty) {
+      alert.warning('Warning', 'Ketik kode yang tertera di kartu voucher');
+      return;
+    }
+    if (isCekKode.value) return;
+    isCekKode.value = true;
+    try {
+      final result = await _service.sale.voucherService.cekKodeVoucher(
+        authToken: _authToken,
+        code: kode,
+        locationIds: sessionUtil.getLocationIdsQueryParam(),
+      );
+      result.fold((l) {
+        alert.warning('Kode Voucher', l);
+      }, (r) {
+        final SaleCartPageController saleCartPageController =
+            Get.find<SaleCartPageController>();
+        final ok = saleCartPageController.addKodeVoucher(r.data!, kode);
+        if (ok) {
+          kodeController.clear();
+          saleCartPageController.update();
+          alert.success('Berhasil',
+              'Kode $kode ditambahkan: ${r.data!.vpName ?? 'Voucher'}');
+        }
+      });
+    } catch (e) {
+      logger.safeLog(e);
+      alert.warning('Kode Voucher', 'Gagal mengecek kode voucher');
+    } finally {
+      isCekKode.value = false;
+      update();
+    }
   }
 
   addVoucherToCart(VoucherEntity entity) {
@@ -212,6 +254,14 @@ class SaleVoucherPageController extends GetxController {
       dataFilter.add(
         apiFilterUtil.addSearch(
           'vpFlMember',
+          OPERATOR_CONSTANTS.EQUALS,
+          'N',
+        )!,
+      );
+      // Voucher kartu cetak (V147) hanya lewat kolom kode, bukan dari daftar.
+      dataFilter.add(
+        apiFilterUtil.addSearch(
+          'vpFlKodeUnik',
           OPERATOR_CONSTANTS.EQUALS,
           'N',
         )!,

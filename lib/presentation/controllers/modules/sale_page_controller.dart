@@ -800,6 +800,7 @@ class SalePageController extends GetxController
           ovpVoucherId: element.entity?.vpId,
           ovpTotalAmount: voucherDiscountAmount,
           ovpTotalVoucher: element.qtyOrder ?? 0,
+          ovpCodes: element.kodeList.isEmpty ? null : element.kodeList,
         ));
       }
       logger.safeLog('VOUCHER AMOUNT : $totalDiscountAmount ');

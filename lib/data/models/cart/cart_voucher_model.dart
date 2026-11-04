@@ -10,19 +10,26 @@ class CartVoucher {
   String? memberNo;
   List<MemberListResponse>? selectedMemberAnggota;
 
+  /// Kode dari kartu voucher cetak (V147), satu per qty. Kosong untuk voucher biasa.
+  List<String> kodeList = [];
+
   CartVoucher({
     this.qtyOrder,
     this.totalPrice,
     this.entity,
     this.memberNo,
     this.selectedMemberAnggota,
-  });
+    List<String>? kodeList,
+  }) {
+    this.kodeList = kodeList ?? [];
+  }
 
   Map<String, dynamic> toJson() {
     return {
       "qtyOrder": qtyOrder,
       "totalPrice": totalPrice,
       "entity": entity != null ? entity!.toJson() : [],
+      "kodeList": kodeList,
     };
   }
 
@@ -38,6 +45,9 @@ class CartVoucher {
     try {
       qtyOrder = json['qtyOrder'];
       totalPrice = json['totalPrice'];
+      kodeList = json['kodeList'] is List
+          ? (json['kodeList'] as List).map((e) => '$e').toList()
+          : [];
       if (json['entity'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
             common.convertToMapStringDynamic(json['entity']);

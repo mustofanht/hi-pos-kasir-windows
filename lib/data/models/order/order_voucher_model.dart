@@ -6,11 +6,15 @@ class OrderVoucherModel {
   int ovpTotalVoucher;
   double ovpTotalAmount;
 
+  /// Kode kartu voucher cetak (V147); wajib untuk voucher kode unik.
+  List<String>? ovpCodes;
+
   OrderVoucherModel({
     this.entity,
     this.ovpVoucherId,
     required this.ovpTotalVoucher,
     required this.ovpTotalAmount,
+    this.ovpCodes,
   });
 
   factory OrderVoucherModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,7 @@ class OrderVoucherModel {
       "ovpVoucherId": ovpVoucherId,
       "ovpTotalVoucher": ovpTotalVoucher,
       "ovpTotalAmount": ovpTotalAmount,
+      if (ovpCodes != null && ovpCodes!.isNotEmpty) "ovpCodes": ovpCodes,
     };
   }
 }

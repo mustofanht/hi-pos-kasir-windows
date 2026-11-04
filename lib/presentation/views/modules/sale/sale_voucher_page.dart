@@ -625,6 +625,85 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
       );
     }
 
+    /// Kolom kode kartu voucher cetak (V147), di tab Voucher.
+    Widget kodeSection() {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: layoutStyle.defaultMargin),
+        child: Row(
+          children: [
+            Expanded(
+              child: CustomTextBox(
+                height: layoutStyle.blockVertical * 6.5,
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 4,
+                ),
+                obscureText: false,
+                border: Border.all(
+                  color: colorStyle.grey,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(
+                  layoutStyle.defaultMargin / 2,
+                ),
+                controller: controller.kodeController,
+                onChanged: (val) {},
+                onSubmit: (_) => controller.pakaiKodeVoucher(),
+                decoration: InputDecoration(
+                  hintText: 'Kode voucher dari kartu, mis. VCGO1026001',
+                  hintStyle: textStyle.greyText,
+                  border: InputBorder.none,
+                ),
+                keyboardType: TextInputType.text,
+              ),
+            ),
+            SizedBox(
+              width: layoutStyle.defaultMargin,
+            ),
+            Obx(
+              () => CustomButton(
+                width: layoutStyle.safeBlockHorizontal * 10,
+                height: layoutStyle.blockVertical * 6.5,
+                margin: EdgeInsets.symmetric(
+                  vertical: layoutStyle.defaultMargin / 2,
+                ),
+                onPressed: () async {
+                  await controller.pakaiKodeVoucher();
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                    (states) => colorStyle.blue,
+                  ),
+                  overlayColor: MaterialStateProperty.resolveWith(
+                    (states) => colorStyle.black.withOpacity(0.1),
+                  ),
+                  shape: MaterialStateProperty.resolveWith(
+                    (states) => RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        layoutStyle.defaultMargin / 2,
+                      ),
+                    ),
+                  ),
+                ),
+                label: controller.isCekKode.value
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorStyle.white,
+                        ),
+                      )
+                    : Text(
+                        'Pakai',
+                        style: textStyle.whiteText,
+                      ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GetBuilder(
       init: controller,
       initState: (state) {
@@ -642,6 +721,7 @@ class SaleVoucherPage extends GetView<SaleVoucherPageController> {
           child: Column(
             children: [
               typeVoucherSection(),
+              if (controller.selectedTypeItemList.value == 'V') kodeSection(),
               if (controller.selectedTypeItemList.value == 'D') searchSection(),
               contentSection(),
             ],

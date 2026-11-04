@@ -20,6 +20,12 @@ class VoucherEntity {
   String? locationName;
   String? vpFlWebsite;
 
+  /// 'Y' = voucher kartu cetak (V147): tidak tampil di daftar, hanya bisa
+  /// dipakai lewat kode unik dari kartu, satu kode untuk satu tiket.
+  String? vpFlKodeUnik;
+
+  bool get isKodeUnik => vpFlKodeUnik == 'Y';
+
   VoucherEntity({
     this.vpId,
     this.vpName,
@@ -36,6 +42,7 @@ class VoucherEntity {
     this.vpState,
     this.locationName,
     this.vpFlWebsite,
+    this.vpFlKodeUnik,
   });
 
   VoucherEntity.fromJson(Map<String?, dynamic> json) {
@@ -60,6 +67,7 @@ class VoucherEntity {
     vpState = json['vpState'];
     locationName = json['locationName'];
     vpFlWebsite = json['vpFlWebsite'];
+    vpFlKodeUnik = json['vpFlKodeUnik'];
   }
 
   Map<String?, dynamic> toJson() {
@@ -79,6 +87,7 @@ class VoucherEntity {
       'vpState': vpState,
       'locationName': locationName,
       'vpFlWebsite': vpFlWebsite,
+      'vpFlKodeUnik': vpFlKodeUnik,
     };
   }
   Map<String?, dynamic> toJson2() {
@@ -102,6 +111,7 @@ class VoucherEntity {
       'vpState': vpState,
       'locationName': locationName,
       'vpFlWebsite': vpFlWebsite,
+      'vpFlKodeUnik': vpFlKodeUnik,
     };
   }
 }
