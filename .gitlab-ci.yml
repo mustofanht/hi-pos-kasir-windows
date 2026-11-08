@@ -18,6 +18,7 @@ build_windows_exe:
   script:
     - flutter pub get
     - flutter build windows --release
+    - New-Item -ItemType Directory -Force -Path "installer_output" | Out-Null
     - '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "windows\installer\installer.iss"'
   artifacts:
     paths:
