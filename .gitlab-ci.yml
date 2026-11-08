@@ -14,13 +14,14 @@ build_windows_exe:
     - $env:PATH = "C:\flutter\bin;$env:PATH"
     - flutter config --enable-windows-desktop --no-analytics
     - flutter doctor -v
+    - if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
   script:
     - flutter pub get
     - flutter build windows --release
-    - Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "jaya_propertiy-windows.zip"
+    - '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "windows\installer\installer.iss"'
   artifacts:
     paths:
-      - jaya_propertiy-windows.zip
+      - installer_output\*.exe
     expire_in: 2 weeks
   cache:
     key: flutter-sdk-$FLUTTER_VERSION
