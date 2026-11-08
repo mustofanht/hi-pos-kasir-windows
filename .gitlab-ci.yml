@@ -1,0 +1,29 @@
+stages:
+  - build
+
+build_windows_exe:
+  stage: build
+  tags:
+    - saas-windows-medium-amd64
+  rules:
+    - when: manual
+  variables:
+    FLUTTER_VERSION: "3.24.5"
+  before_script:
+    - Invoke-WebRequest -Uri "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_$env:FLUTTER_VERSION-stable.zip" -OutFile flutter_sdk.zip
+    - Expand-Archive -Path flutter_sdk.zip -DestinationPath C:\
+    - $env:PATH = "C:\flutter\bin;$env:PATH"
+    - flutter config --enable-windows-desktop --no-analytics
+    - flutter doctor -v
+  script:
+    - flutter pub get
+    - flutter build windows --release
+    - Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "jaya_propertiy-windows.zip"
+  artifacts:
+    paths:
+      - jaya_propertiy-windows.zip
+    expire_in: 2 weeks
+  cache:
+    key: flutter-sdk-$FLUTTER_VERSION
+    paths:
+      - C:\flutter
