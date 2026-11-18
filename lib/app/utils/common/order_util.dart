@@ -405,12 +405,24 @@ class OrderUtil {
   ///
   /// Sengaja tidak ditunggu: kasir tidak boleh menunggu lima detik hanya untuk
   /// bisa melanjutkan transaksi berikutnya.
+  String? _namaKasir() {
+    try {
+      return sessionUtil.getUserName();
+    } catch (_) {
+      return null;
+    }
+  }
+
   void mintaSurvei(String? orderNo) {
     Future.delayed(jedaSurvei, () {
       displayUtil.updateSecondDisplay(
         CustomerDisplay(
           key: CustomerDisplayAction.SURVEY,
-          value: {'orderNo': orderNo},
+          value: {
+            'orderNo': orderNo,
+            // Tablet layar pelanggan terpisah tidak punya sesi kasir.
+            'cashier': _namaKasir(),
+          },
         ).toJson(),
       );
     });

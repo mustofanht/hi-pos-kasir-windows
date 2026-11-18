@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/session_util.dart';
 import 'package:jaya_propertiy/data/services/main_service.dart';
@@ -51,6 +52,7 @@ class CustomerSurveyController extends GetxController {
   final selesai = RxBool(false);
 
   String? _orderNo;
+  String? _kasir;
   Timer? _timerTutup;
   Timer? _timerDiam;
 
@@ -62,8 +64,9 @@ class CustomerSurveyController extends GetxController {
   }
 
   /// Dipanggil saat pembayaran dinyatakan berhasil di layar pelanggan.
-  Future<void> buka({String? orderNo}) async {
+  Future<void> buka({String? orderNo, String? kasir}) async {
     _orderNo = orderNo;
+    _kasir = kasir;
     rating.value = null;
     reasonCode.value = null;
     selesai.value = false;
@@ -105,6 +108,19 @@ class CustomerSurveyController extends GetxController {
 
     mengirim.value = true;
     _timerDiam?.cancel();
+
+    // Tablet layar pelanggan terpisah (V165) tidak punya sesi kasir: kirim
+    // lewat token perangkatnya, lokasinya diisi server dari pemasangan.
+    if (layarPelangganPerangkat.modeAktif) {
+      await layarPelangganPerangkat.kirimSurvei(
+        rating: nilai,
+        reasonCode: reasonCode.value,
+        orderNo: _orderNo,
+        cashier: _kasir,
+      );
+      _tampilkanTerimaKasih();
+      return;
+    }
 
     final locationId = sessionUtil.getLocationId();
     if (locationId == null) {
@@ -149,6 +165,10 @@ class CustomerSurveyController extends GetxController {
 
   Future<void> _muatAlasan() async {
     if (reasons.isNotEmpty) return;
+    if (layarPelangganPerangkat.modeAktif) {
+      reasons.assignAll(await layarPelangganPerangkat.alasanSurvei());
+      return;
+    }
     try {
       final hasil = await _service.survey.getReasons(authToken: sessionUtil.getToken());
       hasil.fold(

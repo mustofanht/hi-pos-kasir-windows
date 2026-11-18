@@ -5,6 +5,7 @@ import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
@@ -62,6 +63,14 @@ class SettingPageController extends GetxController
   final layarPelangganTerbuka = false.obs;
   final isLoadingLayarPelanggan = false.obs;
 
+  // Layar pelanggan di perangkat terpisah (V165).
+  final inpKodeLayarJauh = TextEditingController();
+  final layarJauhNama = RxnString(layarPelangganKasir.namaLayar);
+  final layarJauhTerpasang = layarPelangganKasir.terpasang.obs;
+  /// Jumlah koneksi tablet; null = belum/tidak bisa diperiksa.
+  final layarJauhOnline = RxnInt();
+  final isLoadingLayarJauh = false.obs;
+
   bool get dukungLayarPelanggan => layarPelangganWindows.didukung;
 
   // --- Printer gelang -------------------------------------------------------
@@ -99,13 +108,71 @@ class SettingPageController extends GetxController
     super.onInit();
     muatSetelanGelang();
     await muatMonitorLayarPelanggan();
+    cekLayarJauh();
     tabController = TabController(length: 4, vsync: this);
     tabController!.addListener(_handleTabSelection);
     currentPrinterConnect.value = printerUtil.currPrinter?.deviceName ?? '';
   }
 
+  void _segarkanLayarJauh() {
+    layarJauhTerpasang.value = layarPelangganKasir.terpasang;
+    layarJauhNama.value = layarPelangganKasir.namaLayar;
+  }
+
+  Future<void> cekLayarJauh() async {
+    if (!layarPelangganKasir.terpasang) {
+      _segarkanLayarJauh();
+      return;
+    }
+    isLoadingLayarJauh.value = true;
+    final n = await layarPelangganKasir.cekOnline();
+    layarJauhOnline.value = n;
+    _segarkanLayarJauh();
+    isLoadingLayarJauh.value = false;
+  }
+
+  Future<void> doPasangLayarJauh() async {
+    final kode = inpKodeLayarJauh.text.replaceAll(RegExp(r'\D'), '');
+    if (kode.length != 6) {
+      alert.error('Kode tidak sah', 'Kode pairing terdiri dari 6 angka, lihat di layar pelanggan.');
+      return;
+    }
+    isLoadingLayarJauh.value = true;
+    final gagal = await layarPelangganKasir.klaim(kode);
+    isLoadingLayarJauh.value = false;
+    if (gagal != null) {
+      alert.error('Gagal', gagal);
+      return;
+    }
+    inpKodeLayarJauh.clear();
+    _segarkanLayarJauh();
+    await kirimUlangLayarJauh(tampilkanPesan: false);
+    alert.success('Terpasang', 'Layar pelanggan "${layarPelangganKasir.namaLayar}" terpasang.');
+    await cekLayarJauh();
+  }
+
+  /// Kirim logo dan iklan supaya tablet langsung rapi.
+  Future<void> kirimUlangLayarJauh({bool tampilkanPesan = true}) async {
+    await common.kirimTampilanLayarPelanggan();
+    await layarPelangganKasir.kirimPromo();
+    if (tampilkanPesan) alert.success('Terkirim', 'Tampilan dikirim ulang ke layar pelanggan.');
+  }
+
+  Future<void> doLepasLayarJauh() async {
+    isLoadingLayarJauh.value = true;
+    final gagal = await layarPelangganKasir.lepas();
+    isLoadingLayarJauh.value = false;
+    if (gagal != null) {
+      alert.error('Gagal', gagal);
+      return;
+    }
+    layarJauhOnline.value = null;
+    _segarkanLayarJauh();
+  }
+
   @override
   void dispose() {
+    inpKodeLayarJauh.dispose();
     tabController?.dispose();
     super.dispose();
   }
