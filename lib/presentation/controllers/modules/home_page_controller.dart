@@ -101,6 +101,10 @@ class HomePageController extends GetxController {
     // bilah atas layar pelanggan baru berubah setelah kasir kebetulan mencetak.
     common.muatTampilanLayarPelanggan(_authToken);
 
+    // Halaman Penjualan langsung tampil saat masuk, sementara pemeriksaan
+    // shift/modal di onSelectedMenu masih menunggu server: controllernya
+    // harus sudah terdaftar lebih dulu.
+    _daftarkanControllerMenu(1);
     onSelectedMenu(
         MenuItem(id: 1, name: 'Penjualan', icon: Icons.bar_chart_outlined));
 
@@ -213,7 +217,7 @@ class HomePageController extends GetxController {
         );
 
         if (selectedMenu.value == 1) {
-          selectedMenu.value = 2;
+          _pindahMenu(2);
         }
       }
 
@@ -225,7 +229,7 @@ class HomePageController extends GetxController {
         // perpindahan saja tidak cukup — kasir tetap berdiri di layar itu.
         // Dipindahkan ke Bukti Pembayaran, sama seperti saat shift berakhir.
         if (!isValid && selectedMenu.value == 1) {
-          selectedMenu.value = 2;
+          _pindahMenu(2);
         }
       }
     }
@@ -241,11 +245,19 @@ class HomePageController extends GetxController {
           },
         );
       } else {
-        _daftarkanControllerMenu(menu.id);
-        selectedMenu.value = menu.id;
-        update();
+        _pindahMenu(menu.id);
       }
     }
+  }
+
+  /// Satu-satunya jalan mengganti menu aktif: controllernya didaftarkan dulu,
+  /// baru halamannya tampil. Mengubah [selectedMenu] langsung (seperti jalur
+  /// "shift berakhir" / "modal belum diisi" dulu) menampilkan halaman yang
+  /// controllernya belum ada -> "BuktiPembayaranPageController" not found.
+  void _pindahMenu(int menuId) {
+    _daftarkanControllerMenu(menuId);
+    selectedMenu.value = menuId;
+    update();
   }
 
   /// Daftarkan ulang controller milik menu yang akan aktif.
