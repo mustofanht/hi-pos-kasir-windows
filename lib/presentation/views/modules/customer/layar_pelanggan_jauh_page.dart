@@ -23,19 +23,26 @@ VoidCallback? kembaliKeKasir;
 Future<void> masukModeLayarPelanggan({String? nama}) async {
   await layarPelangganPerangkat.aktifkan(nama: nama);
   if (Platform.isWindows) await windowManager.ensureInitialized();
-  runApp(const LayarPelangganJauhApp());
+  runApp(LayarPelangganJauhApp());
 }
 
 /// Aplikasi untuk perangkat yang menjadi layar pelanggan terpisah: tanpa
 /// login dan tanpa halaman kasir, hanya pairing lalu halaman pelanggan.
 class LayarPelangganJauhApp extends StatelessWidget {
-  const LayarPelangganJauhApp({super.key});
+  LayarPelangganJauhApp({super.key});
+
+  // Kunci sendiri, bukan Get.key bawaan: lihat catatan di MyApp. Tanpa ini
+  // Navigator halaman login ikut terbawa dan halaman pairing tidak tampil.
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Layar Pelanggan',
       debugShowCheckedModeBanner: false,
+      navigatorKey: _navigatorKey,
+      scaffoldMessengerKey: _messengerKey,
       theme: theme.light(),
       translations: AppTranslation(),
       localizationsDelegates: const [
@@ -66,11 +73,11 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
   void initState() {
     super.initState();
     _layarPenuh(true);
+    _kunciLayar(true);
     _lp.mulai();
     // Hitung mundur masa berlaku kode.
     _detik = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && _lp.status.value == StatusLayarJauh.menunggu)
-        setState(() {});
+      if (mounted && _lp.status.value == StatusLayarJauh.menunggu) setState(() {});
     });
   }
 
@@ -78,6 +85,26 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
   void dispose() {
     _detik?.cancel();
     super.dispose();
+  }
+
+  static const _kanalKunci = MethodChannel('hipos/kunci_layar');
+
+  /// Kunci layar selama mode ini: di Android aplikasi disematkan (screen
+  /// pinning) dan layar dijaga tetap menyala; di Windows jendela selalu di
+  /// atas dan tidak bisa ditutup dengan Alt+F4. Satu-satunya jalan keluar
+  /// adalah tekan lama sudut kiri atas.
+  Future<void> _kunciLayar(bool kunci) async {
+    try {
+      if (Platform.isAndroid) {
+        await _kanalKunci.invokeMethod(kunci ? 'kunci' : 'buka');
+      } else if (Platform.isWindows) {
+        await windowManager.setPreventClose(kunci);
+        await windowManager.setAlwaysOnTop(kunci);
+      }
+    } catch (e) {
+      // Kunci hanya pengaman tambahan; halaman tetap jalan tanpa itu.
+      debugPrint('LAYAR JAUH kunci layar gagal : $e');
+    }
   }
 
   Future<void> _layarPenuh(bool penuh) async {
@@ -93,36 +120,65 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
     }
   }
 
+  bool _keluar = false;
+
   Future<void> _tanyaKeluar() async {
-    final ya = await Get.dialog<bool>(
+    if (_keluar) return;
+    final pilihan = await Get.dialog<String>(
       AlertDialog(
-        title: const Text('Keluar dari mode layar pelanggan?'),
+        title: const Text('Keluar dari layar pelanggan?'),
         content: const Text(
-            'Perangkat ini akan dilepas dari kasir dan kembali ke halaman login. '
-            'Untuk memakainya lagi sebagai layar pelanggan, pasangkan ulang dengan kode baru.'),
+            'Tutup aplikasi: pemasangan ke kasir tetap tersimpan, saat dibuka lagi '
+            'langsung menjadi layar pelanggan.\n\n'
+            'Kembali ke login: perangkat dilepas dari kasir. Untuk memakainya lagi '
+            'sebagai layar pelanggan, pasangkan ulang dengan kode baru.'),
         actions: [
-          TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('Batal')),
-          TextButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('Keluar')),
+          TextButton(onPressed: () => Get.back(result: 'batal'), child: const Text('Batal')),
+          TextButton(onPressed: () => Get.back(result: 'login'), child: const Text('Kembali ke login')),
+          TextButton(onPressed: () => Get.back(result: 'tutup'), child: const Text('Tutup aplikasi')),
         ],
       ),
     );
-    if (ya != true) return;
-    await _lp.nonaktifkan();
-    await _layarPenuh(false);
-    kembaliKeKasir?.call();
+    if (pilihan == 'tutup') {
+      _keluar = true;
+      _lp.berhenti();
+      await _kunciLayar(false);
+      await _tutupAplikasi();
+    } else if (pilihan == 'login') {
+      _keluar = true;
+      // Melepas di server tidak ditunggu: perangkat langsung kembali ke login
+      // walau internetnya lambat.
+      unawaited(_lp.nonaktifkan());
+      await _kunciLayar(false);
+      await _layarPenuh(false);
+      kembaliKeKasir?.call();
+    }
+  }
+
+  Future<void> _tutupAplikasi() async {
+    if (Platform.isWindows) {
+      try {
+        await windowManager.setFullScreen(false);
+        await windowManager.destroy();
+      } catch (_) {}
+      exit(0);
+    }
+    await SystemNavigator.pop();
+    // Beberapa tablet (mode kiosk/launcher) mengabaikan pop.
+    exit(0);
   }
 
   @override
   Widget build(BuildContext context) {
     layoutStyle.init(context);
+    // Tombol kembali Android tidak boleh menutup layar pelanggan.
+    return PopScope(canPop: false, child: _isi());
+  }
+
+  Widget _isi() {
     return Obx(() {
       final s = _lp.status.value;
-      final pernahTerpasang =
-          s == StatusLayarJauh.terpasang || s == StatusLayarJauh.terputus;
+      final pernahTerpasang = s == StatusLayarJauh.terpasang || s == StatusLayarJauh.terputus;
       if (pernahTerpasang) {
         return Stack(
           children: [
@@ -149,7 +205,7 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
               width: 72,
               height: 72,
               child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
+                behavior: HitTestBehavior.opaque,
                 onLongPress: _tanyaKeluar,
               ),
             ),
@@ -167,8 +223,7 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
     if (sampai != null) {
       final d = sampai.difference(DateTime.now());
       if (!d.isNegative) {
-        sisa =
-            '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+        sisa = '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
       }
     }
     final siapDipasang = s == StatusLayarJauh.menunggu && kode != null;
@@ -182,17 +237,12 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(assetsConstant.imgLogo,
-                    width: 120, height: 120, fit: BoxFit.contain),
+                Image.asset(assetsConstant.imgLogo, width: 120, height: 120, fit: BoxFit.contain),
                 const SizedBox(height: 12),
                 Text('Layar Pelanggan',
-                    style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: colorStyle.black)),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorStyle.black)),
                 const SizedBox(height: 4),
-                Text(_lp.namaPerangkat,
-                    style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                Text(_lp.namaPerangkat, style: const TextStyle(fontSize: 16, color: Colors.grey)),
                 const SizedBox(height: 24),
                 if (siapDipasang) ...[
                   const Text(
@@ -225,25 +275,20 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
                   ),
                   if (sisa != null) ...[
                     const SizedBox(height: 8),
-                    Text(
-                        'Berlaku $sisa — kode baru dibuat otomatis bila habis.',
+                    Text('Berlaku $sisa — kode baru dibuat otomatis bila habis.',
                         style: const TextStyle(color: Colors.grey)),
                   ],
                 ] else ...[
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
                   Text(
-                    s == StatusLayarJauh.memintaKode
-                        ? 'Meminta kode pairing…'
-                        : 'Menyambung ke server…',
+                    s == StatusLayarJauh.memintaKode ? 'Meminta kode pairing…' : 'Menyambung ke server…',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],
                 if (_lp.pesan.value != null) ...[
                   const SizedBox(height: 16),
-                  Text(_lp.pesan.value!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red)),
+                  Text(_lp.pesan.value!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
                 ],
                 const SizedBox(height: 32),
                 TextButton.icon(

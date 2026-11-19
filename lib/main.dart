@@ -109,7 +109,7 @@ Future<void> main(List<String> args) async {
   };
   if (layarPelangganPerangkat.modeAktif) {
     if (Platform.isWindows) await windowManager.ensureInitialized();
-    runApp(const LayarPelangganJauhApp());
+    runApp(LayarPelangganJauhApp());
     return;
   }
 
@@ -155,6 +155,15 @@ class LayarPelangganApp extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({super.key});
+
+  // Kunci baru untuk setiap MyApp. Aplikasi bisa berpindah ke/dari mode layar
+  // pelanggan lewat runApp; bila kunci navigatornya sama (Get.key bawaan),
+  // Flutter memindahkan Navigator lama beserta tumpukan halamannya ke aplikasi
+  // baru, sehingga initialRoute di bawah diabaikan dan layar tidak berganti.
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+
   @override
   Widget build(BuildContext context) {
     // return const MaterialApp(
@@ -167,6 +176,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Jaya Propertiy',
       debugShowCheckedModeBanner: false,
+      navigatorKey: _navigatorKey,
+      scaffoldMessengerKey: _messengerKey,
       getPages: AppRoute.pages,
       initialRoute: RouteName.splashPage,
       theme: theme.light(),

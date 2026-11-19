@@ -275,6 +275,9 @@ class LayarPelangganPerangkat {
   final pesan = RxnString();
 
   bool _jalan = false;
+  // Naik setiap mulai(): putaran lama yang masih menunggu jeda/HTTP berhenti
+  // sendiri, jadi tidak pernah ada dua putaran sekaligus.
+  int _generasi = 0;
   http.Client? _klien;
   int _gagalBeruntun = 0;
 
@@ -301,6 +304,12 @@ class LayarPelangganPerangkat {
   Future<void> nonaktifkan() async {
     berhenti();
     final token = _token;
+    // Dihapus dulu sebelum memanggil server: pemanggil tidak menunggu fungsi
+    // ini, dan perangkat bisa langsung dijadikan layar lagi dari login.
+    await _store.remove(_kunciToken);
+    await _store.remove(_kunciPeran);
+    kode.value = null;
+    status.value = StatusLayarJauh.mulai;
     if (token != null) {
       try {
         await http
@@ -310,8 +319,6 @@ class LayarPelangganPerangkat {
         // Tetap keluar walau server tak terjangkau.
       }
     }
-    await _store.remove(_kunciToken);
-    await _store.remove(_kunciPeran);
   }
 
   /// Halaman pelanggan mendaftarkan diri sebagai penerima. Kiriman yang datang
@@ -331,7 +338,7 @@ class LayarPelangganPerangkat {
   void mulai() {
     if (_jalan) return;
     _jalan = true;
-    _putaran();
+    _putaran(++_generasi);
   }
 
   void berhenti() {
@@ -340,17 +347,19 @@ class LayarPelangganPerangkat {
     _klien = null;
   }
 
-  Future<void> _putaran() async {
-    while (_jalan) {
+  Future<void> _putaran(int gen) async {
+    bool aktif() => _jalan && gen == _generasi;
+    while (aktif()) {
       if (_token == null) {
         final ok = await _mintaKode();
+        if (!aktif()) break;
         if (!ok) {
           await _jeda();
           continue;
         }
       }
       await _dengarkan();
-      if (!_jalan) break;
+      if (!aktif()) break;
       if (status.value == StatusLayarJauh.terpasang) {
         status.value = StatusLayarJauh.terputus;
       }
@@ -385,6 +394,9 @@ class LayarPelangganPerangkat {
       kode.value = data['kode']?.toString();
       berlakuSampai.value = DateTime.tryParse(data['berlakuSampai']?.toString() ?? '');
       pesan.value = null;
+      // Kode sudah di tangan: tampilkan sekarang, jangan menunggu event
+      // 'menunggu' dari SSE (bisa tertahan buffer proxy).
+      if (kode.value != null) status.value = StatusLayarJauh.menunggu;
       return true;
     } catch (e) {
       pesan.value = 'Server tidak bisa dihubungi. Periksa internet perangkat ini.';

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
@@ -962,7 +963,7 @@ class SettingPage extends GetView<SettingPageController> {
       if (!terpasang) {
         status = 'Belum ada. Di perangkat pelanggan pilih "Jadikan perangkat ini '
             'Layar Pelanggan" di halaman login, lalu ketik kode 6 angka yang '
-            'tampil di sana. Pemindai barcode juga bisa dipakai untuk QR-nya.';
+            'tampil di sana, atau ketuk Scan QR untuk memindainya dengan kamera.';
       } else if (online == null) {
         status = 'Terpasang: $nama (status belum diperiksa).';
       } else if (online > 0) {
@@ -1010,6 +1011,14 @@ class SettingPage extends GetView<SettingPageController> {
                     ),
                   ),
                   SizedBox(width: layoutStyle.defaultMargin / 2),
+                  // Kamera hanya di Android; di Windows pakai ketik atau
+                  // pemindai barcode USB.
+                  if (Platform.isAndroid)
+                    TextButton.icon(
+                      onPressed: sibuk ? null : controller.doPindaiLayarJauh,
+                      icon: const Icon(Icons.qr_code_scanner, size: 18),
+                      label: const Text('Scan QR'),
+                    ),
                   TextButton.icon(
                     onPressed: sibuk ? null : controller.doPasangLayarJauh,
                     icon: const Icon(Icons.link, size: 18),

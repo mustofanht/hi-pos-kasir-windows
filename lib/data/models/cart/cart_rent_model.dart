@@ -23,7 +23,10 @@ class CartRentModel {
     newBuyPrice = json['newBuyPrice'] != null ? (json['newBuyPrice'] as num).toDouble() : null;
     totalHours = json['totalHours'];
     isExtraTime = json['isExtraTime'];
-    transactionExtra = json['transactionExtra'];
+    // Lewat kanal layar pelanggan isinya Map, bukan TransactionEntity;
+    // menugaskannya langsung melempar dan seluruh baris sewa hilang.
+    final extra = json['transactionExtra'];
+    transactionExtra = extra is TransactionEntity ? extra : null;
   }
 
   Map<String, dynamic> toJson() {

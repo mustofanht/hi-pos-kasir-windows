@@ -83,12 +83,17 @@ class CartAddon {
       kelasSesi = json['kelasSesi'];
       // rentModel = json['rentModel'];
 
+      // Barang biasa dikirim dengan "rentModel": {} (lihat toJson). Dulu itu
+      // tetap menjadi CartRentModel kosong, sehingga layar pelanggan
+      // menganggapnya barang sewa dan menampilkan "Nama ()" tanpa QTY.
+      // Anggap sewa hanya bila isinya benar-benar ada.
+      rentModel = null;
       if (json['rentModel'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =
             common.convertToMapStringDynamic(json['rentModel']);
-        rentModel = CartRentModel.fromJson(result);
-      } else {
-        rentModel = CartRentModel.fromJson(json['addon']);
+        if (result.values.any((v) => v != null)) {
+          rentModel = CartRentModel.fromJson(result);
+        }
       }
       if (json['addon'] is Map<Object?, Object?>) {
         Map<String, dynamic> result =

@@ -1,3 +1,4 @@
+import 'package:jaya_propertiy/presentation/views/modules/setting/pindai_kode_layar_page.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -149,6 +150,14 @@ class SettingPageController extends GetxController
     await kirimUlangLayarJauh(tampilkanPesan: false);
     alert.success('Terpasang', 'Layar pelanggan "${layarPelangganKasir.namaLayar}" terpasang.');
     await cekLayarJauh();
+  }
+
+  /// Pindai QR di layar pelanggan dengan kamera, lalu langsung pasangkan.
+  Future<void> doPindaiLayarJauh() async {
+    final kode = await PindaiKodeLayarPage.buka();
+    if (kode == null) return;
+    inpKodeLayarJauh.text = kode;
+    await doPasangLayarJauh();
   }
 
   /// Kirim logo dan iklan supaya tablet langsung rapi.
