@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
@@ -601,6 +602,8 @@ class SettingPage extends GetView<SettingPageController> {
                         _printerGelang(controller),
                         SizedBox(height: layoutStyle.defaultMargin),
                         _layarPelanggan(controller),
+                        SizedBox(height: layoutStyle.defaultMargin),
+                        _layarPelangganJauh(controller),
                       ],
                     ),
                   ),
@@ -942,6 +945,107 @@ class SettingPage extends GetView<SettingPageController> {
               'setiap aplikasi dibuka sampai dimatikan dari sini.',
               style: textStyle.greyText.copyWith(fontSize: fontSize.small),
             ),
+          ],
+        ),
+      );
+    });
+  }
+
+  /// Layar pelanggan di perangkat terpisah (tablet Android / PC Windows),
+  /// lewat server (V165). Berlaku di semua platform kasir.
+  Widget _layarPelangganJauh(SettingPageController controller) {
+    return Obx(() {
+      final sibuk = controller.isLoadingLayarJauh.value;
+      final terpasang = controller.layarJauhTerpasang.value;
+      final online = controller.layarJauhOnline.value;
+      final nama = controller.layarJauhNama.value ?? '-';
+      String status;
+      if (!terpasang) {
+        status = 'Belum ada. Di perangkat pelanggan pilih "Jadikan perangkat ini '
+            'Layar Pelanggan" di halaman login, lalu ketik kode 6 angka yang '
+            'tampil di sana, atau ketuk Scan QR untuk memindainya dengan kamera.';
+      } else if (online == null) {
+        status = 'Terpasang: $nama (status belum diperiksa).';
+      } else if (online > 0) {
+        status = 'Terpasang: $nama, sedang tersambung.';
+      } else {
+        status = 'Terpasang: $nama, tetapi perangkatnya sedang tidak '
+            'tersambung (mati atau tanpa internet).';
+      }
+      return Container(
+        padding: EdgeInsets.all(layoutStyle.defaultMargin / 2),
+        decoration: BoxDecoration(
+          border: Border.all(color: colorStyle.grey.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(layoutStyle.defaultMargin / 2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Layar Pelanggan Terpisah',
+              style: textStyle.blackText.copyWith(fontSize: fontSize.subtitle),
+            ),
+            Text(
+              status,
+              style: textStyle.greyText.copyWith(fontSize: fontSize.small),
+            ),
+            SizedBox(height: layoutStyle.defaultMargin / 2),
+            if (!terpasang)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: controller.inpKodeLayarJauh,
+                      keyboardType: TextInputType.number,
+                      maxLength: 7,
+                      decoration: const InputDecoration(
+                        labelText: 'Kode pairing',
+                        hintText: '123 456',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                        counterText: '',
+                      ),
+                      onSubmitted: (_) {
+                        if (!sibuk) controller.doPasangLayarJauh();
+                      },
+                    ),
+                  ),
+                  SizedBox(width: layoutStyle.defaultMargin / 2),
+                  // Kamera hanya di Android; di Windows pakai ketik atau
+                  // pemindai barcode USB.
+                  if (Platform.isAndroid)
+                    TextButton.icon(
+                      onPressed: sibuk ? null : controller.doPindaiLayarJauh,
+                      icon: const Icon(Icons.qr_code_scanner, size: 18),
+                      label: const Text('Scan QR'),
+                    ),
+                  TextButton.icon(
+                    onPressed: sibuk ? null : controller.doPasangLayarJauh,
+                    icon: const Icon(Icons.link, size: 18),
+                    label: const Text('Pasangkan'),
+                  ),
+                ],
+              )
+            else
+              Wrap(
+                children: [
+                  TextButton.icon(
+                    onPressed: sibuk ? null : controller.cekLayarJauh,
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('Periksa'),
+                  ),
+                  TextButton.icon(
+                    onPressed: sibuk ? null : () => controller.kirimUlangLayarJauh(),
+                    icon: const Icon(Icons.send_to_mobile, size: 18),
+                    label: const Text('Kirim ulang tampilan'),
+                  ),
+                  TextButton.icon(
+                    onPressed: sibuk ? null : controller.doLepasLayarJauh,
+                    icon: const Icon(Icons.link_off, size: 18),
+                    label: const Text('Lepas'),
+                  ),
+                ],
+              ),
           ],
         ),
       );

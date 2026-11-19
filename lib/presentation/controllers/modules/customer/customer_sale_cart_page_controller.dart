@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -139,7 +140,15 @@ class CustomerSaleCartPageController extends GetxController {
             logger.safeLog('SURVEY');
             CustomerSurveyController.instance.buka(
               orderNo: customerDisplay.value!['orderNo']?.toString(),
+              kasir: customerDisplay.value!['cashier']?.toString(),
             );
+          } else if (customerDisplay.key == aksiPromoJarakJauh) {
+            // Hanya dikirim ke tablet layar pelanggan terpisah.
+            final gambar = customerDisplay.value!['gambar'];
+            if (gambar is List) {
+              await layarPelangganPerangkat
+                  .simpanPromo(gambar.map((e) => e.toString()).toList());
+            }
           }
         }
       }

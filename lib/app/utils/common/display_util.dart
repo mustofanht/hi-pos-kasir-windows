@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:presentation_displays/display.dart';
@@ -47,6 +48,10 @@ class DisplayUtil {
   }
 
   transferData(Object? data) async {
+    // Layar pelanggan di perangkat terpisah (V165) menerima kiriman yang sama,
+    // di samping layar kedua bila ada. Tidak ditunggu: jaringan yang lambat
+    // tidak boleh menahan kasir.
+    layarPelangganKasir.kirim(data);
     if (Platform.isWindows) {
       await layarPelangganWindows.kirim(data);
       return;
@@ -63,6 +68,7 @@ class DisplayUtil {
     if (Platform.isWindows) {
       // Jendela pelanggan dibuka dari menu Setting (atau otomatis saat aplikasi
       // dijalankan); di sini cukup mengirimkan keadaan terakhirnya.
+      layarPelangganKasir.kirim(val);
       await layarPelangganWindows.kirim(val);
       return;
     }

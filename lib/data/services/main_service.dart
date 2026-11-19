@@ -42,6 +42,7 @@ import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
 import 'package:jaya_propertiy/domain/entities/survey/survey_reason_entity.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_entity.dart';
 import 'package:jaya_propertiy/domain/entities/transaction/transaction_entity.dart';
+import 'package:jaya_propertiy/domain/entities/jaminansewa/jaminan_sewa_entity.dart';
 
 part 'auth_service.dart';
 part 'sale_service.dart';
@@ -64,6 +65,7 @@ part 'member_service.dart';
 part 'survey_service.dart';
 part 'gate_service.dart';
 part 'otorisasi_service.dart';
+part 'jaminan_sewa_service.dart';
 
 class MainService {
   final auth = AuthService();
@@ -81,4 +83,5 @@ class MainService {
   final survey = SurveyService();
   final gate = GateService();
   final otorisasi = OtorisasiService();
+  final jaminanSewa = JaminanSewaService();
 }

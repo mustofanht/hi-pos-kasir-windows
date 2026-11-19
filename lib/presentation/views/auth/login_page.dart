@@ -1,4 +1,6 @@
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/constant/assets_constant.dart';
+import 'package:jaya_propertiy/presentation/views/modules/customer/layar_pelanggan_jauh_page.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/presentation/components/custom_button.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
@@ -9,6 +11,43 @@ import 'package:get/get.dart';
 
 class LoginPage extends GetView<LoginPageController> {
   const LoginPage({super.key});
+
+  Future<void> _tanyaModeLayarPelanggan() async {
+    final nama = TextEditingController(text: layarPelangganPerangkat.namaPerangkat);
+    final ya = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Jadikan Layar Pelanggan?'),
+        // scrollable: true -- tanpa ini contentnya overflow di bawah saat
+        // keyboard muncul untuk field "Nama perangkat" (dialog tidak otomatis
+        // menggulir isinya sendiri seperti Scaffold).
+        scrollable: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+                'Perangkat ini akan menampilkan keranjang dan pembayaran untuk '
+                'pelanggan, dipasangkan ke kasir dengan kode 6 angka. Perangkat '
+                'tetap butuh internet.'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: nama,
+              maxLength: 100,
+              decoration: const InputDecoration(
+                labelText: 'Nama perangkat',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(result: false), child: const Text('Batal')),
+          TextButton(onPressed: () => Get.back(result: true), child: const Text('Ya, jadikan')),
+        ],
+      ),
+    );
+    if (ya == true) await masukModeLayarPelanggan(nama: nama.text);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +189,13 @@ class LoginPage extends GetView<LoginPageController> {
                     style: textStyle.whiteText,
                   ),
             height: layoutStyle.blockVertical * 6.5,
+          ),
+          // Perangkat di depan pelanggan (tablet / PC) tidak perlu login:
+          // ia dipasangkan ke kasir dengan kode 6 angka (V165).
+          TextButton.icon(
+            onPressed: () => _tanyaModeLayarPelanggan(),
+            icon: const Icon(Icons.connected_tv_outlined),
+            label: const Text('Jadikan perangkat ini Layar Pelanggan'),
           ),
         ],
       );

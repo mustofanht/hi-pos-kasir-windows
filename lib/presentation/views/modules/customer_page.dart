@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_tampilan.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
@@ -17,7 +18,11 @@ import 'package:jaya_propertiy/presentation/views/modules/customer/customer_surv
 import 'package:presentation_displays/secondary_display.dart';
 
 class CustomerPage extends StatefulWidget {
-  const CustomerPage({super.key});
+  const CustomerPage({super.key, this.jarakJauh = false});
+
+  /// Perangkat ini adalah layar pelanggan terpisah (V165): datanya datang dari
+  /// server lewat [layarPelangganPerangkat], bukan dari layar kedua.
+  final bool jarakJauh;
 
   @override
   State<CustomerPage> createState() => _CustomerPageState();
@@ -32,9 +37,17 @@ class _CustomerPageState extends State<CustomerPage> {
     // Di Android data datang lewat Presentation API (widget SecondaryDisplay di
     // bawah). Di Windows halaman ini adalah jendela kedua aplikasi, jadi
     // datanya datang lewat saluran antar-jendela.
-    if (Platform.isWindows) {
+    if (widget.jarakJauh) {
+      layarPelangganPerangkat.pasangPenerima((data) => _terima(data));
+    } else if (Platform.isWindows) {
       LayarPelangganWindows.pasangPenerima(_terima);
     }
+  }
+
+  @override
+  void dispose() {
+    if (widget.jarakJauh) layarPelangganPerangkat.lepasPenerima();
+    super.dispose();
   }
 
   /// Satu pembaruan dari layar kasir.
@@ -285,7 +298,7 @@ class _CustomerPageState extends State<CustomerPage> {
         // Jendela kedua di Windows tidak lewat Presentation API, jadi tidak
         // dibungkus SecondaryDisplay — pembungkus itu memasang saluran khusus
         // Android yang di Windows tidak akan pernah dijawab.
-        return Platform.isWindows
+        return Platform.isWindows || widget.jarakJauh
             ? isi
             : SecondaryDisplay(callback: _terima, child: isi);
       }),

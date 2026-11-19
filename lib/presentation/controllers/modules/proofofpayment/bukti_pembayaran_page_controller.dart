@@ -606,7 +606,14 @@ class BuktiPembayaranPageController extends GetxController
             orderPaidBy: detailModel.value.orderPaidBy!,
             orderPaidByName: detailModel.value.orderPaidByName!,
             orderStatus: detailModel.value.orderStatus!,
-            paymentDate: detailModel.value.orderDate ??
+            // orderDateLocal diutamakan: sudah diformat backend ke zona waktu
+            // LOKASI order ini, bukan zona device kasir yang mencetak ulang
+            // (bisa beda outlet/zona dari saat transaksi aslinya terjadi).
+            paymentDate: (detailModel.value.orderDateLocal != null
+                    ? dateTimeUtil
+                        .parseLocalFormatted(detailModel.value.orderDateLocal!)
+                    : null) ??
+                detailModel.value.orderDate ??
                 detailModel.value.paymentDetail?.pymntDate ??
                 selectedData.value.orderDate ??
                 selectedData.value.paymentDetail?.pymntDate ??
@@ -683,7 +690,12 @@ class BuktiPembayaranPageController extends GetxController
     List<int> data = [];
     data = await generateMemberPrintUtil.paymentPrint(
       body: orderMemberModel,
-      paymentDate: detailModel.value.orderDate,
+      // orderDateLocal diutamakan — lihat alasannya di doPrintTicket di atas.
+      paymentDate: (detailModel.value.orderDateLocal != null
+              ? dateTimeUtil
+                  .parseLocalFormatted(detailModel.value.orderDateLocal!)
+              : null) ??
+          detailModel.value.orderDate,
       locationName: locationName,
       locationAddress: user?.locationAddress,
       locationPhone: user?.locationPhone,

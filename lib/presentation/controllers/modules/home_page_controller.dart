@@ -241,9 +241,59 @@ class HomePageController extends GetxController {
           },
         );
       } else {
+        _daftarkanControllerMenu(menu.id);
         selectedMenu.value = menu.id;
         update();
       }
+    }
+  }
+
+  /// Daftarkan ulang controller milik menu yang akan aktif.
+  ///
+  /// Dipanggil hanya di sini, saat kasir benar-benar berpindah menu --
+  /// BUKAN dari getter [selectedContent]. Getter itu sebelumnya menjalankan
+  /// delete+lazyPut ini setiap kali di-evaluasi, termasuk setiap detik gara-
+  /// gara timer jam di [_getTime] yang memanggil [update]. Itu membongkar lalu
+  /// membuat ulang controller menu yang SEDANG aktif (mis. ShiftPageController)
+  /// tiap detik, sehingga Get.find yang terjadi di tengah proses (mis. sedang
+  /// mencetak struk settlement) bisa jatuh ke jendela singkat sesudah delete
+  /// tapi sebelum lazyPut berikutnya -> "ShiftPageController" not found.
+  void _daftarkanControllerMenu(int menuId) {
+    Get.delete<PrintTicketPageController>();
+    Get.delete<PrintTicketDetailPageController>();
+    Get.delete<ShiftPageController>();
+    Get.delete<SettingPageController>();
+    switch (menuId) {
+      case 1:
+        Get.lazyPut(() => SalePageController());
+        Get.lazyPut(() => SaleTicketPageController());
+        Get.lazyPut(() => SaleLapanganPageController());
+        Get.lazyPut(() => SaleKelasPageController());
+        Get.lazyPut(() => SaleVoucherPageController());
+        Get.lazyPut(() => SaleAddonPageController());
+        Get.lazyPut(() => SaleCartPageController());
+        break;
+      case 2:
+        Get.lazyPut(() => BuktiPembayaranPageController());
+        break;
+      case 3:
+        Get.lazyPut(() => PrintTicketPageController());
+        break;
+      case 4:
+        Get.lazyPut(() => MemberPageController());
+        break;
+      case 5:
+        Get.lazyPut(() => ShiftPageController());
+        break;
+      case 6:
+        Get.lazyPut(() => SettingPageController());
+        break;
+      case 8:
+        Get.lazyPut(() => TakeOutPageController());
+        break;
+      case 9:
+        Get.lazyPut(() => ManualExitPageController());
+        break;
     }
   }
 
@@ -352,44 +402,27 @@ class HomePageController extends GetxController {
     }
   }
 
+  /// Hanya memilih widget untuk menu yang sedang aktif. Controllernya sudah
+  /// didaftarkan sebelumnya oleh [_daftarkanControllerMenu] saat menu ini
+  /// dipilih -- getter ini dipanggil ulang tiap tik jam ([_getTime]), jadi
+  /// TIDAK boleh mendaftar ulang (apalagi delete) controller apa pun di sini.
   Widget? get selectedContent {
-    Get.delete<PrintTicketPageController>();
-    Get.delete<PrintTicketDetailPageController>();
-    Get.delete<ShiftPageController>();
-    Get.delete<SettingPageController>();
     switch (selectedMenu.value) {
       case 1:
-        Get.lazyPut(() => SalePageController());
-        Get.lazyPut(() => SaleTicketPageController());
-        Get.lazyPut(() => SaleLapanganPageController());
-        Get.lazyPut(() => SaleKelasPageController());
-        Get.lazyPut(() => SaleVoucherPageController());
-        Get.lazyPut(() => SaleAddonPageController());
-        Get.lazyPut(() => SaleCartPageController());
-
         return const SalePage();
       case 2:
-        Get.lazyPut(() => BuktiPembayaranPageController());
         return const BuktiPembayaranPage();
       case 3:
-        Get.lazyPut(() => PrintTicketPageController());
-        // Get.lazyPut(() => PrintTicketDetailPageController());
         return const PrintTicketPage();
-      // return const CekOrderPage();
       case 4:
-        Get.lazyPut(() => MemberPageController());
         return const MemberPage();
       case 5:
-        Get.lazyPut(() => ShiftPageController());
         return const ShiftPage();
       case 6:
-        Get.lazyPut(() => SettingPageController());
         return const SettingPage();
       case 8:
-        Get.lazyPut(() => TakeOutPageController());
         return const TakeOutPage();
       case 9:
-        Get.lazyPut(() => ManualExitPageController());
         return const ManualExitPage();
       case 7:
         return null;

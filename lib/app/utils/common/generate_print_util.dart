@@ -10,6 +10,7 @@ import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
 import 'package:jaya_propertiy/data/models/order/order_addon_model.dart';
 import 'package:jaya_propertiy/data/models/order/order_model.dart';
 import 'package:jaya_propertiy/domain/entities/shift/shift_detail_entity.dart';
+import 'package:jaya_propertiy/domain/entities/shift/shift_detail_payment_entity.dart';
 // import 'package:jaya_propertiy/data/models/order/order_ticket_model.dart';
 
 /// Nama pembeli untuk dicetak; yang kosong ditulis "-".
@@ -858,7 +859,15 @@ class GeneratePrintUtil {
       logo: logo,
     );
 
-    final tanggal = detail.shftEnd ?? detail.shftStart;
+    // Dipakai dari shftEndLocal/shftStartLocal (sudah diformat backend ke
+    // zona waktu LOKASI, bukan zona device) lewat parseLocalFormatted --
+    // supaya tidak ikut ter-toLocal() ke zona device saat di-parse ulang.
+    // Fallback ke field mentah hanya untuk kompatibilitas data lama yang
+    // belum punya versi Local-nya.
+    final tanggalLocalTeks = detail.shftEndLocal ?? detail.shftStartLocal;
+    final tanggal = tanggalLocalTeks != null
+        ? dateTimeUtil.parseLocalFormatted(tanggalLocalTeks)
+        : (detail.shftEnd ?? detail.shftStart);
     bytes += generator.text(
       'CASHIER REPORT'
       '${detail.lokasiName != null ? ' (${detail.lokasiName})' : ''}',
@@ -912,14 +921,45 @@ class GeneratePrintUtil {
 
     // Ringkasan pembayaran per metode, persis seperti yang dijumlahkan server
     // (listSumPayment) — satu sumber yang sama dengan layar Rincian Shift.
+    //
+    // Baris tunai dikenali lewat kecocokan dengan detail.tunaiSum (dihitung
+    // server dari mst_payment.pymnt_category = 'CS'), BUKAN lewat nama --
+    // nama metodenya beda-beda per lokasi (mis. "CASH", bukan "Tunai"), jadi
+    // mengandalkan nama membuat baris ini tidak pernah cocok di lokasi yang
+    // menamainya lain.
+    //
+    // Baris tunai itu ditambah Modal Awal + Jaminan Sewa Tunai SAAT DICETAK
+    // (bukan di angka penjualannya) supaya sama dengan "TOTAL TUNAI" di blok
+    // "RINCIAN LACI TUNAI" di bawah (= kasSeharusnya = tunai + modal +
+    // jaminan sewa) — tanpa penambahan ini kasir membaca dua angka TUNAI
+    // yang beda untuk laci yang sama. Jaminan sewa tunai TIDAK ditulis
+    // sebagai baris sendiri di sini (blok ini khusus metode pembayaran, dan
+    // jaminan sewa bukan penjualan) -- nilainya cukup masuk ke baris tunai
+    // dan ke "Total" di bawah.
+    //
+    // totalPembayaran TETAP murni penjualan (tanpa modal/jaminan sewa):
+    // dipakai lagi di bawah untuk Penjualan Bruto/Netto, yang memang bukan
+    // soal kas di laci.
     final listPembayaran = detail.listSumPayment ?? [];
+    final jaminanSewaTunai = detail.jaminanSewaTunaiSum ?? 0;
+    final tunaiSum = detail.tunaiSum ?? 0;
+    bool isBarisTunai(ShiftDetailPaymentEntity p) {
+      final nama = (p.name ?? '').trim().toLowerCase();
+      if (nama == 'tunai' || nama == 'cash') return true;
+      return tunaiSum != 0 && ((p.amount ?? 0) - tunaiSum).abs() < 0.5;
+    }
+
     double totalPembayaran = 0;
     for (final p in listPembayaran) {
-      totalPembayaran += p.amount ?? 0;
+      final amount = p.amount ?? 0;
+      totalPembayaran += amount;
+      final tampil = isBarisTunai(p)
+          ? amount + (detail.modalAwal ?? 0) + jaminanSewaTunai
+          : amount;
       bytes += generator.row([
         PosColumn(text: p.name ?? '-', width: 7),
         PosColumn(
-          text: common.currencyFormat(p.amount ?? 0),
+          text: common.currencyFormat(tampil),
           width: 5,
           styles: const PosStyles(align: PosAlign.right),
         ),
@@ -929,7 +969,8 @@ class GeneratePrintUtil {
     bytes += generator.row([
       PosColumn(text: 'Total', width: 7, styles: const PosStyles(bold: true)),
       PosColumn(
-        text: common.currencyFormat(totalPembayaran),
+        text: common.currencyFormat(
+            totalPembayaran + (detail.modalAwal ?? 0) + jaminanSewaTunai),
         width: 5,
         styles: const PosStyles(align: PosAlign.right, bold: true),
       ),
@@ -1033,8 +1074,7 @@ class GeneratePrintUtil {
         ),
       ]);
       for (final p in listPembayaran) {
-        final isTunai = (p.name ?? '').trim().toLowerCase() == 'tunai';
-        if (isTunai) continue;
+        if (isBarisTunai(p)) continue;
         bytes += generator.row([
           PosColumn(text: '(-) ${p.name ?? '-'}', width: 8),
           PosColumn(
@@ -1055,6 +1095,20 @@ class GeneratePrintUtil {
           styles: const PosStyles(align: PosAlign.right, bold: true),
         ),
       ]);
+      // Uang jaminan sewa (diterima tunai - dikembalikan) -- fisik di laci
+      // yang sama, tapi BUKAN penjualan, jadi baris terpisah dari "Penjualan
+      // Tunai" di atas. Sudah ikut di dalam kasSeharusnya/TOTAL TUNAI di
+      // bawah (dihitung backend, lihat TrnShiftKasirService.isiRekapKas).
+      if (jaminanSewaTunai != 0) {
+        bytes += generator.row([
+          PosColumn(text: 'Jaminan Sewa', width: 8),
+          PosColumn(
+            text: common.currencyFormat(jaminanSewaTunai),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right),
+          ),
+        ]);
+      }
       bytes += generator.row([
         PosColumn(text: 'Modal Awal', width: 8),
         PosColumn(

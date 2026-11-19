@@ -150,15 +150,24 @@ class ManualExitPageController extends GetxController {
         pakOf: 1,
         pakTotal: 1,
         qrCode: tiket.ticketNo!,
-        expiredAt: tiket.activeDate == null
-            ? '-'
-            : dateTimeUtil.getFormattedDate(
-                date: tiket.activeDate!,
+        // activeDateLocal/orderDateLocal diutamakan — sudah diformat backend
+        // ke zona waktu LOKASI tiket ini, bukan zona device kasir di gate.
+        expiredAt: tiket.activeDateLocal != null
+            ? dateTimeUtil.getFormattedDate(
+                date: dateTimeUtil.parseLocalFormatted(tiket.activeDateLocal!),
                 format: dateFormat.dateDDMMMMYYYY,
-              ),
+              )
+            : (tiket.activeDate == null
+                ? '-'
+                : dateTimeUtil.getFormattedDate(
+                    date: tiket.activeDate!,
+                    format: dateFormat.dateDDMMMMYYYY,
+                  )),
         ticketName: tiket.ticketName,
         isCompanion: tiket.isCompanion,
-        paymentDate: tiket.orderDate,
+        paymentDate: tiket.orderDateLocal != null
+            ? dateTimeUtil.parseLocalFormatted(tiket.orderDateLocal!)
+            : tiket.orderDate,
         // Nama anak dipakai bila ada (playground); pada tiket biasa kolomnya
         // kosong dan tercetak "-". Nama pemesan tidak dikirim endpoint ini.
         namaPembeli: tiket.childName,

@@ -5,6 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/display_util.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_tampilan.dart';
 import 'package:jaya_propertiy/app/utils/common/local_storage_util.dart';
@@ -363,6 +364,12 @@ class AppCommon {
             }
           }
           await displayUtil.updateSecondDisplay(constant.refreshAds);
+          // Tablet layar pelanggan terpisah tidak login, jadi alamat iklannya
+          // dikirim dari sini dan ia mengunduhnya sendiri.
+          await layarPelangganKasir.simpanDanKirimPromo(listData
+              .map((e) => e.prmPathImg ?? '')
+              .where((e) => e.isNotEmpty)
+              .toList());
         });
       }
     } catch (e) {

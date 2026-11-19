@@ -49,11 +49,13 @@ import 'package:get_storage/get_storage.dart';
 import 'package:jaya_propertiy/app/main/app_main.dart';
 import 'package:jaya_propertiy/app/main/app_route.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
+import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_jarak_jauh.dart';
 import 'package:jaya_propertiy/app/utils/common/layar_pelanggan_windows.dart';
 import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/app/utils/common/printer_util.dart';
 import 'package:jaya_propertiy/app/utils/styles/theme_style.dart';
 import 'package:jaya_propertiy/app/utils/translation/app_translation.dart';
+import 'package:jaya_propertiy/presentation/views/modules/customer/layar_pelanggan_jauh_page.dart';
 import 'package:jaya_propertiy/presentation/views/modules/customer_page.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -99,6 +101,18 @@ Future<void> main(List<String> args) async {
     return;
   }
 
+  // Perangkat ini layar pelanggan terpisah (V165): tanpa login, tanpa
+  // printer, tanpa jendela kedua — langsung ke pairing / halaman pelanggan.
+  kembaliKeKasir = () {
+    printerUtil.muatSetelanGelang();
+    runApp(MyApp());
+  };
+  if (layarPelangganPerangkat.modeAktif) {
+    if (Platform.isWindows) await windowManager.ensureInitialized();
+    runApp(LayarPelangganJauhApp());
+    return;
+  }
+
   printerUtil.muatSetelanGelang();
   runApp(MyApp());
 
@@ -141,6 +155,15 @@ class LayarPelangganApp extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({super.key});
+
+  // Kunci baru untuk setiap MyApp. Aplikasi bisa berpindah ke/dari mode layar
+  // pelanggan lewat runApp; bila kunci navigatornya sama (Get.key bawaan),
+  // Flutter memindahkan Navigator lama beserta tumpukan halamannya ke aplikasi
+  // baru, sehingga initialRoute di bawah diabaikan dan layar tidak berganti.
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+
   @override
   Widget build(BuildContext context) {
     // return const MaterialApp(
@@ -153,6 +176,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Jaya Propertiy',
       debugShowCheckedModeBanner: false,
+      navigatorKey: _navigatorKey,
+      scaffoldMessengerKey: _messengerKey,
       getPages: AppRoute.pages,
       initialRoute: RouteName.splashPage,
       theme: theme.light(),
