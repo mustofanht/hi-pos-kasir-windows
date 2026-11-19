@@ -96,6 +96,41 @@ class _HitungKasIsiState extends State<HitungKasIsi> {
     setState(() => _lembar[pecahan] = KasUtil.bacaLembar(teks));
   }
 
+  /// Tombol - / +: menambah atau mengurangi satu lembar tanpa papan ketik.
+  /// Kasir menghitung sambil memegang uang, jadi menyentuh + per lembar lebih
+  /// cepat dan lebih jarang salah ketik daripada mengetik angkanya.
+  void _geser(int pecahan, int selisih) {
+    final baru = (_lembar[pecahan] ?? 0) + selisih;
+    final lembar = baru < 0 ? 0 : baru;
+    final teks = lembar > 0 ? lembar.toString() : '';
+    _isian[pecahan]!.value = TextEditingValue(
+      text: teks,
+      selection: TextSelection.collapsed(offset: teks.length),
+    );
+    setState(() => _lembar[pecahan] = lembar);
+  }
+
+  Widget _tombolGeser(IconData ikon, VoidCallback? aksi) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: aksi,
+        icon: Icon(ikon),
+        color: colorStyle.primary,
+        style: IconButton.styleFrom(
+          side: BorderSide(
+            color: aksi == null ? Colors.grey.shade300 : colorStyle.primary,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Menutup layar sekali saja.
   ///
   /// Tombol yang tersentuh dua kali pada tablet yang sedang berat akan menutup
@@ -226,19 +261,32 @@ class _HitungKasIsiState extends State<HitungKasIsi> {
             ),
           ),
           Expanded(
-            flex: 2,
-            child: TextField(
-              controller: _isian[pecahan],
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              textAlign: TextAlign.right,
-              decoration: const InputDecoration(
-                isDense: true,
-                border: OutlineInputBorder(),
-                hintText: '0',
-                suffixText: 'lembar',
-              ),
-              onChanged: (teks) => _ubah(pecahan, teks),
+            flex: 4,
+            child: Row(
+              children: [
+                _tombolGeser(
+                  Icons.remove,
+                  lembar > 0 ? () => _geser(pecahan, -1) : null,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TextField(
+                    controller: _isian[pecahan],
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                      hintText: '0',
+                      suffixText: 'lbr',
+                    ),
+                    onChanged: (teks) => _ubah(pecahan, teks),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                _tombolGeser(Icons.add, () => _geser(pecahan, 1)),
+              ],
             ),
           ),
           Expanded(
