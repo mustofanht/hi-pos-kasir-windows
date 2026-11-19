@@ -17,6 +17,10 @@ class LoginPage extends GetView<LoginPageController> {
     final ya = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Jadikan Layar Pelanggan?'),
+        // scrollable: true -- tanpa ini contentnya overflow di bawah saat
+        // keyboard muncul untuk field "Nama perangkat" (dialog tidak otomatis
+        // menggulir isinya sendiri seperti Scaffold).
+        scrollable: true,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

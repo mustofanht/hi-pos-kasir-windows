@@ -35,6 +35,16 @@ class ManualExitTicketEntity {
   final String? isCompanion;
   final String? childName;
   final DateTime? orderDate;
+
+  /// activeDate/orderDate sudah diformat backend ke zona waktu lokasi order
+  /// ini (mst_location.loc_timezone), "dd-MM-yyyy HH:mm:ss". Struk cetak
+  /// ulang WAJIB memakai ini (lewat dateTimeUtil.parseLocalFormatted) —
+  /// bukan activeDate/orderDate mentah, yang ikut ter-toLocal() ke zona
+  /// DEVICE kasir di gate, bisa salah kalau device-nya diset ke WIB meski
+  /// lokasinya WITA/WIT.
+  final String? activeDateLocal;
+  final String? orderDateLocal;
+
   final bool alreadyTakeout;
 
   ManualExitTicketEntity({
@@ -46,6 +56,8 @@ class ManualExitTicketEntity {
     this.isCompanion,
     this.childName,
     this.orderDate,
+    this.activeDateLocal,
+    this.orderDateLocal,
     this.alreadyTakeout = false,
   });
 
@@ -61,6 +73,8 @@ class ManualExitTicketEntity {
       isCompanion: json['isCompanion']?.toString(),
       childName: json['childName']?.toString(),
       orderDate: _waktuSetempat(json['orderDate']),
+      activeDateLocal: json['activeDateLocal']?.toString(),
+      orderDateLocal: json['orderDateLocal']?.toString(),
       alreadyTakeout: json['alreadyTakeout'] == true,
     );
   }

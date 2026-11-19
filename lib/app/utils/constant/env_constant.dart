@@ -11,10 +11,10 @@ extension EnvironmentExt on Environment {
   String get url {
     switch (this) {
       case Environment.local:
-        return "https://new-api.hi-pos.id/syspos-service/api/v1";
+        return "https://dev.hi-pos.id/syspos-service/api/v1";
         break;
       case Environment.dev:
-        return "https://new-api.hi-pos.id/syspos-service/api/v1";
+        return "https://dev.hi-pos.id/syspos-service/api/v1";
         break;
       case Environment.production:
         return "https://new-api.hi-pos.id/syspos-service/api/v1";

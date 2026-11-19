@@ -17,6 +17,7 @@ import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_alert.dart';
 import 'package:jaya_propertiy/presentation/components/custom_dialog.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_cart_page_controller.dart';
+import 'package:jaya_propertiy/presentation/views/modules/jaminansewa/jaminan_cashin_dialog.dart';
 
 class SaleAddonPageController extends GetxController {
   SaleAddonPageController();
@@ -87,11 +88,17 @@ class SaleAddonPageController extends GetxController {
     );
   }
 
+  /// Tipe semu untuk sub-tab "Jaminan Sewa" — bukan product_type sungguhan,
+  /// hanya menandai daftar ini berisi gabungan S+H (lihat [prepareItemJaminan])
+  /// dan tap item-nya membuka dialog jaminan, bukan ditambah ke keranjang.
+  static const String TYPE_JAMINAN = 'G';
+
   doInitializeItemTypeList() {
     typeItemList.clear();
     typeItemList.add(CustomIdNameEntity(id: 'H', name: 'Sewa Per Jam'));
     typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa Harian'));
     typeItemList.add(CustomIdNameEntity(id: 'J', name: 'Jual'));
+    typeItemList.add(CustomIdNameEntity(id: TYPE_JAMINAN, name: 'Jaminan Sewa'));
     update();
   }
 
@@ -103,7 +110,9 @@ class SaleAddonPageController extends GetxController {
     isLoading.value = true;
 
     _kataDimuat = kataCari.value.trim();
-    if (typeProduct == 'H') {
+    if (typeProduct == TYPE_JAMINAN) {
+      await prepareItemJaminan();
+    } else if (typeProduct == 'H') {
       await prepareItemHourly(page);
     } else {
       await prepareItem(page: page, typeProduct: typeProduct);
@@ -114,6 +123,43 @@ class SaleAddonPageController extends GetxController {
     // Kata kuncinya berubah selagi permintaan ini berjalan → muat sekali lagi.
     if (_kataDimuat != kataCari.value.trim()) {
       await doPrepareList(page: 0, typeProduct: typeProduct);
+    }
+  }
+
+  /// Sub-tab "Jaminan Sewa": barang yang bisa dijaminkan adalah barang sewa
+  /// yang sudah ada (Sewa Harian + Sewa Per Jam) — bukan katalog terpisah.
+  /// Tanpa paginasi/pencarian server (jumlah barang sewa biasanya kecil);
+  /// pencarian disaring di klien dari gabungan dua daftar ini.
+  Future<void> prepareItemJaminan() async {
+    try {
+      final hasil = await _service.sale.addonService.getAll(
+        authToken: _authToken,
+        paramsFilter: {
+          'page': '0',
+          'size': '200',
+          'flMobile': 'Y',
+          'locationId': sessionUtil.getLocationIdsQueryParam(),
+        },
+      );
+      hasil.fold((l) {
+        logger.safeLog(l);
+        isLoading.value = false;
+      }, (r) {
+        final kata = kataCari.value.trim().toLowerCase();
+        addonList.value = (r.data ?? [])
+            .where((e) =>
+                (e.productType == ProductRentalType.DAYS ||
+                    e.productType == ProductRentalType.HOURS) &&
+                e.productState != 'N' &&
+                (kata.isEmpty ||
+                    (e.productName ?? '').toLowerCase().contains(kata)))
+            .toList();
+        pagination.value = Pagination();
+        isLoading.value = false;
+      });
+    } catch (e) {
+      logger.safeLog(e);
+      isLoading.value = false;
     }
   }
 
@@ -288,6 +334,17 @@ class SaleAddonPageController extends GetxController {
   }
 
   addAddonToCart({required AddonEntity val}) async {
+    // Sub-tab "Jaminan Sewa": item ini BUKAN ditambah ke keranjang penjualan
+    // (lihat TrnJaminanSewaService — sengaja tidak lewat trn_order). Tap
+    // membuka dialog cash-in sendiri; dialog itu yang memanggil backend.
+    if (selectedTypeItemList.value.id == TYPE_JAMINAN) {
+      showJaminanCashInDialog(
+        item: val,
+        onSelesai: () {},
+      );
+      return;
+    }
+
     final SaleCartPageController saleCartPageController;
     if (Get.isRegistered<SaleCartPageController>()) {
       saleCartPageController = Get.find<SaleCartPageController>();

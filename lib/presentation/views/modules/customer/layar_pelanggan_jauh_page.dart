@@ -69,7 +69,8 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
     _lp.mulai();
     // Hitung mundur masa berlaku kode.
     _detik = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && _lp.status.value == StatusLayarJauh.menunggu) setState(() {});
+      if (mounted && _lp.status.value == StatusLayarJauh.menunggu)
+        setState(() {});
     });
   }
 
@@ -100,8 +101,12 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
             'Perangkat ini akan dilepas dari kasir dan kembali ke halaman login. '
             'Untuk memakainya lagi sebagai layar pelanggan, pasangkan ulang dengan kode baru.'),
         actions: [
-          TextButton(onPressed: () => Get.back(result: false), child: const Text('Batal')),
-          TextButton(onPressed: () => Get.back(result: true), child: const Text('Keluar')),
+          TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Batal')),
+          TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Keluar')),
         ],
       ),
     );
@@ -116,7 +121,8 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
     layoutStyle.init(context);
     return Obx(() {
       final s = _lp.status.value;
-      final pernahTerpasang = s == StatusLayarJauh.terpasang || s == StatusLayarJauh.terputus;
+      final pernahTerpasang =
+          s == StatusLayarJauh.terpasang || s == StatusLayarJauh.terputus;
       if (pernahTerpasang) {
         return Stack(
           children: [
@@ -161,7 +167,8 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
     if (sampai != null) {
       final d = sampai.difference(DateTime.now());
       if (!d.isNegative) {
-        sisa = '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+        sisa =
+            '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
       }
     }
     final siapDipasang = s == StatusLayarJauh.menunggu && kode != null;
@@ -175,12 +182,17 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(assetsConstant.imgLogo, width: 120, height: 120, fit: BoxFit.contain),
+                Image.asset(assetsConstant.imgLogo,
+                    width: 120, height: 120, fit: BoxFit.contain),
                 const SizedBox(height: 12),
                 Text('Layar Pelanggan',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorStyle.black)),
+                    style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: colorStyle.black)),
                 const SizedBox(height: 4),
-                Text(_lp.namaPerangkat, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                Text(_lp.namaPerangkat,
+                    style: const TextStyle(fontSize: 16, color: Colors.grey)),
                 const SizedBox(height: 24),
                 if (siapDipasang) ...[
                   const Text(
@@ -213,20 +225,25 @@ class _LayarPelangganJauhPageState extends State<LayarPelangganJauhPage> {
                   ),
                   if (sisa != null) ...[
                     const SizedBox(height: 8),
-                    Text('Berlaku $sisa — kode baru dibuat otomatis bila habis.',
+                    Text(
+                        'Berlaku $sisa — kode baru dibuat otomatis bila habis.',
                         style: const TextStyle(color: Colors.grey)),
                   ],
                 ] else ...[
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
                   Text(
-                    s == StatusLayarJauh.memintaKode ? 'Meminta kode pairing…' : 'Menyambung ke server…',
+                    s == StatusLayarJauh.memintaKode
+                        ? 'Meminta kode pairing…'
+                        : 'Menyambung ke server…',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],
                 if (_lp.pesan.value != null) ...[
                   const SizedBox(height: 16),
-                  Text(_lp.pesan.value!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+                  Text(_lp.pesan.value!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red)),
                 ],
                 const SizedBox(height: 32),
                 TextButton.icon(

@@ -274,8 +274,13 @@ class OrderUtil {
             pakTotal: totalPak,
             qrCode: element.ticketNo!,
             // expiredAt: dateTimeUtil.now(format: dateFormat.dateDDMMMMYYYY),
+            // ticketActiveDateLocal diutamakan — sudah diformat backend ke
+            // zona waktu LOKASI tiket, bukan zona device kasir.
             expiredAt: dateTimeUtil.getFormattedDate(
-              date: element.ticketActiveDate!.toLocal(),
+              date: element.ticketActiveDateLocal != null
+                  ? dateTimeUtil
+                      .parseLocalFormatted(element.ticketActiveDateLocal!)
+                  : element.ticketActiveDate!.toLocal(),
               format: dateFormat.dateDDMMMMYYYY,
             ),
             ticketName: element.ticketName,

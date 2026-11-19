@@ -8,6 +8,14 @@ class ShiftDetailEntity {
   final String? shftUserid;
   final DateTime? shftStart;
   final DateTime? shftEnd;
+
+  /// shftStart/shftEnd sudah diformat backend ke zona waktu lokasi kasir ini
+  /// (mst_location.loc_timezone), "dd-MM-yyyy HH:mm:ss". Struk cetak WAJIB
+  /// memakai ini (lewat dateTimeUtil.parseLocalFormatted) — bukan shftStart/
+  /// shftEnd mentah, yang ikut ter-toLocal() ke zona DEVICE kasir, bisa salah
+  /// kalau device-nya diset ke WIB meski lokasinya WITA/WIT.
+  final String? shftStartLocal;
+  final String? shftEndLocal;
   final String? userFullName;
   final String? lokasiName;
   final int? tiketCount;
@@ -48,7 +56,13 @@ class ShiftDetailEntity {
   /// Penjualan yang dibayar tunai selama shift.
   final double? tunaiSum;
 
-  /// Modal awal + penjualan tunai: uang yang seharusnya ada di laci.
+  /// Jaminan sewa tunai diterima dikurangi dikembalikan selama shift ini --
+  /// uang fisik di laci yang sama dengan penjualan tunai, tapi BUKAN
+  /// penjualan. Bisa negatif. Null/0 bila tidak ada transaksi jaminan sewa.
+  final double? jaminanSewaTunaiSum;
+
+  /// Modal awal + penjualan tunai + jaminan sewa tunai: uang yang seharusnya
+  /// ada di laci.
   final double? kasSeharusnya;
 
   /// Uang yang benar-benar dihitung kasir; null = belum dihitung.
@@ -70,6 +84,8 @@ class ShiftDetailEntity {
     this.shftUserid,
     this.shftStart,
     this.shftEnd,
+    this.shftStartLocal,
+    this.shftEndLocal,
     this.userFullName,
     this.lokasiName,
     this.tiketCount,
@@ -91,6 +107,7 @@ class ShiftDetailEntity {
     this.pakaiModalKas,
     this.modalAwal,
     this.tunaiSum,
+    this.jaminanSewaTunaiSum,
     this.kasSeharusnya,
     this.kasAkhir,
     this.selisihKas,
@@ -122,6 +139,8 @@ class ShiftDetailEntity {
       shftEnd: json['shftEnd'] != null
           ? DateTime.parse(json['shftEnd']).toLocal()
           : null,
+      shftStartLocal: json['shftStartLocal'],
+      shftEndLocal: json['shftEndLocal'],
       userFullName: json['userFullName'],
       lokasiName: json['lokasiName'],
       tiketCount: json['tiketCount'],
@@ -164,6 +183,7 @@ class ShiftDetailEntity {
       pakaiModalKas: json['pakaiModalKas'],
       modalAwal: _angka(json['modalAwal']),
       tunaiSum: _angka(json['tunaiSum']),
+      jaminanSewaTunaiSum: _angka(json['jaminanSewaTunaiSum']),
       kasSeharusnya: _angka(json['kasSeharusnya']),
       kasAkhir: _angka(json['kasAkhir']),
       selisihKas: _angka(json['selisihKas']),
@@ -200,6 +220,7 @@ class ShiftDetailEntity {
       'pakaiModalKas': pakaiModalKas,
       'modalAwal': modalAwal,
       'tunaiSum': tunaiSum,
+      'jaminanSewaTunaiSum': jaminanSewaTunaiSum,
       'kasSeharusnya': kasSeharusnya,
       'kasAkhir': kasAkhir,
       'selisihKas': selisihKas,

@@ -7,6 +7,7 @@ import 'package:jaya_propertiy/domain/entities/sale/addon_entity.dart';
 import 'package:jaya_propertiy/presentation/components/custom_loading.dart';
 import 'package:jaya_propertiy/presentation/components/kotak_cari.dart';
 import 'package:jaya_propertiy/presentation/controllers/modules/sale/sale_addon_page_controller.dart';
+import 'package:jaya_propertiy/presentation/views/modules/jaminansewa/jaminan_cashout_dialog.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -342,6 +343,28 @@ class SaleAddonPage extends GetView<SaleAddonPageController> {
                 onUbah: controller.cari,
                 onBersihkan: controller.bersihkanCari,
                 adaIsi: controller.adaKataCari,
+              ),
+              // Sub-tab "Jaminan Sewa" saja: cash-out (pengembalian dana)
+              // dibuka lewat dialog pencarian terpisah, bukan dari grid item —
+              // kasir mencari transaksi cash-in LAMA, bukan memilih barang baru.
+              Obx(
+                () => controller.selectedTypeItemList.value.id ==
+                        SaleAddonPageController.TYPE_JAMINAN
+                    ? Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: layoutStyle.defaultMargin,
+                          vertical: layoutStyle.defaultMargin / 2,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: OutlinedButton.icon(
+                            onPressed: showJaminanCashOutDialog,
+                            icon: const Icon(Icons.undo),
+                            label: const Text('Pengembalian Jaminan'),
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
               Expanded(
                 // width: layoutStyle.screenWidth,
