@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:jaya_propertiy/app/utils/common/logger_util.dart';
 import 'package:jaya_propertiy/data/models/common/wristband_config_model.dart';
 
 /// Penyusun perintah cetak gelang dalam bahasa **TSPL** (TSC Printer Language),
@@ -55,6 +56,18 @@ class GenerateWristbandUtil {
   /// melepaskannya ke 18,4mm. Pada gelang bermerek yang hanya menyisakan 20mm
   /// bersih, selisih itu menentukan QR terbaca sekali pindai atau tidak.
   static const int _zonaSunyi = 2;
+
+  /// Perkiraan jumlah modul barcode CODE128 untuk [isi], **tanpa** zona sunyi.
+  ///
+  /// Dihitung dengan subset B (11 modul per karakter + start, cek, stop),
+  /// walau nomor tiket angka bisa dipadatkan printer ke subset C. Perintah
+  /// TSPL `"128"` memilih subsetnya sendiri dan tidak semua firmware
+  /// memadatkan angka; perkiraan yang kekurangan membuat barcode menimpa teks
+  /// di sebelahnya, sedangkan yang berlebih hanya menyisakan putih.
+  static int modulBarcode(String isi) => 11 * isi.length + 35;
+
+  /// Zona sunyi barcode di tiap ujung, dalam modul — standar CODE128.
+  static const int _sunyiBarcode = 10;
 
   /// Sisi kotak yang dipesan satu QR: simbolnya sendiri ditambah zona sunyi di
   /// kedua tepi. Lihat [_zonaSunyi].
@@ -119,6 +132,9 @@ class GenerateWristbandUtil {
     String? nama,
     String? nomorTiket,
     String? waktu,
+    /// true = nomor tiket dicetak sebagai barcode CODE128 (batang melintang
+    /// pita, simbol memanjang menyusuri gelang), bukan QR.
+    bool barcode = false,
   }) {
     String? bersih(String? s, {bool kapital = false}) {
       if (s == null) return null;
@@ -166,15 +182,27 @@ class GenerateWristbandUtil {
     ];
 
     final isi = _ascii(qrCode);
+    // Barcode boleh tanpa teks sama sekali: cadangan dataWristbandPrint di
+    // bawah hanya mengenal QR.
+    if (barcode) {
+      calon.add((awal: const <_BarisGelang>[], akhir: const <_BarisGelang>[]));
+    }
     for (final c in calon) {
-      if (c.awal.isEmpty && c.akhir.isEmpty) continue;
-      final gambar = _tataMenyusuri(config, isi, c.awal, c.akhir);
+      if (!barcode && c.awal.isEmpty && c.akhir.isEmpty) continue;
+      final gambar =
+          _tataMenyusuri(config, isi, c.awal, c.akhir, barcode: barcode);
       if (gambar == null) continue;
       final perintah = _kepala(config)
         ..addAll(_geser(gambar, config, config.dots(config.geserXMm),
             config.dots(config.geserYMm)))
         ..add('PRINT 1,1');
       return _bytes(perintah);
+    }
+    // Barcode tidak muat di gelang ini sama sekali. QR tetap lebih baik
+    // daripada gelang kosong: nomornya masih bisa diketik di Keluar Manual.
+    if (barcode) {
+      logger.safeLog('GELANG : barcode "$isi" tidak muat di '
+          '${config.widthMm}x${config.heightMm}mm -> dicetak QR');
     }
     return dataWristbandPrint(config: config, qrCode: qrCode);
   }
@@ -213,8 +241,10 @@ class GenerateWristbandUtil {
     WristbandConfigModel config,
     String isi,
     List<_BarisGelang> awal,
-    List<_BarisGelang> akhir,
-  ) {
+    List<_BarisGelang> akhir, {
+    bool barcode = false,
+  }) {
+    if (barcode) return _tataBarcode(config, isi, awal, akhir);
     final w = config.widthDots;
     final h = config.heightDots;
     final m = config.marginDots;
@@ -314,6 +344,90 @@ class GenerateWristbandUtil {
     return null;
   }
 
+  /// Versi [_tataMenyusuri] untuk barcode: blok [awal], barcode, blok [akhir]
+  /// berurutan sepanjang gelang.
+  ///
+  /// Barcode diputar 90 derajat: batangnya melintang pita dan simbolnya
+  /// memanjang menyusuri gelang. Pita gelang hanya selebar ~25mm, sedangkan
+  /// barcode 10 digit butuh lebih dari itu — hanya muat ke arah panjangnya.
+  ///
+  /// Lebar modul minimal 0,25mm (2 titik di 203 dpi, 3 di 300 dpi), batas yang
+  /// umumnya masih dibaca pemindai. Dicoba yang lebih tebal dulu; batang tebal
+  /// lebih toleran pada gelang yang melengkung di pergelangan tangan. Tinggi
+  /// batang memakai lebar pita dikurangi margin, maks 18mm.
+  ///
+  /// **Belum diuji di printer sungguhan.** Jangkar TSPL untuk BARCODE berputar
+  /// diasumsikan sama dengan TEXT berputar (lihat [_kotakDari]); kalau barcode
+  /// tercetak bergeser setinggi batangnya, di sinilah tempat membetulkannya.
+  List<String>? _tataBarcode(
+    WristbandConfigModel config,
+    String isi,
+    List<_BarisGelang> awal,
+    List<_BarisGelang> akhir,
+  ) {
+    final w = config.widthDots;
+    final h = config.heightDots;
+    final m = config.marginDots;
+    final tinggi = _kecil(w - 2 * m, config.dots(18));
+    if (tinggi < config.dots(5)) return null;
+    final dasar = config.dots(0.25) < 1 ? 1 : config.dots(0.25);
+    final jeda = config.dots(2.5);
+
+    for (final sempit in [dasar + 1, dasar]) {
+      final panjangKode = (modulBarcode(isi) + 2 * _sunyiBarcode) * sempit;
+      for (final hurufBaris in _tingkatHuruf) {
+        final lebarHuruf = fontDots[hurufBaris]![0];
+        final tinggiHuruf = fontDots[hurufBaris]![1];
+        int panjang(List<_BarisGelang> blok) => blok.isEmpty
+            ? 0
+            : blok
+                .map((b) => b.isi.length * lebarHuruf)
+                .reduce((a, b) => a > b ? a : b);
+        int tebal(List<_BarisGelang> blok) {
+          var total = 0;
+          for (var i = 0; i < blok.length; i++) {
+            total += tinggiHuruf;
+            if (i < blok.length - 1) total += _jarak(hurufBaris);
+          }
+          return total;
+        }
+
+        if (tebal(awal) > w - 2 * m || tebal(akhir) > w - 2 * m) continue;
+        final total = panjang(awal) +
+            (awal.isEmpty ? 0 : jeda) +
+            panjangKode +
+            (akhir.isEmpty ? 0 : jeda) +
+            panjang(akhir);
+        if (total > h - 2 * m) continue;
+
+        var y = _mulaiY(h, total, m, config.posisi).clamp(0, h - total);
+        final hasil = <String>[];
+        for (final blok in <List<_BarisGelang>?>[awal, null, akhir]) {
+          if (blok == null) {
+            final x = ((w - tinggi) / 2).round() + tinggi;
+            hasil.add('BARCODE $x,${y + _sunyiBarcode * sempit},"128",'
+                '$tinggi,0,90,$sempit,$sempit,"${_kutip(isi)}"');
+            y += panjangKode + jeda;
+            continue;
+          }
+          if (blok.isEmpty) continue;
+          final t = tebal(blok);
+          // Pada 90 derajat badan huruf menjulur ke kiri jangkarnya, jadi
+          // baris pertama paling kanan.
+          var x = ((w - t) / 2).round() + t;
+          for (final b in blok) {
+            if (b.isi.isEmpty) continue;
+            hasil.add('TEXT $x,$y,"$hurufBaris",90,1,1,"${_kutip(b.isi)}"');
+            x -= tinggiHuruf + _jarak(hurufBaris);
+          }
+          y += panjang(blok) + jeda;
+        }
+        return hasil;
+      }
+    }
+    return null;
+  }
+
   /// Menjalankan penata isi pada ruang yang benar, lalu memutar dan menggesernya.
   ///
   /// Satu pintu untuk semua tata letak gelang, supaya tidak ada yang berbeda
@@ -367,6 +481,9 @@ class GenerateWristbandUtil {
     final lebar = nyata.widthDots;
 
     return gambar.map((baris) {
+      // Barcode hanya ditata gelang playground, yang tidak melewati putaran
+      // ini. Dibiarkan apa adanya ketimbang salah diurai sebagai TEXT.
+      if (baris.startsWith('BARCODE')) return baris;
       final kotak = _kotakDari(baris);
       if (kotak == null) return baris;
 
@@ -463,6 +580,20 @@ class GenerateWristbandUtil {
   /// tepi kiri. Tanpa ini, pemangkasan geseran menghitung kotak yang salah dan
   /// justru membiarkan cetakan keluar lembar.
   _Kotak? _kotakDari(String baris) {
+    if (baris.startsWith('BARCODE')) {
+      // BARCODE x,y,"128",tinggi,hri,putaran,sempit,lebar,"isi"
+      final bagian = baris.substring(7).split(',');
+      final x = int.parse(bagian[0].trim());
+      final y = int.parse(bagian[1].trim());
+      final tinggi = int.parse(bagian[3].trim());
+      final putaran = int.tryParse(bagian[5].trim()) ?? 0;
+      final sempit = int.parse(bagian[6].trim());
+      final panjang = modulBarcode(_isiTerakhir(baris)) * sempit;
+      // Sama seperti teks: pada 90 derajat badan barcode menjulur ke kiri
+      // jangkarnya dan memanjang ke bawah.
+      if (putaran == 90) return _Kotak(x - tinggi, y, tinggi, panjang);
+      return _Kotak(x, y, panjang, tinggi);
+    }
     if (baris.startsWith('QRCODE')) {
       final bagian = baris.substring(6).split(',');
       final sel = int.parse(bagian[3].trim());
@@ -501,9 +632,11 @@ class GenerateWristbandUtil {
   String _pindah(String baris, int dx, int dy) {
     final nama = baris.startsWith('QRCODE')
         ? 'QRCODE'
-        : baris.startsWith('TEXT')
-            ? 'TEXT'
-            : null;
+        : baris.startsWith('BARCODE')
+            ? 'BARCODE'
+            : baris.startsWith('TEXT')
+                ? 'TEXT'
+                : null;
     if (nama == null) return baris;
     final sisa = baris.substring(nama.length).trimLeft();
     final koma1 = sisa.indexOf(',');

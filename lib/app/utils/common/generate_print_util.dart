@@ -721,6 +721,9 @@ class GeneratePrintUtil {
     // required OrderTicketModel ticketModel,
     String? ticketName,
     String? isCompanion, // Y = pendamping, N = berbayar
+    /// true = nomor tiket dicetak sebagai barcode CODE128, bukan QR. Dari
+    /// setelan lokasi (`loc_ticket_code_type`); hanya salah satu yang dicetak.
+    bool barcode = false,
   }) async {
     List<int> bytes = [];
     // Using default profile
@@ -803,12 +806,16 @@ class GeneratePrintUtil {
     );
 
     bytes += generator.emptyLines(1);
-// QRCODE
-    bytes += generator.qrcode(
-      qrCode,
-      align: PosAlign.center,
-      size: QRSize.Size8,
-    );
+    if (barcode) {
+      bytes += _barcodeTiket(generator, qrCode);
+    } else {
+      // QRCODE
+      bytes += generator.qrcode(
+        qrCode,
+        align: PosAlign.center,
+        size: QRSize.Size8,
+      );
+    }
     bytes += generator.emptyLines(1);
     bytes += generator.text(
       'Berlaku $expiredAt',
@@ -820,6 +827,45 @@ class GeneratePrintUtil {
     // bytes += generator.emptyLines(1);
     bytes += generator.cut();
 
+    return bytes;
+  }
+
+  /// Nomor tiket sebagai barcode CODE128, diikuti nomornya dalam teks.
+  ///
+  /// Nomor tiket sekarang 10 digit angka, jadi dipakai subset C (dua digit per
+  /// simbol) — barcodenya separuh lebih pendek dan lebih mudah dibaca dari
+  /// jarak. Nomor lain (ganjil / ada hurufnya) memakai subset B.
+  ///
+  /// Teks bawaan printer (HRI) dimatikan dan nomornya dicetak sendiri: HRI
+  /// subset C ditampilkan berbeda-beda antar printer, sebagian malah kosong.
+  /// Lebar modul dipilih supaya barcode + zona sunyinya muat di kertas 80mm.
+  List<int> _barcodeTiket(Generator generator, String nomor) {
+    final isi = nomor.trim();
+    final subsetC = RegExp(r'^\d+$').hasMatch(isi) && isi.length.isEven;
+    final data = <dynamic>['{', subsetC ? 'C' : 'B'];
+    if (subsetC) {
+      for (var i = 0; i < isi.length; i += 2) {
+        data.add(String.fromCharCode(int.parse(isi.substring(i, i + 2))));
+      }
+    } else {
+      data.addAll(isi.split(''));
+    }
+    final simbol = subsetC ? isi.length ~/ 2 : isi.length;
+    final modul = 11 * simbol + 35 + 20; // start+cek+stop, zona sunyi 10+10
+    final lebar = (560 ~/ modul).clamp(2, 3);
+
+    List<int> bytes = [];
+    bytes += generator.barcode(
+      Barcode.code128(data),
+      width: lebar,
+      height: 100,
+      textPos: BarcodeText.none,
+      align: PosAlign.center,
+    );
+    bytes += generator.text(
+      isi,
+      styles: const PosStyles(align: PosAlign.center, bold: true),
+    );
     return bytes;
   }
 
