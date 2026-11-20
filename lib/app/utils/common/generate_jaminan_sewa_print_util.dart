@@ -1,6 +1,7 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/app/utils/common/kepala_struk_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/domain/entities/jaminansewa/jaminan_sewa_entity.dart';
@@ -28,8 +29,11 @@ class GenerateJaminanSewaPrintUtil {
     required JaminanSewaEntity data,
     double? uangDiterima,
     double? kembalian,
+    /// true = buka laci kasir (jaminan diterima tunai).
+    bool bukaLaci = false,
   }) async {
     List<int> bytes = [];
+    if (bukaLaci) bytes += KasUtil.perintahBukaLaci;
     final profile = await CapabilityProfile.load();
     final generator = Generator(paperSize, profile);
     bytes += generator.setGlobalFont(PosFontType.fontA);
@@ -169,8 +173,11 @@ class GenerateJaminanSewaPrintUtil {
     String? locationPhone,
     required PaperSize paperSize,
     required JaminanSewaEntity data,
+    /// true = buka laci kasir (pengembalian jaminan selalu tunai).
+    bool bukaLaci = false,
   }) async {
     List<int> bytes = [];
+    if (bukaLaci) bytes += KasUtil.perintahBukaLaci;
     final profile = await CapabilityProfile.load();
     final generator = Generator(paperSize, profile);
     bytes += generator.setGlobalFont(PosFontType.fontA);

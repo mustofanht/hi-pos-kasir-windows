@@ -307,6 +307,7 @@ class OrderPaymentController extends GetxController {
       if (!isSuccess) return;
 
       final bool isCash = paymentCategory == PaymentMethod.CASH;
+      body.adaTunai = isCash;
 
       // Display the waiting payment alert
       dialog.waitingPaymentEdc(

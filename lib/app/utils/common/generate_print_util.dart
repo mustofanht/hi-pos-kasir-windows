@@ -101,8 +101,15 @@ class GeneratePrintUtil {
     /// Satu transaksi dengan dua lembar struk tanpa tanda adalah dua bukti
     /// pembayaran yang sama sahnya - dan itu jalan termudah menggandakan bukti.
     bool cetakUlang = false,
+    /// true = kirim perintah buka laci kasir di awal struk. Hanya untuk
+    /// cetakan pertama transaksi baru — cetak ulang dan struk void tidak
+    /// membuka laci.
+    bool bukaLaci = false,
   }) async {
     List<int> bytes = [];
+    if (bukaLaci && !cetakUlang && !strukVoid) {
+      bytes += KasUtil.perintahBukaLaci;
+    }
     // Using default profile
     final profile = await CapabilityProfile.load();
     final generator = Generator(paperSize, profile);

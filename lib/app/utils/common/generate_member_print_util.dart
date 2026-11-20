@@ -1,6 +1,7 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:jaya_propertiy/app/utils/common/app_common.dart';
 import 'package:jaya_propertiy/app/utils/common/date_time_util.dart';
+import 'package:jaya_propertiy/app/utils/common/kas_util.dart';
 import 'package:jaya_propertiy/app/utils/common/kepala_struk_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/date_format_constant.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -20,8 +21,11 @@ class GenerateMemberPrintUtil {
     required PaperSize paperSize,
     required OrderMemberModel body,
     bool cetakUlang = false,
+    /// true = buka laci kasir; hanya cetakan pertama transaksi baru.
+    bool bukaLaci = false,
   }) async {
     List<int> bytes = [];
+    if (bukaLaci && !cetakUlang) bytes += KasUtil.perintahBukaLaci;
     // Using default profile
     final profile = await CapabilityProfile.load();
     final generator = Generator(paperSize, profile);

@@ -5,6 +5,12 @@
 /// lembar". Semua perhitungannya dikumpulkan di sini supaya layar modal awal,
 /// layar hitung laci, dan rekap shift memakai aturan yang sama persis.
 class KasUtil {
+  /// Perintah ESC/POS pembuka laci kasir: ESC p 0 50 250 (pin 2, nyala 100 ms,
+  /// mati 500 ms). Sama dengan setelan "Drawer 1" di aplikasi ESC POS USB
+  /// Print Service yang terbukti membuka laci di perangkat outlet. Laci
+  /// tersambung ke printer struk (RJ11), jadi perintahnya ikut dalam data cetak.
+  static const List<int> perintahBukaLaci = [0x1B, 0x70, 0x00, 0x32, 0xFA];
+
   /// Pecahan rupiah yang dihitung kasir, dari yang terbesar.
   ///
   /// Seribu hanya muncul sekali walaupun ada dalam bentuk kertas dan koin:

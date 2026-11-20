@@ -34,6 +34,13 @@ class OrderMemberModel {
   /// Null/kosong = pembayaran tunggal seperti sebelumnya (pakai orderPaidBy).
   List<SplitPaymentLegModel>? splitPayments;
 
+  /// Ada uang TUNAI (mst_payment.pymnt_category 'CS') di pembayaran ini --
+  /// metode tunggal tunai, atau split yang salah satu leg-nya tunai. Dipakai
+  /// untuk membuka laci kasir saat struk dicetak. Murni lokal, tidak masuk
+  /// toJson. Diisi dari kategori, bukan dari reffno '-', karena kasir bisa
+  /// saja mengetik '-' sebagai reference EDC.
+  bool adaTunai = false;
+
   OrderMemberModel({
     this.qrCode,
     this.orderName,
