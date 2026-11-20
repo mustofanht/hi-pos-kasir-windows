@@ -475,6 +475,7 @@ class PrintTicketDetailPageController extends GetxController {
               isCompanion: element.isCompanion, // Pass flag pendamping
               paymentDate: paymentDate,
               namaPembeli: model.value.orderName,
+              barcode: user?.tiketPakaiBarcode ?? false,
             );
             data.addAll(dataPrint);
             count++;

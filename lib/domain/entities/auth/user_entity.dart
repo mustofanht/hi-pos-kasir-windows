@@ -18,6 +18,17 @@ class UserEntity {
   String? locationPhone;
   String? locationEmail;
   String? locationLogoPath;
+
+  /// Jenis kode nomor tiket di struk kertas dan di gelang playground, dari
+  /// master lokasi: `QR` atau `BARCODE` (CODE128). Selalu salah satu; kosong
+  /// (server lama, atau lokasi gagal dimuat) dianggap QR.
+  String? locationTicketCodeType;
+  String? locationWristbandCodeType;
+
+  bool get tiketPakaiBarcode =>
+      (locationTicketCodeType ?? '').trim().toUpperCase() == 'BARCODE';
+  bool get gelangPakaiBarcode =>
+      (locationWristbandCodeType ?? '').trim().toUpperCase() == 'BARCODE';
   int? userUnitId;
   String? unitName;
   int? userRoleid;

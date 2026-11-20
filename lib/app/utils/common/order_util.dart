@@ -259,6 +259,7 @@ class OrderUtil {
           // Sumber yang sama dengan waktu di kertas struk, supaya keduanya tidak
           // pernah berbeda di tangan pelanggan.
           waktu: body.paymentDate ?? DateTime.now(),
+          barcode: user?.gelangPakaiBarcode ?? false,
         );
 
         final tiketDiStruk = hasilGelang.keStruk;
@@ -290,6 +291,7 @@ class OrderUtil {
             isCompanion: element.isCompanion, // Pass flag pendamping
             paymentDate: body.paymentDate ?? DateTime.now(),
             namaPembeli: body.orderName,
+            barcode: user?.tiketPakaiBarcode ?? false,
           );
           data.addAll(dataPrint);
           count++;

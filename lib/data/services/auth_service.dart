@@ -56,7 +56,7 @@ class AuthService {
   /// cetak, berbeda dari `logoPelanggan` (`locCustLogoPath`) yang dipakai
   /// bilah atas layar pelanggan. Semuanya datang dari satu permintaan yang
   /// sama karena sumbernya memang satu baris lokasi.
-  Future<Either<String, ({String? alamat, String? telepon, String? email, String? logoStruk, String? logoPelanggan, String? teksPelanggan})>>
+  Future<Either<String, ({String? alamat, String? telepon, String? email, String? logoStruk, String? logoPelanggan, String? teksPelanggan, String? kodeTiket, String? kodeGelang})>>
       getKontakLokasi({
     required AuthToken authToken,
     required int locId,
@@ -80,6 +80,9 @@ class AuthService {
         logoStruk: data['locLogoPath']?.toString(),
         logoPelanggan: data['locCustLogoPath']?.toString(),
         teksPelanggan: data['locCustWelcomeText']?.toString(),
+        // QR | BARCODE. Kosong (server lama) = QR.
+        kodeTiket: data['locTicketCodeType']?.toString(),
+        kodeGelang: data['locWristbandCodeType']?.toString(),
       ));
     } else {
       return Left(common.getMetadataMessages(response.body));

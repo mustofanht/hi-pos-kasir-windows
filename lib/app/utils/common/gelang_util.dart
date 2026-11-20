@@ -65,6 +65,9 @@ class GelangUtil {
     String? lokasi,
     String? pembeli,
     DateTime? waktu,
+    /// true = nomor tiket di gelang dicetak sebagai barcode CODE128, bukan QR
+    /// (setelan lokasi `loc_wristband_code_type`).
+    bool barcode = false,
   }) async {
     final semuaKeStruk = HasilGelang(tercetak: const [], keStruk: semua);
 
@@ -122,6 +125,7 @@ class GelangUtil {
         nama: namaGelang[t.ticketNo],
         nomorTiket: t.ticketNo,
         waktu: waktu == null ? null : _formatWaktu.format(waktu.toLocal()),
+        barcode: barcode,
       ));
     }
 

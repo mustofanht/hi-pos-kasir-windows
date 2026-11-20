@@ -150,6 +150,7 @@ class ManualExitPageController extends GetxController {
         pakOf: 1,
         pakTotal: 1,
         qrCode: tiket.ticketNo!,
+        barcode: user?.tiketPakaiBarcode ?? false,
         // activeDateLocal/orderDateLocal diutamakan — sudah diformat backend
         // ke zona waktu LOKASI tiket ini, bukan zona device kasir di gate.
         expiredAt: tiket.activeDateLocal != null
