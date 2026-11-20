@@ -61,10 +61,22 @@ class JaminanCashInDialogController extends GetxController {
 
   @override
   void onClose() {
-    amountController.dispose();
-    customerNameController.dispose();
-    customerPhoneController.dispose();
-    notesController.dispose();
+    // Controller ini dihapus dari whenComplete Get.dialog, yaitu SAAT dialog
+    // mulai ditutup -- animasi tutupnya masih berjalan beberapa ratus ms dan
+    // masih membangun ulang TextField-nya. Dispose langsung di sini membuat
+    // layar merah "TextEditingController was used after being disposed".
+    // Jadi dispose ditunda sampai animasinya pasti selesai.
+    final isian = [
+      amountController,
+      customerNameController,
+      customerPhoneController,
+      notesController,
+    ];
+    Future.delayed(const Duration(seconds: 1), () {
+      for (final c in isian) {
+        c.dispose();
+      }
+    });
     super.onClose();
   }
 
@@ -339,6 +351,8 @@ class JaminanCashInDialogController extends GetxController {
         data: data,
         uangDiterima: uangDiterima,
         kembalian: kembalian,
+        // Uang diterima hanya diisi untuk pembayaran tunai.
+        bukaLaci: uangDiterima != null,
       );
       await printerUtil.print(printerUtil.currPrinter!, bytes);
     } catch (e) {

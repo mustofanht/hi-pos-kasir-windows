@@ -67,6 +67,13 @@ class OrderModel {
   /// punya kode & reffno sendiri). Null/kosong = jalur normal 1 metode.
   List<SplitPaymentLegModel>? splitPayments;
 
+  /// Ada uang TUNAI (mst_payment.pymnt_category 'CS') di pembayaran ini --
+  /// metode tunggal tunai, atau split yang salah satu leg-nya tunai. Dipakai
+  /// untuk membuka laci kasir saat struk dicetak. Murni lokal, tidak masuk
+  /// toJson. Diisi dari kategori, bukan dari reffno '-', karena kasir bisa
+  /// saja mengetik '-' sebagai reference EDC.
+  bool adaTunai = false;
+
   /// Uang tunai yang diterima kasir & kembaliannya -- HANYA untuk metode
   /// TUNAI tunggal (non-split), dicetak di struk (lihat
   /// GeneratePrintUtil.dataPaymentTiketPrint). Murni lokal: TIDAK dikirim ke

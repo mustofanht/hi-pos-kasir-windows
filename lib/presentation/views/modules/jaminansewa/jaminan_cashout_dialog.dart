@@ -25,8 +25,15 @@ void showJaminanCashOutDialog() {
         ),
         child: GetBuilder<JaminanCashOutDialogController>(
           tag: 'jaminanCashOut',
-          builder: (c) => Column(
-            children: [
+          builder: (c) => LayoutBuilder(builder: (context, box) {
+            // Saat papan ketik terbuka (mengisi catatan kondisi barang atau
+            // mencari), tinggi dialog tinggal ~300 px: kepala + pencarian +
+            // panel catatan saja sudah tidak muat, dan Column tetap meluap
+            // walaupun daftarnya mengecil ke 0. Di tinggi sesempit itu
+            // seluruh isi dibuat bergulir dan daftarnya diberi tinggi tetap.
+            final pendek = box.maxHeight < 480;
+            final daftar = _daftarOutstanding(c);
+            final isi = <Widget>[
               Padding(
                 padding: EdgeInsets.all(layoutStyle.defaultMargin),
                 child: Row(
@@ -71,45 +78,10 @@ void showJaminanCashOutDialog() {
                   onSubmit: c.doSearch,
                 ),
               ),
-              Expanded(
-                child: c.isLoadingOutstanding.value
-                    ? const Center(child: CircularProgressIndicator())
-                    : c.outstandingList.isEmpty
-                        ? const Center(
-                            child: Text(
-                                'Tidak ada jaminan yang belum dikembalikan.'),
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: layoutStyle.defaultMargin / 2,
-                            ),
-                            itemCount: c.outstandingList.length,
-                            itemBuilder: (context, index) {
-                              final item = c.outstandingList[index];
-                              final selected = c.selectedJaminan.value?.jmnNo ==
-                                  item.jmnNo;
-                              return Card(
-                                color: selected
-                                    ? colorStyle.primary.withOpacity(0.08)
-                                    : null,
-                                margin: EdgeInsets.symmetric(
-                                  horizontal: layoutStyle.defaultMargin / 2,
-                                  vertical: layoutStyle.defaultMargin / 4,
-                                ),
-                                child: ListTile(
-                                  onTap: () => c.pilihJaminan(item),
-                                  title: Text(
-                                      '${item.jmnNo} — ${item.itemName ?? ''}'),
-                                  subtitle: Text(
-                                    '${common.currencyFormat(item.amount ?? 0)}  •  '
-                                    '${item.customerName ?? '-'}  •  ${item.customerPhone ?? '-'}',
-                                  ),
-                                  trailing: Text(item.statusLabel ?? ''),
-                                ),
-                              );
-                            },
-                          ),
-              ),
+              if (pendek)
+                SizedBox(height: 160, child: daftar)
+              else
+                Expanded(child: daftar),
               if (c.selectedJaminan.value != null)
                 Container(
                   padding: EdgeInsets.all(layoutStyle.defaultMargin),
@@ -173,12 +145,52 @@ void showJaminanCashOutDialog() {
                     ],
                   ),
                 ),
-            ],
-          ),
+            ];
+            if (!pendek) return Column(children: isi);
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(mainAxisSize: MainAxisSize.min, children: isi),
+            );
+          }),
         ),
       ),
     ),
   ).whenComplete(() {
     Get.delete<JaminanCashOutDialogController>(tag: 'jaminanCashOut');
   });
+}
+
+Widget _daftarOutstanding(JaminanCashOutDialogController c) {
+  return c.isLoadingOutstanding.value
+      ? const Center(child: CircularProgressIndicator())
+      : c.outstandingList.isEmpty
+          ? const Center(
+              child: Text('Tidak ada jaminan yang belum dikembalikan.'),
+            )
+          : ListView.builder(
+              padding: EdgeInsets.symmetric(
+                horizontal: layoutStyle.defaultMargin / 2,
+              ),
+              itemCount: c.outstandingList.length,
+              itemBuilder: (context, index) {
+                final item = c.outstandingList[index];
+                final selected = c.selectedJaminan.value?.jmnNo == item.jmnNo;
+                return Card(
+                  color: selected ? colorStyle.primary.withOpacity(0.08) : null,
+                  margin: EdgeInsets.symmetric(
+                    horizontal: layoutStyle.defaultMargin / 2,
+                    vertical: layoutStyle.defaultMargin / 4,
+                  ),
+                  child: ListTile(
+                    onTap: () => c.pilihJaminan(item),
+                    title: Text('${item.jmnNo} — ${item.itemName ?? ''}'),
+                    subtitle: Text(
+                      '${common.currencyFormat(item.amount ?? 0)}  •  '
+                      '${item.customerName ?? '-'}  •  ${item.customerPhone ?? '-'}',
+                    ),
+                    trailing: Text(item.statusLabel ?? ''),
+                  ),
+                );
+              },
+            );
 }

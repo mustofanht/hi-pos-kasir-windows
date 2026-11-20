@@ -925,6 +925,8 @@ class SalePageController extends GetxController
             : splitReffno2Controller.text.trim(),
       ),
     ];
+    body.adaTunai = splitPayment1.value!.pymntCategory == PaymentMethod.CASH ||
+        splitPayment2.value!.pymntCategory == PaymentMethod.CASH;
     return body;
   }
 

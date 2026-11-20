@@ -209,6 +209,10 @@ class CartMemberController extends GetxController {
             : createMemberController.splitReffno2Controller.text.trim(),
       ),
     ];
+    body.adaTunai = createMemberController.splitPayment1.value!.pymntCategory ==
+            PaymentMethod.CASH ||
+        createMemberController.splitPayment2.value!.pymntCategory ==
+            PaymentMethod.CASH;
     return body;
   }
 

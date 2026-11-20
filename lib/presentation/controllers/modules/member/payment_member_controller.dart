@@ -296,6 +296,7 @@ class PaymentMemberController extends GetxController {
   }) async {
     try {
       final bool isCash = paymentCategory == PaymentMethod.CASH;
+      body.adaTunai = isCash;
 
       // Display the waiting payment alert
       await dialog.waitingPaymentEdc(

@@ -299,6 +299,7 @@ class JaminanSewaPageController extends GetxController {
         locationPhone: user.value?.locationPhone,
         paperSize: PaperSize.mm80,
         data: data,
+        bukaLaci: true,
       );
       await printerUtil.print(printerUtil.currPrinter!, bytes);
     } catch (e) {

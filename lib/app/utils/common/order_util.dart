@@ -211,6 +211,9 @@ class OrderUtil {
         kasirName: kasirName,
         paperSize: PaperSize.mm80,
         body: body,
+        // Transaksi baru yang ada uang tunainya: laci kasir dibuka bersamaan
+        // dengan struk. QRIS/EDC/VA tidak membuka laci.
+        bukaLaci: body.adaTunai,
       );
       // Berapa tiket yang QR-nya bergantung pada printer struk. Dipakai di
       // bawah untuk membedakan "tidak ada yang perlu dicetak di struk" dari
@@ -606,6 +609,7 @@ class OrderMemberUtil {
         paperSize: PaperSize.mm80,
         paymentDate: DateTime.now(),
         body: body,
+        bukaLaci: body.adaTunai,
       );
 
       Get.back();
