@@ -1154,7 +1154,7 @@ class GeneratePrintUtil {
       // bawah (dihitung backend, lihat TrnShiftKasirService.isiRekapKas).
       if (jaminanSewaTunai != 0) {
         bytes += generator.row([
-          PosColumn(text: 'Jaminan Sewa', width: 8),
+          PosColumn(text: 'Pengembalian Jaminan Sewa', width: 8),
           PosColumn(
             text: common.currencyFormat(jaminanSewaTunai),
             width: 4,

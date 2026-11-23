@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:jaya_propertiy/app/utils/common/code128_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_print_util.dart';
 import 'package:jaya_propertiy/app/utils/common/generate_wristband_util.dart';
 import 'package:jaya_propertiy/app/utils/constant/string_constant.dart';
@@ -96,33 +97,73 @@ void main() {
           barcode: barcode,
         ));
 
-    test('bawaan QR, tanpa BARCODE', () {
+    List<String> batang(String t) => t
+        .split(RegExp(r'\r?\n'))
+        .where((l) => l.startsWith('BAR '))
+        .toList();
+
+    test('bawaan QR, tanpa batang barcode', () {
       final t = tspl(false);
       expect(t, contains('QRCODE'));
-      expect(t, isNot(contains('BARCODE')));
+      expect(batang(t), isEmpty);
     });
 
-    test('BARCODE: satu barcode berputar, tanpa QR, di dalam lembar', () {
+    test('BARCODE: batang BAR melintang pita, tanpa QR / perintah BARCODE',
+        () {
       final t = tspl(true);
       expect(t, isNot(contains('QRCODE')));
-      final baris =
-          t.split(RegExp(r'\r?\n')).where((l) => l.startsWith('BARCODE'));
-      expect(baris.length, 1);
-      final bagian = baris.first.substring(7).split(',');
-      final x = int.parse(bagian[0].trim());
-      final y = int.parse(bagian[1].trim());
-      final tinggi = int.parse(bagian[3].trim());
-      final sempit = int.parse(bagian[6].trim());
-      expect(bagian[5].trim(), '90');
+      // Perintah BARCODE printer tidak dipakai: di printer Blueprint ia
+      // tercetak tanpa diputar dan terpotong di tepi pita.
+      expect(t, isNot(contains('BARCODE')));
+
+      final pola = Code128.lebarModul('2011300015');
+      final b = batang(t)
+          .map((l) => l.substring(4).split(',').map(int.parse).toList())
+          .toList();
+      // Satu BAR per batang hitam (elemen genap pola).
+      expect(b.length, (pola.length + 1) ~/ 2);
+
+      final sempit = b.first[3] ~/ pola.first;
       expect(sempit, greaterThanOrEqualTo(c.dots(0.25)));
-      final panjang = GenerateWristbandUtil.modulBarcode('2011300015') * sempit;
-      expect(x - tinggi, greaterThanOrEqualTo(0));
-      expect(x, lessThanOrEqualTo(c.widthDots));
-      expect(y, greaterThanOrEqualTo(0));
-      expect(y + panjang, lessThanOrEqualTo(c.heightDots));
+      for (final k in b) {
+        // Melintang pita: x & lebar sama untuk semua batang, di dalam lembar.
+        expect(k[0], b.first[0]);
+        expect(k[2], b.first[2]);
+        expect(k[0], greaterThanOrEqualTo(0));
+        expect(k[0] + k[2], lessThanOrEqualTo(c.widthDots));
+        expect(k[1], greaterThanOrEqualTo(0));
+        expect(k[1] + k[3], lessThanOrEqualTo(c.heightDots));
+      }
+      // Urutan batang + celah di antaranya membentuk pola CODE128 persis.
+      final dibaca = <int>[];
+      for (var i = 0; i < b.length; i++) {
+        dibaca.add(b[i][3] ~/ sempit);
+        if (i + 1 < b.length) {
+          dibaca.add((b[i + 1][1] - b[i][1] - b[i][3]) ~/ sempit);
+        }
+      }
+      expect(dibaca, pola);
+
       // Nomor tiket tetap tercetak sebagai teks untuk Keluar Manual.
       expect(t, contains('TEXT'));
       expect(t, contains('2011300015'));
+    });
+  });
+
+  group('Code128', () {
+    test('nomor 10 digit: Start C, 5 pasang digit, cek 3, stop', () {
+      // 105 + 20*1 + 11*2 + 30*3 + 0*4 + 15*5 = 312; 312 mod 103 = 3
+      expect(Code128.nilai('2011300015'), [105, 20, 11, 30, 0, 15, 3]);
+      final pola = Code128.lebarModul('2011300015');
+      expect(pola.reduce((a, b) => a + b), 7 * 11 + 13);
+      expect(pola.take(6), [2, 1, 1, 2, 3, 2]); // Start C
+      expect(pola.skip(pola.length - 7), [2, 3, 3, 1, 1, 1, 2]); // Stop
+    });
+
+    test('berhuruf / ganjil memakai subset B; karakter asing ditolak', () {
+      expect(Code128.nilai('A1').first, 104);
+      expect(Code128.nilai('123').first, 104);
+      expect(Code128.lebarModul('tiketé'), isEmpty);
     });
   });
 }
