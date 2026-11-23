@@ -485,12 +485,19 @@ class BuktiPembayaranPageController extends GetxController
           Get.back();
           return true;
         } else {
-          await _createTicket(
-            _authToken,
-            null,
-            selectedData.value.orderNumber,
-            'C',
-          );
+          // Struk void TIDAK boleh lewat sini: createTicketNo menimpa
+          // orderStatus balik ke 'C' tanpa peduli status sekarang, padahal
+          // order ini harus tetap 'V'. Hasilnya (listCreateTicket) juga tidak
+          // dipakai di bawah untuk struk void -- orderModel dirakit manual
+          // dari detailModel -- jadi aman dilewati.
+          if (!strukVoid) {
+            await _createTicket(
+              _authToken,
+              null,
+              selectedData.value.orderNumber,
+              'C',
+            );
+          }
 
           List<OrderTicketModel> ticketList =
               detailModel.value.trnOrderTicket == null
