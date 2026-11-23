@@ -172,7 +172,9 @@ class OtorisasiUtil {
       PopScope(
         // Tombol kembali tidak boleh meninggalkan timer yang masih hidup.
         canPop: false,
-        onPopInvokedWithResult: (_, __) => tutup(null),
+        // Branch windows-7 (Flutter 3.19): onPopInvokedWithResult baru ada
+        // di Flutter 3.24, jadi di sini memakai onPopInvoked.
+        onPopInvoked: (_) => tutup(null),
         child: AlertDialog(
           title: const Text('Menunggu Otorisasi Leader'),
           content: Obx(() {
