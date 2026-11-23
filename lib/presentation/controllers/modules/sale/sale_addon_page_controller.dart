@@ -98,7 +98,10 @@ class SaleAddonPageController extends GetxController {
     typeItemList.add(CustomIdNameEntity(id: 'H', name: 'Sewa Per Jam'));
     typeItemList.add(CustomIdNameEntity(id: 'S', name: 'Sewa Harian'));
     typeItemList.add(CustomIdNameEntity(id: 'J', name: 'Jual'));
-    typeItemList.add(CustomIdNameEntity(id: TYPE_JAMINAN, name: 'Jaminan Sewa'));
+    // Sub-tab "Jaminan Sewa" disembunyikan sementara (2026-11-23) atas
+    // permintaan -- fitur & kode di baliknya tetap ada, hanya tidak
+    // ditampilkan di menu.
+    // typeItemList.add(CustomIdNameEntity(id: TYPE_JAMINAN, name: 'Jaminan Sewa'));
     update();
   }
 
