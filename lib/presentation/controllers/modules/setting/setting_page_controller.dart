@@ -243,8 +243,11 @@ class SettingPageController extends GetxController
     printerUtil.printerList = printers;
     logger.safeLog('PRINTERS : ${printers.length}');
 
+    final kunciTerdaftar = <String>{};
     for (var element in printers) {
       logger.safeLog('PRINTER : ${element.toJson()}');
+      // Satu printer bisa terdeteksi dua kali; dropdown menolak nilai kembar.
+      if (!kunciTerdaftar.add(element.kunci)) continue;
       // Kuncinya [PrinterModel.kunci], bukan vendorId/alamat. Di Windows printer
       // dikenali dari nama antrean cetaknya saja — vendorId, productId, dan
       // alamatnya selalu kosong — sehingga semua printer dulu mendapat id null
@@ -474,18 +477,37 @@ class SettingPageController extends GetxController
 
   /// Daftar pilihan printer gelang: perangkat yang sama yang terdeteksi untuk
   /// printer struk, ditambah pilihan kosong untuk melepasnya kembali.
-  List<CustomIdNameEntity> get listPrinterGelang => [
-        CustomIdNameEntity(id: null, name: '--- Belum diatur ---'),
-        // Jenis sambungannya ikut ditampilkan. Printer struk dan printer gelang
-        // bisa berbeda jenis, dan nama perangkat saja tidak memberi tahu yang
-        // mana — padahal jenis itulah yang menentukan cara menyambungkannya.
-        ...printers.map(
-          (e) => CustomIdNameEntity(
-            id: e.kunci,
-            name: '${e.deviceName} (${_jenisPrinter(e)})',
-          ),
-        ),
-      ];
+  ///
+  /// Dropdown Flutter gagal (layar merah) bila nilai terpilih tidak ada tepat
+  /// satu kali di daftar. Itu terjadi saat halaman baru dibuka (daftar perangkat
+  /// masih dipindai, printer tersimpan belum ada), saat printer gelang sedang
+  /// dicabut, atau saat satu printer terdeteksi dua kali. Karena itu kunci
+  /// kembar dibuang dan printer tersimpan yang tidak terdeteksi tetap
+  /// dicantumkan.
+  List<CustomIdNameEntity> get listPrinterGelang {
+    final hasil = <CustomIdNameEntity>[
+      CustomIdNameEntity(id: null, name: '--- Belum diatur ---'),
+    ];
+    final sudah = <String>{};
+    // Jenis sambungannya ikut ditampilkan. Printer struk dan printer gelang
+    // bisa berbeda jenis, dan nama perangkat saja tidak memberi tahu yang
+    // mana — padahal jenis itulah yang menentukan cara menyambungkannya.
+    for (final e in printers) {
+      if (!sudah.add(e.kunci)) continue;
+      hasil.add(CustomIdNameEntity(
+        id: e.kunci,
+        name: '${e.deviceName} (${_jenisPrinter(e)})',
+      ));
+    }
+    final terpilih = selectedPrinterGelang.value;
+    if (terpilih.id != null && !sudah.contains(terpilih.id.toString())) {
+      hasil.add(CustomIdNameEntity(
+        id: terpilih.id,
+        name: '${terpilih.name ?? terpilih.id} — tidak terdeteksi',
+      ));
+    }
+    return hasil;
+  }
 
   String _jenisPrinter(PrinterModel p) {
     switch (p.typePrinter) {
