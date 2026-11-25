@@ -112,6 +112,28 @@ class JaminanCashInDialogController extends GetxController {
     update();
   }
 
+  /// Tombol nominal cepat di bawah kolom Nominal Jaminan.
+  static const pilihanNominal = [10000, 20000, 30000, 40000, 50000, 100000];
+
+  /// Nominal cepat yang sama dengan isi kolom saat ini (null bila diketik
+  /// manual dengan angka lain) — untuk menandai tombol yang aktif.
+  int? get nominalTerpilih {
+    final isi = RibuanInputFormatter.bersihkan(amountController.text);
+    return pilihanNominal.firstWhereOrNull((n) => n == isi);
+  }
+
+  void pilihNominal(int nominal) {
+    final teks = RibuanInputFormatter()
+        .formatEditUpdate(TextEditingValue.empty,
+            TextEditingValue(text: nominal.toString()))
+        .text;
+    amountController.value = TextEditingValue(
+      text: teks,
+      selection: TextSelection.collapsed(offset: teks.length),
+    );
+    update();
+  }
+
   void pilihMetodeBayar(MstPayment? p) {
     selectedPayment.value = p;
     update();

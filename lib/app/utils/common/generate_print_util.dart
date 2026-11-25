@@ -981,14 +981,15 @@ class GeneratePrintUtil {
     // mengandalkan nama membuat baris ini tidak pernah cocok di lokasi yang
     // menamainya lain.
     //
-    // Baris tunai itu ditambah Modal Awal + Jaminan Sewa Tunai SAAT DICETAK
-    // (bukan di angka penjualannya) supaya sama dengan "TOTAL TUNAI" di blok
-    // "RINCIAN LACI TUNAI" di bawah (= kasSeharusnya = tunai + modal +
-    // jaminan sewa) — tanpa penambahan ini kasir membaca dua angka TUNAI
-    // yang beda untuk laci yang sama. Jaminan sewa tunai TIDAK ditulis
-    // sebagai baris sendiri di sini (blok ini khusus metode pembayaran, dan
-    // jaminan sewa bukan penjualan) -- nilainya cukup masuk ke baris tunai
-    // dan ke "Total" di bawah.
+    // Baris tunai = UANG HASIL HITUNG KASIR DI LACI (kasAkhir, atau jumlah
+    // pecahan akhir bila kasAkhir kosong) -- permintaan 24 Nov 2026, bukan
+    // lagi hitungan sistem. Hitungan sistem (kas seharusnya) tetap tertulis
+    // sebagai "TOTAL TUNAI" di blok "RINCIAN LACI TUNAI" di bawah, jadi
+    // selisihnya bisa dibaca dari dua angka itu.
+    //
+    // Bila laci belum dihitung (lokasi tanpa modal kas / data lama), baris
+    // tunai kembali ke hitungan sistem: penjualan tunai + Modal Awal +
+    // Jaminan Sewa Tunai. "Total" di bawah = jumlah baris yang tercetak.
     //
     // totalPembayaran TETAP murni penjualan (tanpa modal/jaminan sewa):
     // dipakai lagi di bawah untuk Penjualan Bruto/Netto, yang memang bukan
@@ -1002,13 +1003,24 @@ class GeneratePrintUtil {
       return tunaiSum != 0 && ((p.amount ?? 0) - tunaiSum).abs() < 0.5;
     }
 
+    final pecahanAkhir = detail.listPecahanAkhir ?? const [];
+    final double? kasDihitung = !detail.pakaiModal
+        ? null
+        : detail.kasAkhir ??
+            (pecahanAkhir.isEmpty
+                ? null
+                : pecahanAkhir.fold<double>(
+                    0, (jumlah, p) => jumlah + p.pecahan * p.lembar));
+
     double totalPembayaran = 0;
+    double totalTampil = 0;
     for (final p in listPembayaran) {
       final amount = p.amount ?? 0;
       totalPembayaran += amount;
       final tampil = isBarisTunai(p)
-          ? amount + (detail.modalAwal ?? 0) + jaminanSewaTunai
+          ? kasDihitung ?? amount + (detail.modalAwal ?? 0) + jaminanSewaTunai
           : amount;
+      totalTampil += tampil;
       bytes += generator.row([
         PosColumn(text: p.name ?? '-', width: 7),
         PosColumn(
@@ -1018,12 +1030,24 @@ class GeneratePrintUtil {
         ),
       ]);
     }
+    // Shift tanpa penjualan tunai tidak punya baris tunai dari server,
+    // padahal laci tetap berisi uang (modal, jaminan sewa): tetap ditulis.
+    if (kasDihitung != null && !listPembayaran.any(isBarisTunai)) {
+      totalTampil += kasDihitung;
+      bytes += generator.row([
+        PosColumn(text: 'TUNAI', width: 7),
+        PosColumn(
+          text: common.currencyFormat(kasDihitung),
+          width: 5,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+    }
     bytes += generator.hr();
     bytes += generator.row([
       PosColumn(text: 'Total', width: 7, styles: const PosStyles(bold: true)),
       PosColumn(
-        text: common.currencyFormat(
-            totalPembayaran + (detail.modalAwal ?? 0) + jaminanSewaTunai),
+        text: common.currencyFormat(totalTampil),
         width: 5,
         styles: const PosStyles(align: PosAlign.right, bold: true),
       ),

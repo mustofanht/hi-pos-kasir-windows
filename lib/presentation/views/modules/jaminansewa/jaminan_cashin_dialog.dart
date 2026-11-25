@@ -77,6 +77,7 @@ void showJaminanCashInDialog({
                         ),
                         keyboardType: TextInputType.number,
                         inputFormatters: [RibuanInputFormatter()],
+                        onChanged: (_) => c.update(),
                         isMandatory: true,
                       ),
                     ),
@@ -103,6 +104,28 @@ void showJaminanCashInDialog({
                         ),
                       ),
                     ),
+                  ],
+                ),
+                // Nominal yang paling sering dipakai: sekali ketuk mengisi kolom
+                // Nominal Jaminan, tetap bisa diketik manual untuk nominal lain.
+                Wrap(
+                  spacing: layoutStyle.defaultMargin / 4,
+                  runSpacing: layoutStyle.defaultMargin / 4,
+                  children: [
+                    for (final n in JaminanCashInDialogController.pilihanNominal)
+                      ChoiceChip(
+                        key: Key('nominal-jaminan-$n'),
+                        label: Text('${n ~/ 1000}rb'),
+                        selected: c.nominalTerpilih == n,
+                        selectedColor: colorStyle.primary,
+                        labelStyle: TextStyle(
+                          color: c.nominalTerpilih == n
+                              ? colorStyle.white
+                              : colorStyle.black,
+                        ),
+                        showCheckmark: false,
+                        onSelected: (_) => c.pilihNominal(n),
+                      ),
                   ],
                 ),
                 Row(
